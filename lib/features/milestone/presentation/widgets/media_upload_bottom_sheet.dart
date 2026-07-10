@@ -71,19 +71,19 @@ class _MediaUploadBottomSheetState extends State<MediaUploadBottomSheet> {
               decoration: BoxDecoration(
                 color: const Color(0xFF2C2C2C),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFF4A8E8B)),
+                border: Border.all(color: Theme.of(context).primaryColor),
               ),
               child: _selectedImage == null
-                  ? const Column(
+                  ? Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.add_a_photo, color: Color(0xFF4A8E8B), size: 40),
-                        SizedBox(height: 8),
-                        Text('Tap to select an image', style: TextStyle(color: Color(0xFFA0A0A0))),
+                        Icon(Icons.add_a_photo, color: Theme.of(context).primaryColor, size: 40),
+                        const SizedBox(height: 8),
+                        const Text('Tap to select an image', style: TextStyle(color: Color(0xFFA0A0A0))),
                       ],
                     )
-                  : const Center(
-                      child: Text('Image Selected', style: TextStyle(color: Color(0xFF88B04B))),
+                  : Center(
+                      child: Text('Image Selected', style: TextStyle(color: Theme.of(context).colorScheme.secondary)),
                     ),
             ),
           ),
@@ -106,7 +106,7 @@ class _MediaUploadBottomSheetState extends State<MediaUploadBottomSheet> {
               const Text('Mark as Sensitive', style: TextStyle(color: Color(0xFFE0E0E0))),
               Switch(
                 value: _isSensitive,
-                activeColor: const Color(0xFF88B04B),
+                activeColor: Theme.of(context).colorScheme.secondary,
                 onChanged: (val) {
                   setState(() => _isSensitive = val);
                 },

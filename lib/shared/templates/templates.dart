@@ -15,7 +15,7 @@ class MinimalistTemplate extends StatelessWidget {
       child: Text(
         content,
         style: const TextStyle(color: Colors.white, fontSize: 18, height: 1.5),
-        textAlign: TextAlign.center,
+        textAlign: TextAlign.justify,
       ),
     );
   }
@@ -43,7 +43,7 @@ class ImageCentricTemplate extends StatelessWidget {
               child: Text(
                 '"$content"',
                 style: const TextStyle(color: Colors.white, fontSize: 20, fontStyle: FontStyle.italic),
-                textAlign: TextAlign.center,
+                textAlign: TextAlign.justify,
               ),
             ),
           ),
@@ -105,6 +105,7 @@ class ClassicQuoteTemplate extends StatelessWidget {
           Text(
             content,
             style: const TextStyle(color: Color(0xFFE0E0E0), fontSize: 18),
+            textAlign: TextAlign.justify,
           ),
         ],
       ),
@@ -143,6 +144,7 @@ class GlassmorphismTemplate extends StatelessWidget {
               child: Text(
                 content,
                 style: const TextStyle(color: Color(0xFFE0E0E0), fontSize: 18),
+                textAlign: TextAlign.justify,
               ),
             ),
           ),

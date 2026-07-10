@@ -10,9 +10,9 @@ class AppTheme {
   static const Color textPrimary = Color(0xFFF0F0F0);
   static const Color textSecondary = Color(0xFFA0A0A0);
   
-  // Healing accents
-  static const Color accentCyan = Color(0xFF4A8E8B); // Soft Teal
-  static const Color accentEmerald = Color(0xFF88B04B); // Sage Green
+  // Premium Healing Accents (Kintsugi inspired)
+  static const Color accentCyan = Color(0xFFD4AF37); // Metallic Gold
+  static const Color accentEmerald = Color(0xFFE0C097); // Warm Sand
 
   static ThemeData get darkTheme {
     final baseTextTheme = GoogleFonts.interTextTheme(ThemeData.dark().textTheme);

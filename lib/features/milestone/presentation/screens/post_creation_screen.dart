@@ -77,7 +77,7 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                 const Text('Post Anonymously', style: TextStyle(color: Color(0xFFE0E0E0), fontSize: 16)),
                 Switch(
                   value: _isAnonymous,
-                  activeColor: const Color(0xFF88B04B), // Sage Green accent
+                  activeColor: Theme.of(context).colorScheme.secondary,
                   onChanged: (value) {
                     setState(() {
                       _isAnonymous = value;
@@ -93,8 +93,8 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
               child: OutlinedButton.icon(
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  side: const BorderSide(color: Color(0xFF4A8E8B)),
-                  foregroundColor: const Color(0xFF4A8E8B),
+                  side: BorderSide(color: Theme.of(context).primaryColor),
+                  foregroundColor: Theme.of(context).primaryColor,
                 ),
                 icon: const Icon(Icons.attach_file),
                 label: const Text('Add Media Attachment'),
@@ -109,7 +109,7 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
               width: double.infinity,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4A8E8B), // Muted Teal accent
+                  backgroundColor: Theme.of(context).primaryColor,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
                 onPressed: _submitPost,

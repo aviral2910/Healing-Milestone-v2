@@ -62,7 +62,7 @@ class QnAThread extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(q['asker']!, style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF00F0FF))),
+                        Text(q['asker']!, style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor)),
                         const SizedBox(height: 4),
                         Text(q['question']!, style: const TextStyle(color: Colors.white)),
                       ],
@@ -83,8 +83,8 @@ class QnAThread extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF00FF88).withOpacity(0.1),
-                          border: Border.all(color: const Color(0xFF00FF88).withOpacity(0.3)),
+                          color: Theme.of(context).colorScheme.secondary.withOpacity(0.1),
+                          border: Border.all(color: Theme.of(context).colorScheme.secondary.withOpacity(0.3)),
                           borderRadius: const BorderRadius.only(
                             topLeft: Radius.circular(20),
                             topRight: Radius.circular(20),
@@ -95,7 +95,7 @@ class QnAThread extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
-                            const Text('Author', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF00FF88))),
+                            Text('Author', style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary)),
                             const SizedBox(height: 4),
                             Text(q['reply']!, style: const TextStyle(color: Colors.white), textAlign: TextAlign.right),
                           ],
@@ -113,7 +113,7 @@ class QnAThread extends StatelessWidget {
                   decoration: InputDecoration(
                     hintText: 'Write a reply...',
                     hintStyle: const TextStyle(color: Colors.grey),
-                    suffixIcon: const Icon(Icons.send, color: Color(0xFF00F0FF)),
+                    suffixIcon: Icon(Icons.send, color: Theme.of(context).primaryColor),
                     filled: true,
                     fillColor: const Color(0xFF141414),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none),
