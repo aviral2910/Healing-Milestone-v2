@@ -43,16 +43,18 @@ class QnAThread extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 CircleAvatar(
-                  backgroundColor: const Color(0xFF242424),
-                  child: Text(q['asker']![0], style: const TextStyle(color: Colors.white)),
+                  backgroundColor: const Color(0xFF1E1E1E),
+                  radius: 18,
+                  child: Text(q['asker']![0], style: const TextStyle(color: Color(0xFFF5F5F7), fontWeight: FontWeight.bold)),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF242424),
-                      borderRadius: BorderRadius.only(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF151515),
+                      border: Border.all(color: const Color(0xFF2A2A2A)),
+                      borderRadius: const BorderRadius.only(
                         topLeft: Radius.circular(20),
                         topRight: Radius.circular(20),
                         bottomRight: Radius.circular(20),
@@ -62,9 +64,9 @@ class QnAThread extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(q['asker']!, style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor)),
-                        const SizedBox(height: 4),
-                        Text(q['question']!, style: const TextStyle(color: Colors.white)),
+                        Text(q['asker']!, style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFA1A1A6))),
+                        const SizedBox(height: 6),
+                        Text(q['question']!, style: const TextStyle(color: Color(0xFFF5F5F7), height: 1.3)),
                       ],
                     ),
                   ),
@@ -83,8 +85,8 @@ class QnAThread extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.secondary.withOpacity(0.1),
-                          border: Border.all(color: Theme.of(context).colorScheme.secondary.withOpacity(0.3)),
+                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                          border: Border.all(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3)),
                           borderRadius: const BorderRadius.only(
                             topLeft: Radius.circular(20),
                             topRight: Radius.circular(20),
@@ -95,9 +97,9 @@ class QnAThread extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
-                            Text('Author', style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary)),
-                            const SizedBox(height: 4),
-                            Text(q['reply']!, style: const TextStyle(color: Colors.white), textAlign: TextAlign.right),
+                            Text('Author', style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary)),
+                            const SizedBox(height: 6),
+                            Text(q['reply']!, style: const TextStyle(color: Color(0xFFF5F5F7), height: 1.3), textAlign: TextAlign.right),
                           ],
                         ),
                       ),
@@ -110,13 +112,34 @@ class QnAThread extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(left: 48, top: 12),
                 child: TextField(
+                  textInputAction: TextInputAction.send,
+                  style: const TextStyle(color: Color(0xFFF5F5F7)),
                   decoration: InputDecoration(
                     hintText: 'Write a reply...',
-                    hintStyle: const TextStyle(color: Colors.grey),
-                    suffixIcon: Icon(Icons.send, color: Theme.of(context).primaryColor),
+                    hintStyle: const TextStyle(color: Color(0xFFA1A1A6)),
+                    suffixIcon: Container(
+                      margin: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(Icons.arrow_upward_rounded, color: Theme.of(context).colorScheme.primary, size: 20),
+                    ),
                     filled: true,
-                    fillColor: const Color(0xFF141414),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none),
+                    fillColor: const Color(0xFF151515),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(24), 
+                      borderSide: const BorderSide(color: Color(0xFF2A2A2A)),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(24), 
+                      borderSide: const BorderSide(color: Color(0xFF2A2A2A)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(24), 
+                      borderSide: BorderSide(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5)),
+                    ),
                   ),
                 ),
               ),

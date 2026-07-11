@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/data/dummy_data.dart';
 import '../../../../core/models/story_model.dart';
+import '../../../../logo/healing_milestone_logo.dart';
+import '../../../../main.dart';
 
 import '../../../../shared/widgets/story_card.dart';
 
@@ -24,6 +26,32 @@ class PostScreen extends ConsumerWidget {
 
     return CustomScrollView(
       slivers: [
+        SliverAppBar(
+          floating: true,
+          snap: true,
+          centerTitle: false,
+          backgroundColor: theme.scaffoldBackgroundColor,
+          elevation: 0,
+          title: HealingMilestonesLogoWidget(),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 16.0),
+              child: TextButton(
+                style: TextButton.styleFrom(
+                  backgroundColor: theme.colorScheme.primary,
+                  foregroundColor: Colors.black,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
+                onPressed: () {
+                  ref.read(uatModeProvider.notifier).state = !ref.read(uatModeProvider);
+                },
+                child: const Text('UAT'),
+              ),
+            ),
+          ],
+        ),
         // Horizontal Categories
         ...categories.map((category) {
           final categoryStories = allStories
@@ -120,7 +148,7 @@ class _HorizontalCategorySection extends StatelessWidget {
         ),
         SizedBox(
           height:
-              350, // Height accommodates 180px image + title + 2 line description
+              440, // Height accommodates 180px image + title + description + hashtags
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 12.0),
@@ -296,10 +324,58 @@ class _HorizontalFeedCardState extends State<_HorizontalFeedCard>
                           height: 1.4,
                         ),
                       ),
+                      const SizedBox(height: 6),
+                      GestureDetector(
+                        onTap: widget.onTap,
+                        child: Text(
+                          'Read more',
+                          style: TextStyle(
+                            color: theme.colorScheme.primary,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
               ),
+              if (widget.story.hashtagsList.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Row(
+                    children: widget.story.hashtagsList.map((tag) {
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8.0),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primary
+                                .withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: theme.colorScheme.primary
+                                  .withValues(alpha: 0.3),
+                            ),
+                          ),
+                          child: Text(
+                            '#$tag',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: theme.colorScheme.primary,
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
 
               // Interaction Footer
               Container(
@@ -319,6 +395,9 @@ class _HorizontalFeedCardState extends State<_HorizontalFeedCard>
                         icon: Icons.chat_bubble_outline,
                         label: '142',
                         color: const Color(0xFFA1A1A6)),
+                    const Spacer(),
+                    const Icon(Icons.bookmark_border,
+                        color: Color(0xFFA1A1A6), size: 22),
                   ],
                 ),
               ),

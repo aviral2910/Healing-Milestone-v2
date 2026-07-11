@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:device_preview/device_preview.dart';
 import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
 import 'features/accessibility/data/accessibility_providers.dart';
+
+final uatModeProvider = StateProvider<bool>((ref) => false);
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,6 +25,7 @@ class HealingMilestonesApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
     final accessibilityState = ref.watch(accessibilityProvider);
+    final isUatMode = ref.watch(uatModeProvider);
 
     // Apply accessibility scaling to the base dark theme
     ThemeData baseTheme = AppTheme.darkTheme;
@@ -31,11 +35,17 @@ class HealingMilestonesApp extends ConsumerWidget {
       displayColor: AppTheme.textPrimary.withValues(alpha: accessibilityState.textOpacity),
     );
 
-    return MaterialApp.router(
-      title: 'Healing Milestones',
-      theme: baseTheme.copyWith(textTheme: scaledTextTheme),
-      routerConfig: router,
-      debugShowCheckedModeBanner: false,
+    return DevicePreview(
+      enabled: isUatMode,
+      builder: (context) => MaterialApp.router(
+        title: 'Healing Milestones',
+        theme: baseTheme.copyWith(textTheme: scaledTextTheme),
+        routerConfig: router,
+        debugShowCheckedModeBanner: false,
+        useInheritedMediaQuery: true,
+        locale: DevicePreview.locale(context),
+        builder: DevicePreview.appBuilder,
+      ),
     );
   }
 }

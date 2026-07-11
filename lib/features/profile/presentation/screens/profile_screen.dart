@@ -39,25 +39,32 @@ class ProfileScreen extends ConsumerWidget {
     return DefaultTabController(
       length: 3,
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text(
-            'Profile',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          centerTitle: true,
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.settings_outlined),
-              onPressed: () {},
-            ),
-          ],
-        ),
-        body: NestedScrollView(
-          headerSliverBuilder: (context, innerBoxIsScrolled) {
-            return [
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        body: SafeArea(
+          top: true,
+          bottom: false,
+          child: NestedScrollView(
+            headerSliverBuilder: (context, innerBoxIsScrolled) {
+              return [
+                SliverAppBar(
+                  floating: true,
+                  snap: true,
+                  title: const Text(
+                    'Profile',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  centerTitle: true,
+                  backgroundColor: theme.scaffoldBackgroundColor,
+                  elevation: 0,
+                  actions: [
+                    IconButton(
+                      icon: const Icon(Icons.settings_outlined),
+                      onPressed: () {},
+                    ),
+                  ],
+                ),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -71,7 +78,10 @@ class ProfileScreen extends ConsumerWidget {
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 gradient: LinearGradient(
-                                  colors: [theme.colorScheme.primary, Colors.amber],
+                                  colors: [
+                                    theme.colorScheme.primary,
+                                    Colors.amber
+                                  ],
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                 ),
@@ -90,12 +100,14 @@ class ProfileScreen extends ConsumerWidget {
                                 Text(
                                   user.userName,
                                   style: const TextStyle(
-                                      fontWeight: FontWeight.bold, fontSize: 22),
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 22),
                                 ),
                                 if (user.isVerified) ...[
                                   const SizedBox(width: 4),
                                   Icon(Icons.verified,
-                                      color: theme.colorScheme.primary, size: 20),
+                                      color: theme.colorScheme.primary,
+                                      size: 20),
                                 ],
                               ],
                             ),
@@ -140,13 +152,19 @@ class ProfileScreen extends ConsumerWidget {
                             _StatColumn(
                                 label: 'Stories',
                                 count: user.ownStories.length.toString()),
-                            Container(width: 1, height: 40, color: const Color(0xFF2A2A2A)),
+                            Container(
+                                width: 1,
+                                height: 40,
+                                color: const Color(0xFF2A2A2A)),
                             _StatColumn(
-                                label: 'Followers', 
+                                label: 'Followers',
                                 count: _formatCount(user.followersCount)),
-                            Container(width: 1, height: 40, color: const Color(0xFF2A2A2A)),
+                            Container(
+                                width: 1,
+                                height: 40,
+                                color: const Color(0xFF2A2A2A)),
                             _StatColumn(
-                                label: 'Following', 
+                                label: 'Following',
                                 count: _formatCount(user.followingCount)),
                           ],
                         ),
@@ -158,7 +176,8 @@ class ProfileScreen extends ConsumerWidget {
                         child: ElevatedButton(
                           onPressed: () {},
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.15),
+                            backgroundColor: theme.colorScheme.primary
+                                .withValues(alpha: 0.15),
                             foregroundColor: theme.colorScheme.primary,
                             elevation: 0,
                             shape: RoundedRectangleBorder(
@@ -168,7 +187,8 @@ class ProfileScreen extends ConsumerWidget {
                           ),
                           child: const Text(
                             'Edit Profile',
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 16),
                           ),
                         ),
                       ),
@@ -185,11 +205,13 @@ class ProfileScreen extends ConsumerWidget {
                       color: theme.colorScheme.primary.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(100),
                     ),
-                    indicatorPadding: const EdgeInsets.symmetric(horizontal: -16, vertical: 8),
+                    indicatorPadding: const EdgeInsets.symmetric(
+                        horizontal: -16, vertical: 8),
                     indicatorSize: TabBarIndicatorSize.label,
                     labelColor: theme.colorScheme.primary,
                     unselectedLabelColor: const Color(0xFFA1A1A6),
-                    dividerColor: Colors.transparent, // Remove the ugly default line
+                    dividerColor:
+                        Colors.transparent, // Remove the ugly default line
                     tabs: const [
                       Tab(
                         child: Row(
@@ -197,7 +219,8 @@ class ProfileScreen extends ConsumerWidget {
                           children: [
                             Icon(Icons.auto_awesome_mosaic_rounded, size: 18),
                             SizedBox(width: 6),
-                            Text('Stories', style: TextStyle(fontWeight: FontWeight.bold)),
+                            Text('Stories',
+                                style: TextStyle(fontWeight: FontWeight.bold)),
                           ],
                         ),
                       ),
@@ -207,7 +230,8 @@ class ProfileScreen extends ConsumerWidget {
                           children: [
                             Icon(Icons.favorite_rounded, size: 18),
                             SizedBox(width: 6),
-                            Text('Liked', style: TextStyle(fontWeight: FontWeight.bold)),
+                            Text('Liked',
+                                style: TextStyle(fontWeight: FontWeight.bold)),
                           ],
                         ),
                       ),
@@ -217,7 +241,8 @@ class ProfileScreen extends ConsumerWidget {
                           children: [
                             Icon(Icons.bookmark_rounded, size: 18),
                             SizedBox(width: 6),
-                            Text('Saved', style: TextStyle(fontWeight: FontWeight.bold)),
+                            Text('Saved',
+                                style: TextStyle(fontWeight: FontWeight.bold)),
                           ],
                         ),
                       ),
@@ -233,6 +258,7 @@ class ProfileScreen extends ConsumerWidget {
               _StoryList(stories: likedStories),
               _StoryList(stories: bookmarkedStories),
             ],
+          ),
           ),
         ),
       ),
@@ -284,9 +310,8 @@ class _StoryList extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(bottom: 24.0),
                 child: Divider(
-                  color: theme.colorScheme.primary.withValues(alpha: 0.2), 
-                  thickness: 1
-                ),
+                    color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                    thickness: 1),
               ),
           ],
         );

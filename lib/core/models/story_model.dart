@@ -20,8 +20,6 @@ class StoryModel {
   final bool displayAuthorName;
   final List<String> taggedPeople;
 
-  // I will map templateStyle here as an extra field so we can keep our UI designs
-  final String templateStyle;
 
   StoryModel({
     required this.storyId,
@@ -44,7 +42,6 @@ class StoryModel {
     required this.verifierId,
     this.displayAuthorName = true,
     this.taggedPeople = const [],
-    this.templateStyle = 'classicQuote',
   });
 
   StoryModel copyWith({
@@ -68,7 +65,6 @@ class StoryModel {
     String? verifierId,
     bool? displayAuthorName,
     List<String>? taggedPeople,
-    String? templateStyle,
   }) {
     return StoryModel(
       storyId: storyId ?? this.storyId,
@@ -91,7 +87,6 @@ class StoryModel {
       verifierId: verifierId ?? this.verifierId,
       displayAuthorName: displayAuthorName ?? this.displayAuthorName,
       taggedPeople: taggedPeople ?? this.taggedPeople,
-      templateStyle: templateStyle ?? this.templateStyle,
     );
   }
 }

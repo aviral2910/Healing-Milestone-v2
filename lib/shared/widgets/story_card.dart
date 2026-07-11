@@ -187,6 +187,22 @@ class _StoryCardState extends State<StoryCard>
                       ),
                     ],
 
+                    const SizedBox(height: 6),
+                    GestureDetector(
+                      onTap: widget.onTap,
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Read more',
+                          style: TextStyle(
+                            color: theme.colorScheme.primary,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ),
+
                     // Hashtags
                     if (widget.story.hashtagsList.isNotEmpty) ...[
                       const SizedBox(height: 16),
@@ -225,8 +241,8 @@ class _StoryCardState extends State<StoryCard>
                     InteractionButton(
                         icon: Icons.favorite_border,
                         label: '2.4k',
-                        color: theme.colorScheme.secondary),
-                    const SizedBox(width: 24),
+                        color: theme.colorScheme.primary),
+                    const SizedBox(width: 16),
                     InteractionButton(
                         icon: Icons.chat_bubble_outline,
                         label: '142',

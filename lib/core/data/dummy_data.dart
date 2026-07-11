@@ -34,10 +34,9 @@ final dummyStoriesProvider = Provider<List<StoryModel>>((ref) {
       authorId: 'a1',
       qrId: 'qr1',
       readingTime: 3,
-      hashtagsList: ['recovery', 'milestone', 'surgery'],
+      hashtagsList: ['recovery', 'milestone', 'surgery', 'physicaltherapy', 'nevergiveup', 'healingjourney', 'dayfour'],
       verifierId: 'v1',
       isVerifiedStory: true,
-      templateStyle: 'minimalist',
     ),
     StoryModel(
       storyId: 's2',
@@ -53,7 +52,6 @@ final dummyStoriesProvider = Provider<List<StoryModel>>((ref) {
       hashtagsList: ['mentalhealth', 'chronicillness', 'hope'],
       verifierId: 'v1',
       isVerifiedStory: true,
-      templateStyle: 'classicQuote',
     ),
     StoryModel(
       storyId: 's3',
@@ -69,7 +67,6 @@ final dummyStoriesProvider = Provider<List<StoryModel>>((ref) {
       hashtagsList: ['cancer', 'remission', 'anniversary'],
       verifierId: 'v1',
       isVerifiedStory: true,
-      templateStyle: 'glassmorphism',
     ),
     StoryModel(
       storyId: 's4',
@@ -85,7 +82,6 @@ final dummyStoriesProvider = Provider<List<StoryModel>>((ref) {
       hashtagsList: ['invisibleillness', 'spoonie', 'community'],
       verifierId: 'v1',
       isVerifiedStory: false,
-      templateStyle: 'glassmorphism',
     ),
     StoryModel(
       storyId: 's5',
@@ -102,7 +98,6 @@ final dummyStoriesProvider = Provider<List<StoryModel>>((ref) {
       hashtagsList: ['smallwins', 'healingjourney', 'mentalhealth'],
       verifierId: 'v1',
       isVerifiedStory: false,
-      templateStyle: 'minimalist',
     ),
   ];
 });

@@ -48,7 +48,9 @@ class StoryDetailScreen extends ConsumerWidget {
                 Text('Reading Settings',
                     style: Theme.of(context).textTheme.titleLarge),
                 const SizedBox(height: 24),
-                const Text('Text Size', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w600)),
+                const Text('Text Size',
+                    style: TextStyle(
+                        color: Colors.grey, fontWeight: FontWeight.w600)),
                 Consumer(
                   builder: (context, ref, child) {
                     final state = ref.watch(accessibilityProvider);
@@ -65,7 +67,8 @@ class StoryDetailScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 16),
                 const Text('Contrast/Opacity',
-                    style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w600)),
+                    style: TextStyle(
+                        color: Colors.grey, fontWeight: FontWeight.w600)),
                 Consumer(
                   builder: (context, ref, child) {
                     final state = ref.watch(accessibilityProvider);
@@ -93,7 +96,7 @@ class StoryDetailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final stories = ref.watch(dummyStoriesProvider);
     final storyIndex = stories.indexWhere((s) => s.storyId == milestoneId);
-    
+
     if (storyIndex == -1) {
       return const Scaffold(
         body: Center(child: Text('Story not found')),
@@ -140,7 +143,8 @@ class StoryDetailScreen extends ConsumerWidget {
                 actions: [
                   IconButton(
                     icon: const Icon(Icons.settings_display_outlined),
-                    onPressed: () => _showAccessibilityBottomSheet(context, ref),
+                    onPressed: () =>
+                        _showAccessibilityBottomSheet(context, ref),
                   )
                 ],
               ),
@@ -150,25 +154,42 @@ class StoryDetailScreen extends ConsumerWidget {
                   children: [
                     // Massive Editorial Typography Header
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24.0, vertical: 16.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            story.heading.isNotEmpty ? story.heading : 'A Healing Journey',
+                            story.heading.isNotEmpty
+                                ? story.heading
+                                : 'A Healing Journey',
                             style: theme.textTheme.headlineLarge?.copyWith(
-                                  fontSize: 40,
-                                  height: 1.1,
-                                ),
+                              fontSize: 42, // Massive scale
+                              height: 1.1,
+                              fontWeight: FontWeight.w900,
+                              color: const Color(0xFFF5F5F7), // Frost white
+                            ),
                           ),
-                          const SizedBox(height: 32),
+                          const SizedBox(height: 24),
+
+                          // Author Metadata Row
                           Row(
                             children: [
-                              CircleAvatar(
-                                radius: 24,
-                                backgroundColor: theme.colorScheme.surface,
-                                backgroundImage: NetworkImage(
-                                    'https://api.dicebear.com/7.x/avataaars/png?seed=${story.authorId}'),
+                              Container(
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: theme.colorScheme.primary
+                                        .withValues(alpha: 0.5),
+                                    width: 1.5,
+                                  ),
+                                ),
+                                child: CircleAvatar(
+                                  radius: 22,
+                                  backgroundColor: theme.colorScheme.surface,
+                                  backgroundImage: NetworkImage(
+                                      'https://api.dicebear.com/7.x/avataaars/png?seed=${story.authorId}'),
+                                ),
                               ),
                               const SizedBox(width: 16),
                               Column(
@@ -180,19 +201,29 @@ class StoryDetailScreen extends ConsumerWidget {
                                         !story.displayAuthorName
                                             ? 'Anonymous'
                                             : 'Author ${story.authorId}',
-                                        style: theme.textTheme.titleMedium?.copyWith(fontSize: 16),
+                                        style: theme.textTheme.titleMedium
+                                            ?.copyWith(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: const Color(0xFFF5F5F7),
+                                        ),
                                       ),
                                       if (story.isVerifiedStory) ...[
                                         const SizedBox(width: 6),
                                         Icon(Icons.verified,
-                                            color: theme.colorScheme.primary, size: 18),
+                                            color: theme.colorScheme.primary,
+                                            size: 16),
                                       ],
                                     ],
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
                                     'Published just now • 5 min read',
-                                    style: theme.textTheme.bodySmall,
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      color: const Color(0xFFA1A1A6),
+                                      fontWeight: FontWeight.w500,
+                                      letterSpacing: 0.5,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -201,40 +232,80 @@ class StoryDetailScreen extends ConsumerWidget {
                         ],
                       ),
                     ),
+                    // Hashtags
+                    if (story.hashtagsList.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                        child: Row(
+                          children: story.hashtagsList.map((tag) {
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 8.0),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.primary
+                                      .withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: theme.colorScheme.primary
+                                        .withValues(alpha: 0.3),
+                                  ),
+                                ),
+                                child: Text(
+                                  '#$tag',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: theme.colorScheme.primary,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 32),
-                    
+
                     // The Immutable Post Widget Template - NO DIVIDERS
                     // Encased in a beautiful midnight matte if it's minimal
                     Container(
                       color: theme.colorScheme.surface,
                       width: double.infinity,
-                      child: story.templateStyle == 'imageCentric'
-                        ? AspectRatio(
-                            aspectRatio: 1.0,
-                            child: PostDisplayWidget(
-                              content: story.description,
-                              authorName: !story.displayAuthorName
-                                  ? 'Anonymous'
-                                  : 'Author ${story.authorId}',
-                              templateStyle: story.templateStyle,
-                              logoUrl: null,
-                            ),
-                          )
-                        : Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 40.0, horizontal: 8.0),
-                            child: PostDisplayWidget(
-                                content: story.description,
-                                authorName: !story.displayAuthorName
-                                    ? 'Anonymous'
-                                    : 'Author ${story.authorId}',
-                                templateStyle: story.templateStyle,
-                                logoUrl: null,
-                              ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 20.0, horizontal: 8.0),
+                        child: PostDisplayWidget(
+                          content: story.description,
                         ),
+                      ),
                     ),
-                    
-                    const SizedBox(height: 48),
-                    
+
+                    const SizedBox(height: 16),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.favorite_border),
+                            onPressed: () {},
+                            color: const Color(0xFFA1A1A6),
+                          ),
+                          const SizedBox(width: 8),
+                          IconButton(
+                            icon: const Icon(Icons.ios_share_rounded),
+                            onPressed: () {},
+                            color: const Color(0xFFA1A1A6),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24.0),
                       child: Column(
@@ -242,18 +313,20 @@ class StoryDetailScreen extends ConsumerWidget {
                         children: [
                           Text(
                             'Journey Media',
-                            style: theme.textTheme.headlineLarge?.copyWith(fontSize: 28),
+                            style: theme.textTheme.headlineLarge
+                                ?.copyWith(fontSize: 28),
                           ),
                           const SizedBox(height: 24),
                           MilestoneMediaGallery(media: dummyMedia),
                           const SizedBox(height: 64),
                           Text(
-                            'Community Q&A',
-                            style: theme.textTheme.headlineLarge?.copyWith(fontSize: 28),
+                            'Comments',
+                            style: theme.textTheme.headlineLarge
+                                ?.copyWith(fontSize: 28),
                           ),
                           const SizedBox(height: 24),
                           QnAThread(milestone: story),
-                          const SizedBox(height: 120), // Padding for sticky bottom bar
+                          const SizedBox(height: 40), // Normal padding
                         ],
                       ),
                     ),
@@ -262,69 +335,8 @@ class StoryDetailScreen extends ConsumerWidget {
               ),
             ],
           ),
-          
-          // Sticky Bottom Action Bar
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: ClipRRect(
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 20.0, sigmaY: 20.0),
-                child: Container(
-                  height: 90,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.surface.withValues(alpha: 0.7),
-                    border: const Border(top: BorderSide(color: Color(0xFF2A2A2A))),
-                  ),
-                  padding: const EdgeInsets.only(bottom: 20, left: 24, right: 24),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      _BottomAction(icon: Icons.favorite_border, label: '2.4k', color: theme.colorScheme.secondary),
-                      const SizedBox(width: 32),
-                      _BottomAction(icon: Icons.chat_bubble_outline, label: '142', color: theme.textTheme.bodySmall!.color!),
-                      const Spacer(),
-                      _BottomAction(icon: Icons.share_outlined, label: 'Share', color: theme.textTheme.bodySmall!.color!),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
         ],
       ),
-    );
-  }
-}
-
-class _BottomAction extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Color color;
-
-  const _BottomAction({
-    Key? key,
-    required this.icon,
-    required this.label,
-    required this.color,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, color: color, size: 26),
-        const SizedBox(width: 8),
-        Text(
-          label,
-          style: TextStyle(
-            color: color,
-            fontWeight: FontWeight.w700,
-            fontSize: 16,
-          ),
-        ),
-      ],
     );
   }
 }
