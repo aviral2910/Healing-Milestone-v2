@@ -27,8 +27,8 @@ class HealingMilestonesApp extends ConsumerWidget {
     ThemeData baseTheme = AppTheme.darkTheme;
     TextTheme scaledTextTheme = baseTheme.textTheme.apply(
       fontSizeFactor: accessibilityState.textSizeFactor,
-      bodyColor: AppTheme.textPrimary.withOpacity(accessibilityState.textOpacity),
-      displayColor: AppTheme.textPrimary.withOpacity(accessibilityState.textOpacity),
+      bodyColor: AppTheme.textPrimary.withValues(alpha: accessibilityState.textOpacity),
+      displayColor: AppTheme.textPrimary.withValues(alpha: accessibilityState.textOpacity),
     );
 
     return MaterialApp.router(

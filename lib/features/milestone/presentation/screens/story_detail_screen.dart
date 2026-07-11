@@ -1,7 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/models/milestone.dart';
 import '../../../../core/models/media_attachment.dart';
 import '../../../feed/presentation/widgets/post_display_widget.dart';
 import '../widgets/milestone_media_gallery.dart';
@@ -26,10 +25,10 @@ class StoryDetailScreen extends ConsumerWidget {
           child: Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: const Color(0xFF141414).withOpacity(0.8),
+              color: Theme.of(context).colorScheme.surface.withOpacity(0.9),
               borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(24)),
-              border: Border.all(color: Colors.white.withOpacity(0.1)),
+                  const BorderRadius.vertical(top: Radius.circular(32)),
+              border: Border.all(color: Colors.black.withOpacity(0.05)),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -38,19 +37,18 @@ class StoryDetailScreen extends ConsumerWidget {
                 Center(
                   child: Container(
                     width: 40,
-                    height: 4,
+                    height: 5,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(2),
+                      color: Colors.black.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(2.5),
                     ),
                   ),
                 ),
+                const SizedBox(height: 32),
+                Text('Reading Settings',
+                    style: Theme.of(context).textTheme.titleLarge),
                 const SizedBox(height: 24),
-                const Text('Reading Settings',
-                    style:
-                        TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 24),
-                const Text('Text Size', style: TextStyle(color: Colors.grey)),
+                const Text('Text Size', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w600)),
                 Consumer(
                   builder: (context, ref, child) {
                     final state = ref.watch(accessibilityProvider);
@@ -67,7 +65,7 @@ class StoryDetailScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 16),
                 const Text('Contrast/Opacity',
-                    style: TextStyle(color: Colors.grey)),
+                    style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w600)),
                 Consumer(
                   builder: (context, ref, child) {
                     final state = ref.watch(accessibilityProvider);
@@ -82,7 +80,7 @@ class StoryDetailScreen extends ConsumerWidget {
                     );
                   },
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 32),
               ],
             ),
           ),
@@ -93,17 +91,17 @@ class StoryDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Look up the specific milestone from the dummy provider
     final milestones = ref.watch(dummyMilestonesProvider);
     final milestoneIndex = milestones.indexWhere((m) => m.milestoneId == milestoneId);
     
     if (milestoneIndex == -1) {
       return const Scaffold(
-        body: Center(child: Text('Milestone not found', style: TextStyle(color: Colors.white))),
+        body: Center(child: Text('Milestone not found')),
       );
     }
     
     final milestone = milestones[milestoneIndex];
+    final theme = Theme.of(context);
 
     final List<MediaAttachment> dummyMedia = [
       MediaAttachment(
@@ -127,134 +125,206 @@ class StoryDetailScreen extends ConsumerWidget {
     ];
 
     return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            pinned: true,
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.settings_display),
-                onPressed: () => _showAccessibilityBottomSheet(context, ref),
-              )
-            ],
-          ),
-          SliverToBoxAdapter(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Clean, Editorial Typography Header
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        milestone.title,
-                        style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                              fontWeight: FontWeight.w800,
-                              color: Colors.white,
-                              height: 1.1,
-                              letterSpacing: -0.5,
-                            ),
-                      ),
-                      const SizedBox(height: 24),
-                      Row(
+      body: Stack(
+        children: [
+          CustomScrollView(
+            slivers: [
+              SliverAppBar(
+                pinned: true,
+                backgroundColor: theme.scaffoldBackgroundColor.withOpacity(0.9),
+                elevation: 0,
+                leading: IconButton(
+                  icon: const Icon(Icons.arrow_back_ios_new),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.settings_display_outlined),
+                    onPressed: () => _showAccessibilityBottomSheet(context, ref),
+                  )
+                ],
+              ),
+              SliverToBoxAdapter(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Massive Editorial Typography Header
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          CircleAvatar(
-                            radius: 18,
-                            backgroundColor: const Color(0xFF242424),
-                            backgroundImage: NetworkImage(
-                                'https://api.dicebear.com/7.x/avataaars/png?seed=${milestone.authorId}'),
+                          Text(
+                            milestone.title,
+                            style: theme.textTheme.headlineLarge?.copyWith(
+                                  fontSize: 40,
+                                  height: 1.1,
+                                ),
                           ),
-                          const SizedBox(width: 12),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          const SizedBox(height: 32),
+                          Row(
                             children: [
-                              Row(
-                                children: [
-                                  Text(
-                                    milestone.isAnonymous
-                                        ? 'Anonymous'
-                                        : 'Author ${milestone.authorId}',
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.w600, color: Colors.white, fontSize: 15),
-                                  ),
-                                  if (milestone.isVerified) ...[
-                                    const SizedBox(width: 4),
-                                    Icon(Icons.verified,
-                                        color: Theme.of(context).primaryColor, size: 14),
-                                  ],
-                                ],
+                              CircleAvatar(
+                                radius: 24,
+                                backgroundColor: theme.colorScheme.surface,
+                                backgroundImage: NetworkImage(
+                                    'https://api.dicebear.com/7.x/avataaars/png?seed=${milestone.authorId}'),
                               ),
-                              const SizedBox(height: 2),
-                              const Text(
-                                'Published just now • 5 min read',
-                                style: TextStyle(color: Colors.grey, fontSize: 13),
+                              const SizedBox(width: 16),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Text(
+                                        milestone.isAnonymous
+                                            ? 'Anonymous'
+                                            : 'Author ${milestone.authorId}',
+                                        style: theme.textTheme.titleMedium?.copyWith(fontSize: 16),
+                                      ),
+                                      if (milestone.isVerified) ...[
+                                        const SizedBox(width: 6),
+                                        Icon(Icons.verified,
+                                            color: theme.colorScheme.primary, size: 18),
+                                      ],
+                                    ],
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Published just now • 5 min read',
+                                    style: theme.textTheme.bodySmall,
+                                  ),
+                                ],
                               ),
                             ],
                           ),
                         ],
                       ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                const Divider(color: Color(0xFF242424), thickness: 1, height: 1),
-                
-                // The Immutable Post Widget Template - FULL WIDTH for immersive reading
-                milestone.templateStyle == 'imageCentric'
-                    ? AspectRatio(
-                        aspectRatio: 1.0,
-                        child: PostDisplayWidget(
-                          content: milestone.content,
-                          authorName: milestone.isAnonymous
-                              ? 'Anonymous'
-                              : 'Author ${milestone.authorId}',
-                          templateStyle: milestone.templateStyle,
-                          logoUrl: null,
+                    ),
+                    const SizedBox(height: 32),
+                    
+                    // The Immutable Post Widget Template - NO DIVIDERS
+                    // Encased in a beautiful midnight matte if it's minimal
+                    Container(
+                      color: theme.colorScheme.surface,
+                      width: double.infinity,
+                      child: milestone.templateStyle == 'imageCentric'
+                        ? AspectRatio(
+                            aspectRatio: 1.0,
+                            child: PostDisplayWidget(
+                              content: milestone.content,
+                              authorName: milestone.isAnonymous
+                                  ? 'Anonymous'
+                                  : 'Author ${milestone.authorId}',
+                              templateStyle: milestone.templateStyle,
+                              logoUrl: null,
+                            ),
+                          )
+                        : Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 40.0, horizontal: 8.0),
+                            child: PostDisplayWidget(
+                                content: milestone.content,
+                                authorName: milestone.isAnonymous
+                                    ? 'Anonymous'
+                                    : 'Author ${milestone.authorId}',
+                                templateStyle: milestone.templateStyle,
+                                logoUrl: null,
+                              ),
                         ),
-                      )
-                    : PostDisplayWidget(
-                        content: milestone.content,
-                        authorName: milestone.isAnonymous
-                            ? 'Anonymous'
-                            : 'Author ${milestone.authorId}',
-                        templateStyle: milestone.templateStyle,
-                        logoUrl: null,
+                    ),
+                    
+                    const SizedBox(height: 48),
+                    
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Journey Media',
+                            style: theme.textTheme.headlineLarge?.copyWith(fontSize: 28),
+                          ),
+                          const SizedBox(height: 24),
+                          MilestoneMediaGallery(media: dummyMedia),
+                          const SizedBox(height: 64),
+                          Text(
+                            'Community Q&A',
+                            style: theme.textTheme.headlineLarge?.copyWith(fontSize: 28),
+                          ),
+                          const SizedBox(height: 24),
+                          QnAThread(milestone: milestone),
+                          const SizedBox(height: 120), // Padding for sticky bottom bar
+                        ],
                       ),
-                
-                const Divider(color: Color(0xFF242424), thickness: 1, height: 1),
-                const SizedBox(height: 48),
-                
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          
+          // Sticky Bottom Action Bar
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: ClipRRect(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 20.0, sigmaY: 20.0),
+                child: Container(
+                  height: 90,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surface.withValues(alpha: 0.7),
+                    border: const Border(top: BorderSide(color: Color(0xFF2A2A2A))),
+                  ),
+                  padding: const EdgeInsets.only(bottom: 20, left: 24, right: 24),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Text(
-                        'Journey Media',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 16),
-                      MilestoneMediaGallery(media: dummyMedia),
-                      const SizedBox(height: 48),
-                      Text(
-                        'Community Q&A',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 16),
-                      QnAThread(milestone: milestone),
-                      const SizedBox(height: 100),
+                      _BottomAction(icon: Icons.favorite_border, label: '2.4k', color: theme.colorScheme.secondary),
+                      const SizedBox(width: 32),
+                      _BottomAction(icon: Icons.chat_bubble_outline, label: '142', color: theme.textTheme.bodySmall!.color!),
+                      const Spacer(),
+                      _BottomAction(icon: Icons.share_outlined, label: 'Share', color: theme.textTheme.bodySmall!.color!),
                     ],
                   ),
                 ),
-              ],
+              ),
             ),
           ),
         ],
       ),
+    );
+  }
+}
+
+class _BottomAction extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+
+  const _BottomAction({
+    Key? key,
+    required this.icon,
+    required this.label,
+    required this.color,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, color: color, size: 26),
+        const SizedBox(width: 8),
+        Text(
+          label,
+          style: TextStyle(
+            color: color,
+            fontWeight: FontWeight.w700,
+            fontSize: 16,
+          ),
+        ),
+      ],
     );
   }
 }

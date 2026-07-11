@@ -13,7 +13,7 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _contentController = TextEditingController();
   bool _isAnonymous = false;
-  String _selectedTemplate = 'glassmorphism';
+  String _selectedTemplate = 'minimalist';
 
   @override
   void dispose() {
@@ -25,9 +25,11 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
   void _submitPost() {
     if (_titleController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('A title is mandatory for your story.'),
-          backgroundColor: Colors.redAccent,
+        SnackBar(
+          content: const Text('A title is mandatory for your story.', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          backgroundColor: Theme.of(context).colorScheme.error,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       );
       return;
@@ -37,86 +39,110 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Scaffold(
-      backgroundColor: const Color(0xFF121212), // Deep Charcoal
+      backgroundColor: theme.colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF121212),
+        backgroundColor: theme.colorScheme.surface,
         elevation: 0,
-        title: const Text('Share Your Milestone', style: TextStyle(color: Color(0xFFE0E0E0))),
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: ElevatedButton(
+              onPressed: _submitPost,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: theme.primaryColor,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+              ),
+              child: const Text('Publish', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          )
+        ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextField(
               controller: _titleController,
-              style: const TextStyle(color: Colors.white),
-              decoration: const InputDecoration(
-                labelText: 'Title *',
-                labelStyle: TextStyle(color: Color(0xFFA0A0A0)),
-                enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFF2C2C2C))),
+              style: theme.textTheme.headlineLarge?.copyWith(fontSize: 32),
+              decoration: InputDecoration(
+                hintText: 'Title your journey',
+                hintStyle: theme.textTheme.headlineLarge?.copyWith(
+                  fontSize: 32,
+                  color: Colors.white.withValues(alpha: 0.2),
+                ),
+                border: InputBorder.none,
               ),
+              textCapitalization: TextCapitalization.words,
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
             TextField(
               controller: _contentController,
-              style: const TextStyle(color: Colors.white),
-              maxLines: 8,
-              decoration: const InputDecoration(
-                hintText: 'Share your healing journey...',
-                hintStyle: TextStyle(color: Color(0xFFA0A0A0)),
-                border: OutlineInputBorder(),
-                enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Color(0xFF2C2C2C))),
+              style: theme.textTheme.bodyLarge?.copyWith(fontSize: 18, height: 1.8),
+              maxLines: null,
+              decoration: InputDecoration(
+                hintText: 'Share your experience, feelings, and milestones...',
+                hintStyle: theme.textTheme.bodyLarge?.copyWith(
+                  fontSize: 18,
+                  color: Colors.white.withValues(alpha: 0.3),
+                ),
+                border: InputBorder.none,
               ),
             ),
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text('Post Anonymously', style: TextStyle(color: Color(0xFFE0E0E0), fontSize: 16)),
-                Switch(
-                  value: _isAnonymous,
-                  activeColor: Theme.of(context).colorScheme.secondary,
-                  onChanged: (value) {
-                    setState(() {
-                      _isAnonymous = value;
-                    });
-                  },
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            // TODO: Add MediaUploadBottomSheet trigger button here
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  side: BorderSide(color: Theme.of(context).primaryColor),
-                  foregroundColor: Theme.of(context).primaryColor,
-                ),
-                icon: const Icon(Icons.attach_file),
-                label: const Text('Add Media Attachment'),
-                onPressed: () {
-                  MediaUploadBottomSheet.show(context);
-                },
-              ),
-            ),
-            const SizedBox(height: 20),
-            // TODO: Add Doctor/Hospital tagging dropdown here
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).primaryColor,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                ),
-                onPressed: _submitPost,
-                child: const Text('Submit for Verification', style: TextStyle(color: Colors.white, fontSize: 16)),
-              ),
-            ),
+            const SizedBox(height: 48),
           ],
+        ),
+      ),
+      bottomNavigationBar: SafeArea(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            border: const Border(top: BorderSide(color: Color(0xFF2A2A2A))),
+          ),
+          child: Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.photo_outlined),
+                onPressed: () => MediaUploadBottomSheet.show(context),
+                tooltip: 'Add Media Attachment',
+                color: theme.textTheme.bodySmall?.color,
+              ),
+              IconButton(
+                icon: const Icon(Icons.local_hospital_outlined),
+                onPressed: () {
+                  // TODO: Add Doctor/Hospital tagging dropdown here
+                },
+                tooltip: 'Tag Medical Provider',
+                color: theme.textTheme.bodySmall?.color,
+              ),
+              const Spacer(),
+              Row(
+                children: [
+                  Text('Anonymous', style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600)),
+                  Switch(
+                    value: _isAnonymous,
+                    activeColor: theme.colorScheme.secondary,
+                    onChanged: (value) {
+                      setState(() {
+                        _isAnonymous = value;
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
