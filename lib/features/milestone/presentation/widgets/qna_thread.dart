@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../../../core/models/milestone.dart';
+import '../../../../core/models/story_model.dart';
 
 class QnAThread extends StatelessWidget {
-  final Milestone milestone;
+  final StoryModel milestone;
 
   const QnAThread({Key? key, required this.milestone}) : super(key: key);
 

@@ -2,12 +2,12 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/models/media_attachment.dart';
-import '../../../feed/presentation/widgets/post_display_widget.dart';
+import '../../../posts/presentation/widgets/post_display_widget.dart';
 import '../widgets/milestone_media_gallery.dart';
 import '../widgets/qna_thread.dart';
 import '../../../accessibility/data/accessibility_providers.dart';
 
-import '../../../../core/data/dummy_milestones.dart';
+import '../../../../core/data/dummy_data.dart';
 
 class StoryDetailScreen extends ConsumerWidget {
   final String milestoneId;
@@ -91,16 +91,16 @@ class StoryDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final milestones = ref.watch(dummyMilestonesProvider);
-    final milestoneIndex = milestones.indexWhere((m) => m.milestoneId == milestoneId);
+    final stories = ref.watch(dummyStoriesProvider);
+    final storyIndex = stories.indexWhere((s) => s.storyId == milestoneId);
     
-    if (milestoneIndex == -1) {
+    if (storyIndex == -1) {
       return const Scaffold(
-        body: Center(child: Text('Milestone not found')),
+        body: Center(child: Text('Story not found')),
       );
     }
-    
-    final milestone = milestones[milestoneIndex];
+
+    final story = stories[storyIndex];
     final theme = Theme.of(context);
 
     final List<MediaAttachment> dummyMedia = [
@@ -155,7 +155,7 @@ class StoryDetailScreen extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            milestone.title,
+                            story.heading.isNotEmpty ? story.heading : 'A Healing Journey',
                             style: theme.textTheme.headlineLarge?.copyWith(
                                   fontSize: 40,
                                   height: 1.1,
@@ -168,7 +168,7 @@ class StoryDetailScreen extends ConsumerWidget {
                                 radius: 24,
                                 backgroundColor: theme.colorScheme.surface,
                                 backgroundImage: NetworkImage(
-                                    'https://api.dicebear.com/7.x/avataaars/png?seed=${milestone.authorId}'),
+                                    'https://api.dicebear.com/7.x/avataaars/png?seed=${story.authorId}'),
                               ),
                               const SizedBox(width: 16),
                               Column(
@@ -177,12 +177,12 @@ class StoryDetailScreen extends ConsumerWidget {
                                   Row(
                                     children: [
                                       Text(
-                                        milestone.isAnonymous
+                                        !story.displayAuthorName
                                             ? 'Anonymous'
-                                            : 'Author ${milestone.authorId}',
+                                            : 'Author ${story.authorId}',
                                         style: theme.textTheme.titleMedium?.copyWith(fontSize: 16),
                                       ),
-                                      if (milestone.isVerified) ...[
+                                      if (story.isVerifiedStory) ...[
                                         const SizedBox(width: 6),
                                         Icon(Icons.verified,
                                             color: theme.colorScheme.primary, size: 18),
@@ -208,26 +208,26 @@ class StoryDetailScreen extends ConsumerWidget {
                     Container(
                       color: theme.colorScheme.surface,
                       width: double.infinity,
-                      child: milestone.templateStyle == 'imageCentric'
+                      child: story.templateStyle == 'imageCentric'
                         ? AspectRatio(
                             aspectRatio: 1.0,
                             child: PostDisplayWidget(
-                              content: milestone.content,
-                              authorName: milestone.isAnonymous
+                              content: story.description,
+                              authorName: !story.displayAuthorName
                                   ? 'Anonymous'
-                                  : 'Author ${milestone.authorId}',
-                              templateStyle: milestone.templateStyle,
+                                  : 'Author ${story.authorId}',
+                              templateStyle: story.templateStyle,
                               logoUrl: null,
                             ),
                           )
                         : Padding(
                             padding: const EdgeInsets.symmetric(vertical: 40.0, horizontal: 8.0),
                             child: PostDisplayWidget(
-                                content: milestone.content,
-                                authorName: milestone.isAnonymous
+                                content: story.description,
+                                authorName: !story.displayAuthorName
                                     ? 'Anonymous'
-                                    : 'Author ${milestone.authorId}',
-                                templateStyle: milestone.templateStyle,
+                                    : 'Author ${story.authorId}',
+                                templateStyle: story.templateStyle,
                                 logoUrl: null,
                               ),
                         ),
@@ -252,7 +252,7 @@ class StoryDetailScreen extends ConsumerWidget {
                             style: theme.textTheme.headlineLarge?.copyWith(fontSize: 28),
                           ),
                           const SizedBox(height: 24),
-                          QnAThread(milestone: milestone),
+                          QnAThread(milestone: story),
                           const SizedBox(height: 120), // Padding for sticky bottom bar
                         ],
                       ),

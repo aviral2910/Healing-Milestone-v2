@@ -12,7 +12,7 @@ class HealingMilestonesLogoWidget extends StatelessWidget {
 
   const HealingMilestonesLogoWidget({
     Key? key,
-    this.logoSize = 45.0,
+    this.logoSize = 35.0,
     this.logoColor = const Color(0xFFD4AF37),
     this.textColor = Colors.white,
   }) : super(key: key);
