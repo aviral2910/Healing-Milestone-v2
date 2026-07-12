@@ -40,6 +40,8 @@ final dummyStoriesProvider = Provider<List<StoryModel>>((ref) {
       isVerifiedStory: true,
       authorRole: UserRole.author,
       isAuthorVerified: true,
+      type: StoryType.journey,
+      journeyId: 'j1',
     ),
     StoryModel(
       storyId: 's2',
@@ -57,6 +59,7 @@ final dummyStoriesProvider = Provider<List<StoryModel>>((ref) {
       isVerifiedStory: true,
       authorRole: UserRole.healthcareProfessional,
       isAuthorVerified: true,
+      type: StoryType.finding,
     ),
     StoryModel(
       storyId: 's3',
@@ -74,6 +77,7 @@ final dummyStoriesProvider = Provider<List<StoryModel>>((ref) {
       isVerifiedStory: true,
       authorRole: UserRole.organization,
       isAuthorVerified: true,
+      type: StoryType.awareness,
     ),
     StoryModel(
       storyId: 's4',
@@ -101,14 +105,16 @@ final dummyStoriesProvider = Provider<List<StoryModel>>((ref) {
       publishedAt: DateTime.now().subtract(const Duration(minutes: 30)),
       mainImage: '',
       imageAssets: [],
-      authorId: 'a5',
+      authorId: 'a1', // Same author as s1 to test journey series
       qrId: 'qr5',
       readingTime: 2,
       hashtagsList: ['smallwins', 'healingjourney', 'mentalhealth'],
       verifierId: 'v1',
       isVerifiedStory: false,
-      authorRole: UserRole.reviewer,
-      isAuthorVerified: false,
+      authorRole: UserRole.author,
+      isAuthorVerified: true,
+      type: StoryType.journey,
+      journeyId: 'j1',
     ),
   ];
 });

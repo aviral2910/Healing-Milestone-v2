@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import '../../../../core/data/dummy_data.dart';
+import '../../../../core/models/story_model.dart';
+import '../../../../core/models/user_model.dart';
 import '../widgets/media_upload_bottom_sheet.dart';
 
 class PostCreationScreen extends StatefulHookConsumerWidget {
@@ -14,6 +17,7 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
   final TextEditingController _contentController = TextEditingController();
   bool _isAnonymous = false;
   String _selectedTemplate = 'minimalist';
+  StoryType _selectedType = StoryType.story;
 
   @override
   void dispose() {
@@ -34,12 +38,24 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
       );
       return;
     }
-    // TODO: Connect to Riverpod provider to construct Milestone object and upload to Firestore
+    // TODO: Connect to Riverpod provider to construct StoryModel object and upload to Firestore
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final user = ref.watch(dummyUserProvider);
+    final bool isProOrOrg = user.role == UserRole.healthcareProfessional || user.role == UserRole.organization;
+    
+    List<StoryType> allowedTypes = [StoryType.story, StoryType.journey];
+    if (isProOrOrg) {
+      allowedTypes.addAll([StoryType.finding, StoryType.awareness]);
+    }
+    
+    // Safety check in case the user role changes while a restricted type is selected
+    if (!allowedTypes.contains(_selectedType)) {
+      _selectedType = StoryType.story;
+    }
     
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
@@ -72,6 +88,33 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Wrap(
+              spacing: 8.0,
+              runSpacing: 8.0,
+              children: allowedTypes.map((type) {
+                return ChoiceChip(
+                  label: Text(
+                    type.name.toUpperCase(),
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: _selectedType == type ? theme.colorScheme.onPrimary : Colors.white70,
+                    ),
+                  ),
+                  selected: _selectedType == type,
+                  selectedColor: theme.colorScheme.primary,
+                  backgroundColor: theme.colorScheme.surfaceBright,
+                  onSelected: (selected) {
+                    if (selected) {
+                      setState(() {
+                        _selectedType = type;
+                      });
+                    }
+                  },
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 24),
             TextField(
               controller: _titleController,
               style: theme.textTheme.headlineLarge?.copyWith(fontSize: 32),
