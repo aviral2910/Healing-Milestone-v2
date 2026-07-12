@@ -1,3 +1,5 @@
+import 'user_model.dart';
+
 class StoryModel {
   final String storyId;
   final String heading;
@@ -19,7 +21,8 @@ class StoryModel {
   final String verifierId;
   final bool displayAuthorName;
   final List<String> taggedPeople;
-
+  final UserRole authorRole;
+  final bool isAuthorVerified;
 
   StoryModel({
     required this.storyId,
@@ -42,6 +45,8 @@ class StoryModel {
     required this.verifierId,
     this.displayAuthorName = true,
     this.taggedPeople = const [],
+    this.authorRole = UserRole.reader,
+    this.isAuthorVerified = false,
   });
 
   StoryModel copyWith({
@@ -65,6 +70,8 @@ class StoryModel {
     String? verifierId,
     bool? displayAuthorName,
     List<String>? taggedPeople,
+    UserRole? authorRole,
+    bool? isAuthorVerified,
   }) {
     return StoryModel(
       storyId: storyId ?? this.storyId,
@@ -87,6 +94,8 @@ class StoryModel {
       verifierId: verifierId ?? this.verifierId,
       displayAuthorName: displayAuthorName ?? this.displayAuthorName,
       taggedPeople: taggedPeople ?? this.taggedPeople,
+      authorRole: authorRole ?? this.authorRole,
+      isAuthorVerified: isAuthorVerified ?? this.isAuthorVerified,
     );
   }
 }

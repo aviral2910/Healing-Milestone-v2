@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/models/category_model.dart';
+import '../../../../core/presentation/widgets/user_badge.dart';
+import '../../../../core/presentation/widgets/verified_story_badge.dart';
 import '../../../../core/data/dummy_data.dart';
 import '../../../../core/models/story_model.dart';
 import '../../../../logo/healing_milestone_logo.dart';
@@ -303,15 +306,17 @@ class _HorizontalFeedCardState extends State<_HorizontalFeedCard>
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          if (widget.story.isVerifiedStory) ...[
-                            const SizedBox(width: 4),
-                            Icon(Icons.verified,
-                                color: theme.colorScheme.primary,
-                                size: 14), // Golden
-                          ]
+                          const SizedBox(width: 4),
+                          UserBadge(
+                            role: widget.story.authorRole,
+                            isVerified: widget.story.isAuthorVerified,
+                            iconSize: 14,
+                          ),
                         ],
                       ),
                     ),
+                    if (widget.story.isVerifiedStory)
+                      const VerifiedStoryBadge(),
                   ],
                 ),
               ),

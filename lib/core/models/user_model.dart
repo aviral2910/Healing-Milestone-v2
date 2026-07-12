@@ -1,3 +1,11 @@
+enum UserRole {
+  reader,
+  author,
+  reviewer,
+  healthcareProfessional,
+  organization,
+}
+
 class UserModel {
   final String userId;
   final String email;
@@ -13,11 +21,13 @@ class UserModel {
   final List<String> followersList;
   final List<String> followingList;
   final String userName;
+  final UserRole role;
 
   UserModel({
     required this.userId,
     required this.email,
     required this.userName,
+    this.role = UserRole.reader,
     this.phoneNumber,
     this.likedStories = const [],
     this.bookmarkedStories = const [],
@@ -46,11 +56,13 @@ class UserModel {
     List<String>? followersList,
     List<String>? followingList,
     String? userName,
+    UserRole? role,
   }) {
     return UserModel(
       userId: userId ?? this.userId,
       email: email ?? this.email,
       userName: userName ?? this.userName,
+      role: role ?? this.role,
       phoneNumber: phoneNumber ?? this.phoneNumber,
       likedStories: likedStories ?? this.likedStories,
       bookmarkedStories: bookmarkedStories ?? this.bookmarkedStories,

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/models/story_model.dart';
+import '../../core/presentation/widgets/user_badge.dart';
+import '../../core/presentation/widgets/verified_story_badge.dart';
 
 
 class StoryCard extends StatefulWidget {
@@ -97,11 +99,11 @@ class _StoryCardState extends State<StoryCard>
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
-                              if (widget.story.isVerifiedStory) ...[
-                                const SizedBox(width: 4),
-                                Icon(Icons.verified,
-                                    color: theme.colorScheme.primary, size: 16),
-                              ]
+                              const SizedBox(width: 4),
+                              UserBadge(
+                                role: widget.story.authorRole,
+                                isVerified: widget.story.isAuthorVerified,
+                              ),
                             ],
                           ),
                           const SizedBox(height: 4),
@@ -115,6 +117,8 @@ class _StoryCardState extends State<StoryCard>
                         ],
                       ),
                     ),
+                    if (widget.story.isVerifiedStory)
+                      const VerifiedStoryBadge(),
                   ],
                 ),
               ),

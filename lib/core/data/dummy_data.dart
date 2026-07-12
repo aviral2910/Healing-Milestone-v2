@@ -18,6 +18,7 @@ final dummyUserProvider = Provider<UserModel>((ref) {
     followingCount: 84,
     followersList: ['user_x', 'user_y', 'user_z'],
     followingList: ['user_a', 'user_b'],
+    role: UserRole.author,
   );
 });
 
@@ -37,6 +38,8 @@ final dummyStoriesProvider = Provider<List<StoryModel>>((ref) {
       hashtagsList: ['recovery', 'milestone', 'surgery', 'physicaltherapy', 'nevergiveup', 'healingjourney', 'dayfour'],
       verifierId: 'v1',
       isVerifiedStory: true,
+      authorRole: UserRole.author,
+      isAuthorVerified: true,
     ),
     StoryModel(
       storyId: 's2',
@@ -52,6 +55,8 @@ final dummyStoriesProvider = Provider<List<StoryModel>>((ref) {
       hashtagsList: ['mentalhealth', 'chronicillness', 'hope'],
       verifierId: 'v1',
       isVerifiedStory: true,
+      authorRole: UserRole.healthcareProfessional,
+      isAuthorVerified: true,
     ),
     StoryModel(
       storyId: 's3',
@@ -67,6 +72,8 @@ final dummyStoriesProvider = Provider<List<StoryModel>>((ref) {
       hashtagsList: ['cancer', 'remission', 'anniversary'],
       verifierId: 'v1',
       isVerifiedStory: true,
+      authorRole: UserRole.organization,
+      isAuthorVerified: true,
     ),
     StoryModel(
       storyId: 's4',
@@ -82,6 +89,8 @@ final dummyStoriesProvider = Provider<List<StoryModel>>((ref) {
       hashtagsList: ['invisibleillness', 'spoonie', 'community'],
       verifierId: 'v1',
       isVerifiedStory: false,
+      authorRole: UserRole.reader,
+      isAuthorVerified: false,
     ),
     StoryModel(
       storyId: 's5',
@@ -98,6 +107,8 @@ final dummyStoriesProvider = Provider<List<StoryModel>>((ref) {
       hashtagsList: ['smallwins', 'healingjourney', 'mentalhealth'],
       verifierId: 'v1',
       isVerifiedStory: false,
+      authorRole: UserRole.reviewer,
+      isAuthorVerified: false,
     ),
   ];
 });

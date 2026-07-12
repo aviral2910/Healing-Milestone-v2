@@ -2,6 +2,10 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/models/media_attachment.dart';
+import '../../../../core/models/story_model.dart';
+import '../../../../core/models/user_model.dart';
+import '../../../../core/presentation/widgets/user_badge.dart';
+import '../../../../core/presentation/widgets/verified_story_badge.dart';
 import '../../../posts/presentation/widgets/post_display_widget.dart';
 import '../widgets/milestone_media_gallery.dart';
 import '../widgets/qna_thread.dart';
@@ -194,41 +198,45 @@ class StoryDetailScreen extends ConsumerWidget {
                                 ),
                               ),
                               const SizedBox(width: 16),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Text(
-                                        !story.displayAuthorName
-                                            ? 'Anonymous'
-                                            : 'Author ${story.authorId}',
-                                        style: theme.textTheme.titleMedium
-                                            ?.copyWith(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: const Color(0xFFF5F5F7),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Text(
+                                          !story.displayAuthorName
+                                              ? 'Anonymous'
+                                              : 'Author ${story.authorId}',
+                                          style: theme.textTheme.titleMedium
+                                              ?.copyWith(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                            color: const Color(0xFFF5F5F7),
+                                          ),
                                         ),
-                                      ),
-                                      if (story.isVerifiedStory) ...[
-                                        const SizedBox(width: 6),
-                                        Icon(Icons.verified,
-                                            color: theme.colorScheme.primary,
-                                            size: 16),
+                                        const SizedBox(width: 4),
+                                        UserBadge(
+                                          role: story.authorRole,
+                                          isVerified: story.isAuthorVerified,
+                                          iconSize: 16,
+                                        ),
                                       ],
-                                    ],
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    'Published just now • 5 min read',
-                                    style: theme.textTheme.bodySmall?.copyWith(
-                                      color: const Color(0xFFA1A1A6),
-                                      fontWeight: FontWeight.w500,
-                                      letterSpacing: 0.5,
                                     ),
-                                  ),
-                                ],
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Published just now • 5 min read',
+                                      style: theme.textTheme.bodySmall?.copyWith(
+                                        color: const Color(0xFFA1A1A6),
+                                        fontWeight: FontWeight.w500,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
+                              if (story.isVerifiedStory)
+                                const VerifiedStoryBadge(),
                             ],
                           ),
                         ],
