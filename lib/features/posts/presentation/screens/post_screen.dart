@@ -5,6 +5,7 @@ import '../../../../core/data/dummy_data.dart';
 import '../../../../core/models/story_model.dart';
 import '../../../../logo/healing_milestone_logo.dart';
 import '../../../../main.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 
 import '../../../../shared/widgets/story_card.dart';
 
@@ -24,97 +25,108 @@ class PostScreen extends ConsumerWidget {
     final categories = ref.watch(dummyCategoriesProvider);
     final theme = Theme.of(context);
 
-    return CustomScrollView(
-      slivers: [
-        SliverAppBar(
-          floating: true,
-          snap: true,
-          centerTitle: false,
-          backgroundColor: theme.scaffoldBackgroundColor,
-          elevation: 0,
-          title: HealingMilestonesLogoWidget(),
-          actions: [
-            Padding(
-              padding: const EdgeInsets.only(right: 16.0),
-              child: TextButton(
-                style: TextButton.styleFrom(
-                  backgroundColor: theme.colorScheme.primary,
-                  foregroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6),
+    return AnimationLimiter(
+      child: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            floating: true,
+            snap: true,
+            centerTitle: false,
+            backgroundColor: theme.scaffoldBackgroundColor,
+            elevation: 0,
+            title: HealingMilestonesLogoWidget(),
+            actions: [
+              Padding(
+                padding: const EdgeInsets.only(right: 16.0),
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    backgroundColor: theme.colorScheme.primary,
+                    foregroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
                   ),
+                  onPressed: () {
+                    ref.read(uatModeProvider.notifier).state = !ref.read(uatModeProvider);
+                  },
+                  child: const Text('UAT'),
                 ),
-                onPressed: () {
-                  ref.read(uatModeProvider.notifier).state = !ref.read(uatModeProvider);
-                },
-                child: const Text('UAT'),
+              ),
+            ],
+          ),
+          // Horizontal Categories
+          ...categories.map((category) {
+            final categoryStories = allStories
+                .where((s) => category.storiesList.contains(s.storyId))
+                .toList();
+            
+            return SliverToBoxAdapter(
+              child: _HorizontalCategorySection(
+                title: category.categoryName,
+                stories: categoryStories,
+                truncateContent: _truncateContent,
+              ),
+            );
+          }).toList(),
+
+          // Divider for the main feed
+          SliverToBoxAdapter(
+            child: Padding(
+              padding:
+                  const EdgeInsets.only(left: 20.0, top: 64.0, bottom: 24.0),
+              child: Text(
+                'All Stories',
+                style: theme.textTheme.headlineLarge?.copyWith(fontSize: 28),
               ),
             ),
-          ],
-        ),
-        // Horizontal Categories
-        ...categories.map((category) {
-          final categoryStories = allStories
-              .where((s) => category.storiesList.contains(s.storyId))
-              .toList();
-          
-          return SliverToBoxAdapter(
-            child: _HorizontalCategorySection(
-              title: category.categoryName,
-              stories: categoryStories,
-              truncateContent: _truncateContent,
-            ),
-          );
-        }).toList(),
-
-        // Divider for the main feed
-        SliverToBoxAdapter(
-          child: Padding(
-            padding:
-                const EdgeInsets.only(left: 20.0, top: 64.0, bottom: 24.0),
-            child: Text(
-              'All Stories',
-              style: theme.textTheme.headlineLarge?.copyWith(fontSize: 28),
-            ),
           ),
-        ),
 
-        // Infinite Vertical Scrolling Feed
-        SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          sliver: SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final story = allStories[index];
-                return Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 24.0),
-                      child: StoryCard(
-                        story: story,
-                        onTap: () =>
-                            context.push('/story/${story.storyId}'),
-                        content: _truncateContent(story.description, 150),
-                      ),
-                    ),
-                    if (index < allStories.length - 1)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 24.0),
-                        child: Divider(
-                          color: theme.colorScheme.primary.withValues(alpha: 0.2), 
-                          thickness: 1
+          // Infinite Vertical Scrolling Feed
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final story = allStories[index];
+                  return AnimationConfiguration.staggeredList(
+                    position: index,
+                    duration: const Duration(milliseconds: 600),
+                    child: SlideAnimation(
+                      verticalOffset: 100.0,
+                      child: FadeInAnimation(
+                        child: Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 24.0),
+                              child: StoryCard(
+                                story: story,
+                                onTap: () =>
+                                    context.push('/story/${story.storyId}'),
+                                content: _truncateContent(story.description, 150),
+                              ),
+                            ),
+                            if (index < allStories.length - 1)
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 24.0),
+                                child: Divider(
+                                  color: theme.colorScheme.primary.withValues(alpha: 0.2), 
+                                  thickness: 1
+                                ),
+                              ),
+                          ],
                         ),
                       ),
-                  ],
-                );
-              },
-              childCount: allStories.length,
+                    ),
+                  );
+                },
+                childCount: allStories.length,
+              ),
             ),
           ),
-        ),
-        const SliverToBoxAdapter(
-            child: SizedBox(height: 100)), // Bottom padding
-      ],
+          const SliverToBoxAdapter(
+              child: SizedBox(height: 100)), // Bottom padding
+        ],
+      ),
     );
   }
 }
@@ -149,25 +161,36 @@ class _HorizontalCategorySection extends StatelessWidget {
         SizedBox(
           height:
               440, // Height accommodates 180px image + title + description + hashtags
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 12.0),
-            itemCount: stories.length,
-            itemBuilder: (context, index) {
-              final story = stories[index];
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: SizedBox(
-                  width: 340, // Increased width for horizontal cards
-                  child: _HorizontalFeedCard(
-                    story: story,
-                    onTap: () =>
-                        context.push('/story/${story.storyId}'),
-                    content: truncateContent(story.description, 100),
+          child: AnimationLimiter(
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 12.0),
+              itemCount: stories.length,
+              itemBuilder: (context, index) {
+                final story = stories[index];
+                return AnimationConfiguration.staggeredList(
+                  position: index,
+                  duration: const Duration(milliseconds: 600),
+                  child: SlideAnimation(
+                    horizontalOffset: 50.0,
+                    child: FadeInAnimation(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: SizedBox(
+                          width: 340, // Increased width for horizontal cards
+                          child: _HorizontalFeedCard(
+                            story: story,
+                            onTap: () =>
+                                context.push('/story/${story.storyId}'),
+                            content: truncateContent(story.description, 100),
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
         ),
       ],

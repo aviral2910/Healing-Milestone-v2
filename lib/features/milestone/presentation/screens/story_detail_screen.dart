@@ -8,6 +8,7 @@ import '../widgets/qna_thread.dart';
 import '../../../accessibility/data/accessibility_providers.dart';
 
 import '../../../../core/data/dummy_data.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 
 class StoryDetailScreen extends ConsumerWidget {
   final String milestoneId;
@@ -130,8 +131,9 @@ class StoryDetailScreen extends ConsumerWidget {
     return Scaffold(
       body: Stack(
         children: [
-          CustomScrollView(
-            slivers: [
+          AnimationLimiter(
+            child: CustomScrollView(
+              slivers: [
               SliverAppBar(
                 pinned: true,
                 backgroundColor: theme.scaffoldBackgroundColor.withOpacity(0.9),
@@ -330,11 +332,23 @@ class StoryDetailScreen extends ConsumerWidget {
                         ],
                       ),
                     ),
-                  ],
+                  ].asMap().entries.map((entry) => 
+                    AnimationConfiguration.staggeredList(
+                      position: entry.key,
+                      duration: const Duration(milliseconds: 600),
+                      child: SlideAnimation(
+                        verticalOffset: 100.0,
+                        child: FadeInAnimation(
+                          child: entry.value,
+                        ),
+                      ),
+                    )
+                  ).toList(),
                 ),
               ),
             ],
           ),
+        ),
         ],
       ),
     );

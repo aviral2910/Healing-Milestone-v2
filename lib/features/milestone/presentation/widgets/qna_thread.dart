@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/models/story_model.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 
 class QnAThread extends StatelessWidget {
   final StoryModel milestone;
@@ -26,18 +27,25 @@ class QnAThread extends StatelessWidget {
       }
     ];
 
-    return ListView.separated(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: dummyQuestions.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 24),
-      itemBuilder: (context, index) {
-        final q = dummyQuestions[index];
-        final hasReply = q['reply'] != null;
+    return AnimationLimiter(
+      child: ListView.separated(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: dummyQuestions.length,
+        separatorBuilder: (context, index) => const SizedBox(height: 24),
+        itemBuilder: (context, index) {
+          final q = dummyQuestions[index];
+          final hasReply = q['reply'] != null;
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+          return AnimationConfiguration.staggeredList(
+            position: index,
+            duration: const Duration(milliseconds: 500),
+            child: SlideAnimation(
+              verticalOffset: 50.0,
+              child: FadeInAnimation(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
             // Question Bubble
             Row(
               crossAxisAlignment: CrossAxisAlignment.end,
@@ -143,9 +151,13 @@ class QnAThread extends StatelessWidget {
                   ),
                 ),
               ),
-          ],
-        );
-      },
+            ],
+          ),
+        ),
+      ),
+    );
+  },
+),
     );
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/data/dummy_data.dart';
 import '../../../../core/models/educational_content_model.dart';
 import '../../../../logo/healing_milestone_logo.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 
 class HealthAwarenessScreen extends ConsumerWidget {
   const HealthAwarenessScreen({Key? key}) : super(key: key);
@@ -12,45 +13,56 @@ class HealthAwarenessScreen extends ConsumerWidget {
     final eduContent = ref.watch(dummyEduContentProvider);
     final theme = Theme.of(context);
 
-    return CustomScrollView(
-      slivers: [
-        SliverAppBar(
-          floating: true,
-          snap: true,
-          centerTitle: false,
-          backgroundColor: theme.scaffoldBackgroundColor,
-          elevation: 0,
-          title: HealingMilestonesLogoWidget(),
-          actions: const [
-            SizedBox(width: 8),
-          ],
-        ),
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.only(left: 20.0, top: 24.0, bottom: 24.0),
-            child: Text(
-              'Educational Resources',
-              style: theme.textTheme.headlineLarge?.copyWith(fontSize: 28),
+    return AnimationLimiter(
+      child: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            floating: true,
+            snap: true,
+            centerTitle: false,
+            backgroundColor: theme.scaffoldBackgroundColor,
+            elevation: 0,
+            title: HealingMilestonesLogoWidget(),
+            actions: const [
+              SizedBox(width: 8),
+            ],
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.only(left: 20.0, top: 24.0, bottom: 24.0),
+              child: Text(
+                'Educational Resources',
+                style: theme.textTheme.headlineLarge?.copyWith(fontSize: 28),
+              ),
             ),
           ),
-        ),
-        SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          sliver: SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final content = eduContent[index];
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 16.0),
-                  child: _EduContentCard(content: content),
-                );
-              },
-              childCount: eduContent.length,
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final content = eduContent[index];
+                  return AnimationConfiguration.staggeredList(
+                    position: index,
+                    duration: const Duration(milliseconds: 600),
+                    child: SlideAnimation(
+                      verticalOffset: 100.0,
+                      child: FadeInAnimation(
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 16.0),
+                          child: _EduContentCard(content: content),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+                childCount: eduContent.length,
+              ),
             ),
           ),
-        ),
-        const SliverToBoxAdapter(child: SizedBox(height: 100)),
-      ],
+          const SliverToBoxAdapter(child: SizedBox(height: 100)),
+        ],
+      ),
     );
   }
 }
