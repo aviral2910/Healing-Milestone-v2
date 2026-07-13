@@ -88,6 +88,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         }
       },
       child: Scaffold(
+        resizeToAvoidBottomInset: false,
         extendBody: false, // Solid background
         body: IndexedStack(
         index: _currentIndex,

@@ -26,7 +26,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     if (widget.isActiveTab && !oldWidget.isActiveTab) {
       // Clear the search text
       _searchController.clear();
-      
+
       // Small delay to ensure route animation finishes if applicable
       Future.delayed(const Duration(milliseconds: 100), () {
         if (mounted) {
@@ -46,9 +46,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
+      resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: Column(
           children: [
@@ -71,15 +72,18 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   decoration: InputDecoration(
                     hintText: 'Search...',
                     hintStyle: const TextStyle(color: Color(0xFF7A7A7A)),
-                    prefixIcon: const Icon(Icons.search, color: Color(0xFFA1A1A6)),
+                    prefixIcon:
+                        const Icon(Icons.search, color: Color(0xFFA1A1A6)),
                     suffixIcon: IconButton(
-                      icon: const Icon(Icons.clear, color: Color(0xFFA1A1A6), size: 20),
+                      icon: const Icon(Icons.clear,
+                          color: Color(0xFFA1A1A6), size: 20),
                       onPressed: () {
                         _searchController.clear();
                       },
                     ),
                     border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 16),
                   ),
                 ),
               ),
@@ -87,23 +91,25 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             const SizedBox(height: 24),
             Expanded(
               child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.search_rounded,
-                      size: 64,
-                      color: theme.colorScheme.primary.withValues(alpha: 0.2),
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Find stories, awareness, and people.',
-                      style: TextStyle(
-                        color: Color(0xFFA1A1A6),
-                        fontSize: 16,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.search_rounded,
+                        size: 64,
+                        color: theme.colorScheme.primary.withValues(alpha: 0.2),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Find stories, awareness, and people.',
+                        style: TextStyle(
+                          color: Color(0xFFA1A1A6),
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
