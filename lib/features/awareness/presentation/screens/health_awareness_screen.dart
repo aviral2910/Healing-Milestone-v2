@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/data/dummy_data.dart';
+import '../../../../core/widgets/shared_headers.dart';
 import '../../../../core/models/educational_content_model.dart';
 import '../../../../logo/healing_milestone_logo.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 
 class HealthAwarenessScreen extends ConsumerWidget {
-  const HealthAwarenessScreen({Key? key}) : super(key: key);
+  final ScrollController? scrollController;
+  const HealthAwarenessScreen({Key? key, this.scrollController}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -15,7 +17,10 @@ class HealthAwarenessScreen extends ConsumerWidget {
 
     return AnimationLimiter(
       child: CustomScrollView(
+        controller: scrollController,
         slivers: [
+          const CommonSliverAppBar(),
+          const CommonSearchBarSliver(includeWelcomeText: false),
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.only(left: 20.0, top: 24.0, bottom: 24.0),

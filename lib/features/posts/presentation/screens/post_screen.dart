@@ -5,6 +5,7 @@ import '../../../../core/models/category_model.dart';
 import '../../../../core/presentation/widgets/user_badge.dart';
 import '../../../../core/presentation/widgets/verified_story_badge.dart';
 import '../../../../core/data/dummy_data.dart';
+import '../../../../core/widgets/shared_headers.dart';
 import '../../../../core/models/story_model.dart';
 import '../../../../logo/healing_milestone_logo.dart';
 import '../../../../main.dart';
@@ -102,7 +103,8 @@ class _SliverTagsDelegate extends SliverPersistentHeaderDelegate {
 }
 
 class PostScreen extends ConsumerWidget {
-  const PostScreen({Key? key}) : super(key: key);
+  final ScrollController? scrollController;
+  const PostScreen({Key? key, this.scrollController}) : super(key: key);
 
   String _truncateContent(String text, int length) {
     if (text.length <= length) return text;
@@ -116,6 +118,7 @@ class PostScreen extends ConsumerWidget {
     final allStories = ref.watch(dummyStoriesProvider);
     final categories = ref.watch(dummyCategoriesProvider);
     final selectedTag = ref.watch(selectedTagProvider);
+    final user = ref.watch(dummyUserProvider);
     final theme = Theme.of(context);
 
     // Extract top tags using all stories
@@ -140,7 +143,13 @@ class PostScreen extends ConsumerWidget {
 
     return AnimationLimiter(
       child: CustomScrollView(
+        controller: scrollController,
         slivers: [
+          const CommonSliverAppBar(),
+          CommonSearchBarSliver(
+            includeWelcomeText: true,
+            userName: user.userName,
+          ),
           // 1. Tags Header (Pinned)
           SliverPersistentHeader(
             pinned: true,

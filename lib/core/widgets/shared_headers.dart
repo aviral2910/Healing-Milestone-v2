@@ -1,0 +1,129 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:healing_milestones/logo/healing_milestone_logo.dart';
+import '../../main.dart';
+import '../data/dummy_data.dart';
+
+class CommonSliverAppBar extends ConsumerWidget {
+  const CommonSliverAppBar({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final user = ref.watch(dummyUserProvider);
+
+    return SliverAppBar(
+      floating: false,
+      pinned: true,
+      snap: false,
+      centerTitle: true,
+      backgroundColor: theme.scaffoldBackgroundColor,
+      elevation: 0,
+      leading: Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: InkWell(
+          onTap: () {
+            context.push('/profile');
+          },
+          borderRadius: BorderRadius.circular(20),
+          child: CircleAvatar(
+            backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.2),
+            backgroundImage: NetworkImage(
+              'https://api.dicebear.com/7.x/avataaars/png?seed=${user.userId}',
+            ),
+          ),
+        ),
+      ),
+      title: HealingMilestonesLogoWidget(),
+      actions: [
+        Padding(
+          padding: const EdgeInsets.only(right: 16.0),
+          child: TextButton(
+            style: TextButton.styleFrom(
+              backgroundColor: theme.colorScheme.primary,
+              foregroundColor: Colors.black,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(6),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            ),
+            onPressed: () {
+              ref.read(uatModeProvider.notifier).state = !ref.read(uatModeProvider);
+            },
+            child: const Text('UAT', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class CommonSearchBarSliver extends StatelessWidget {
+  final bool includeWelcomeText;
+  final String userName;
+
+  const CommonSearchBarSliver({
+    Key? key,
+    this.includeWelcomeText = false,
+    this.userName = '',
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 24),
+            if (includeWelcomeText) ...[
+              Text(
+                'Welcome Reader,',
+                style: theme.textTheme.headlineLarge?.copyWith(
+                  fontSize: 32,
+                  fontWeight: FontWeight.w800,
+                  color: const Color(0xFFF5F5F7), // Frost white
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                userName,
+                style: theme.textTheme.headlineMedium?.copyWith(
+                  fontSize: 22,
+                  color: const Color(0xFFA1A1A6), // Titanium
+                ),
+              ),
+              const SizedBox(height: 32),
+            ],
+            // Search Bar
+            Container(
+              decoration: BoxDecoration(
+                color: const Color(0xFF151515),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: const Color(0xFF2A2A2A),
+                  width: 1.0,
+                ),
+              ),
+              child: const TextField(
+                style: TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  hintText: 'Search stories, topics, people...',
+                  hintStyle: TextStyle(color: Color(0xFF7A7A7A)),
+                  prefixIcon: Icon(Icons.search, color: Color(0xFFA1A1A6)),
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                ),
+              ),
+            ),
+            const SizedBox(height: 32),
+            const Divider(color: Color(0xFF2A2A2A), height: 1),
+          ],
+        ),
+      ),
+    );
+  }
+}

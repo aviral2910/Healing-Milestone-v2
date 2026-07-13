@@ -17,6 +17,9 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   int _currentIndex = 0;
+  
+  final ScrollController _postsScrollController = ScrollController();
+  final ScrollController _awarenessScrollController = ScrollController();
 
   @override
   void initState() {
@@ -34,14 +37,33 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
   @override
   void dispose() {
     _tabController.dispose();
+    _postsScrollController.dispose();
+    _awarenessScrollController.dispose();
     super.dispose();
   }
 
   void _onBottomNavTapped(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
-    _tabController.animateTo(index);
+    if (index == _currentIndex) {
+      // Scroll to top if already on the active tab
+      if (index == 0 && _postsScrollController.hasClients) {
+        _postsScrollController.animateTo(
+          0.0,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      } else if (index == 1 && _awarenessScrollController.hasClients) {
+        _awarenessScrollController.animateTo(
+          0.0,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      }
+    } else {
+      setState(() {
+        _currentIndex = index;
+      });
+      _tabController.animateTo(index);
+    }
   }
 
   @override
@@ -50,121 +72,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
     final user = ref.watch(dummyUserProvider);
 
     return Scaffold(
-      body: NestedScrollView(
-        headerSliverBuilder: (context, innerBoxIsScrolled) {
-          return [
-            // 1. Pinned Top App Bar
-            SliverAppBar(
-              floating: false,
-              pinned: true,
-              snap: false,
-              centerTitle: true,
-              backgroundColor: theme.scaffoldBackgroundColor,
-              elevation: 0,
-              leading: Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: InkWell(
-                  onTap: () {
-                    context.push('/profile');
-                  },
-                  borderRadius: BorderRadius.circular(20),
-                  child: CircleAvatar(
-                    backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.2),
-                    backgroundImage: NetworkImage(
-                      'https://api.dicebear.com/7.x/avataaars/png?seed=${user.userId}',
-                    ),
-                  ),
-                ),
-              ),
-              title: HealingMilestonesLogoWidget(),
-              actions: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 16.0),
-                  child: TextButton(
-                    style: TextButton.styleFrom(
-                      backgroundColor: theme.colorScheme.primary,
-                      foregroundColor: Colors.black,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    ),
-                    onPressed: () {
-                      ref.read(uatModeProvider.notifier).state = !ref.read(uatModeProvider);
-                    },
-                    child: const Text('UAT', style: TextStyle(fontWeight: FontWeight.bold)),
-                  ),
-                ),
-              ],
-            ),
-
-            // 2. Scrollable Welcome Text + Search Bar
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 24),
-                    Text(
-                      'Welcome Reader,',
-                      style: theme.textTheme.headlineLarge?.copyWith(
-                        fontSize: 32,
-                        fontWeight: FontWeight.w800,
-                        color: const Color(0xFFF5F5F7), // Frost white
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      user.userName,
-                      style: theme.textTheme.headlineMedium?.copyWith(
-                        fontSize: 22,
-                        color: const Color(0xFFA1A1A6), // Titanium
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-                    // Search Bar
-                    Container(
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF151515),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: const Color(0xFF2A2A2A),
-                          width: 1.0,
-                        ),
-                      ),
-                      child: TextField(
-                        style: const TextStyle(color: Colors.white),
-                        decoration: InputDecoration(
-                          hintText: 'Search stories, topics, people...',
-                          hintStyle: const TextStyle(color: Color(0xFF7A7A7A)),
-                          prefixIcon: const Icon(Icons.search, color: Color(0xFFA1A1A6)),
-                          border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-                  ],
-                ),
-              ),
-            ),
-            // Optional divider
-            const SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.only(bottom: 0.0),
-                child: Divider(color: Color(0xFF2A2A2A), height: 1),
-              ),
-            ),
-          ];
-        },
-        body: TabBarView(
-          controller: _tabController,
-          children: const [
-            PostScreen(),
-            HealthAwarenessScreen(),
-          ],
-        ),
+      body: IndexedStack(
+        index: _currentIndex,
+        children: [
+          PostScreen(scrollController: _postsScrollController),
+          HealthAwarenessScreen(scrollController: _awarenessScrollController),
+        ],
       ),
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
