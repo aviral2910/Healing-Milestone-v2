@@ -218,14 +218,12 @@ class PostScreen extends ConsumerWidget {
                       child: FadeInAnimation(
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 24.0),
-                          child: IntrinsicHeight(
-                            child: StoryCard(
-                              story: story,
-                              content: _truncateContent(story.description, 180),
-                              onTap: () {
-                                context.push('/story/${story.storyId}');
-                              },
-                            ),
+                          child: StoryCard(
+                            story: story,
+                            content: _truncateContent(story.description, 180),
+                            onTap: () {
+                              context.push('/story/${story.storyId}');
+                            },
                           ),
                         ),
                       ),
