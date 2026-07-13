@@ -245,37 +245,9 @@ class StoryDetailScreen extends ConsumerWidget {
                     // Hashtags
                     if (story.hashtagsList.isNotEmpty) ...[
                       const SizedBox(height: 8),
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
+                      Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                        child: Row(
-                          children: story.hashtagsList.map((tag) {
-                            return Padding(
-                              padding: const EdgeInsets.only(right: 8.0),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: theme.colorScheme.primary
-                                      .withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: theme.colorScheme.primary
-                                        .withValues(alpha: 0.3),
-                                  ),
-                                ),
-                                child: Text(
-                                  '#$tag',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: theme.colorScheme.primary,
-                                  ),
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                        ),
+                        child: _ExpandableTagsList(tags: story.hashtagsList),
                       ),
                     ],
                     const SizedBox(height: 32),
@@ -362,3 +334,77 @@ class StoryDetailScreen extends ConsumerWidget {
     );
   }
 }
+
+class _ExpandableTagsList extends StatefulWidget {
+  final List<String> tags;
+
+  const _ExpandableTagsList({Key? key, required this.tags}) : super(key: key);
+
+  @override
+  State<_ExpandableTagsList> createState() => _ExpandableTagsListState();
+}
+
+class _ExpandableTagsListState extends State<_ExpandableTagsList> {
+  bool _isExpanded = false;
+  // Determine how many tags to show initially. E.g., first 5 tags or all if there are <= 5.
+  static const int _initialVisibleCount = 4;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final showToggle = widget.tags.length > _initialVisibleCount;
+    final visibleTags = _isExpanded
+        ? widget.tags
+        : widget.tags.take(_initialVisibleCount).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: 8.0,
+          runSpacing: 8.0,
+          children: visibleTags.map((tag) {
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: theme.colorScheme.primary.withValues(alpha: 0.3),
+                ),
+              ),
+              child: Text(
+                '#$tag',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: theme.colorScheme.primary,
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+        if (showToggle) ...[
+          const SizedBox(height: 8),
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                _isExpanded = !_isExpanded;
+              });
+            },
+            child: Text(
+              _isExpanded ? 'Show less' : 'Show all ${widget.tags.length} tags',
+              style: TextStyle(
+                color: const Color(0xFFA1A1A6), // Titanium
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                decoration: TextDecoration.underline,
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
