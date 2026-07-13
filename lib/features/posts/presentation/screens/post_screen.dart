@@ -43,52 +43,54 @@ class _SliverTagsDelegate extends SliverPersistentHeaderDelegate {
           SizedBox(
             height: 32,
             child: ListView.builder(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          itemCount: tags.length,
-          itemBuilder: (context, index) {
-            final tag = tags[index];
-            final isSelected = tag == selectedTag;
-            final isAll = tag == 'All';
-            return Padding(
-              padding: const EdgeInsets.only(right: 8.0),
-              child: GestureDetector(
-                onTap: () => onTagSelected(tag),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? theme.colorScheme.primary
-                        : const Color(0xFF151515),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: isSelected
-                          ? theme.colorScheme.primary
-                          : const Color(0xFF2A2A2A),
-                      width: 1.0,
-                    ),
-                  ),
-                  child: Center(
-                    child: Text(
-                      isAll ? 'All' : '#$tag',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight:
-                            isSelected ? FontWeight.bold : FontWeight.w600,
-                        color: isSelected ? Colors.black : const Color(0xFFA1A1A6),
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              itemCount: tags.length,
+              itemBuilder: (context, index) {
+                final tag = tags[index];
+                final isSelected = tag == selectedTag;
+                final isAll = tag == 'All';
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: GestureDetector(
+                    onTap: () => onTagSelected(tag),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? theme.colorScheme.primary
+                            : const Color(0xFF151515),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: isSelected
+                              ? theme.colorScheme.primary
+                              : const Color(0xFF2A2A2A),
+                          width: 1.0,
+                        ),
+                      ),
+                      child: Center(
+                        child: Text(
+                          isAll ? 'All' : '#$tag',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight:
+                                isSelected ? FontWeight.bold : FontWeight.w600,
+                            color: isSelected
+                                ? Colors.black
+                                : const Color(0xFFA1A1A6),
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ),
-            );
-          },
-        ),
-      ),
-      const SizedBox(height: 16),
-      const Divider(color: Color(0xFF2A2A2A), height: 1),
-      ],
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 16),
+          const Divider(color: Color(0xFF2A2A2A), height: 1),
+        ],
       ),
     );
   }
@@ -123,16 +125,18 @@ class PostScreen extends ConsumerWidget {
         tagFrequency[tag] = (tagFrequency[tag] ?? 0) + 1;
       }
     }
-    
+
     final sortedTags = tagFrequency.keys.toList()
       ..sort((a, b) => tagFrequency[b]!.compareTo(tagFrequency[a]!));
-      
+
     final topTags = ['All', ...sortedTags.take(9)];
 
     // Filter stories based on selected tag
-    final filteredStories = selectedTag == 'All' 
-        ? allStories 
-        : allStories.where((s) => s.hashtagsList.contains(selectedTag)).toList();
+    final filteredStories = selectedTag == 'All'
+        ? allStories
+        : allStories
+            .where((s) => s.hashtagsList.contains(selectedTag))
+            .toList();
 
     return AnimationLimiter(
       child: CustomScrollView(
@@ -143,7 +147,8 @@ class PostScreen extends ConsumerWidget {
             delegate: _SliverTagsDelegate(
               tags: topTags,
               selectedTag: selectedTag,
-              onTagSelected: (tag) => ref.read(selectedTagProvider.notifier).state = tag,
+              onTagSelected: (tag) =>
+                  ref.read(selectedTagProvider.notifier).state = tag,
             ),
           ),
 
@@ -152,7 +157,7 @@ class PostScreen extends ConsumerWidget {
             final categoryStories = filteredStories
                 .where((s) => category.storiesList.contains(s.storyId))
                 .toList();
-            
+
             if (categoryStories.isEmpty) {
               return const SliverToBoxAdapter(child: SizedBox.shrink());
             }
@@ -211,9 +216,9 @@ class PostScreen extends ConsumerWidget {
               ),
             ),
           ),
-          
+
           const SliverToBoxAdapter(
-             child: SizedBox(height: 100), // bottom padding for scrolling
+            child: SizedBox(height: 100), // bottom padding for scrolling
           )
         ],
       ),
@@ -266,7 +271,7 @@ class _HorizontalCategorySection extends StatelessWidget {
           ),
         ),
         SizedBox(
-          height: 420, // Height for the horizontal cards
+          height: 450, // Height for the horizontal cards
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 12.0),
@@ -422,55 +427,58 @@ class __MiniStoryCardState extends State<_MiniStoryCard>
                 ),
               ),
 
+              SizedBox(
+                height: 8,
+              ),
+
               // Title Header
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.story.heading.isNotEmpty
-                            ? widget.story.heading
-                            : 'A Healing Journey',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.headlineLarge?.copyWith(
-                          fontSize: 20,
-                          color: const Color(0xFFF5F5F7), // Frost white
-                          height: 1.2,
-                        ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.story.heading.isNotEmpty
+                          ? widget.story.heading
+                          : 'A Healing Journey',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.headlineLarge?.copyWith(
+                        fontSize: 20,
+                        color: const Color(0xFFF5F5F7), // Frost white
+                        height: 1.2,
                       ),
-                      const SizedBox(height: 6),
-                      Text(
-                        widget.content,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.bodyMedium?.copyWith(
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      widget.content,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontSize: 13,
+                        color: const Color(0xFFA1A1A6), // Titanium
+                        height: 1.4,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    GestureDetector(
+                      onTap: widget.onTap,
+                      child: Text(
+                        'Read more',
+                        style: TextStyle(
+                          color: theme.colorScheme.primary,
+                          fontWeight: FontWeight.w600,
                           fontSize: 13,
-                          color: const Color(0xFFA1A1A6), // Titanium
-                          height: 1.4,
                         ),
                       ),
-                      const SizedBox(height: 6),
-                      GestureDetector(
-                        onTap: widget.onTap,
-                        child: Text(
-                          'Read more',
-                          style: TextStyle(
-                            color: theme.colorScheme.primary,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
+              Spacer(),
               if (widget.story.hashtagsList.isNotEmpty) ...[
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -503,7 +511,7 @@ class __MiniStoryCardState extends State<_MiniStoryCard>
                     }).toList(),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 24),
               ],
 
               // Interaction Footer
