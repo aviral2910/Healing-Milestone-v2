@@ -9,11 +9,13 @@ import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 class HealthAwarenessScreen extends ConsumerWidget {
   final ScrollController? scrollController;
   final bool isActiveTab;
+  final VoidCallback? onSearchTapped;
   
   const HealthAwarenessScreen({
     Key? key, 
     this.scrollController,
     this.isActiveTab = true,
+    this.onSearchTapped,
   }) : super(key: key);
 
   @override
@@ -26,7 +28,11 @@ class HealthAwarenessScreen extends ConsumerWidget {
         controller: scrollController,
         slivers: [
           CommonSliverAppBar(isHeroEnabled: isActiveTab),
-          const CommonSearchBarSliver(includeWelcomeText: false),
+          CommonSearchBarSliver(
+            includeWelcomeText: false,
+            hintText: 'Search awareness, articles, resources...',
+            onTap: onSearchTapped,
+          ),
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.only(left: 20.0, top: 24.0, bottom: 24.0),

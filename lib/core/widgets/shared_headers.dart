@@ -85,11 +85,15 @@ class CommonSliverAppBar extends ConsumerWidget {
 class CommonSearchBarSliver extends StatelessWidget {
   final bool includeWelcomeText;
   final String userName;
+  final String hintText;
+  final VoidCallback? onTap;
 
   const CommonSearchBarSliver({
     Key? key,
     this.includeWelcomeText = false,
     this.userName = '',
+    this.hintText = 'Search...',
+    this.onTap,
   }) : super(key: key);
 
   @override
@@ -137,15 +141,17 @@ class CommonSearchBarSliver extends StatelessWidget {
                   width: 1.0,
                 ),
               ),
-              child: const TextField(
-                style: TextStyle(color: Colors.white),
+              child: TextField(
+                readOnly: onTap != null,
+                onTap: onTap,
+                style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
-                  hintText: 'Search stories, topics, people...',
-                  hintStyle: TextStyle(color: Color(0xFF7A7A7A)),
-                  prefixIcon: Icon(Icons.search, color: Color(0xFFA1A1A6)),
+                  hintText: hintText,
+                  hintStyle: const TextStyle(color: Color(0xFF7A7A7A)),
+                  prefixIcon: const Icon(Icons.search, color: Color(0xFFA1A1A6)),
                   border: InputBorder.none,
                   contentPadding:
-                      EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 ),
               ),
             ),

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:healing_milestones/logo/healing_milestone_logo.dart';
 import '../../../../core/data/dummy_data.dart';
 import '../../../../features/posts/presentation/screens/post_screen.dart';
+import '../../../../features/search/presentation/screens/search_screen.dart';
 import '../../../../features/awareness/presentation/screens/health_awareness_screen.dart';
 import '../../../../main.dart';
 
@@ -20,12 +21,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   int _currentIndex = 0;
 
   final ScrollController _postsScrollController = ScrollController();
+  final ScrollController _searchScrollController = ScrollController();
   final ScrollController _awarenessScrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(() {
       if (_tabController.index != _currentIndex) {
         setState(() {
@@ -39,6 +41,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   void dispose() {
     _tabController.dispose();
     _postsScrollController.dispose();
+    _searchScrollController.dispose();
     _awarenessScrollController.dispose();
     super.dispose();
   }
@@ -52,7 +55,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
         );
-      } else if (index == 1 && _awarenessScrollController.hasClients) {
+      } else if (index == 1 && _searchScrollController.hasClients) {
+        _searchScrollController.animateTo(
+          0.0,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      } else if (index == 2 && _awarenessScrollController.hasClients) {
         _awarenessScrollController.animateTo(
           0.0,
           duration: const Duration(milliseconds: 300),
@@ -71,18 +80,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Scaffold(
-      extendBody: false, // Solid background
-      body: IndexedStack(
+    return PopScope(
+      canPop: _currentIndex == 0,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop && _currentIndex != 0) {
+          _onBottomNavTapped(0);
+        }
+      },
+      child: Scaffold(
+        extendBody: false, // Solid background
+        body: IndexedStack(
         index: _currentIndex,
         children: [
           PostScreen(
             scrollController: _postsScrollController,
             isActiveTab: _currentIndex == 0,
+            onSearchTapped: () => _onBottomNavTapped(1),
+          ),
+          SearchScreen(
+            scrollController: _searchScrollController,
+            isActiveTab: _currentIndex == 1,
           ),
           HealthAwarenessScreen(
             scrollController: _awarenessScrollController,
-            isActiveTab: _currentIndex == 1,
+            isActiveTab: _currentIndex == 2,
+            onSearchTapped: () => _onBottomNavTapped(1),
           ),
         ],
       ),
@@ -107,15 +129,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   theme: theme,
                 ),
                 _buildNavItem(
+                  icon: Icons.search_outlined,
+                  activeIcon: Icons.search,
+                  index: 1,
+                  theme: theme,
+                ),
+                _buildNavItem(
                   icon: Icons.health_and_safety_outlined,
                   activeIcon: Icons.health_and_safety,
-                  index: 1,
+                  index: 2,
                   theme: theme,
                 ),
               ],
             ),
           ),
         ),
+      ),
       ),
     );
   }

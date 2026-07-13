@@ -105,11 +105,13 @@ class _SliverTagsDelegate extends SliverPersistentHeaderDelegate {
 class PostScreen extends ConsumerWidget {
   final ScrollController? scrollController;
   final bool isActiveTab;
+  final VoidCallback? onSearchTapped;
   
   const PostScreen({
     Key? key, 
     this.scrollController,
     this.isActiveTab = true,
+    this.onSearchTapped,
   }) : super(key: key);
 
   String _truncateContent(String text, int length) {
@@ -155,6 +157,8 @@ class PostScreen extends ConsumerWidget {
           CommonSearchBarSliver(
             includeWelcomeText: true,
             userName: user.userName,
+            hintText: 'Search stories, topics, people...',
+            onTap: onSearchTapped,
           ),
           // 1. Tags Header (Pinned)
 
