@@ -23,10 +23,6 @@ class StoryTypeBadge extends StatelessWidget {
         color = const Color(0xFFE24A4A); // Red
         icon = Icons.campaign;
         break;
-      case StoryType.journey:
-        color = const Color(0xFF9B4AE2); // Purple
-        icon = Icons.route;
-        break;
       default:
         return const SizedBox.shrink();
     }

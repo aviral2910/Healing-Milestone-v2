@@ -27,7 +27,7 @@ class ProfileScreen extends ConsumerWidget {
             orElse: () => allStories.first))
         .toList();
 
-    final likedStories = user.likedStories
+    final taggedStories = user.taggedStories
         .map((id) => allStories.firstWhere((s) => s.storyId == id,
             orElse: () => allStories.first))
         .toList();
@@ -207,45 +207,21 @@ class ProfileScreen extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(100),
                     ),
                     indicatorPadding: const EdgeInsets.symmetric(
-                        horizontal: -16, vertical: 8),
-                    indicatorSize: TabBarIndicatorSize.label,
+                        horizontal: 16, vertical: 4),
+                    indicatorSize: TabBarIndicatorSize.tab,
                     labelColor: theme.colorScheme.primary,
                     unselectedLabelColor: const Color(0xFFA1A1A6),
                     dividerColor:
                         Colors.transparent, // Remove the ugly default line
                     tabs: const [
                       Tab(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.auto_awesome_mosaic_rounded, size: 18),
-                            SizedBox(width: 6),
-                            Text('Stories',
-                                style: TextStyle(fontWeight: FontWeight.bold)),
-                          ],
-                        ),
+                        icon: Icon(Icons.auto_awesome_mosaic_rounded, size: 24),
                       ),
                       Tab(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.favorite_rounded, size: 18),
-                            SizedBox(width: 6),
-                            Text('Liked',
-                                style: TextStyle(fontWeight: FontWeight.bold)),
-                          ],
-                        ),
+                        icon: Icon(Icons.person_pin_rounded, size: 24),
                       ),
                       Tab(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.bookmark_rounded, size: 18),
-                            SizedBox(width: 6),
-                            Text('Saved',
-                                style: TextStyle(fontWeight: FontWeight.bold)),
-                          ],
-                        ),
+                        icon: Icon(Icons.bookmark_rounded, size: 24),
                       ),
                     ],
                   ),
@@ -256,7 +232,7 @@ class ProfileScreen extends ConsumerWidget {
           body: TabBarView(
             children: [
               _StoryList(stories: ownStories),
-              _StoryList(stories: likedStories),
+              _StoryList(stories: taggedStories),
               _StoryList(stories: bookmarkedStories),
             ],
           ),

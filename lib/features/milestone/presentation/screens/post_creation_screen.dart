@@ -47,7 +47,7 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
     final user = ref.watch(dummyUserProvider);
     final bool isProOrOrg = user.role == UserRole.healthcareProfessional || user.role == UserRole.organization;
     
-    List<StoryType> allowedTypes = [StoryType.story, StoryType.journey];
+    List<StoryType> allowedTypes = [StoryType.story];
     if (isProOrOrg) {
       allowedTypes.addAll([StoryType.finding, StoryType.awareness]);
     }
@@ -119,7 +119,7 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
               controller: _titleController,
               style: theme.textTheme.headlineLarge?.copyWith(fontSize: 32),
               decoration: InputDecoration(
-                hintText: 'Title your journey',
+                hintText: 'Title your post',
                 hintStyle: theme.textTheme.headlineLarge?.copyWith(
                   fontSize: 32,
                   color: Colors.white.withValues(alpha: 0.2),

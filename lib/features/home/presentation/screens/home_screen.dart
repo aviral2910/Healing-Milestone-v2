@@ -75,8 +75,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 backgroundColor: Colors.transparent,
                 selectedItemColor: theme.colorScheme.primary, // Gold
                 unselectedItemColor: const Color(0xFFA1A1A6), // Titanium
-                showUnselectedLabels: true,
-                showSelectedLabels: true,
+                showUnselectedLabels: false,
+                showSelectedLabels: false,
                 type: BottomNavigationBarType.fixed,
                 elevation: 0,
                 selectedLabelStyle:
@@ -85,24 +85,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     const TextStyle(fontWeight: FontWeight.w500, fontSize: 11),
                 items: const [
                   BottomNavigationBarItem(
-                    icon: Padding(
-                      padding: EdgeInsets.only(bottom: 4.0),
-                      child: Icon(Icons.dynamic_feed_rounded),
-                    ),
+                    icon: Icon(Icons.dynamic_feed_rounded),
                     label: 'Posts',
                   ),
                   BottomNavigationBarItem(
-                    icon: Padding(
-                      padding: EdgeInsets.only(bottom: 4.0),
-                      child: Icon(Icons.health_and_safety_rounded),
-                    ),
+                    icon: Icon(Icons.health_and_safety_rounded),
                     label: 'Awareness',
                   ),
                   BottomNavigationBarItem(
-                    icon: Padding(
-                      padding: EdgeInsets.only(bottom: 4.0),
-                      child: Icon(Icons.person_rounded),
-                    ),
+                    icon: Icon(Icons.person_rounded),
                     label: 'Profile',
                   ),
                 ],

@@ -4,7 +4,6 @@ enum StoryType {
   story,
   finding,
   awareness,
-  journey,
 }
 
 class StoryModel {
@@ -31,7 +30,6 @@ class StoryModel {
   final UserRole authorRole;
   final bool isAuthorVerified;
   final StoryType type;
-  final String? journeyId;
 
   StoryModel({
     required this.storyId,
@@ -57,7 +55,6 @@ class StoryModel {
     this.authorRole = UserRole.reader,
     this.isAuthorVerified = false,
     this.type = StoryType.story,
-    this.journeyId,
   });
 
   StoryModel copyWith({
@@ -84,7 +81,6 @@ class StoryModel {
     UserRole? authorRole,
     bool? isAuthorVerified,
     StoryType? type,
-    String? journeyId,
   }) {
     return StoryModel(
       storyId: storyId ?? this.storyId,
@@ -110,7 +106,6 @@ class StoryModel {
       authorRole: authorRole ?? this.authorRole,
       isAuthorVerified: isAuthorVerified ?? this.isAuthorVerified,
       type: type ?? this.type,
-      journeyId: journeyId ?? this.journeyId,
     );
   }
 }

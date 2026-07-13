@@ -12,6 +12,7 @@ class UserModel {
   final String? phoneNumber;
   final List<String> likedStories;
   final List<String> bookmarkedStories;
+  final List<String> taggedStories;
   final List<String> comments;
   final List<String> ownStories;
   final bool isVerified;
@@ -31,6 +32,7 @@ class UserModel {
     this.phoneNumber,
     this.likedStories = const [],
     this.bookmarkedStories = const [],
+    this.taggedStories = const [],
     this.comments = const [],
     this.ownStories = const [],
     this.isVerified = false,
@@ -47,6 +49,7 @@ class UserModel {
     String? phoneNumber,
     List<String>? likedStories,
     List<String>? bookmarkedStories,
+    List<String>? taggedStories,
     List<String>? comments,
     List<String>? ownStories,
     bool? isVerified,
@@ -66,6 +69,7 @@ class UserModel {
       phoneNumber: phoneNumber ?? this.phoneNumber,
       likedStories: likedStories ?? this.likedStories,
       bookmarkedStories: bookmarkedStories ?? this.bookmarkedStories,
+      taggedStories: taggedStories ?? this.taggedStories,
       comments: comments ?? this.comments,
       ownStories: ownStories ?? this.ownStories,
       isVerified: isVerified ?? this.isVerified,

@@ -12,7 +12,8 @@ final dummyUserProvider = Provider<UserModel>((ref) {
     phoneNumber: '+1234567890',
     isVerified: true,
     ownStories: ['s1'],
-    likedStories: ['s2', 's3', 's5'],
+    likedStories: [],
+    taggedStories: ['s2', 's3', 's5'],
     bookmarkedStories: ['s4'],
     followersCount: 1205,
     followingCount: 84,
@@ -40,8 +41,6 @@ final dummyStoriesProvider = Provider<List<StoryModel>>((ref) {
       isVerifiedStory: true,
       authorRole: UserRole.author,
       isAuthorVerified: true,
-      type: StoryType.journey,
-      journeyId: 'j1',
     ),
     StoryModel(
       storyId: 's2',
@@ -113,8 +112,6 @@ final dummyStoriesProvider = Provider<List<StoryModel>>((ref) {
       isVerifiedStory: false,
       authorRole: UserRole.author,
       isAuthorVerified: true,
-      type: StoryType.journey,
-      journeyId: 'j1',
     ),
   ];
 });
