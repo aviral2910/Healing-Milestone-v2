@@ -57,6 +57,30 @@ class ProfileScreen extends ConsumerWidget {
                   backgroundColor: theme.scaffoldBackgroundColor,
                   elevation: 0,
                   actions: [
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: TextButton(
+                        style: TextButton.styleFrom(
+                          backgroundColor: theme.colorScheme.primary,
+                          foregroundColor: Colors.black,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        ),
+                        onPressed: () {
+                          context.push('/create');
+                        },
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.add, size: 16),
+                            SizedBox(width: 4),
+                            Text('Create', style: TextStyle(fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                      ),
+                    ),
                     IconButton(
                       icon: const Icon(Icons.settings_outlined),
                       onPressed: () {},

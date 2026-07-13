@@ -16,17 +16,6 @@ class HealthAwarenessScreen extends ConsumerWidget {
     return AnimationLimiter(
       child: CustomScrollView(
         slivers: [
-          SliverAppBar(
-            floating: true,
-            snap: true,
-            centerTitle: false,
-            backgroundColor: theme.scaffoldBackgroundColor,
-            elevation: 0,
-            title: HealingMilestonesLogoWidget(),
-            actions: const [
-              SizedBox(width: 8),
-            ],
-          ),
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.only(left: 20.0, top: 24.0, bottom: 24.0),

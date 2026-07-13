@@ -5,7 +5,11 @@ import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
 import 'features/accessibility/data/accessibility_providers.dart';
 
+// UAT Mode provider
 final uatModeProvider = StateProvider<bool>((ref) => false);
+
+// Selected Tag Provider for Post Screen
+final selectedTagProvider = StateProvider<String>((ref) => 'All');
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

@@ -12,6 +12,93 @@ import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 
 import '../../../../shared/widgets/story_card.dart';
 
+class _SliverTagsDelegate extends SliverPersistentHeaderDelegate {
+  final List<String> tags;
+  final String selectedTag;
+  final ValueChanged<String> onTagSelected;
+  final double height;
+
+  _SliverTagsDelegate({
+    required this.tags,
+    required this.selectedTag,
+    required this.onTagSelected,
+    this.height = 56,
+  });
+
+  @override
+  double get minExtent => height;
+  @override
+  double get maxExtent => height;
+
+  @override
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    final theme = Theme.of(context);
+    return Container(
+      color: theme.scaffoldBackgroundColor, // matches background
+      alignment: Alignment.center,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SizedBox(
+            height: 32,
+            child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          itemCount: tags.length,
+          itemBuilder: (context, index) {
+            final tag = tags[index];
+            final isSelected = tag == selectedTag;
+            final isAll = tag == 'All';
+            return Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: GestureDetector(
+                onTap: () => onTagSelected(tag),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? theme.colorScheme.primary
+                        : const Color(0xFF151515),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: isSelected
+                          ? theme.colorScheme.primary
+                          : const Color(0xFF2A2A2A),
+                      width: 1.0,
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      isAll ? 'All' : '#$tag',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight:
+                            isSelected ? FontWeight.bold : FontWeight.w600,
+                        color: isSelected ? Colors.black : const Color(0xFFA1A1A6),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+      const SizedBox(height: 16),
+      const Divider(color: Color(0xFF2A2A2A), height: 1),
+      ],
+      ),
+    );
+  }
+
+  @override
+  bool shouldRebuild(_SliverTagsDelegate oldDelegate) {
+    return oldDelegate.tags != tags || oldDelegate.selectedTag != selectedTag;
+  }
+}
+
 class PostScreen extends ConsumerWidget {
   const PostScreen({Key? key}) : super(key: key);
 
@@ -26,43 +113,50 @@ class PostScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final allStories = ref.watch(dummyStoriesProvider);
     final categories = ref.watch(dummyCategoriesProvider);
+    final selectedTag = ref.watch(selectedTagProvider);
     final theme = Theme.of(context);
+
+    // Extract top tags using all stories
+    final tagFrequency = <String, int>{};
+    for (var story in allStories) {
+      for (var tag in story.hashtagsList) {
+        tagFrequency[tag] = (tagFrequency[tag] ?? 0) + 1;
+      }
+    }
+    
+    final sortedTags = tagFrequency.keys.toList()
+      ..sort((a, b) => tagFrequency[b]!.compareTo(tagFrequency[a]!));
+      
+    final topTags = ['All', ...sortedTags.take(9)];
+
+    // Filter stories based on selected tag
+    final filteredStories = selectedTag == 'All' 
+        ? allStories 
+        : allStories.where((s) => s.hashtagsList.contains(selectedTag)).toList();
 
     return AnimationLimiter(
       child: CustomScrollView(
         slivers: [
-          SliverAppBar(
-            floating: true,
-            snap: true,
-            centerTitle: false,
-            backgroundColor: theme.scaffoldBackgroundColor,
-            elevation: 0,
-            title: HealingMilestonesLogoWidget(),
-            actions: [
-              Padding(
-                padding: const EdgeInsets.only(right: 16.0),
-                child: TextButton(
-                  style: TextButton.styleFrom(
-                    backgroundColor: theme.colorScheme.primary,
-                    foregroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                  ),
-                  onPressed: () {
-                    ref.read(uatModeProvider.notifier).state = !ref.read(uatModeProvider);
-                  },
-                  child: const Text('UAT'),
-                ),
-              ),
-            ],
+          // 1. Tags Header (Pinned)
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: _SliverTagsDelegate(
+              tags: topTags,
+              selectedTag: selectedTag,
+              onTagSelected: (tag) => ref.read(selectedTagProvider.notifier).state = tag,
+            ),
           ),
+
           // Horizontal Categories
           ...categories.map((category) {
-            final categoryStories = allStories
+            final categoryStories = filteredStories
                 .where((s) => category.storiesList.contains(s.storyId))
                 .toList();
             
+            if (categoryStories.isEmpty) {
+              return const SliverToBoxAdapter(child: SizedBox.shrink());
+            }
+
             return SliverToBoxAdapter(
               child: _HorizontalCategorySection(
                 title: category.categoryName,
@@ -84,50 +178,43 @@ class PostScreen extends ConsumerWidget {
             ),
           ),
 
-          // Infinite Vertical Scrolling Feed
+          // Vertical Feed of Posts
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             sliver: SliverList(
               delegate: SliverChildBuilderDelegate(
                 (context, index) {
-                  final story = allStories[index];
+                  final story = filteredStories[index];
                   return AnimationConfiguration.staggeredList(
                     position: index,
-                    duration: const Duration(milliseconds: 600),
+                    duration: const Duration(milliseconds: 375),
                     child: SlideAnimation(
-                      verticalOffset: 100.0,
+                      verticalOffset: 50.0,
                       child: FadeInAnimation(
-                        child: Column(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 24.0),
-                              child: StoryCard(
-                                story: story,
-                                onTap: () =>
-                                    context.push('/story/${story.storyId}'),
-                                content: _truncateContent(story.description, 150),
-                              ),
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 24.0),
+                          child: IntrinsicHeight(
+                            child: StoryCard(
+                              story: story,
+                              content: _truncateContent(story.description, 180),
+                              onTap: () {
+                                context.push('/story/${story.storyId}');
+                              },
                             ),
-                            if (index < allStories.length - 1)
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 24.0),
-                                child: Divider(
-                                  color: theme.colorScheme.primary.withValues(alpha: 0.2), 
-                                  thickness: 1
-                                ),
-                              ),
-                          ],
+                          ),
                         ),
                       ),
                     ),
                   );
                 },
-                childCount: allStories.length,
+                childCount: filteredStories.length,
               ),
             ),
           ),
+          
           const SliverToBoxAdapter(
-              child: SizedBox(height: 100)), // Bottom padding
+             child: SizedBox(height: 100), // bottom padding for scrolling
+          )
         ],
       ),
     );
@@ -140,60 +227,75 @@ class _HorizontalCategorySection extends StatelessWidget {
   final String Function(String, int) truncateContent;
 
   const _HorizontalCategorySection({
-    Key? key,
     required this.title,
     required this.stories,
     required this.truncateContent,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    if (stories.isEmpty) return const SizedBox.shrink();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(left: 20.0, top: 56.0, bottom: 24.0),
-          child: Text(
-            title,
-            style: theme.textTheme.headlineLarge?.copyWith(fontSize: 28),
+          padding: const EdgeInsets.fromLTRB(20.0, 32.0, 20.0, 16.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                title,
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 22,
+                ),
+              ),
+              if (stories.length > 2)
+                TextButton(
+                  onPressed: () {},
+                  child: Text(
+                    'See All',
+                    style: TextStyle(
+                      color: theme.colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+            ],
           ),
         ),
         SizedBox(
-          height:
-              440, // Height accommodates 180px image + title + description + hashtags
-          child: AnimationLimiter(
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 12.0),
-              itemCount: stories.length,
-              itemBuilder: (context, index) {
-                final story = stories[index];
-                return AnimationConfiguration.staggeredList(
-                  position: index,
-                  duration: const Duration(milliseconds: 600),
-                  child: SlideAnimation(
-                    horizontalOffset: 50.0,
-                    child: FadeInAnimation(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: SizedBox(
-                          width: 340, // Increased width for horizontal cards
-                          child: _HorizontalFeedCard(
-                            story: story,
-                            onTap: () =>
-                                context.push('/story/${story.storyId}'),
-                            content: truncateContent(story.description, 100),
-                          ),
+          height: 420, // Height for the horizontal cards
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 12.0),
+            itemCount: stories.length,
+            itemBuilder: (context, index) {
+              final story = stories[index];
+              return AnimationConfiguration.staggeredList(
+                position: index,
+                duration: const Duration(milliseconds: 375),
+                child: SlideAnimation(
+                  horizontalOffset: 50.0,
+                  child: FadeInAnimation(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: SizedBox(
+                        width: 300,
+                        child: _MiniStoryCard(
+                          story: story,
+                          content: truncateContent(story.description, 120),
+                          onTap: () {
+                            context.push('/story/${story.storyId}');
+                          },
                         ),
                       ),
                     ),
                   ),
-                );
-              },
-            ),
+                ),
+              );
+            },
           ),
         ),
       ],
@@ -201,23 +303,22 @@ class _HorizontalCategorySection extends StatelessWidget {
   }
 }
 
-class _HorizontalFeedCard extends StatefulWidget {
+class _MiniStoryCard extends StatefulWidget {
   final StoryModel story;
-  final VoidCallback onTap;
   final String content;
+  final VoidCallback onTap;
 
-  const _HorizontalFeedCard({
-    Key? key,
+  const _MiniStoryCard({
     required this.story,
-    required this.onTap,
     required this.content,
-  }) : super(key: key);
+    required this.onTap,
+  });
 
   @override
-  State<_HorizontalFeedCard> createState() => _HorizontalFeedCardState();
+  __MiniStoryCardState createState() => __MiniStoryCardState();
 }
 
-class _HorizontalFeedCardState extends State<_HorizontalFeedCard>
+class __MiniStoryCardState extends State<_MiniStoryCard>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
@@ -229,7 +330,7 @@ class _HorizontalFeedCardState extends State<_HorizontalFeedCard>
       vsync: this,
       duration: const Duration(milliseconds: 150),
     );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.96).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
   }
@@ -436,8 +537,3 @@ class _HorizontalFeedCardState extends State<_HorizontalFeedCard>
     );
   }
 }
-
-// -------------------------------------------------------------
-// The original massive vertical StoryCard remains unchanged below
-// -------------------------------------------------------------
-
