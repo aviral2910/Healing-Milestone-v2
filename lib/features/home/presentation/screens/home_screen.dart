@@ -14,10 +14,11 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProviderStateMixin {
+class _HomeScreenState extends ConsumerState<HomeScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   int _currentIndex = 0;
-  
+
   final ScrollController _postsScrollController = ScrollController();
   final ScrollController _awarenessScrollController = ScrollController();
 
@@ -69,9 +70,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final user = ref.watch(dummyUserProvider);
 
     return Scaffold(
+      extendBody: false, // Solid background
       body: IndexedStack(
         index: _currentIndex,
         children: [
@@ -81,42 +82,72 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
       ),
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
+          color: Color(0xFF0A0A0A), // Solid dark background
           border: Border(
-            top: BorderSide(color: Color(0xFF2A2A2A), width: 1.0),
+            top: BorderSide(
+                color: Color(0xFF2A2A2A), width: 0.5), // Very thin border
           ),
         ),
-        child: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: _onBottomNavTapped,
-          backgroundColor: const Color(0xFF0A0A0A), // Pure dark mode
-          selectedItemColor: theme.colorScheme.primary, // Gold
-          unselectedItemColor: const Color(0xFFA1A1A6), // Titanium
-          type: BottomNavigationBarType.fixed,
-          elevation: 0,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Padding(
-                padding: EdgeInsets.only(bottom: 4.0),
-                child: Icon(Icons.feed_outlined),
-              ),
-              activeIcon: Padding(
-                padding: EdgeInsets.only(bottom: 4.0),
-                child: Icon(Icons.feed),
-              ),
-              label: 'Stories',
+        child: SafeArea(
+          child: SizedBox(
+            height: 60,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildNavItem(
+                  icon: Icons.feed_outlined,
+                  activeIcon: Icons.feed,
+                  index: 0,
+                  theme: theme,
+                ),
+                _buildNavItem(
+                  icon: Icons.health_and_safety_outlined,
+                  activeIcon: Icons.health_and_safety,
+                  index: 1,
+                  theme: theme,
+                ),
+              ],
             ),
-            BottomNavigationBarItem(
-              icon: Padding(
-                padding: EdgeInsets.only(bottom: 4.0),
-                child: Icon(Icons.health_and_safety_outlined),
-              ),
-              activeIcon: Padding(
-                padding: EdgeInsets.only(bottom: 4.0),
-                child: Icon(Icons.health_and_safety),
-              ),
-              label: 'Awareness',
-            ),
-          ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavItem({
+    required IconData icon,
+    required IconData activeIcon,
+    required int index,
+    required ThemeData theme,
+  }) {
+    final isSelected = _currentIndex == index;
+    return GestureDetector(
+      onTap: () => _onBottomNavTapped(index),
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        width: 80,
+        alignment: Alignment.center,
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          transitionBuilder: (child, animation) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+          child: Icon(
+            isSelected ? activeIcon : icon,
+            key: ValueKey<bool>(isSelected),
+            color: isSelected
+                ? theme.colorScheme.primary
+                : const Color(0xFF5A5A5C),
+            size: 28,
+            shadows: isSelected
+                ? [
+                    Shadow(
+                      color: theme.colorScheme.primary.withValues(alpha: 0.8),
+                      blurRadius: 16.0,
+                    )
+                  ]
+                : null,
+          ),
         ),
       ),
     );

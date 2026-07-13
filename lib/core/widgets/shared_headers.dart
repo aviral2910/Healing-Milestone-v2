@@ -49,9 +49,11 @@ class CommonSliverAppBar extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             ),
             onPressed: () {
-              ref.read(uatModeProvider.notifier).state = !ref.read(uatModeProvider);
+              ref.read(uatModeProvider.notifier).state =
+                  !ref.read(uatModeProvider);
             },
-            child: const Text('UAT', style: TextStyle(fontWeight: FontWeight.bold)),
+            child: const Text('UAT',
+                style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ),
       ],
@@ -73,14 +75,14 @@ class CommonSearchBarSliver extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 24),
-            if (includeWelcomeText) ...[
-              Text(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 24),
+          if (includeWelcomeText) ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Text(
                 'Welcome Reader,',
                 style: theme.textTheme.headlineLarge?.copyWith(
                   fontSize: 32,
@@ -88,18 +90,24 @@ class CommonSearchBarSliver extends StatelessWidget {
                   color: const Color(0xFFF5F5F7), // Frost white
                 ),
               ),
-              const SizedBox(height: 8),
-              Text(
+            ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Text(
                 userName,
                 style: theme.textTheme.headlineMedium?.copyWith(
                   fontSize: 22,
                   color: const Color(0xFFA1A1A6), // Titanium
                 ),
               ),
-              const SizedBox(height: 32),
-            ],
-            // Search Bar
-            Container(
+            ),
+            const SizedBox(height: 32),
+          ],
+          // Search Bar
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Container(
               decoration: BoxDecoration(
                 color: const Color(0xFF151515),
                 borderRadius: BorderRadius.circular(16),
@@ -115,14 +123,16 @@ class CommonSearchBarSliver extends StatelessWidget {
                   hintStyle: TextStyle(color: Color(0xFF7A7A7A)),
                   prefixIcon: Icon(Icons.search, color: Color(0xFFA1A1A6)),
                   border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 ),
               ),
             ),
-            const SizedBox(height: 32),
-            const Divider(color: Color(0xFF2A2A2A), height: 1),
-          ],
-        ),
+          ),
+          const SizedBox(height: 24),
+          const Divider(color: Color(0xFF2A2A2A), height: 1),
+          const SizedBox(height: 12),
+        ],
       ),
     );
   }
