@@ -104,7 +104,13 @@ class _SliverTagsDelegate extends SliverPersistentHeaderDelegate {
 
 class PostScreen extends ConsumerWidget {
   final ScrollController? scrollController;
-  const PostScreen({Key? key, this.scrollController}) : super(key: key);
+  final bool isActiveTab;
+  
+  const PostScreen({
+    Key? key, 
+    this.scrollController,
+    this.isActiveTab = true,
+  }) : super(key: key);
 
   String _truncateContent(String text, int length) {
     if (text.length <= length) return text;
@@ -145,7 +151,7 @@ class PostScreen extends ConsumerWidget {
       child: CustomScrollView(
         controller: scrollController,
         slivers: [
-          const CommonSliverAppBar(),
+          CommonSliverAppBar(isHeroEnabled: isActiveTab),
           CommonSearchBarSliver(
             includeWelcomeText: true,
             userName: user.userName,

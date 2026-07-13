@@ -8,7 +8,13 @@ import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 
 class HealthAwarenessScreen extends ConsumerWidget {
   final ScrollController? scrollController;
-  const HealthAwarenessScreen({Key? key, this.scrollController}) : super(key: key);
+  final bool isActiveTab;
+  
+  const HealthAwarenessScreen({
+    Key? key, 
+    this.scrollController,
+    this.isActiveTab = true,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -19,7 +25,7 @@ class HealthAwarenessScreen extends ConsumerWidget {
       child: CustomScrollView(
         controller: scrollController,
         slivers: [
-          const CommonSliverAppBar(),
+          CommonSliverAppBar(isHeroEnabled: isActiveTab),
           const CommonSearchBarSliver(includeWelcomeText: false),
           SliverToBoxAdapter(
             child: Padding(

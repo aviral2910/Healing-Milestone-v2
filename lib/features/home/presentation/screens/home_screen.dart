@@ -76,8 +76,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       body: IndexedStack(
         index: _currentIndex,
         children: [
-          PostScreen(scrollController: _postsScrollController),
-          HealthAwarenessScreen(scrollController: _awarenessScrollController),
+          PostScreen(
+            scrollController: _postsScrollController,
+            isActiveTab: _currentIndex == 0,
+          ),
+          HealthAwarenessScreen(
+            scrollController: _awarenessScrollController,
+            isActiveTab: _currentIndex == 1,
+          ),
         ],
       ),
       bottomNavigationBar: Container(

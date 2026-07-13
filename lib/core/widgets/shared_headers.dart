@@ -6,7 +6,10 @@ import '../../main.dart';
 import '../data/dummy_data.dart';
 
 class CommonSliverAppBar extends ConsumerWidget {
-  const CommonSliverAppBar({Key? key}) : super(key: key);
+  final bool isHeroEnabled;
+
+  const CommonSliverAppBar({Key? key, this.isHeroEnabled = true})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -27,10 +30,28 @@ class CommonSliverAppBar extends ConsumerWidget {
             context.push('/profile');
           },
           borderRadius: BorderRadius.circular(20),
-          child: CircleAvatar(
-            backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.2),
-            backgroundImage: NetworkImage(
-              'https://api.dicebear.com/7.x/avataaars/png?seed=${user.userId}',
+          child: HeroMode(
+            enabled: isHeroEnabled,
+            child: Hero(
+              tag: 'profile-avatar-${user.userId}',
+              child: Container(
+                padding: const EdgeInsets.all(1),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: [theme.colorScheme.primary, Colors.amber],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+                child: CircleAvatar(
+                  radius: 18,
+                  backgroundColor: theme.scaffoldBackgroundColor,
+                  backgroundImage: NetworkImage(
+                    'https://api.dicebear.com/7.x/avataaars/png?seed=${user.userId}',
+                  ),
+                ),
+              ),
             ),
           ),
         ),
