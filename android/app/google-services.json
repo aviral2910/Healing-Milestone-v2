@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "507010116072",
+    "project_id": "healingmilestones-6d4ef",
+    "storage_bucket": "healingmilestones-6d4ef.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:507010116072:android:52bb18e441340dc05cdc5d",
+        "android_client_info": {
+          "package_name": "com.genesisapps.healingmilestones"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "507010116072-653evq0s381aniv0hm6us6f009l7os8s.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.genesisapps.healingmilestones",
+            "certificate_hash": "246451d45f29a7b888f9716498eb243c7aac81c8"
+          }
+        },
+        {
+          "client_id": "507010116072-ut55mclmnas5jki5jnb1851tjmvcr4tp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDblAVFfarIEkqtJTkiZqaIZYfY1vKeH20"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "507010116072-ut55mclmnas5jki5jnb1851tjmvcr4tp.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

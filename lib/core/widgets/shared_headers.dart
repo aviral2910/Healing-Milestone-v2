@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:healing_milestones/logo/healing_milestone_logo.dart';
 import '../../main.dart';
-import '../data/dummy_data.dart';
+import '../../features/auth/data/auth_provider.dart';
 
 class CommonSliverAppBar extends ConsumerWidget {
   final bool isHeroEnabled;
@@ -14,7 +14,7 @@ class CommonSliverAppBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final user = ref.watch(dummyUserProvider);
+    final user = ref.watch(currentUserProvider);
 
     return SliverAppBar(
       floating: false,
@@ -27,33 +27,49 @@ class CommonSliverAppBar extends ConsumerWidget {
         padding: const EdgeInsets.all(10.0),
         child: InkWell(
           onTap: () {
-            context.push('/profile');
+            if (user != null) {
+              context.push('/profile');
+            } else {
+              context.push('/login');
+            }
           },
           borderRadius: BorderRadius.circular(20),
-          child: HeroMode(
-            enabled: isHeroEnabled,
-            child: Hero(
-              tag: 'profile-avatar-${user.userId}',
-              child: Container(
-                padding: const EdgeInsets.all(1),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                    colors: [theme.colorScheme.primary, Colors.amber],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+          child: user != null
+              ? HeroMode(
+                  enabled: isHeroEnabled,
+                  child: Hero(
+                    tag: 'profile-avatar-${user.userId}',
+                    child: Container(
+                      padding: const EdgeInsets.all(1),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(
+                          colors: [theme.colorScheme.primary, Colors.amber],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                      ),
+                      child: CircleAvatar(
+                        radius: 18,
+                        backgroundColor: theme.scaffoldBackgroundColor,
+                        backgroundImage: NetworkImage(
+                          user.profilePicture ?? 'https://api.dicebear.com/7.x/avataaars/png?seed=${user.userId}',
+                        ),
+                      ),
+                    ),
+                  ),
+                )
+              : Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white24),
+                  ),
+                  child: const CircleAvatar(
+                    radius: 18,
+                    backgroundColor: Colors.transparent,
+                    child: Icon(Icons.person_outline, size: 20, color: Colors.white),
                   ),
                 ),
-                child: CircleAvatar(
-                  radius: 18,
-                  backgroundColor: theme.scaffoldBackgroundColor,
-                  backgroundImage: NetworkImage(
-                    'https://api.dicebear.com/7.x/avataaars/png?seed=${user.userId}',
-                  ),
-                ),
-              ),
-            ),
-          ),
         ),
       ),
       title: HealingMilestonesLogoWidget(),

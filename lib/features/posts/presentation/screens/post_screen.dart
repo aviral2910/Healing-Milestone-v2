@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:healing_milestones/features/auth/data/auth_provider.dart';
+import 'package:healing_milestones/shared/widgets/story_card.dart';
 import '../../../../core/models/category_model.dart';
 import '../../../../core/presentation/widgets/user_badge.dart';
 import '../../../../core/presentation/widgets/verified_story_badge.dart';
@@ -10,8 +12,6 @@ import '../../../../core/models/story_model.dart';
 import '../../../../logo/healing_milestone_logo.dart';
 import '../../../../main.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
-
-import '../../../../shared/widgets/story_card.dart';
 
 class _SliverTagsDelegate extends SliverPersistentHeaderDelegate {
   final List<String> tags;
@@ -106,9 +106,9 @@ class PostScreen extends ConsumerWidget {
   final ScrollController? scrollController;
   final bool isActiveTab;
   final VoidCallback? onSearchTapped;
-  
+
   const PostScreen({
-    Key? key, 
+    Key? key,
     this.scrollController,
     this.isActiveTab = true,
     this.onSearchTapped,
@@ -126,7 +126,7 @@ class PostScreen extends ConsumerWidget {
     final allStories = ref.watch(dummyStoriesProvider);
     final categories = ref.watch(dummyCategoriesProvider);
     final selectedTag = ref.watch(selectedTagProvider);
-    final user = ref.watch(dummyUserProvider);
+    final user = ref.watch(currentUserProvider);
     final theme = Theme.of(context);
 
     // Extract top tags using all stories
@@ -156,7 +156,7 @@ class PostScreen extends ConsumerWidget {
           CommonSliverAppBar(isHeroEnabled: isActiveTab),
           CommonSearchBarSliver(
             includeWelcomeText: true,
-            userName: user.userName,
+            userName: user?.userName ?? 'Guest',
             hintText: 'Search stories, topics, people...',
             onTap: onSearchTapped,
           ),
@@ -398,7 +398,7 @@ class __MiniStoryCardState extends State<_MiniStoryCard>
                     const BorderRadius.vertical(top: Radius.circular(24)),
                 child: Image.network(
                   widget.story.mainImage,
-                  height: 180,
+                  height: 150, // Reduced from 180 to prevent overflow
                   fit: BoxFit.cover,
                 ),
               ),
@@ -529,7 +529,7 @@ class __MiniStoryCardState extends State<_MiniStoryCard>
                     }).toList(),
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 12), // Reduced from 24
               ],
 
               // Interaction Footer

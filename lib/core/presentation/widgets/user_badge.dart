@@ -82,11 +82,8 @@ class UserBadge extends StatelessWidget {
       case UserRole.organization:
         roleBadge = _buildShinyBadge(Icons.domain);
         break;
-      case UserRole.reviewer:
-        roleBadge = _buildShinyBadge(Icons.shield);
-        break;
-      case UserRole.author:
-      case UserRole.reader:
+
+      case UserRole.member:
         // No additional role badge by default
         break;
     }

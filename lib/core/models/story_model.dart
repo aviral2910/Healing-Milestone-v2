@@ -52,7 +52,7 @@ class StoryModel {
     required this.verifierId,
     this.displayAuthorName = true,
     this.taggedPeople = const [],
-    this.authorRole = UserRole.reader,
+    this.authorRole = UserRole.member,
     this.isAuthorVerified = false,
     this.type = StoryType.story,
   });

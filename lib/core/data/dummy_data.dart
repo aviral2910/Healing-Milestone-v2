@@ -19,7 +19,7 @@ final dummyUserProvider = Provider<UserModel>((ref) {
     followingCount: 84,
     followersList: ['user_x', 'user_y', 'user_z'],
     followingList: ['user_a', 'user_b'],
-    role: UserRole.author,
+    role: UserRole.member,
   );
 });
 
@@ -39,7 +39,7 @@ final dummyStoriesProvider = Provider<List<StoryModel>>((ref) {
       hashtagsList: ['recovery', 'milestone', 'surgery', 'physicaltherapy', 'nevergiveup', 'healingjourney', 'dayfour'],
       verifierId: 'v1',
       isVerifiedStory: true,
-      authorRole: UserRole.author,
+      authorRole: UserRole.member,
       isAuthorVerified: true,
     ),
     StoryModel(
@@ -92,7 +92,7 @@ final dummyStoriesProvider = Provider<List<StoryModel>>((ref) {
       hashtagsList: ['invisibleillness', 'spoonie', 'community'],
       verifierId: 'v1',
       isVerifiedStory: false,
-      authorRole: UserRole.reader,
+      authorRole: UserRole.member,
       isAuthorVerified: false,
     ),
     StoryModel(
@@ -110,7 +110,7 @@ final dummyStoriesProvider = Provider<List<StoryModel>>((ref) {
       hashtagsList: ['smallwins', 'healingjourney', 'mentalhealth'],
       verifierId: 'v1',
       isVerifiedStory: false,
-      authorRole: UserRole.author,
+      authorRole: UserRole.member,
       isAuthorVerified: true,
     ),
   ];

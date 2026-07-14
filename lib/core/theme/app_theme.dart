@@ -13,7 +13,7 @@ class AppTheme {
   static const Color accentSecondary = Color(0xFF878681); // Natural Titanium
 
   static ThemeData get darkTheme {
-    final baseTextTheme = GoogleFonts.plusJakartaSansTextTheme(ThemeData.dark().textTheme);
+    final baseTextTheme = GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme);
     
     return ThemeData.dark().copyWith(
       scaffoldBackgroundColor: background,
@@ -37,7 +37,7 @@ class AppTheme {
         iconTheme: IconThemeData(color: textPrimary),
       ),
       textTheme: baseTextTheme.copyWith(
-        headlineLarge: GoogleFonts.plusJakartaSans(
+        headlineLarge: GoogleFonts.outfit(
           textStyle: const TextStyle(
             color: textPrimary, 
             fontWeight: FontWeight.w800, 

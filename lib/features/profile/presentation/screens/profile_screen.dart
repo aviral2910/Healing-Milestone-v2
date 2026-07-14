@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+import 'package:healing_milestones/features/auth/data/auth_provider.dart';
 import '../../../../core/data/dummy_data.dart';
 import '../../../../core/models/story_model.dart';
 import '../../../../shared/widgets/story_card.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -17,9 +18,13 @@ class ProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watch(dummyUserProvider);
+    final user = ref.watch(currentUserProvider);
     final allStories = ref.watch(dummyStoriesProvider);
     final theme = Theme.of(context);
+
+    if (user == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
 
     // Map story IDs to actual StoryModels
     final ownStories = user.ownStories
@@ -84,8 +89,10 @@ class ProfileScreen extends ConsumerWidget {
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.settings_outlined),
-                      onPressed: () {},
+                      icon: const Icon(Icons.logout),
+                      onPressed: () {
+                        ref.read(authProvider.notifier).signOut();
+                      },
                     ),
                   ],
                 ),
@@ -120,7 +127,9 @@ class ProfileScreen extends ConsumerWidget {
                                     backgroundColor:
                                         theme.scaffoldBackgroundColor,
                                     backgroundImage: NetworkImage(
-                                        'https://api.dicebear.com/7.x/avataaars/png?seed=${user.userId}'),
+                                      user.profilePicture ??
+                                          'https://api.dicebear.com/7.x/avataaars/png?seed=${user.userId}',
+                                    ),
                                   ),
                                 ),
                               ),

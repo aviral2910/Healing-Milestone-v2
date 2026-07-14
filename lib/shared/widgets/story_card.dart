@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import '../../core/models/story_model.dart';
 import '../../core/presentation/widgets/user_badge.dart';
 import '../../core/presentation/widgets/verified_story_badge.dart';
-
-
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../features/auth/data/auth_provider.dart';
 class StoryCard extends StatefulWidget {
   final StoryModel story;
   final VoidCallback onTap;
@@ -237,24 +238,56 @@ class _StoryCardState extends State<StoryCard>
                 ),
               ),
 
-              // Interaction Footer
+            // Interaction Footer
               Padding(
                 padding: const EdgeInsets.all(20.0),
-                child: Row(
-                  children: [
-                    InteractionButton(
-                        icon: Icons.favorite_border,
-                        label: '2.4k',
-                        color: theme.colorScheme.primary),
-                    const SizedBox(width: 16),
-                    InteractionButton(
-                        icon: Icons.chat_bubble_outline,
-                        label: '142',
-                        color: theme.textTheme.bodySmall!.color!),
-                    const Spacer(),
-                    Icon(Icons.bookmark_border,
-                        color: theme.textTheme.bodySmall!.color!, size: 22),
-                  ],
+                child: Consumer(
+                  builder: (context, ref, child) {
+                    return Row(
+                      children: [
+                        InteractionButton(
+                          icon: Icons.favorite_border,
+                          label: '2.4k',
+                          color: theme.colorScheme.primary,
+                          onTap: () {
+                            final user = ref.read(currentUserProvider);
+                            if (user == null) {
+                              context.push('/login');
+                            } else {
+                              // Handle Like
+                            }
+                          },
+                        ),
+                        const SizedBox(width: 16),
+                        InteractionButton(
+                          icon: Icons.chat_bubble_outline,
+                          label: '142',
+                          color: theme.textTheme.bodySmall!.color!,
+                          onTap: () {
+                            final user = ref.read(currentUserProvider);
+                            if (user == null) {
+                              context.push('/login');
+                            } else {
+                              // Handle Comment
+                            }
+                          },
+                        ),
+                        const Spacer(),
+                        InkWell(
+                          onTap: () {
+                            final user = ref.read(currentUserProvider);
+                            if (user == null) {
+                              context.push('/login');
+                            } else {
+                              // Handle Save
+                            }
+                          },
+                          child: Icon(Icons.bookmark_border,
+                              color: theme.textTheme.bodySmall!.color!, size: 22),
+                        ),
+                      ],
+                    );
+                  },
                 ),
               ),
             ],
@@ -269,30 +302,39 @@ class InteractionButton extends StatelessWidget {
   final IconData icon;
   final String label;
   final Color color;
+  final VoidCallback? onTap;
 
   const InteractionButton({
     Key? key,
     required this.icon,
     required this.label,
     required this.color,
+    this.onTap,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, color: color, size: 22),
-        const SizedBox(width: 8),
-        Text(
-          label,
-          style: TextStyle(
-            color: color,
-            fontWeight: FontWeight.w600,
-            fontSize: 15,
-          ),
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: color, size: 22),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: TextStyle(
+                color: color,
+                fontWeight: FontWeight.w600,
+                fontSize: 15,
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }

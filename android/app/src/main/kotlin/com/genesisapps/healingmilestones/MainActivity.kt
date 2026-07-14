@@ -1,4 +1,4 @@
-package com.example.healing_milestones
+package com.genesisapps.healingmilestones
 
 import io.flutter.embedding.android.FlutterActivity
 

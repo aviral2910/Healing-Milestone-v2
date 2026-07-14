@@ -1,7 +1,5 @@
 enum UserRole {
-  reader,
-  author,
-  reviewer,
+  member,
   healthcareProfessional,
   organization,
 }
@@ -23,12 +21,22 @@ class UserModel {
   final List<String> followingList;
   final String userName;
   final UserRole role;
+  
+  // Professional fields
+  final String? specialty;
+  final String? licenseNumber;
+  
+  // Organization fields
+  final String? services;
+  final String? registrationNumber;
+  
+  final bool appliedForVerification;
 
   UserModel({
     required this.userId,
     required this.email,
     required this.userName,
-    this.role = UserRole.reader,
+    this.role = UserRole.member,
     this.phoneNumber,
     this.likedStories = const [],
     this.bookmarkedStories = const [],
@@ -41,6 +49,11 @@ class UserModel {
     this.followingCount = 0,
     this.followersList = const [],
     this.followingList = const [],
+    this.specialty,
+    this.licenseNumber,
+    this.services,
+    this.registrationNumber,
+    this.appliedForVerification = false,
   });
 
   UserModel copyWith({
@@ -60,6 +73,11 @@ class UserModel {
     List<String>? followingList,
     String? userName,
     UserRole? role,
+    String? specialty,
+    String? licenseNumber,
+    String? services,
+    String? registrationNumber,
+    bool? appliedForVerification,
   }) {
     return UserModel(
       userId: userId ?? this.userId,
@@ -78,6 +96,66 @@ class UserModel {
       followingCount: followingCount ?? this.followingCount,
       followersList: followersList ?? this.followersList,
       followingList: followingList ?? this.followingList,
+      specialty: specialty ?? this.specialty,
+      licenseNumber: licenseNumber ?? this.licenseNumber,
+      services: services ?? this.services,
+      registrationNumber: registrationNumber ?? this.registrationNumber,
+      appliedForVerification: appliedForVerification ?? this.appliedForVerification,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'userId': userId,
+      'email': email,
+      'phoneNumber': phoneNumber,
+      'likedStories': likedStories,
+      'bookmarkedStories': bookmarkedStories,
+      'taggedStories': taggedStories,
+      'comments': comments,
+      'ownStories': ownStories,
+      'isVerified': isVerified,
+      'profilePicture': profilePicture,
+      'followersCount': followersCount,
+      'followingCount': followingCount,
+      'followersList': followersList,
+      'followingList': followingList,
+      'userName': userName,
+      'role': role.name,
+      'specialty': specialty,
+      'licenseNumber': licenseNumber,
+      'services': services,
+      'registrationNumber': registrationNumber,
+      'appliedForVerification': appliedForVerification,
+    };
+  }
+
+  factory UserModel.fromMap(Map<String, dynamic> map) {
+    return UserModel(
+      userId: map['userId'] ?? '',
+      email: map['email'] ?? '',
+      phoneNumber: map['phoneNumber'],
+      likedStories: List<String>.from(map['likedStories'] ?? []),
+      bookmarkedStories: List<String>.from(map['bookmarkedStories'] ?? []),
+      taggedStories: List<String>.from(map['taggedStories'] ?? []),
+      comments: List<String>.from(map['comments'] ?? []),
+      ownStories: List<String>.from(map['ownStories'] ?? []),
+      isVerified: map['isVerified'] ?? false,
+      profilePicture: map['profilePicture'],
+      followersCount: map['followersCount']?.toInt() ?? 0,
+      followingCount: map['followingCount']?.toInt() ?? 0,
+      followersList: List<String>.from(map['followersList'] ?? []),
+      followingList: List<String>.from(map['followingList'] ?? []),
+      userName: map['userName'] ?? '',
+      role: UserRole.values.firstWhere(
+        (e) => e.name == map['role'],
+        orElse: () => UserRole.member,
+      ),
+      specialty: map['specialty'],
+      licenseNumber: map['licenseNumber'],
+      services: map['services'],
+      registrationNumber: map['registrationNumber'],
+      appliedForVerification: map['appliedForVerification'] ?? false,
     );
   }
 }

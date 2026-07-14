@@ -10,11 +10,15 @@ class HealingMilestonesLogoWidget extends StatelessWidget {
   /// The color applied to the text. If null, it defaults to the [logoColor].
   final Color? textColor;
 
+  /// Determines whether the "HEALING MILESTONES" text is displayed.
+  final bool showText;
+
   const HealingMilestonesLogoWidget({
     Key? key,
     this.logoSize = 35.0,
     this.logoColor = const Color(0xFFD4AF37),
     this.textColor = Colors.white,
+    this.showText = true,
   }) : super(key: key);
 
   @override
@@ -38,37 +42,39 @@ class HealingMilestonesLogoWidget extends StatelessWidget {
             painter: _LogoMarkPainter(logoColor),
           ),
         ),
-        SizedBox(width: lateralGap),
 
-        // 2. The Text Portion
-        Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'HEALING',
-              style: TextStyle(
-                fontSize: baseFontSize,
-                fontWeight: FontWeight.w500,
-                height: 1.0,
-                letterSpacing: baseFontSize * 0.05,
-                color: effectiveTextColor,
-                fontFamily: 'Oswald',
+        // 2. The Text Portion (Conditionally rendered based on showText)
+        if (showText) ...[
+          SizedBox(width: lateralGap),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'HEALING',
+                style: TextStyle(
+                  fontSize: baseFontSize,
+                  fontWeight: FontWeight.w500,
+                  height: 1.0,
+                  letterSpacing: baseFontSize * 0.05,
+                  color: effectiveTextColor,
+                  fontFamily: 'Oswald',
+                ),
               ),
-            ),
-            Text(
-              'MILESTONES',
-              style: TextStyle(
-                fontSize: baseFontSize,
-                fontWeight: FontWeight.w500,
-                height: 1.0,
-                letterSpacing: baseFontSize * 0.013,
-                color: effectiveTextColor,
-                fontFamily: 'Oswald',
+              Text(
+                'MILESTONES',
+                style: TextStyle(
+                  fontSize: baseFontSize,
+                  fontWeight: FontWeight.w500,
+                  height: 1.0,
+                  letterSpacing: baseFontSize * 0.013,
+                  color: effectiveTextColor,
+                  fontFamily: 'Oswald',
+                ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
+        ],
       ],
     );
   }
