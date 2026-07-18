@@ -179,6 +179,20 @@ class _StoryCardState extends ConsumerState<StoryCard>
                           width: double.infinity,
                           height: 250,
                           fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              width: double.infinity,
+                              height: 250,
+                              color: const Color(0xFF1E1E1E),
+                              child: Center(
+                                child: Icon(
+                                  Icons.image_not_supported_outlined,
+                                  size: 48,
+                                  color: Colors.grey.withValues(alpha: 0.5),
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       ),
                       const SizedBox(height: 12),

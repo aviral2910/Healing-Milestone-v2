@@ -57,7 +57,12 @@ class MilestoneMediaGallery extends StatelessWidget {
                     Image.network(
                       attachment.url,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => const Icon(Icons.broken_image, color: Colors.grey),
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        color: const Color(0xFF1E1E1E),
+                        child: const Center(
+                          child: Icon(Icons.image_not_supported_outlined, color: Colors.grey, size: 32),
+                        ),
+                      ),
                     ),
                     if (attachment.isSensitive)
                       BackdropFilter(
@@ -106,6 +111,16 @@ class FullScreenMediaViewer extends StatelessWidget {
                 child: Image.network(
                   media.url,
                   fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) => const Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.image_not_supported_outlined, color: Colors.grey, size: 64),
+                        SizedBox(height: 16),
+                        Text('Failed to load image', style: TextStyle(color: Colors.grey)),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
