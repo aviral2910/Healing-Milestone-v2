@@ -100,14 +100,14 @@ class CommonSliverAppBar extends ConsumerWidget {
 
 class CommonSearchBarSliver extends StatelessWidget {
   final bool includeWelcomeText;
-  final String userName;
+  final String displayName;
   final String hintText;
   final VoidCallback? onTap;
 
   const CommonSearchBarSliver({
     Key? key,
     this.includeWelcomeText = false,
-    this.userName = '',
+    this.displayName = '',
     this.hintText = 'Search...',
     this.onTap,
   }) : super(key: key);
@@ -136,7 +136,7 @@ class CommonSearchBarSliver extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Text(
-                userName,
+                displayName,
                 style: theme.textTheme.headlineMedium?.copyWith(
                   fontSize: 22,
                   color: const Color(0xFFA1A1A6), // Titanium

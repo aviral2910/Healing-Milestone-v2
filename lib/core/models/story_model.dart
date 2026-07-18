@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'user_model.dart';
 
 enum StoryType {
@@ -106,6 +107,67 @@ class StoryModel {
       authorRole: authorRole ?? this.authorRole,
       isAuthorVerified: isAuthorVerified ?? this.isAuthorVerified,
       type: type ?? this.type,
+    );
+  }
+  Map<String, dynamic> toMap() {
+    return {
+      'storyId': storyId,
+      'heading': heading,
+      'description': description,
+      'isVerifiedStory': isVerifiedStory,
+      'publishedAt': Timestamp.fromDate(publishedAt),
+      'verifiedAt': verifiedAt != null ? Timestamp.fromDate(verifiedAt!) : null,
+      'shortDescription': shortDescription,
+      'imageAssets': imageAssets,
+      'mainImage': mainImage,
+      'likesCount': likesCount,
+      'likesList': likesList,
+      'commentCount': commentCount,
+      'comments': comments,
+      'authorId': authorId,
+      'qrId': qrId,
+      'readingTime': readingTime,
+      'hashtagsList': hashtagsList,
+      'verifierId': verifierId,
+      'displayAuthorName': displayAuthorName,
+      'taggedPeople': taggedPeople,
+      'authorRole': authorRole.name,
+      'isAuthorVerified': isAuthorVerified,
+      'type': type.name,
+    };
+  }
+
+  factory StoryModel.fromMap(Map<String, dynamic> map, String documentId) {
+    return StoryModel(
+      storyId: documentId,
+      heading: map['heading'] ?? '',
+      description: map['description'] ?? '',
+      isVerifiedStory: map['isVerifiedStory'] ?? false,
+      publishedAt: (map['publishedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      verifiedAt: (map['verifiedAt'] as Timestamp?)?.toDate(),
+      shortDescription: map['shortDescription'] ?? '',
+      imageAssets: List<String>.from(map['imageAssets'] ?? []),
+      mainImage: map['mainImage'] ?? '',
+      likesCount: map['likesCount'] ?? 0,
+      likesList: List<String>.from(map['likesList'] ?? []),
+      commentCount: map['commentCount'] ?? 0,
+      comments: List<String>.from(map['comments'] ?? []),
+      authorId: map['authorId'] ?? '',
+      qrId: map['qrId'] ?? '',
+      readingTime: map['readingTime'] ?? 0,
+      hashtagsList: List<String>.from(map['hashtagsList'] ?? []),
+      verifierId: map['verifierId'] ?? '',
+      displayAuthorName: map['displayAuthorName'] ?? true,
+      taggedPeople: List<String>.from(map['taggedPeople'] ?? []),
+      authorRole: UserRole.values.firstWhere(
+        (e) => e.name == map['authorRole'],
+        orElse: () => UserRole.member,
+      ),
+      isAuthorVerified: map['isAuthorVerified'] ?? false,
+      type: StoryType.values.firstWhere(
+        (e) => e.name == map['type'],
+        orElse: () => StoryType.story,
+      ),
     );
   }
 }

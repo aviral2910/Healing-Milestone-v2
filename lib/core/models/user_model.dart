@@ -19,7 +19,8 @@ class UserModel {
   final int followingCount;
   final List<String> followersList;
   final List<String> followingList;
-  final String userName;
+  final String displayName;
+  final String? username;
   final UserRole role;
   
   // Professional fields
@@ -35,7 +36,8 @@ class UserModel {
   UserModel({
     required this.userId,
     required this.email,
-    required this.userName,
+    required this.displayName,
+    this.username,
     this.role = UserRole.member,
     this.phoneNumber,
     this.likedStories = const [],
@@ -71,7 +73,8 @@ class UserModel {
     int? followingCount,
     List<String>? followersList,
     List<String>? followingList,
-    String? userName,
+    String? displayName,
+    String? username,
     UserRole? role,
     String? specialty,
     String? licenseNumber,
@@ -82,7 +85,8 @@ class UserModel {
     return UserModel(
       userId: userId ?? this.userId,
       email: email ?? this.email,
-      userName: userName ?? this.userName,
+      displayName: displayName ?? this.displayName,
+      username: username ?? this.username,
       role: role ?? this.role,
       phoneNumber: phoneNumber ?? this.phoneNumber,
       likedStories: likedStories ?? this.likedStories,
@@ -120,7 +124,8 @@ class UserModel {
       'followingCount': followingCount,
       'followersList': followersList,
       'followingList': followingList,
-      'userName': userName,
+      'displayName': displayName,
+      'username': username,
       'role': role.name,
       'specialty': specialty,
       'licenseNumber': licenseNumber,
@@ -146,7 +151,8 @@ class UserModel {
       followingCount: map['followingCount']?.toInt() ?? 0,
       followersList: List<String>.from(map['followersList'] ?? []),
       followingList: List<String>.from(map['followingList'] ?? []),
-      userName: map['userName'] ?? '',
+      displayName: map['displayName'] ?? '',
+      username: map['username'],
       role: UserRole.values.firstWhere(
         (e) => e.name == map['role'],
         orElse: () => UserRole.member,

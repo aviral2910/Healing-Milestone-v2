@@ -55,7 +55,7 @@ class FirebaseAuthRepository implements AuthRepository {
           await googleUser.authentication;
           
       final GoogleSignInClientAuthorization? authz = 
-          await googleUser.authorizationClient?.authorizationForScopes(['email', 'profile']);
+          await googleUser.authorizationClient.authorizationForScopes(['email', 'profile']);
 
       final OAuthCredential credential = GoogleAuthProvider.credential(
         accessToken: authz?.accessToken,
@@ -179,7 +179,7 @@ class FirebaseAuthRepository implements AuthRepository {
 
       final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
       final GoogleSignInClientAuthorization? authz = 
-          await googleUser.authorizationClient?.authorizationForScopes(['email', 'profile']);
+          await googleUser.authorizationClient.authorizationForScopes(['email', 'profile']);
 
       final OAuthCredential credential = GoogleAuthProvider.credential(
         accessToken: authz?.accessToken,

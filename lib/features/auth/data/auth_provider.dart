@@ -16,12 +16,14 @@ class AuthState {
   final AuthUser? authUser;
   final UserModel? userModel;
   final String? verificationId;
+  final String? linkingPhoneNumber;
 
   const AuthState({
     this.status = AuthStatus.initial,
     this.authUser,
     this.userModel,
     this.verificationId,
+    this.linkingPhoneNumber,
   });
 
   AuthState copyWith({
@@ -29,12 +31,14 @@ class AuthState {
     AuthUser? authUser,
     UserModel? userModel,
     String? verificationId,
+    String? linkingPhoneNumber,
   }) {
     return AuthState(
       status: status ?? this.status,
       authUser: authUser ?? this.authUser,
       userModel: userModel ?? this.userModel,
       verificationId: verificationId ?? this.verificationId,
+      linkingPhoneNumber: linkingPhoneNumber ?? this.linkingPhoneNumber,
     );
   }
 }
@@ -88,7 +92,6 @@ class AuthNotifier extends StateNotifier<AsyncValue<AuthState>> {
   }
 
   Future<void> signOut() async {
-    state = const AsyncValue.loading();
     try {
       await _authRepository.signOut();
     } catch (e, st) {
@@ -118,7 +121,10 @@ class AuthNotifier extends StateNotifier<AsyncValue<AuthState>> {
         codeSent: (String verificationId, int? resendToken) {
           final currentState = state.valueOrNull;
           if (currentState != null) {
-            state = AsyncData(currentState.copyWith(verificationId: verificationId));
+            state = AsyncData(currentState.copyWith(
+              verificationId: verificationId,
+              linkingPhoneNumber: phoneNumber,
+            ));
             onCodeSent();
           }
         },
@@ -128,7 +134,10 @@ class AuthNotifier extends StateNotifier<AsyncValue<AuthState>> {
         codeAutoRetrievalTimeout: (String verificationId) {
           final currentState = state.valueOrNull;
           if (currentState != null) {
-            state = AsyncData(currentState.copyWith(verificationId: verificationId));
+            state = AsyncData(currentState.copyWith(
+              verificationId: verificationId,
+              linkingPhoneNumber: phoneNumber,
+            ));
           }
         },
       );
@@ -154,22 +163,86 @@ class AuthNotifier extends StateNotifier<AsyncValue<AuthState>> {
   }
 
   Future<void> linkPhoneNumber(String smsCode) async {
-    final verificationId = state.valueOrNull?.verificationId;
+    final currentState = state.valueOrNull;
+    final verificationId = currentState?.verificationId;
     if (verificationId == null) {
       state = AsyncError(Exception("Verification ID not found. Please try sending OTP again."), StackTrace.current);
       return;
     }
 
-    state = const AsyncValue.loading();
     try {
-      await _authRepository.linkPhoneCredential(verificationId, smsCode);
-      // state remains authenticated, but we might want to refresh AuthUser
-      final user = _authRepository.currentUser;
-      if (user != null && state.valueOrNull != null) {
-         state = AsyncData(state.valueOrNull!.copyWith(authUser: user));
+      final user = await _authRepository.linkPhoneCredential(verificationId, smsCode);
+      if (user != null && currentState != null) {
+         var updatedUserModel = currentState.userModel;
+         
+         final phoneToSave = user.phoneNumber ?? currentState.linkingPhoneNumber;
+         
+         if (phoneToSave != null && phoneToSave.isNotEmpty && updatedUserModel != null) {
+            updatedUserModel = updatedUserModel.copyWith(phoneNumber: phoneToSave);
+            await _userRepository.updateUserData(updatedUserModel);
+         }
+         
+         state = AsyncData(currentState.copyWith(
+           authUser: user, 
+           userModel: updatedUserModel,
+           linkingPhoneNumber: null, // clear it
+         ));
+      }
+    } catch (e, st) {
+      if (currentState != null) {
+        state = AsyncData(currentState); // Restore state so we don't log out
+      }
+      rethrow;
+    }
+  }
+
+  Future<void> linkGoogleAccount() async {
+    final currentState = state.valueOrNull;
+    try {
+      final user = await _authRepository.linkGoogleCredential();
+      if (user != null && currentState != null) {
+         var updatedUserModel = currentState.userModel;
+         if (user.email != null && updatedUserModel != null) {
+            updatedUserModel = updatedUserModel.copyWith(email: user.email);
+            await _userRepository.updateUserData(updatedUserModel);
+         }
+         state = AsyncData(currentState.copyWith(authUser: user, userModel: updatedUserModel));
+      }
+    } catch (e, st) {
+      print('Link Google Account Error: $e');
+      if (currentState != null) {
+        state = AsyncData(currentState); // Restore state so we don't log out
+      }
+      rethrow; // So the UI can catch and show a snackbar
+    }
+  }
+
+  Future<void> updateProfile(UserModel updatedUser) async {
+    final currentState = state.valueOrNull;
+    try {
+      await _userRepository.updateUserData(updatedUser);
+      if (currentState != null) {
+        state = AsyncData(currentState.copyWith(userModel: updatedUser));
       }
     } catch (e, st) {
       state = AsyncError(e, st);
+    }
+  }
+
+  Future<void> applyForVerification() async {
+    final currentUser = state.valueOrNull?.userModel;
+    if (currentUser == null) return;
+    
+    final updatedUser = currentUser.copyWith(appliedForVerification: true);
+    await updateProfile(updatedUser);
+  }
+
+  Future<bool> isUsernameAvailable(String username) async {
+    try {
+      return await _userRepository.isUsernameAvailable(username);
+    } catch (e) {
+      print('Check username available error: $e');
+      return false; // Assume unavailable on error
     }
   }
 }

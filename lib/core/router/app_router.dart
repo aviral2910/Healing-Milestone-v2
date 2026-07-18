@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
+import '../../features/profile/presentation/screens/edit_profile_screen.dart';
 import '../../features/milestone/presentation/screens/post_creation_screen.dart';
 import '../../features/milestone/presentation/screens/story_detail_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
@@ -16,7 +17,13 @@ import '../../core/models/user_model.dart';
 class RouterNotifier extends ChangeNotifier {
   final Ref _ref;
   RouterNotifier(this._ref) {
-    _ref.listen<AsyncValue<AuthState>>(authProvider, (_, __) => notifyListeners());
+    _ref.listen<AsyncValue<AuthState>>(authProvider, (previous, next) {
+      final prevStatus = previous?.valueOrNull?.status;
+      final nextStatus = next.valueOrNull?.status;
+      if (prevStatus != nextStatus) {
+        notifyListeners();
+      }
+    });
   }
 }
 
@@ -36,7 +43,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isGoingToOnboarding = state.matchedLocation == '/role-selection' || state.matchedLocation == '/professional-onboarding';
       
       // Protected routes
-      final isProtectedRoute = state.matchedLocation == '/create' || state.matchedLocation == '/profile';
+      final isProtectedRoute = state.matchedLocation == '/create' || 
+                               state.matchedLocation == '/profile' ||
+                               state.matchedLocation == '/edit-profile';
 
       if (authState?.status == AuthStatus.unauthenticated && isGoingToOnboarding) {
         return '/login';
@@ -87,6 +96,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/profile',
         builder: (context, state) => const ProfileScreen(),
+      ),
+      GoRoute(
+        path: '/edit-profile',
+        builder: (context, state) => const EditProfileScreen(),
       ),
       GoRoute(
         path: '/story/:id',

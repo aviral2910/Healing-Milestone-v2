@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:healing_milestones/core/presentation/widgets/logout_button.dart';
 import 'package:healing_milestones/features/auth/data/auth_provider.dart';
-import '../../../../core/data/dummy_data.dart';
+import 'package:healing_milestones/features/posts/data/story_providers.dart';
+import '../../../../core/models/user_model.dart';
 import '../../../../core/models/story_model.dart';
 import '../../../../shared/widgets/story_card.dart';
 import 'package:go_router/go_router.dart';
@@ -19,29 +20,11 @@ class ProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watch(currentUserProvider);
-    final allStories = ref.watch(dummyStoriesProvider);
     final theme = Theme.of(context);
-
-    if (user == null) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-
-    // Map story IDs to actual StoryModels
-    final ownStories = user.ownStories
-        .map((id) => allStories.firstWhere((s) => s.storyId == id,
-            orElse: () => allStories.first))
-        .toList();
-
-    final taggedStories = user.taggedStories
-        .map((id) => allStories.firstWhere((s) => s.storyId == id,
-            orElse: () => allStories.first))
-        .toList();
-
-    final bookmarkedStories = user.bookmarkedStories
-        .map((id) => allStories.firstWhere((s) => s.storyId == id,
-            orElse: () => allStories.first))
-        .toList();
+    final user = ref.watch(currentUserProvider);
+    if (user == null) return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    final bool isProOrOrg = user.role == UserRole.healthcareProfessional || user.role == UserRole.organization;
+    final userStoriesAsync = ref.watch(userStoriesProvider(user.userId));
 
     return DefaultTabController(
       length: 3,
@@ -134,7 +117,7 @@ class ProfileScreen extends ConsumerWidget {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Text(
-                                    user.userName,
+                                    user.displayName,
                                     style: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 22),
@@ -147,6 +130,16 @@ class ProfileScreen extends ConsumerWidget {
                                   ],
                                 ],
                               ),
+                              if (user.username != null && user.username!.isNotEmpty) ...[
+                                const SizedBox(height: 2),
+                                Text(
+                                  '@${user.username}',
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: theme.colorScheme.primary),
+                                ),
+                              ],
                               const SizedBox(height: 4),
                               Text(
                                 user.email,
@@ -210,7 +203,9 @@ class ProfileScreen extends ConsumerWidget {
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              context.push('/edit-profile');
+                            },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: theme.colorScheme.primary
                                   .withValues(alpha: 0.15),
@@ -266,12 +261,23 @@ class ProfileScreen extends ConsumerWidget {
                 ),
               ];
             },
-            body: TabBarView(
-              children: [
-                _StoryList(stories: ownStories),
-                _StoryList(stories: taggedStories),
-                _StoryList(stories: bookmarkedStories),
-              ],
+            body: userStoriesAsync.when(
+              loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFFD4AF37))),
+              error: (err, stack) => const Center(child: Text('Failed to load stories', style: TextStyle(color: Colors.red))),
+              data: (stories) {
+                final ownStories = stories;
+                // In a real app, taggedStories and bookmarkedStories would be separate queries.
+                final taggedStories = <StoryModel>[];
+                final bookmarkedStories = <StoryModel>[];
+
+                return TabBarView(
+                  children: [
+                    _StoryList(stories: ownStories),
+                    _StoryList(stories: taggedStories),
+                    _StoryList(stories: bookmarkedStories),
+                  ],
+                );
+              },
             ),
           ),
         ),

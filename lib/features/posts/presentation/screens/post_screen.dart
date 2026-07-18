@@ -6,9 +6,9 @@ import 'package:healing_milestones/shared/widgets/story_card.dart';
 import '../../../../core/models/category_model.dart';
 import '../../../../core/presentation/widgets/user_badge.dart';
 import '../../../../core/presentation/widgets/verified_story_badge.dart';
-import '../../../../core/data/dummy_data.dart';
 import '../../../../core/widgets/shared_headers.dart';
 import '../../../../core/models/story_model.dart';
+import 'package:healing_milestones/features/posts/data/story_providers.dart';
 import '../../../../logo/healing_milestone_logo.dart';
 import '../../../../main.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
@@ -123,31 +123,11 @@ class PostScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final allStories = ref.watch(dummyStoriesProvider);
-    final categories = ref.watch(dummyCategoriesProvider);
+    final storiesAsync = ref.watch(storiesStreamProvider);
+    final categories = []; // Replace with actual categories if needed, or keep empty
     final selectedTag = ref.watch(selectedTagProvider);
     final user = ref.watch(currentUserProvider);
     final theme = Theme.of(context);
-
-    // Extract top tags using all stories
-    final tagFrequency = <String, int>{};
-    for (var story in allStories) {
-      for (var tag in story.hashtagsList) {
-        tagFrequency[tag] = (tagFrequency[tag] ?? 0) + 1;
-      }
-    }
-
-    final sortedTags = tagFrequency.keys.toList()
-      ..sort((a, b) => tagFrequency[b]!.compareTo(tagFrequency[a]!));
-
-    final topTags = ['All', ...sortedTags.take(9)];
-
-    // Filter stories based on selected tag
-    final filteredStories = selectedTag == 'All'
-        ? allStories
-        : allStories
-            .where((s) => s.hashtagsList.contains(selectedTag))
-            .toList();
 
     return AnimationLimiter(
       child: CustomScrollView(
@@ -156,93 +136,150 @@ class PostScreen extends ConsumerWidget {
           CommonSliverAppBar(isHeroEnabled: isActiveTab),
           CommonSearchBarSliver(
             includeWelcomeText: true,
-            userName: user?.userName ?? 'Guest',
+            displayName: user?.displayName ?? 'Guest',
             hintText: 'Search stories, topics, people...',
             onTap: onSearchTapped,
           ),
-          // 1. Tags Header (Pinned)
-
-          SliverPersistentHeader(
-            pinned: true,
-            delegate: _SliverTagsDelegate(
-              tags: topTags,
-              selectedTag: selectedTag,
-              onTagSelected: (tag) =>
-                  ref.read(selectedTagProvider.notifier).state = tag,
+          
+          storiesAsync.when(
+            loading: () => const SliverFillRemaining(
+              child: Center(child: CircularProgressIndicator(color: Color(0xFFD4AF37))),
             ),
-          ),
-
-          // Horizontal Categories
-          ...categories.map((category) {
-            final categoryStories = filteredStories
-                .where((s) => category.storiesList.contains(s.storyId))
-                .toList();
-
-            if (categoryStories.isEmpty) {
-              return const SliverToBoxAdapter(child: SizedBox.shrink());
-            }
-
-            return SliverToBoxAdapter(
-              child: _HorizontalCategorySection(
-                title: category.categoryName,
-                stories: categoryStories,
-                truncateContent: _truncateContent,
-              ),
-            );
-          }).toList(),
-
-          // Divider for the main feed
-          SliverToBoxAdapter(
-            child: Padding(
-              padding:
-                  const EdgeInsets.only(left: 20.0, top: 64.0, bottom: 24.0),
-              child: Text(
-                'All Stories',
-                style: theme.textTheme.headlineLarge?.copyWith(fontSize: 28),
-              ),
+            error: (err, stack) => SliverFillRemaining(
+              child: Center(child: Text('Error loading stories', style: TextStyle(color: Colors.red))),
             ),
-          ),
+            data: (allStories) {
+              // Extract top tags using all stories
+              final tagFrequency = <String, int>{};
+              for (var story in allStories) {
+                for (var tag in story.hashtagsList) {
+                  tagFrequency[tag] = (tagFrequency[tag] ?? 0) + 1;
+                }
+              }
 
-          // Vertical Feed of Posts
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            sliver: SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final story = filteredStories[index];
-                  return AnimationConfiguration.staggeredList(
-                    position: index,
-                    duration: const Duration(milliseconds: 375),
-                    child: SlideAnimation(
-                      verticalOffset: 50.0,
-                      child: FadeInAnimation(
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 24.0),
-                          child: StoryCard(
-                            story: story,
-                            content: _truncateContent(story.description, 180),
-                            onTap: () {
-                              context.push('/story/${story.storyId}');
-                            },
+              final sortedTags = tagFrequency.keys.toList()
+                ..sort((a, b) => tagFrequency[b]!.compareTo(tagFrequency[a]!));
+
+              final topTags = ['All', ...sortedTags.take(9)];
+
+              // Filter stories based on selected tag
+              final filteredStories = selectedTag == 'All'
+                  ? allStories
+                  : allStories
+                      .where((s) => s.hashtagsList.contains(selectedTag))
+                      .toList();
+
+              if (allStories.isEmpty) {
+                return SliverFillRemaining(
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.auto_awesome_mosaic_outlined, size: 64, color: const Color(0xFF2A2A2A)),
+                        const SizedBox(height: 16),
+                        Text(
+                          'No stories yet',
+                          style: theme.textTheme.headlineMedium?.copyWith(
+                            color: const Color(0xFFA1A1A6),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Be the first to share a milestone.',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: const Color(0xFFA1A1A6).withValues(alpha: 0.7),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+
+              return SliverMainAxisGroup(
+                slivers: [
+                  // Tags Header (Pinned)
+                  if (topTags.length > 1)
+                    SliverPersistentHeader(
+                      pinned: true,
+                      delegate: _SliverTagsDelegate(
+                        tags: topTags,
+                        selectedTag: selectedTag,
+                        onTagSelected: (tag) =>
+                            ref.read(selectedTagProvider.notifier).state = tag,
+                      ),
+                    ),
+
+                  // Divider for the main feed
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 20.0, top: 32.0, bottom: 24.0),
+                      child: Text(
+                        'All Stories',
+                        style: theme.textTheme.headlineLarge?.copyWith(fontSize: 28),
+                      ),
+                    ),
+                  ),
+
+                  if (filteredStories.isEmpty)
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.all(32.0),
+                        child: Center(
+                          child: Text(
+                            'No stories found for #$selectedTag',
+                            style: theme.textTheme.bodyLarge?.copyWith(color: const Color(0xFFA1A1A6)),
                           ),
                         ),
                       ),
+                    )
+                  else
+                    // Vertical Feed of Posts
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      sliver: SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                            final story = filteredStories[index];
+                            return AnimationConfiguration.staggeredList(
+                              position: index,
+                              duration: const Duration(milliseconds: 375),
+                              child: SlideAnimation(
+                                verticalOffset: 50.0,
+                                child: FadeInAnimation(
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(bottom: 24.0),
+                                    child: StoryCard(
+                                      story: story,
+                                      content: _truncateContent(story.description, 180),
+                                      onTap: () {
+                                        context.push('/story/${story.storyId}');
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                          childCount: filteredStories.length,
+                        ),
+                      ),
                     ),
-                  );
-                },
-                childCount: filteredStories.length,
-              ),
-            ),
-          ),
 
-          const SliverToBoxAdapter(
-            child: SizedBox(height: 100), // bottom padding for scrolling
-          )
+                  const SliverToBoxAdapter(
+                    child: SizedBox(height: 100), // bottom padding for scrolling
+                  ),
+                ],
+              );
+            },
+          ),
         ],
       ),
     );
   }
 }
+
 
 class _HorizontalCategorySection extends StatelessWidget {
   final String title;

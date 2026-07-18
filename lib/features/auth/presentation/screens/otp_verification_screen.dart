@@ -44,7 +44,8 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
       if (isAlreadyLoggedIn) {
         await ref.read(authProvider.notifier).linkPhoneNumber(otp);
         if (mounted) {
-          context.go('/'); // Navigate back home after linking
+          context.pop(); // Pop OTP screen
+          context.pop(); // Pop Phone Auth screen to return to Edit Profile
         }
       } else {
         await ref.read(authProvider.notifier).verifyOtp(otp);

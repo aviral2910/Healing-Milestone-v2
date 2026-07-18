@@ -27,4 +27,19 @@ class FirebaseUserRepository implements UserRepository {
   Future<void> createUserData(UserModel user) async {
     await _firestore.collection('users').doc(user.userId).set(user.toMap());
   }
+
+  @override
+  Future<void> updateUserData(UserModel user) async {
+    await _firestore.collection('users').doc(user.userId).update(user.toMap());
+  }
+
+  @override
+  Future<bool> isUsernameAvailable(String username) async {
+    final query = await _firestore
+        .collection('users')
+        .where('username', isEqualTo: username)
+        .limit(1)
+        .get();
+    return query.docs.isEmpty;
+  }
 }

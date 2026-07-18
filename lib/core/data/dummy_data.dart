@@ -8,7 +8,7 @@ final dummyUserProvider = Provider<UserModel>((ref) {
   return UserModel(
     userId: 'u1',
     email: 'user@example.com',
-    userName: 'Aviral Dixit',
+    displayName: 'Aviral Dixit',
     phoneNumber: '+1234567890',
     isVerified: true,
     ownStories: ['s1'],

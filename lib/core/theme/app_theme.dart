@@ -5,6 +5,7 @@ class AppTheme {
   // Golden & Black Palette with Titanium Accents
   static const Color background = Color(0xFF000000); // True OLED Black
   static const Color surface = Color(0xFF0F0F0F); // Deep Charcoal for depth
+  static const Color surfaceLight = Color(0xFF1E1E1E); // Lighter grey for form fields
   
   static const Color textPrimary = Color(0xFFF5F5F7); // Frost White for primary reading
   static const Color textSecondary = Color(0xFFA1A1A6); // Titanium Silver for subtitles

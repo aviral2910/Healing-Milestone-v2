@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -20,19 +21,68 @@ class ProfessionalOnboardingScreen extends ConsumerStatefulWidget {
 class _ProfessionalOnboardingScreenState extends ConsumerState<ProfessionalOnboardingScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
+  final _usernameController = TextEditingController();
   final _specialtyController = TextEditingController();
   final _licenseController = TextEditingController();
+  
   bool _applyForVerification = false;
+  bool _isCheckingUsername = false;
+  bool? _isUsernameAvailable;
+  Timer? _debounce;
 
   @override
   void dispose() {
     _nameController.dispose();
+    _usernameController.dispose();
     _specialtyController.dispose();
     _licenseController.dispose();
+    _debounce?.cancel();
     super.dispose();
   }
 
+  void _onUsernameChanged(String value) {
+    final username = value.trim().toLowerCase();
+    
+    if (username.isEmpty || username.length < 3) {
+      setState(() {
+        _isUsernameAvailable = null;
+        _isCheckingUsername = false;
+      });
+      return;
+    }
+
+    setState(() {
+      _isCheckingUsername = true;
+      _isUsernameAvailable = null;
+    });
+
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _debounce = Timer(const Duration(milliseconds: 500), () async {
+      final available = await ref.read(authProvider.notifier).isUsernameAvailable(username);
+      if (mounted) {
+        setState(() {
+          _isUsernameAvailable = available;
+          _isCheckingUsername = false;
+        });
+      }
+    });
+  }
+
   void _skip() {
+    if (_usernameController.text.trim().length < 3 || _isUsernameAvailable != true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter an available username before skipping.')),
+      );
+      return;
+    }
+    
+    if (_nameController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter your display name.')),
+      );
+      return;
+    }
+
     final authState = ref.read(authProvider).valueOrNull;
     final user = authState?.authUser;
 
@@ -41,7 +91,8 @@ class _ProfessionalOnboardingScreenState extends ConsumerState<ProfessionalOnboa
         userId: user.uid,
         email: user.email ?? '',
         phoneNumber: user.phoneNumber,
-        userName: user.displayName ?? 'New User',
+        displayName: _nameController.text.trim().isNotEmpty ? _nameController.text.trim() : (user.displayName ?? 'New User'),
+        username: _usernameController.text.trim().toLowerCase(),
         profilePicture: user.photoUrl,
         role: widget.role,
         isVerified: false,
@@ -54,6 +105,13 @@ class _ProfessionalOnboardingScreenState extends ConsumerState<ProfessionalOnboa
 
   void _submit() {
     if (_formKey.currentState!.validate()) {
+      if (_isUsernameAvailable != true) {
+         ScaffoldMessenger.of(context).showSnackBar(
+           const SnackBar(content: Text('Please choose an available username.')),
+         );
+         return;
+      }
+      
       final authState = ref.read(authProvider).valueOrNull;
       final user = authState?.authUser;
 
@@ -62,7 +120,8 @@ class _ProfessionalOnboardingScreenState extends ConsumerState<ProfessionalOnboa
           userId: user.uid,
           email: user.email ?? '',
           phoneNumber: user.phoneNumber,
-          userName: _nameController.text.trim().isNotEmpty ? _nameController.text.trim() : (user.displayName ?? 'New User'),
+          displayName: _nameController.text.trim().isNotEmpty ? _nameController.text.trim() : (user.displayName ?? 'New User'),
+          username: _usernameController.text.trim().toLowerCase(),
           profilePicture: user.photoUrl,
           role: widget.role,
           isVerified: false,
@@ -86,11 +145,12 @@ class _ProfessionalOnboardingScreenState extends ConsumerState<ProfessionalOnboa
     }
   }
 
-  InputDecoration _buildInputDecoration(String hint, ThemeData theme, IconData icon) {
+  InputDecoration _buildInputDecoration(String hint, ThemeData theme, IconData icon, {Widget? suffixIcon}) {
     return InputDecoration(
       hintText: hint,
       hintStyle: TextStyle(color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7)),
       prefixIcon: Icon(icon, color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.8)),
+      suffixIcon: suffixIcon,
       filled: true,
       fillColor: const Color(0xFF1E1E1E), // Premium dark gray
       contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
@@ -122,6 +182,21 @@ class _ProfessionalOnboardingScreenState extends ConsumerState<ProfessionalOnboa
     String titleText = 'Profile Setup';
     if (!isMember) {
       titleText = isOrg ? 'Organization Details' : 'Professional Details';
+    }
+
+    Widget? usernameSuffixIcon;
+    if (_isCheckingUsername) {
+      usernameSuffixIcon = const Padding(
+        padding: EdgeInsets.all(12.0),
+        child: SizedBox(
+          width: 20, height: 20,
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+      );
+    } else if (_isUsernameAvailable == true) {
+      usernameSuffixIcon = const Icon(Icons.check_circle, color: Colors.green);
+    } else if (_isUsernameAvailable == false && _usernameController.text.trim().length >= 3) {
+      usernameSuffixIcon = Icon(Icons.cancel, color: theme.colorScheme.error);
     }
 
     return Scaffold(
@@ -189,6 +264,37 @@ class _ProfessionalOnboardingScreenState extends ConsumerState<ProfessionalOnboa
                   ),
                   const SizedBox(height: 40),
                   
+                  TextFormField(
+                    controller: _usernameController,
+                    textInputAction: TextInputAction.next,
+                    onChanged: _onUsernameChanged,
+                    decoration: _buildInputDecoration(
+                      'Unique Username (@handle)',
+                      theme,
+                      Icons.alternate_email,
+                      suffixIcon: usernameSuffixIcon,
+                    ),
+                    validator: (value) {
+                      if (value == null || value.trim().length < 3) {
+                        return 'Username must be at least 3 characters';
+                      }
+                      final validCharacters = RegExp(r'^[a-zA-Z0-9_]+$');
+                      if (!validCharacters.hasMatch(value.trim())) {
+                        return 'Only letters, numbers, and underscores allowed';
+                      }
+                      if (_isUsernameAvailable == false) {
+                        return 'Username is already taken';
+                      }
+                      return null;
+                    },
+                  ),
+                  if (_isUsernameAvailable == false && _usernameController.text.trim().length >= 3)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0, left: 16.0),
+                      child: Text('This username is already taken.', style: TextStyle(color: theme.colorScheme.error, fontSize: 12)),
+                    ),
+                  const SizedBox(height: 20),
+
                   TextFormField(
                     controller: _nameController,
                     textInputAction: TextInputAction.next,
