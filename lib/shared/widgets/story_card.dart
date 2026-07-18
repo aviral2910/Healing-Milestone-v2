@@ -5,7 +5,7 @@ import '../../core/presentation/widgets/verified_story_badge.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/data/auth_provider.dart';
-class StoryCard extends StatefulWidget {
+class StoryCard extends ConsumerStatefulWidget {
   final StoryModel story;
   final VoidCallback onTap;
   final String content;
@@ -18,10 +18,10 @@ class StoryCard extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<StoryCard> createState() => _StoryCardState();
+  ConsumerState<StoryCard> createState() => _StoryCardState();
 }
 
-class _StoryCardState extends State<StoryCard>
+class _StoryCardState extends ConsumerState<StoryCard>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
@@ -55,6 +55,7 @@ class _StoryCardState extends State<StoryCard>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final userAsync = ref.watch(userByIdProvider(widget.story.authorId));
 
     return GestureDetector(
       onTapDown: (_) => _controller.forward(),
@@ -92,12 +93,38 @@ class _StoryCardState extends State<StoryCard>
                         children: [
                           Row(
                             children: [
-                              Text(
-                                !widget.story.displayAuthorName
-                                    ? 'Anonymous'
-                                    : 'Author ${widget.story.authorId}',
-                                style: theme.textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.w600,
+                              userAsync.when(
+                                data: (user) {
+                                  final displayName = user?.displayName;
+                                  final username = user?.username;
+                                  
+                                  String authorText = 'Author ${widget.story.authorId}';
+                                  if (!widget.story.displayAuthorName) {
+                                    authorText = 'Anonymous';
+                                  } else if (displayName != null && displayName.isNotEmpty) {
+                                    authorText = displayName;
+                                  } else if (username != null && username.isNotEmpty) {
+                                    authorText = '@$username';
+                                  }
+
+                                  return Text(
+                                    authorText,
+                                    style: theme.textTheme.titleMedium?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  );
+                                },
+                                loading: () => Text(
+                                  !widget.story.displayAuthorName ? 'Anonymous' : 'Loading...',
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                error: (_, __) => Text(
+                                  !widget.story.displayAuthorName ? 'Anonymous' : 'Author',
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                               ),
                               const SizedBox(width: 4),

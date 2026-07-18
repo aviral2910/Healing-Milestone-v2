@@ -18,8 +18,18 @@ class FirebaseStoryRepository implements StoryRepository {
 
   @override
   Stream<List<StoryModel>> getUserStories(String userId) {
-    return _stories.where('authorId', isEqualTo: userId).orderBy('publishedAt', descending: true).snapshots().map((snapshot) {
-      return snapshot.docs.map((doc) => StoryModel.fromMap(doc.data() as Map<String, dynamic>, doc.id)).toList();
+    return _stories.where('authorId', isEqualTo: userId).snapshots().map((snapshot) {
+      final stories = snapshot.docs.map((doc) => StoryModel.fromMap(doc.data() as Map<String, dynamic>, doc.id)).toList();
+      stories.sort((a, b) => b.publishedAt.compareTo(a.publishedAt));
+      return stories;
+    });
+  }
+
+  @override
+  Stream<StoryModel?> getStoryById(String storyId) {
+    return _stories.doc(storyId).snapshots().map((snapshot) {
+      if (!snapshot.exists) return null;
+      return StoryModel.fromMap(snapshot.data() as Map<String, dynamic>, snapshot.id);
     });
   }
 

@@ -25,3 +25,7 @@ final storiesStreamProvider = StreamProvider<List<StoryModel>>((ref) {
 final userStoriesProvider = StreamProvider.family<List<StoryModel>, String>((ref, userId) {
   return ref.watch(storyRepositoryProvider).getUserStories(userId);
 });
+
+final storyByIdProvider = StreamProvider.family<StoryModel?, String>((ref, storyId) {
+  return ref.watch(storyRepositoryProvider).getStoryById(storyId);
+});

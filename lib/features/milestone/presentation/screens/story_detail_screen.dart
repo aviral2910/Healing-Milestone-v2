@@ -10,6 +10,8 @@ import '../../../posts/presentation/widgets/post_display_widget.dart';
 import '../widgets/milestone_media_gallery.dart';
 import '../widgets/qna_thread.dart';
 import '../../../accessibility/data/accessibility_providers.dart';
+import '../../../auth/data/auth_provider.dart';
+import '../../../posts/data/story_providers.dart';
 
 import '../../../../core/data/dummy_data.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
@@ -99,38 +101,46 @@ class StoryDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final stories = ref.watch(dummyStoriesProvider);
-    final storyIndex = stories.indexWhere((s) => s.storyId == milestoneId);
-
-    if (storyIndex == -1) {
-      return const Scaffold(
-        body: Center(child: Text('Story not found')),
-      );
-    }
-
-    final story = stories[storyIndex];
+    final storyAsync = ref.watch(storyByIdProvider(milestoneId));
     final theme = Theme.of(context);
 
-    final List<MediaAttachment> dummyMedia = [
-      MediaAttachment(
-        mediaId: 'm1',
-        url:
-            'https://images.unsplash.com/photo-1498637841888-108c6b723fcb?q=80&w=3456&auto=format&fit=crop',
-        title: 'Morning Light',
-        description: 'First day outside.',
-        isSensitive: false,
-        uploadedAt: DateTime.now(),
+    return storyAsync.when(
+      loading: () => const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
       ),
-      MediaAttachment(
-        mediaId: 'm2',
-        url:
-            'https://images.unsplash.com/photo-1518182170546-076616fd4625?q=80&w=3540&auto=format&fit=crop',
-        title: 'Scar Progress',
-        description: 'Scar healing well.',
-        isSensitive: true,
-        uploadedAt: DateTime.now(),
+      error: (error, stack) => Scaffold(
+        body: Center(child: Text('Error loading story: $error')),
       ),
-    ];
+      data: (story) {
+        if (story == null) {
+          return const Scaffold(
+            body: Center(child: Text('Story not found')),
+          );
+        }
+
+        final userAsync = ref.watch(userByIdProvider(story.authorId));
+
+        final List<MediaAttachment> actualMedia = [];
+        if (story.mainImage.isNotEmpty) {
+          actualMedia.add(MediaAttachment(
+            mediaId: 'main',
+            url: story.mainImage,
+            title: 'Cover Image',
+            description: '',
+            isSensitive: false,
+            uploadedAt: story.publishedAt,
+          ));
+        }
+        for (var i = 0; i < story.imageAssets.length; i++) {
+          actualMedia.add(MediaAttachment(
+            mediaId: 'asset_$i',
+            url: story.imageAssets[i],
+            title: 'Image ${i + 1}',
+            description: '',
+            isSensitive: false,
+            uploadedAt: story.publishedAt,
+          ));
+        }
 
     return Scaffold(
       body: Stack(
@@ -204,15 +214,47 @@ class StoryDetailScreen extends ConsumerWidget {
                                   children: [
                                     Row(
                                       children: [
-                                        Text(
-                                          !story.displayAuthorName
-                                              ? 'Anonymous'
-                                              : 'Author ${story.authorId}',
-                                          style: theme.textTheme.titleMedium
-                                              ?.copyWith(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: const Color(0xFFF5F5F7),
+                                        userAsync.when(
+                                          data: (user) {
+                                            final displayName = user?.displayName;
+                                            final username = user?.username;
+                                            
+                                            String authorText = 'Author ${story.authorId}';
+                                            if (!story.displayAuthorName) {
+                                              authorText = 'Anonymous';
+                                            } else if (displayName != null && displayName.isNotEmpty) {
+                                              authorText = displayName;
+                                            } else if (username != null && username.isNotEmpty) {
+                                              authorText = '@$username';
+                                            }
+
+                                            return Text(
+                                              authorText,
+                                              style: theme.textTheme.titleMedium
+                                                  ?.copyWith(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                                color: const Color(0xFFF5F5F7),
+                                              ),
+                                            );
+                                          },
+                                          loading: () => Text(
+                                            !story.displayAuthorName ? 'Anonymous' : 'Loading...',
+                                            style: theme.textTheme.titleMedium
+                                                ?.copyWith(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: const Color(0xFFF5F5F7),
+                                            ),
+                                          ),
+                                          error: (_, __) => Text(
+                                            !story.displayAuthorName ? 'Anonymous' : 'Author',
+                                            style: theme.textTheme.titleMedium
+                                                ?.copyWith(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: const Color(0xFFF5F5F7),
+                                            ),
                                           ),
                                         ),
                                         const SizedBox(width: 4),
@@ -293,14 +335,16 @@ class StoryDetailScreen extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Journey Media',
-                            style: theme.textTheme.headlineLarge
-                                ?.copyWith(fontSize: 28),
-                          ),
-                          const SizedBox(height: 24),
-                          MilestoneMediaGallery(media: dummyMedia),
-                          const SizedBox(height: 64),
+                          if (actualMedia.isNotEmpty) ...[
+                            Text(
+                              'Journey Media',
+                              style: theme.textTheme.headlineLarge
+                                  ?.copyWith(fontSize: 28),
+                            ),
+                            const SizedBox(height: 24),
+                            MilestoneMediaGallery(media: actualMedia),
+                            const SizedBox(height: 64),
+                          ],
                           Text(
                             'Comments',
                             style: theme.textTheme.headlineLarge
@@ -331,6 +375,8 @@ class StoryDetailScreen extends ConsumerWidget {
         ),
         ],
       ),
+    );
+    },
     );
   }
 }

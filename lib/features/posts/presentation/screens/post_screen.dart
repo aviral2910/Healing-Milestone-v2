@@ -146,7 +146,21 @@ class PostScreen extends ConsumerWidget {
               child: Center(child: CircularProgressIndicator(color: Color(0xFFD4AF37))),
             ),
             error: (err, stack) => SliverFillRemaining(
-              child: Center(child: Text('Error loading stories', style: TextStyle(color: Colors.red))),
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.error_outline, size: 48, color: const Color(0xFF2A2A2A)),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Unable to load stories',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: const Color(0xFFA1A1A6),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
             data: (allStories) {
               // Extract top tags using all stories
@@ -363,7 +377,7 @@ class _HorizontalCategorySection extends StatelessWidget {
   }
 }
 
-class _MiniStoryCard extends StatefulWidget {
+class _MiniStoryCard extends ConsumerStatefulWidget {
   final StoryModel story;
   final String content;
   final VoidCallback onTap;
@@ -375,10 +389,10 @@ class _MiniStoryCard extends StatefulWidget {
   });
 
   @override
-  __MiniStoryCardState createState() => __MiniStoryCardState();
+  ConsumerState<_MiniStoryCard> createState() => __MiniStoryCardState();
 }
 
-class __MiniStoryCardState extends State<_MiniStoryCard>
+class __MiniStoryCardState extends ConsumerState<_MiniStoryCard>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
@@ -404,6 +418,7 @@ class __MiniStoryCardState extends State<_MiniStoryCard>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final userAsync = ref.watch(userByIdProvider(widget.story.authorId));
 
     return GestureDetector(
       onTapDown: (_) => _controller.forward(),
@@ -456,15 +471,43 @@ class __MiniStoryCardState extends State<_MiniStoryCard>
                       child: Row(
                         children: [
                           Flexible(
-                            child: Text(
-                              !widget.story.displayAuthorName
-                                  ? 'Anonymous'
-                                  : 'Author ${widget.story.authorId}',
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                fontSize: 13,
-                                color: const Color(0xFFA1A1A6), // Titanium
+                            child: userAsync.when(
+                              data: (user) {
+                                final displayName = user?.displayName;
+                                final username = user?.username;
+                                
+                                String authorText = 'Author ${widget.story.authorId}';
+                                if (!widget.story.displayAuthorName) {
+                                  authorText = 'Anonymous';
+                                } else if (displayName != null && displayName.isNotEmpty) {
+                                  authorText = displayName;
+                                } else if (username != null && username.isNotEmpty) {
+                                  authorText = '@$username';
+                                }
+
+                                return Text(
+                                  authorText,
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    fontSize: 13,
+                                    color: const Color(0xFFA1A1A6), // Titanium
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                );
+                              },
+                              loading: () => Text(
+                                !widget.story.displayAuthorName ? 'Anonymous' : 'Loading...',
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontSize: 13,
+                                  color: const Color(0xFFA1A1A6), // Titanium
+                                ),
                               ),
-                              overflow: TextOverflow.ellipsis,
+                              error: (_, __) => Text(
+                                !widget.story.displayAuthorName ? 'Anonymous' : 'Author',
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontSize: 13,
+                                  color: const Color(0xFFA1A1A6), // Titanium
+                                ),
+                              ),
                             ),
                           ),
                           const SizedBox(width: 4),

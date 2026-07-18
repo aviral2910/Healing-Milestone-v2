@@ -82,6 +82,11 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
 
       await ref.read(storyRepositoryProvider).createStory(story);
 
+      final updatedUser = user.copyWith(
+        ownStories: [...user.ownStories, story.storyId],
+      );
+      await ref.read(authProvider.notifier).updateProfile(updatedUser);
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -113,7 +118,13 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
 
   Future<void> _pickImage() async {
     final picker = ImagePicker();
-    final image = await picker.pickImage(source: ImageSource.gallery);
+    // Use imageQuality to compress the image and maxWidth/maxHeight to limit the resolution
+    final image = await picker.pickImage(
+      source: ImageSource.gallery, 
+      imageQuality: 70,
+      maxWidth: 1200,
+      maxHeight: 1200,
+    );
     if (image != null) {
       setState(() {
         _selectedImage = image;

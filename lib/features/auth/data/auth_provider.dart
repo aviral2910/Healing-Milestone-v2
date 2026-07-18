@@ -261,3 +261,9 @@ final currentUserProvider = Provider<UserModel?>((ref) {
   }
   return null;
 });
+
+// A provider to fetch any user's profile by ID
+final userByIdProvider = FutureProvider.family<UserModel?, String>((ref, userId) async {
+  final userRepository = ref.watch(userRepositoryProvider);
+  return await userRepository.getUserData(userId);
+});
