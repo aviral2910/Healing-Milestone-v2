@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+import 'package:healing_milestones/core/presentation/widgets/logout_button.dart';
 import 'package:healing_milestones/features/auth/data/auth_provider.dart';
 import '../../../../core/data/dummy_data.dart';
 import '../../../../core/models/story_model.dart';
@@ -88,12 +89,7 @@ class ProfileScreen extends ConsumerWidget {
                         ),
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.logout),
-                      onPressed: () {
-                        ref.read(authProvider.notifier).signOut();
-                      },
-                    ),
+                    LogoutButton()
                   ],
                 ),
                 SliverToBoxAdapter(

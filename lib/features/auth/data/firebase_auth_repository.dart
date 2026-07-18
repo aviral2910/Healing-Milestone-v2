@@ -17,6 +17,7 @@ class FirebaseAuthRepository implements AuthRepository {
     return AuthUser(
       uid: user.uid,
       email: user.email,
+      phoneNumber: user.phoneNumber,
       displayName: user.displayName,
       photoUrl: user.photoURL,
     );

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:healing_milestones/core/models/user_model.dart';
 import 'package:healing_milestones/features/auth/data/auth_provider.dart';
+import 'package:healing_milestones/core/presentation/widgets/logout_button.dart';
 
 class RoleSelectionScreen extends ConsumerWidget {
   const RoleSelectionScreen({super.key});
@@ -25,6 +26,9 @@ class RoleSelectionScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Select Your Role'),
+        actions: const [
+          LogoutButton(),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),

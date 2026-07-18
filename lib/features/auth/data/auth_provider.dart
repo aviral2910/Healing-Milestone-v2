@@ -116,8 +116,9 @@ class AuthNotifier extends StateNotifier<AsyncValue<AuthState>> {
       await _authRepository.verifyPhoneNumber(
         phoneNumber: phoneNumber,
         codeSent: (String verificationId, int? resendToken) {
-          if (state.value != null) {
-            state = AsyncData(state.value!.copyWith(verificationId: verificationId));
+          final currentState = state.valueOrNull;
+          if (currentState != null) {
+            state = AsyncData(currentState.copyWith(verificationId: verificationId));
             onCodeSent();
           }
         },
@@ -125,8 +126,9 @@ class AuthNotifier extends StateNotifier<AsyncValue<AuthState>> {
           state = AsyncError(e, StackTrace.current);
         },
         codeAutoRetrievalTimeout: (String verificationId) {
-          if (state.value != null) {
-            state = AsyncData(state.value!.copyWith(verificationId: verificationId));
+          final currentState = state.valueOrNull;
+          if (currentState != null) {
+            state = AsyncData(currentState.copyWith(verificationId: verificationId));
           }
         },
       );
@@ -136,13 +138,14 @@ class AuthNotifier extends StateNotifier<AsyncValue<AuthState>> {
   }
 
   Future<void> verifyOtp(String smsCode) async {
+    final verificationId = state.valueOrNull?.verificationId;
+    if (verificationId == null) {
+      state = AsyncError(Exception("Verification ID not found. Please try sending OTP again."), StackTrace.current);
+      return;
+    }
+
     state = const AsyncValue.loading();
     try {
-      final verificationId = state.valueOrNull?.verificationId;
-      if (verificationId == null) {
-        throw Exception("Verification ID not found. Please try sending OTP again.");
-      }
-      
       await _authRepository.signInWithPhoneCredential(verificationId, smsCode);
       // The authStateChanges listener will handle the rest
     } catch (e, st) {
@@ -151,18 +154,19 @@ class AuthNotifier extends StateNotifier<AsyncValue<AuthState>> {
   }
 
   Future<void> linkPhoneNumber(String smsCode) async {
+    final verificationId = state.valueOrNull?.verificationId;
+    if (verificationId == null) {
+      state = AsyncError(Exception("Verification ID not found. Please try sending OTP again."), StackTrace.current);
+      return;
+    }
+
     state = const AsyncValue.loading();
     try {
-      final verificationId = state.valueOrNull?.verificationId;
-      if (verificationId == null) {
-        throw Exception("Verification ID not found. Please try sending OTP again.");
-      }
-      
       await _authRepository.linkPhoneCredential(verificationId, smsCode);
       // state remains authenticated, but we might want to refresh AuthUser
       final user = _authRepository.currentUser;
-      if (user != null && state.value != null) {
-         state = AsyncData(state.value!.copyWith(authUser: user));
+      if (user != null && state.valueOrNull != null) {
+         state = AsyncData(state.valueOrNull!.copyWith(authUser: user));
       }
     } catch (e, st) {
       state = AsyncError(e, st);

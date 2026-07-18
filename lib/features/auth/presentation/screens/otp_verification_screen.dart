@@ -43,11 +43,21 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
 
       if (isAlreadyLoggedIn) {
         await ref.read(authProvider.notifier).linkPhoneNumber(otp);
+        if (mounted) {
+          context.go('/'); // Navigate back home after linking
+        }
       } else {
         await ref.read(authProvider.notifier).verifyOtp(otp);
+        if (mounted) {
+          // Check if they need onboarding, router might catch it first, but just in case:
+          final newState = ref.read(authProvider).valueOrNull;
+          if (newState?.status == AuthStatus.needsOnboarding) {
+            context.go('/role-selection');
+          } else {
+            context.go('/');
+          }
+        }
       }
-      
-      // If successful, authStateChanges will redirect to home/onboarding via GoRouter's redirect logic.
     } catch (e) {
       if (mounted) {
         setState(() {

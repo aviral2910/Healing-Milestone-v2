@@ -17,6 +17,19 @@ class _PhoneAuthScreenState extends ConsumerState<PhoneAuthScreen> {
   bool _isLoading = false;
   String _error = '';
 
+  String _getInitialCountryCode() {
+    final country = View.of(context).platformDispatcher.locale.countryCode;
+    
+    // If device locale is generic English (US) or null, use a smart timezone heuristic
+    if (country == null || country == 'US') {
+      final offset = DateTime.now().timeZoneOffset.inMinutes;
+      if (offset == 330) return 'IN'; // India
+      if (offset == 60 || offset == 120) return 'GB'; // Europe/UK
+      if (offset >= 480 && offset <= 660) return 'AU'; // Australia/Asia
+    }
+    return country ?? 'US';
+  }
+
   void _sendOtp() async {
     final phone = _completePhoneNumber;
     if (phone.isEmpty) {
@@ -52,7 +65,7 @@ class _PhoneAuthScreenState extends ConsumerState<PhoneAuthScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final initialCountry = View.of(context).platformDispatcher.locale.countryCode ?? 'US';
+    final initialCountry = _getInitialCountryCode();
     
     // Listen for global auth errors
     ref.listen<AsyncValue<AuthState>>(authProvider, (previous, next) {

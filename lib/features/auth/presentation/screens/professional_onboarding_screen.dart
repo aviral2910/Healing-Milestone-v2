@@ -40,6 +40,7 @@ class _ProfessionalOnboardingScreenState extends ConsumerState<ProfessionalOnboa
       final newUserModel = UserModel(
         userId: user.uid,
         email: user.email ?? '',
+        phoneNumber: user.phoneNumber,
         userName: user.displayName ?? 'New User',
         profilePicture: user.photoUrl,
         role: widget.role,
@@ -60,6 +61,7 @@ class _ProfessionalOnboardingScreenState extends ConsumerState<ProfessionalOnboa
         final newUserModel = UserModel(
           userId: user.uid,
           email: user.email ?? '',
+          phoneNumber: user.phoneNumber,
           userName: _nameController.text.trim().isNotEmpty ? _nameController.text.trim() : (user.displayName ?? 'New User'),
           profilePicture: user.photoUrl,
           role: widget.role,

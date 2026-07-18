@@ -38,6 +38,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Protected routes
       final isProtectedRoute = state.matchedLocation == '/create' || state.matchedLocation == '/profile';
 
+      if (authState?.status == AuthStatus.unauthenticated && isGoingToOnboarding) {
+        return '/login';
+      }
+
       if (needsOnboarding && !isGoingToOnboarding) {
         return '/role-selection';
       }
