@@ -10,7 +10,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:async';
 import '../../../../features/posts/data/hashtag_repository.dart';
-import '../widgets/media_upload_bottom_sheet.dart';
+import '../../../../features/auth/data/repository_providers.dart';
 
 class PostCreationScreen extends StatefulHookConsumerWidget {
   const PostCreationScreen({Key? key}) : super(key: key);
@@ -28,19 +28,27 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
 
   XFile? _selectedImage;
   bool _isUploading = false;
-  
+
   final TextEditingController _tagController = TextEditingController();
   List<String> _selectedTags = [];
   List<String> _suggestions = [];
   Timer? _debounce;
   bool _isSearchingTags = false;
 
+  final TextEditingController _userSearchController = TextEditingController();
+  List<UserModel> _selectedUsers = [];
+  List<UserModel> _userSuggestions = [];
+  Timer? _userDebounce;
+  bool _isSearchingUsers = false;
+
   @override
   void dispose() {
     _titleController.dispose();
     _contentController.dispose();
     _tagController.dispose();
+    _userSearchController.dispose();
     _debounce?.cancel();
+    _userDebounce?.cancel();
     super.dispose();
   }
 
@@ -48,10 +56,13 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
     if (_titleController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('A title is mandatory for your story.', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          content: const Text('A title is mandatory for your story.',
+              style:
+                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           backgroundColor: Theme.of(context).colorScheme.error,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       );
       return;
@@ -79,7 +90,9 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
         heading: _titleController.text.trim(),
         description: _contentController.text.trim(),
         publishedAt: DateTime.now(),
-        shortDescription: _contentController.text.trim().length > 50 ? _contentController.text.trim().substring(0, 50) : _contentController.text.trim(),
+        shortDescription: _contentController.text.trim().length > 50
+            ? _contentController.text.trim().substring(0, 50)
+            : _contentController.text.trim(),
         mainImage: imageUrl ?? '',
         authorId: user.userId,
         qrId: '',
@@ -89,6 +102,7 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
         authorRole: user.role,
         type: _selectedType,
         hashtagsList: _selectedTags,
+        taggedPeople: _selectedUsers.map((u) => u.userId).toList(),
       );
 
       await ref.read(storyRepositoryProvider).createStory(story);
@@ -101,7 +115,9 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Post published successfully!', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            content: const Text('Post published successfully!',
+                style: TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.bold)),
             backgroundColor: Colors.green,
             behavior: SnackBarBehavior.floating,
           ),
@@ -112,7 +128,8 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to publish: $e', style: const TextStyle(color: Colors.white)),
+            content: Text('Failed to publish: $e',
+                style: const TextStyle(color: Colors.white)),
             backgroundColor: Theme.of(context).colorScheme.error,
             behavior: SnackBarBehavior.floating,
           ),
@@ -131,7 +148,7 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
     final picker = ImagePicker();
     // Use imageQuality to compress the image and maxWidth/maxHeight to limit the resolution
     final image = await picker.pickImage(
-      source: ImageSource.gallery, 
+      source: ImageSource.gallery,
       imageQuality: 70,
       maxWidth: 1200,
       maxHeight: 1200,
@@ -145,9 +162,9 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
 
   void _onTagChanged(String query) {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
-    
+
     final cleanQuery = query.toLowerCase().trim();
-    
+
     if (cleanQuery.isEmpty) {
       setState(() {
         _suggestions = [];
@@ -161,7 +178,8 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
     List<String> localMatches = [];
     if (trendingAsync.hasValue && trendingAsync.value != null) {
       localMatches = trendingAsync.value!
-          .where((tag) => tag.startsWith(cleanQuery) && !_selectedTags.contains(tag))
+          .where((tag) =>
+              tag.startsWith(cleanQuery) && !_selectedTags.contains(tag))
           .take(4)
           .toList();
     }
@@ -181,10 +199,15 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
     // 2. Server fallback with debounce
     _debounce = Timer(const Duration(milliseconds: 400), () async {
       try {
-        final results = await ref.read(hashtagRepositoryProvider).searchHashtags(cleanQuery);
+        final results = await ref
+            .read(hashtagRepositoryProvider)
+            .searchHashtags(cleanQuery);
         if (mounted) {
           setState(() {
-            _suggestions = results.where((tag) => !_selectedTags.contains(tag)).take(4).toList();
+            _suggestions = results
+                .where((tag) => !_selectedTags.contains(tag))
+                .take(4)
+                .toList();
             _isSearchingTags = false;
           });
         }
@@ -199,7 +222,8 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
   }
 
   void _addTag(String tag) {
-    final cleanTag = tag.toLowerCase().trim().replaceAll(RegExp(r'[^a-z0-9]'), '');
+    final cleanTag =
+        tag.toLowerCase().trim().replaceAll(RegExp(r'[^a-z0-9]'), '');
     if (cleanTag.isNotEmpty && !_selectedTags.contains(cleanTag)) {
       setState(() {
         _selectedTags.add(cleanTag);
@@ -209,22 +233,73 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
     }
   }
 
+  void _onUserSearchChanged(String query) {
+    if (_userDebounce?.isActive ?? false) _userDebounce!.cancel();
+
+    final cleanQuery = query.toLowerCase().trim();
+
+    if (cleanQuery.isEmpty) {
+      setState(() {
+        _userSuggestions = [];
+        _isSearchingUsers = false;
+      });
+      return;
+    }
+
+    setState(() {
+      _isSearchingUsers = true;
+    });
+
+    _userDebounce = Timer(const Duration(milliseconds: 400), () async {
+      try {
+        final results = await ref.read(userRepositoryProvider).searchUsers(cleanQuery);
+        if (mounted) {
+          setState(() {
+            _userSuggestions = results
+                .where((u) => !_selectedUsers.any((selected) => selected.userId == u.userId))
+                .take(4)
+                .toList();
+            _isSearchingUsers = false;
+          });
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() {
+            _isSearchingUsers = false;
+          });
+        }
+      }
+    });
+  }
+
+  void _addUser(UserModel user) {
+    if (!_selectedUsers.any((u) => u.userId == user.userId)) {
+      setState(() {
+        _selectedUsers.add(user);
+        _userSearchController.clear();
+        _userSuggestions = [];
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final user = ref.watch(currentUserProvider);
-    if (user == null) return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    final bool isProOrOrg = user.role == UserRole.healthcareProfessional || user.role == UserRole.organization;
-    
+    if (user == null)
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    final bool isProOrOrg = user.role == UserRole.healthcareProfessional ||
+        user.role == UserRole.organization;
+
     List<StoryType> allowedTypes = [StoryType.story];
     if (isProOrOrg) {
       allowedTypes.addAll([StoryType.finding, StoryType.awareness]);
     }
-    
+
     if (!allowedTypes.contains(_selectedType)) {
       _selectedType = StoryType.story;
     }
-    
+
     return Scaffold(
       backgroundColor: const Color(0xFF0F0F0F),
       appBar: AppBar(
@@ -236,7 +311,8 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
         ),
         actions: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -253,12 +329,19 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                   shadowColor: Colors.transparent,
                   foregroundColor: const Color(0xFF1A1A1A),
                   disabledBackgroundColor: Colors.transparent,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24)),
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                 ),
-                child: _isUploading 
-                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Color(0xFF1A1A1A), strokeWidth: 2))
-                    : const Text('Publish', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                child: _isUploading
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                            color: Color(0xFF1A1A1A), strokeWidth: 2))
+                    : const Text('Publish',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16)),
               ),
             ),
           )
@@ -282,18 +365,27 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                       ? DecorationImage(
                           image: FileImage(File(_selectedImage!.path)),
                           fit: BoxFit.cover,
-                          colorFilter: ColorFilter.mode(Colors.black.withValues(alpha: 0.3), BlendMode.darken),
+                          colorFilter: ColorFilter.mode(
+                              Colors.black.withValues(alpha: 0.3),
+                              BlendMode.darken),
                         )
                       : null,
-                  border: _selectedImage == null ? Border.all(color: const Color(0xFF333333), width: 1.5) : null,
+                  border: _selectedImage == null
+                      ? Border.all(color: const Color(0xFF333333), width: 1.5)
+                      : null,
                 ),
                 child: _selectedImage == null
                     ? Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.add_photo_alternate_outlined, color: theme.primaryColor, size: 48),
+                          Icon(Icons.add_photo_alternate_outlined,
+                              color: theme.primaryColor, size: 48),
                           const SizedBox(height: 12),
-                          const Text('Add Cover Image', style: TextStyle(color: Color(0xFFA0A0A0), fontSize: 16, fontWeight: FontWeight.w500)),
+                          const Text('Add Cover Image',
+                              style: TextStyle(
+                                  color: Color(0xFFA0A0A0),
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500)),
                         ],
                       )
                     : Stack(
@@ -302,8 +394,10 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                             top: 12,
                             right: 12,
                             child: IconButton(
-                              icon: const Icon(Icons.close, color: Colors.white),
-                              style: IconButton.styleFrom(backgroundColor: Colors.black54),
+                              icon:
+                                  const Icon(Icons.close, color: Colors.white),
+                              style: IconButton.styleFrom(
+                                  backgroundColor: Colors.black54),
                               onPressed: () {
                                 setState(() {
                                   _selectedImage = null;
@@ -315,7 +409,8 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                             bottom: 16,
                             left: 16,
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 6),
                               decoration: BoxDecoration(
                                 color: Colors.black54,
                                 borderRadius: BorderRadius.circular(20),
@@ -323,9 +418,14 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                               child: const Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(Icons.edit, color: Colors.white, size: 14),
+                                  Icon(Icons.edit,
+                                      color: Colors.white, size: 14),
                                   SizedBox(width: 6),
-                                  Text('Change Cover', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
+                                  Text('Change Cover',
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600)),
                                 ],
                               ),
                             ),
@@ -334,16 +434,21 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                       ),
               ),
             ),
-            
+
             // Text Inputs
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   TextField(
                     controller: _titleController,
-                    style: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: Colors.white, fontFamily: 'Outfit'),
+                    style: const TextStyle(
+                        fontSize: 36,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        fontFamily: 'Outfit'),
                     decoration: InputDecoration(
                       hintText: 'Title your post',
                       hintStyle: TextStyle(
@@ -359,11 +464,13 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                   const SizedBox(height: 8),
                   TextField(
                     controller: _contentController,
-                    style: const TextStyle(fontSize: 18, height: 1.6, color: Color(0xFFE0E0E0)),
+                    style: const TextStyle(
+                        fontSize: 18, height: 1.6, color: Color(0xFFE0E0E0)),
                     maxLines: null,
                     minLines: 5,
                     decoration: InputDecoration(
-                      hintText: 'Share your experience, feelings, and milestones...',
+                      hintText:
+                          'Share your experience, feelings, and milestones...',
                       hintStyle: TextStyle(
                         fontSize: 18,
                         color: Colors.white.withValues(alpha: 0.3),
@@ -376,14 +483,20 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
             ),
 
             const SizedBox(height: 16),
-            
+
             // Hashtags Section
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Tags', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Outfit')),
+                  const Text('Tags',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Outfit')),
                   const SizedBox(height: 12),
                   // Selected Tags Chips
                   if (_selectedTags.isNotEmpty) ...[
@@ -392,7 +505,11 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                       runSpacing: 8.0,
                       children: _selectedTags.map((tag) {
                         return Chip(
-                          label: Text('#$tag', style: const TextStyle(color: Color(0xFF1A1A1A), fontWeight: FontWeight.bold, fontSize: 12)),
+                          label: Text('#$tag',
+                              style: const TextStyle(
+                                  color: Color(0xFF1A1A1A),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12)),
                           backgroundColor: theme.primaryColor,
                           deleteIconColor: const Color(0xFF1A1A1A),
                           onDeleted: () {
@@ -418,14 +535,21 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                       style: const TextStyle(color: Colors.white),
                       decoration: InputDecoration(
                         hintText: 'Add a tag (e.g. cancerfree)',
-                        hintStyle: TextStyle(color: Colors.white.withOpacity(0.3)),
+                        hintStyle:
+                            TextStyle(color: Colors.white.withOpacity(0.3)),
                         border: InputBorder.none,
                         prefixText: '# ',
-                        prefixStyle: TextStyle(color: theme.primaryColor, fontWeight: FontWeight.bold),
-                        suffixIcon: _isSearchingTags 
+                        prefixStyle: TextStyle(
+                            color: theme.primaryColor,
+                            fontWeight: FontWeight.bold),
+                        suffixIcon: _isSearchingTags
                             ? const Padding(
                                 padding: EdgeInsets.all(12.0),
-                                child: SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+                                child: SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2)),
                               )
                             : null,
                       ),
@@ -447,7 +571,8 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                         children: _suggestions.map((suggestion) {
                           return ListTile(
                             dense: true,
-                            title: Text('#$suggestion', style: const TextStyle(color: Colors.white)),
+                            title: Text('#$suggestion',
+                                style: const TextStyle(color: Colors.white)),
                             onTap: () {
                               _addTag(suggestion);
                             },
@@ -459,8 +584,117 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
               ),
             ),
 
+            const SizedBox(height: 16),
+
+            // User Tagging Section
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Tag People & Medical Professionals',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Outfit')),
+                  const SizedBox(height: 12),
+                  // Selected Users Chips
+                  if (_selectedUsers.isNotEmpty) ...[
+                    Wrap(
+                      spacing: 8.0,
+                      runSpacing: 8.0,
+                      children: _selectedUsers.map((u) {
+                        return Chip(
+                          avatar: CircleAvatar(
+                            backgroundImage: NetworkImage(u.profilePicture ??
+                                'https://api.dicebear.com/7.x/avataaars/png?seed=${u.userId}'),
+                          ),
+                          label: Text('@${u.username ?? u.displayName}',
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12)),
+                          backgroundColor: const Color(0xFF222222),
+                          deleteIconColor: Colors.white70,
+                          onDeleted: () {
+                            setState(() {
+                              _selectedUsers.removeWhere((selected) => selected.userId == u.userId);
+                            });
+                          },
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                  // User Input
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF161616),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFF2A2A2A)),
+                    ),
+                    child: TextField(
+                      controller: _userSearchController,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: InputDecoration(
+                        hintText: 'Search people to tag...',
+                        hintStyle:
+                            TextStyle(color: Colors.white.withOpacity(0.3)),
+                        border: InputBorder.none,
+                        prefixIcon: const Icon(Icons.search, color: Colors.white54, size: 20),
+                        prefixIconConstraints: const BoxConstraints(minWidth: 40),
+                        suffixIcon: _isSearchingUsers
+                            ? const Padding(
+                                padding: EdgeInsets.all(12.0),
+                                child: SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2)),
+                              )
+                            : null,
+                      ),
+                      onChanged: _onUserSearchChanged,
+                    ),
+                  ),
+                  // User Suggestions Dropdown
+                  if (_userSuggestions.isNotEmpty)
+                    Container(
+                      margin: const EdgeInsets.only(top: 8),
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF161616),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFF2A2A2A)),
+                      ),
+                      child: Column(
+                        children: _userSuggestions.map((u) {
+                          return ListTile(
+                            dense: true,
+                            leading: CircleAvatar(
+                              radius: 16,
+                              backgroundImage: NetworkImage(u.profilePicture ??
+                                  'https://api.dicebear.com/7.x/avataaars/png?seed=${u.userId}'),
+                            ),
+                            title: Text(u.displayName,
+                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                            subtitle: u.username != null ? Text('@${u.username}', style: TextStyle(color: theme.primaryColor, fontSize: 12)) : null,
+                            onTap: () {
+                              _addUser(u);
+                            },
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+
             const SizedBox(height: 24),
-            
+
             // Settings Card
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
@@ -473,9 +707,19 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Post Settings', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Outfit')),
+                  const Text('Post Settings',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Outfit')),
                   const SizedBox(height: 20),
-                  const Text('POST TYPE', style: TextStyle(color: Color(0xFFA0A0A0), fontSize: 12, fontWeight: FontWeight.w600, letterSpacing: 1.2)),
+                  const Text('POST TYPE',
+                      style: TextStyle(
+                          color: Color(0xFFA0A0A0),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 1.2)),
                   const SizedBox(height: 12),
                   Wrap(
                     spacing: 12.0,
@@ -488,14 +732,19 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
-                            color: isSelected ? const Color(0xFF1A1A1A) : Colors.white70,
+                            color: isSelected
+                                ? const Color(0xFF1A1A1A)
+                                : Colors.white70,
                           ),
                         ),
                         selected: isSelected,
                         selectedColor: theme.primaryColor,
                         backgroundColor: const Color(0xFF222222),
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: const BorderSide(color: Colors.transparent)),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            side: const BorderSide(color: Colors.transparent)),
                         onSelected: (selected) {
                           if (selected) setState(() => _selectedType = type);
                         },
@@ -513,16 +762,25 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                         children: [
                           Container(
                             padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(color: const Color(0xFF222222), borderRadius: BorderRadius.circular(10)),
-                            child: const Icon(Icons.visibility_off_outlined, color: Colors.white, size: 20),
+                            decoration: BoxDecoration(
+                                color: const Color(0xFF222222),
+                                borderRadius: BorderRadius.circular(10)),
+                            child: const Icon(Icons.visibility_off_outlined,
+                                color: Colors.white, size: 20),
                           ),
                           const SizedBox(width: 16),
                           const Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('Post Anonymously', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+                              Text('Post Anonymously',
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600)),
                               SizedBox(height: 4),
-                              Text('Hide your name and profile picture', style: TextStyle(color: Color(0xFFA0A0A0), fontSize: 12)),
+                              Text('Hide your name and profile picture',
+                                  style: TextStyle(
+                                      color: Color(0xFFA0A0A0), fontSize: 12)),
                             ],
                           ),
                         ],
@@ -530,7 +788,8 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                       Switch(
                         value: _isAnonymous,
                         activeColor: theme.primaryColor,
-                        onChanged: (value) => setState(() => _isAnonymous = value),
+                        onChanged: (value) =>
+                            setState(() => _isAnonymous = value),
                       ),
                     ],
                   ),

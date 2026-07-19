@@ -15,6 +15,7 @@ import '../../../posts/data/story_providers.dart';
 
 import '../../../../core/data/dummy_data.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+import 'package:go_router/go_router.dart';
 
 class StoryDetailScreen extends ConsumerWidget {
   final String milestoneId;
@@ -292,6 +293,15 @@ class StoryDetailScreen extends ConsumerWidget {
                         child: _ExpandableTagsList(tags: story.hashtagsList),
                       ),
                     ],
+                    
+                    // Tagged People
+                    if (story.taggedPeople.isNotEmpty) ...[
+                      const SizedBox(height: 16),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                        child: _TaggedPeopleList(taggedUserIds: story.taggedPeople),
+                      ),
+                    ],
                     const SizedBox(height: 32),
 
                     // The Immutable Post Widget Template - NO DIVIDERS
@@ -454,3 +464,75 @@ class _ExpandableTagsListState extends State<_ExpandableTagsList> {
   }
 }
 
+class _TaggedPeopleList extends ConsumerWidget {
+  final List<String> taggedUserIds;
+  const _TaggedPeopleList({Key? key, required this.taggedUserIds}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'With:',
+          style: TextStyle(
+            color: const Color(0xFFA1A1A6), // Titanium
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8.0,
+          runSpacing: 8.0,
+          children: taggedUserIds.map((userId) {
+            final userAsync = ref.watch(userByIdProvider(userId));
+            return userAsync.when(
+              data: (user) {
+                if (user == null) return const SizedBox.shrink();
+                return GestureDetector(
+                  onTap: () {
+                    context.push('/user/${user.userId}');
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF222222),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: const Color(0xFF333333),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CircleAvatar(
+                          radius: 10,
+                          backgroundImage: NetworkImage(
+                            user.profilePicture ?? 'https://api.dicebear.com/7.x/avataaars/png?seed=${user.userId}'
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '@${user.username ?? user.displayName}',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+              loading: () => const SizedBox.shrink(),
+              error: (_, __) => const SizedBox.shrink(),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+}

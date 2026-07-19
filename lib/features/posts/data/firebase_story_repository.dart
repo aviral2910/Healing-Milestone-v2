@@ -26,6 +26,15 @@ class FirebaseStoryRepository implements StoryRepository {
   }
 
   @override
+  Stream<List<StoryModel>> getStoriesTaggedWithUser(String userId) {
+    return _stories.where('taggedPeople', arrayContains: userId).snapshots().map((snapshot) {
+      final stories = snapshot.docs.map((doc) => StoryModel.fromMap(doc.data() as Map<String, dynamic>, doc.id)).toList();
+      stories.sort((a, b) => b.publishedAt.compareTo(a.publishedAt));
+      return stories;
+    });
+  }
+
+  @override
   Future<List<StoryModel>> getStoriesByHashtag(String hashtag, {int limit = 20}) async {
     final querySnapshot = await _stories
         .where('hashtagsList', arrayContains: hashtag)

@@ -24,6 +24,7 @@ class PublicProfileScreen extends ConsumerWidget {
     final theme = Theme.of(context);
     final userAsync = ref.watch(userByIdProvider(userId));
     final userStoriesAsync = ref.watch(userStoriesProvider(userId));
+    final taggedStoriesAsync = ref.watch(userTaggedStoriesProvider(userId));
 
     return Scaffold(
       body: userAsync.when(
@@ -35,7 +36,7 @@ class PublicProfileScreen extends ConsumerWidget {
           }
           
           return DefaultTabController(
-            length: 1, // Only show stories for now on public profiles
+            length: 2, // Stories and Tagged
             child: SafeArea(
               top: true,
               bottom: false,
@@ -211,22 +212,32 @@ class PublicProfileScreen extends ConsumerWidget {
                                   Icon(Icons.auto_awesome_mosaic_rounded, size: 24),
                               text: "Stories",
                             ),
+                            Tab(
+                              icon:
+                                  Icon(Icons.person_pin_rounded, size: 24),
+                              text: "Tagged",
+                            ),
                           ],
                         ),
                       ),
                     ),
                   ];
                 },
-                body: userStoriesAsync.when(
-                  loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFFD4AF37))),
-                  error: (err, stack) => const Center(child: Text('Failed to load stories', style: TextStyle(color: Colors.red))),
-                  data: (stories) {
-                    return TabBarView(
-                      children: [
-                        _StoryList(stories: stories),
-                      ],
-                    );
-                  },
+                body: TabBarView(
+                  children: [
+                    // Stories Tab
+                    userStoriesAsync.when(
+                      loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFFD4AF37))),
+                      error: (err, stack) => const Center(child: Text('Failed to load stories', style: TextStyle(color: Colors.red))),
+                      data: (stories) => _StoryList(stories: stories),
+                    ),
+                    // Tagged Tab
+                    taggedStoriesAsync.when(
+                      loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFFD4AF37))),
+                      error: (err, stack) => const Center(child: Text('Failed to load tagged stories', style: TextStyle(color: Colors.red))),
+                      data: (stories) => _StoryList(stories: stories),
+                    ),
+                  ],
                 ),
               ),
             ),
