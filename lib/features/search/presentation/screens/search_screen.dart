@@ -299,7 +299,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
             return UserProfileCard(
               user: user,
               onTap: () {
-                // Navigate to public profile screen if it existed
+                context.push('/user/${user.userId}');
               },
             );
           },
