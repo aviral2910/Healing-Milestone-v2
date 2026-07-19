@@ -7,8 +7,9 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'features/accessibility/data/accessibility_providers.dart';
 
-// UAT Mode provider
+// UAT Mode providers
 final uatModeProvider = StateProvider<bool>((ref) => false);
+final devicePreviewProvider = StateProvider<bool>((ref) => false);
 
 // Selected Tag Provider for Post Screen
 final selectedTagProvider = StateProvider<String>((ref) => 'All');
@@ -33,7 +34,7 @@ class HealingMilestonesApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
     final accessibilityState = ref.watch(accessibilityProvider);
-    final isUatMode = ref.watch(uatModeProvider);
+    final isDevicePreview = ref.watch(devicePreviewProvider);
 
     // Apply accessibility scaling to the base dark theme
     ThemeData baseTheme = AppTheme.darkTheme;
@@ -44,7 +45,7 @@ class HealingMilestonesApp extends ConsumerWidget {
     );
 
     return DevicePreview(
-      enabled: isUatMode,
+      enabled: isDevicePreview,
       builder: (context) => MaterialApp.router(
         title: 'Healing Milestones',
         theme: baseTheme.copyWith(textTheme: scaledTextTheme),

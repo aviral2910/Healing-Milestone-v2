@@ -93,8 +93,7 @@ class CommonSliverAppBar extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             ),
             onPressed: () {
-              ref.read(uatModeProvider.notifier).state =
-                  !ref.read(uatModeProvider);
+              context.push(AppRoutes.uat);
             },
             child: const Text('UAT',
                 style: TextStyle(fontWeight: FontWeight.bold)),

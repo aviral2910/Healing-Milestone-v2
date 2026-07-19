@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:uuid/uuid.dart';
 import '../../../../core/models/user_model.dart';
 import '../../../../core/models/story_model.dart';
 import '../../../../features/auth/data/auth_provider.dart';
 import '../../../../features/posts/data/story_providers.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:async';
+import '../../../../core/utils/uat_dummy_data.dart';
 import '../../../../features/posts/data/hashtag_repository.dart';
 import '../../../../features/auth/data/repository_providers.dart';
+import '../../../../main.dart';
 
 class PostCreationScreen extends StatefulHookConsumerWidget {
   const PostCreationScreen({Key? key}) : super(key: key);
@@ -315,6 +317,20 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
           onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
+          if (ref.watch(uatModeProvider))
+            IconButton(
+              icon: const Icon(Icons.auto_fix_high, color: Color(0xFFD4AF37)),
+              tooltip: 'Populate Dummy Post',
+              onPressed: () {
+                final selected = UatDummyData.getRandomPost();
+                
+                setState(() {
+                  _titleController.text = selected['title'] as String;
+                  _contentController.text = selected['content'] as String;
+                  _selectedTags = List<String>.from(selected['tags'] as List);
+                });
+              },
+            ),
           Padding(
             padding:
                 const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
