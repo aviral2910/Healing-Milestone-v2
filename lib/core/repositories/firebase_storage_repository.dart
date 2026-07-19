@@ -20,4 +20,15 @@ class FirebaseStorageRepository implements StorageRepository {
     final ref = _storage.ref().child(path);
     await ref.delete();
   }
+
+  @override
+  Future<void> deleteImageFromUrl(String url) async {
+    if (url.isEmpty) return;
+    try {
+      final ref = _storage.refFromURL(url);
+      await ref.delete();
+    } catch (e) {
+      // Ignore if image doesn't exist or URL is invalid
+    }
+  }
 }

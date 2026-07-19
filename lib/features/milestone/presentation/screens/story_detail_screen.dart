@@ -170,6 +170,87 @@ class StoryDetailScreen extends ConsumerWidget {
                         onPressed: () => Navigator.of(context).pop(),
                       ),
                       actions: [
+                        if (currentUser?.userId == story.authorId)
+                          PopupMenuButton<String>(
+                            icon: const Icon(Icons.more_vert),
+                            onSelected: (value) async {
+                              if (value == 'edit') {
+                                context.push(AppRoutes.create, extra: story);
+                              } else if (value == 'delete') {
+                                final confirm = await showDialog<bool>(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    title: const Text('Delete Story'),
+                                    content: const Text('Are you sure you want to delete this story? This action cannot be undone.'),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(context, false),
+                                        child: const Text('Cancel'),
+                                      ),
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(context, true),
+                                        style: TextButton.styleFrom(foregroundColor: Colors.red),
+                                        child: const Text('Delete'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                                
+                                if (confirm == true) {
+                                  try {
+                                    if (story.mainImage.isNotEmpty) {
+                                      await ref.read(storageRepositoryProvider).deleteImageFromUrl(story.mainImage);
+                                    }
+                                    for (final asset in story.imageAssets) {
+                                      if (asset.isNotEmpty) {
+                                        await ref.read(storageRepositoryProvider).deleteImageFromUrl(asset);
+                                      }
+                                    }
+
+                                    await ref.read(storyRepositoryProvider).deleteStory(story.storyId);
+                                    final updatedUser = currentUser!.copyWith(
+                                      ownStories: currentUser.ownStories.where((id) => id != story.storyId).toList(),
+                                    );
+                                    await ref.read(authProvider.notifier).updateProfile(updatedUser);
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('Story deleted successfully')),
+                                      );
+                                      context.pop();
+                                    }
+                                  } catch (e) {
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text('Failed to delete: $e')),
+                                      );
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            itemBuilder: (context) => [
+                              const PopupMenuItem(
+                                value: 'edit',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.edit_outlined, size: 20),
+                                    SizedBox(width: 8),
+                                    Text('Edit Story'),
+                                  ],
+                                ),
+                              ),
+                              const PopupMenuItem(
+                                value: 'delete',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.delete_outline, size: 20, color: Colors.red),
+                                    SizedBox(width: 8),
+                                    Text('Delete Story', style: TextStyle(color: Colors.red)),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
                         IconButton(
                           icon: const Icon(Icons.settings_display_outlined),
                           onPressed: () =>

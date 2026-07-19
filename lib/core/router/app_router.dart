@@ -16,6 +16,7 @@ import '../../features/auth/presentation/screens/phone_auth_screen.dart';
 import '../../features/auth/presentation/screens/otp_verification_screen.dart';
 import '../../features/auth/data/auth_provider.dart';
 import '../../core/models/user_model.dart';
+import '../../core/models/story_model.dart';
 import 'app_routes.dart';
 
 class RouterNotifier extends ChangeNotifier {
@@ -88,7 +89,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppRoutes.create,
-        builder: (context, state) => const PostCreationScreen(),
+        builder: (context, state) {
+          final existingStory = state.extra as StoryModel?;
+          return PostCreationScreen(existingStory: existingStory);
+        },
       ),
       GoRoute(
         path: AppRoutes.login,
