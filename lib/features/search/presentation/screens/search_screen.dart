@@ -162,6 +162,13 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
     );
   }
 
+  String _truncateContent(String text, int length) {
+    if (text.length <= length) return text;
+    int end = text.lastIndexOf(' ', length);
+    if (end == -1) end = length;
+    return '${text.substring(0, end)}...';
+  }
+
   Widget _buildTagsAndStoriesTab() {
     if (_selectedHashtag != null) {
       final storiesAsync = ref.watch(hashtagStoriesProvider(_selectedHashtag!));
@@ -196,7 +203,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       child: StoryCard(
                         story: stories[index],
-                        content: stories[index].description,
+                        content: _truncateContent(stories[index].description, 180),
                         onTap: () {
                           context.push(AppRoutes.storyDetail(stories[index].storyId));
                         },

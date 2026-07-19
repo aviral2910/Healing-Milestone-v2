@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
@@ -597,6 +598,10 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                     child: TextField(
                       controller: _tagController,
                       style: const TextStyle(color: Colors.white),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9]')),
+                        _LowerCaseTextFormatter(),
+                      ],
                       decoration: InputDecoration(
                         hintText: 'Add a tag (e.g. cancerfree)',
                         hintStyle:
@@ -874,6 +879,17 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _LowerCaseTextFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    return TextEditingValue(
+      text: newValue.text.toLowerCase(),
+      selection: newValue.selection,
     );
   }
 }
