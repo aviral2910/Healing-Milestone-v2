@@ -5,6 +5,7 @@ abstract class StoryRepository {
   Stream<List<StoryModel>> getUserStories(String userId);
   Stream<List<StoryModel>> getStoriesTaggedWithUser(String userId);
   Future<List<StoryModel>> getStoriesByHashtag(String hashtag);
+  Stream<List<StoryModel>> watchStoriesByHashtag(String hashtag);
   Stream<StoryModel?> getStoryById(String storyId);
   Future<void> createStory(StoryModel story);
   Future<void> updateStory(StoryModel story);

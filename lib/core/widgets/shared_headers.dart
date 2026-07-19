@@ -22,9 +22,9 @@ class CommonSliverAppBar extends ConsumerWidget {
     final isProfileLoading = isAuthLoading || (isAuthenticated && user == null);
 
     return SliverAppBar(
-      floating: false,
-      pinned: true,
-      snap: false,
+      floating: true,
+      pinned: false,
+      snap: true,
       centerTitle: true,
       backgroundColor: theme.scaffoldBackgroundColor,
       elevation: 0,

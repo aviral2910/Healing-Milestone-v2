@@ -90,73 +90,83 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        backgroundColor: theme.scaffoldBackgroundColor,
-        elevation: 0,
-        toolbarHeight: 0,
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: theme.primaryColor,
-          labelColor: theme.primaryColor,
-          unselectedLabelColor: const Color(0xFFA1A1A6),
-          tabs: const [
-            Tab(text: 'Tags & Stories'),
-            Tab(text: 'People'),
-          ],
-        ),
-      ),
       body: SafeArea(
-        child: Column(
-          children: [
-            const SizedBox(height: 16),
-            // Search Bar
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: const Color(0xFF151515),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: const Color(0xFF2A2A2A),
-                    width: 1.0,
-                  ),
-                ),
-                child: TextField(
-                  controller: _searchController,
-                  focusNode: _focusNode,
-                  style: const TextStyle(color: Colors.white),
-                  onChanged: _onSearchChanged,
-                  decoration: InputDecoration(
-                    hintText: _tabController.index == 0 ? 'Search hashtags...' : 'Search people...',
-                    hintStyle: const TextStyle(color: Color(0xFF7A7A7A)),
-                    prefixIcon: const Icon(Icons.search, color: Color(0xFFA1A1A6)),
-                    suffixIcon: IconButton(
-                      icon: const Icon(Icons.clear, color: Color(0xFFA1A1A6), size: 20),
-                      onPressed: () {
-                        _searchController.clear();
-                        _onSearchChanged('');
-                        if (_selectedHashtag != null) {
-                          setState(() => _selectedHashtag = null);
-                        }
-                      },
+        child: NestedScrollView(
+          controller: widget.scrollController,
+          headerSliverBuilder: (context, innerBoxIsScrolled) {
+            return [
+              SliverAppBar(
+                backgroundColor: theme.scaffoldBackgroundColor,
+                floating: true,
+                pinned: false,
+                snap: true,
+                elevation: 0,
+                titleSpacing: 0,
+                toolbarHeight: 72,
+                title: Padding(
+                  padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF151515),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: const Color(0xFF2A2A2A),
+                        width: 1.0,
+                      ),
                     ),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                    child: TextField(
+                      controller: _searchController,
+                      focusNode: _focusNode,
+                      style: const TextStyle(color: Colors.white),
+                      onChanged: _onSearchChanged,
+                      decoration: InputDecoration(
+                        hintText: _tabController.index == 0 ? 'Search hashtags...' : 'Search people...',
+                        hintStyle: const TextStyle(color: Color(0xFF7A7A7A)),
+                        prefixIcon: const Icon(Icons.search, color: Color(0xFFA1A1A6)),
+                        suffixIcon: IconButton(
+                          icon: const Icon(Icons.clear, color: Color(0xFFA1A1A6), size: 20),
+                          onPressed: () {
+                            _searchController.clear();
+                            _onSearchChanged('');
+                            if (_selectedHashtag != null) {
+                              setState(() => _selectedHashtag = null);
+                            }
+                          },
+                        ),
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                      ),
+                    ),
+                  ),
+                ),
+                bottom: PreferredSize(
+                  preferredSize: const Size.fromHeight(64),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 16),
+                      TabBar(
+                        controller: _tabController,
+                        indicatorColor: theme.primaryColor,
+                        labelColor: theme.primaryColor,
+                        unselectedLabelColor: const Color(0xFFA1A1A6),
+                        tabs: const [
+                          Tab(text: 'Tags & Stories'),
+                          Tab(text: 'People'),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildTagsAndStoriesTab(),
-                  _buildPeopleTab(),
-                ],
-              ),
-            ),
-          ],
+            ];
+          },
+          body: TabBarView(
+            controller: _tabController,
+            children: [
+              _buildTagsAndStoriesTab(),
+              _buildPeopleTab(),
+            ],
+          ),
         ),
       ),
     );
@@ -196,7 +206,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
                   return const Center(child: Text('No stories found for this tag.', style: TextStyle(color: Colors.grey)));
                 }
                 return ListView.builder(
-                  controller: widget.scrollController,
                   itemCount: stories.length,
                   itemBuilder: (context, index) {
                     return Padding(
@@ -301,7 +310,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
           return const Center(child: Text('No people found.', style: TextStyle(color: Colors.grey)));
         }
         return ListView.builder(
-          controller: widget.scrollController,
           itemCount: users.length,
           itemBuilder: (context, index) {
             final user = users[index];

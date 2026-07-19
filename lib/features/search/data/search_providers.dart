@@ -30,9 +30,9 @@ final searchHashtagsProvider = FutureProvider<List<String>>((ref) async {
   return await hashtagRepository.searchHashtags(query);
 });
 
-// Provider to fetch stories containing a specific hashtag
-final hashtagStoriesProvider = FutureProvider.family<List<StoryModel>, String>((ref, hashtag) async {
-  if (hashtag.isEmpty) return [];
+// Provider to fetch stories containing a specific hashtag (real-time stream)
+final hashtagStoriesProvider = StreamProvider.family<List<StoryModel>, String>((ref, hashtag) {
+  if (hashtag.isEmpty) return Stream.value([]);
   final repo = ref.watch(storyRepositoryProvider);
-  return await repo.getStoriesByHashtag(hashtag);
+  return repo.watchStoriesByHashtag(hashtag);
 });
