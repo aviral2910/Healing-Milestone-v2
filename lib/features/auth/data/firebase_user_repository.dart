@@ -81,6 +81,27 @@ class FirebaseUserRepository implements UserRepository {
   }
 
   @override
+  Future<List<UserModel>> getUsersByIds(List<String> uids) async {
+    if (uids.isEmpty) return [];
+    
+    List<UserModel> result = [];
+    // Firestore 'whereIn' supports max 30 items
+    for (int i = 0; i < uids.length; i += 30) {
+      final chunk = uids.sublist(i, i + 30 > uids.length ? uids.length : i + 30);
+      final snapshot = await _firestore
+          .collection('users')
+          .where('userId', whereIn: chunk)
+          .get();
+          
+      result.addAll(snapshot.docs.map((doc) => UserModel.fromMap(doc.data())));
+    }
+    
+    // Maintain the order of the original uids list
+    final userMap = {for (var user in result) user.userId: user};
+    return uids.where((uid) => userMap.containsKey(uid)).map((uid) => userMap[uid]!).toList();
+  }
+
+  @override
   Future<void> toggleFollow(String currentUserId, String targetUserId) async {
     final currentUserRef = _firestore.collection('users').doc(currentUserId);
     final targetUserRef = _firestore.collection('users').doc(targetUserId);

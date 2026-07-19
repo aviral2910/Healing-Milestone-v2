@@ -154,14 +154,26 @@ class PublicProfileScreen extends ConsumerWidget {
                                       color: const Color(0xFF2A2A2A)),
                                   _StatColumn(
                                       label: 'Followers',
-                                      count: _formatCount(user.followersCount)),
+                                      count: _formatCount(user.followersCount),
+                                      onTap: () {
+                                        context.push('/user-list', extra: {
+                                          'title': 'Followers',
+                                          'userIds': user.followersList,
+                                        });
+                                      }),
                                   Container(
                                       width: 1,
                                       height: 40,
                                       color: const Color(0xFF2A2A2A)),
                                   _StatColumn(
                                       label: 'Following',
-                                      count: _formatCount(user.followingCount)),
+                                      count: _formatCount(user.followingCount),
+                                      onTap: () {
+                                        context.push('/user-list', extra: {
+                                          'title': 'Following',
+                                          'userIds': user.followingList,
+                                        });
+                                      }),
                                 ],
                               ),
                             ),
@@ -332,15 +344,19 @@ class _StoryList extends StatelessWidget {
 class _StatColumn extends StatelessWidget {
   final String label;
   final String count;
+  final VoidCallback? onTap;
 
-  const _StatColumn({Key? key, required this.label, required this.count})
+  const _StatColumn({Key? key, required this.label, required this.count, this.onTap})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Column(
-      children: [
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Column(
+        children: [
         Text(
           count,
           style: theme.textTheme.titleLarge?.copyWith(
@@ -358,6 +374,7 @@ class _StatColumn extends StatelessWidget {
           ),
         ),
       ],
+      ),
     );
   }
 }

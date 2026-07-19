@@ -5,6 +5,7 @@ import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/profile/presentation/screens/public_profile_screen.dart';
 import '../../features/profile/presentation/screens/edit_profile_screen.dart';
+import '../../features/profile/presentation/screens/user_list_screen.dart';
 import '../../features/milestone/presentation/screens/post_creation_screen.dart';
 import '../../features/milestone/presentation/screens/story_detail_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
@@ -107,6 +108,15 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final id = state.pathParameters['id']!;
           return PublicProfileScreen(userId: id);
+        },
+      ),
+      GoRoute(
+        path: '/user-list',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          final title = extra?['title'] as String? ?? 'Users';
+          final userIds = extra?['userIds'] as List<String>? ?? [];
+          return UserListScreen(title: title, userIds: userIds);
         },
       ),
       GoRoute(

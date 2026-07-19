@@ -274,3 +274,9 @@ final userByIdProvider = StreamProvider.family<UserModel?, String>((ref, userId)
   final userRepository = ref.watch(userRepositoryProvider);
   return userRepository.getUserStream(userId);
 });
+
+// A provider to fetch a list of users by their IDs
+final getUsersByIdsProvider = FutureProvider.family<List<UserModel>, List<String>>((ref, userIds) {
+  final userRepository = ref.watch(userRepositoryProvider);
+  return userRepository.getUsersByIds(userIds);
+});
