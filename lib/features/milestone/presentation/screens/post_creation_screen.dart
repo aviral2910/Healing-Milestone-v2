@@ -8,6 +8,8 @@ import '../../../../features/auth/data/auth_provider.dart';
 import '../../../../features/posts/data/story_providers.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:go_router/go_router.dart';
+import 'dart:async';
+import '../../../../features/posts/data/hashtag_repository.dart';
 import '../widgets/media_upload_bottom_sheet.dart';
 
 class PostCreationScreen extends StatefulHookConsumerWidget {
@@ -26,11 +28,19 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
 
   XFile? _selectedImage;
   bool _isUploading = false;
+  
+  final TextEditingController _tagController = TextEditingController();
+  List<String> _selectedTags = [];
+  List<String> _suggestions = [];
+  Timer? _debounce;
+  bool _isSearchingTags = false;
 
   @override
   void dispose() {
     _titleController.dispose();
     _contentController.dispose();
+    _tagController.dispose();
+    _debounce?.cancel();
     super.dispose();
   }
 
@@ -78,6 +88,7 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
         displayAuthorName: !_isAnonymous,
         authorRole: user.role,
         type: _selectedType,
+        hashtagsList: _selectedTags,
       );
 
       await ref.read(storyRepositoryProvider).createStory(story);
@@ -128,6 +139,72 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
     if (image != null) {
       setState(() {
         _selectedImage = image;
+      });
+    }
+  }
+
+  void _onTagChanged(String query) {
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    
+    final cleanQuery = query.toLowerCase().trim();
+    
+    if (cleanQuery.isEmpty) {
+      setState(() {
+        _suggestions = [];
+        _isSearchingTags = false;
+      });
+      return;
+    }
+
+    // 1. Check local cache (trending tags) first
+    final trendingAsync = ref.read(trendingHashtagsProvider);
+    List<String> localMatches = [];
+    if (trendingAsync.hasValue && trendingAsync.value != null) {
+      localMatches = trendingAsync.value!
+          .where((tag) => tag.startsWith(cleanQuery) && !_selectedTags.contains(tag))
+          .take(4)
+          .toList();
+    }
+
+    if (localMatches.isNotEmpty) {
+      setState(() {
+        _suggestions = localMatches;
+        _isSearchingTags = false;
+      });
+      return;
+    }
+
+    setState(() {
+      _isSearchingTags = true;
+    });
+
+    // 2. Server fallback with debounce
+    _debounce = Timer(const Duration(milliseconds: 400), () async {
+      try {
+        final results = await ref.read(hashtagRepositoryProvider).searchHashtags(cleanQuery);
+        if (mounted) {
+          setState(() {
+            _suggestions = results.where((tag) => !_selectedTags.contains(tag)).take(4).toList();
+            _isSearchingTags = false;
+          });
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() {
+            _isSearchingTags = false;
+          });
+        }
+      }
+    });
+  }
+
+  void _addTag(String tag) {
+    final cleanTag = tag.toLowerCase().trim().replaceAll(RegExp(r'[^a-z0-9]'), '');
+    if (cleanTag.isNotEmpty && !_selectedTags.contains(cleanTag)) {
+      setState(() {
+        _selectedTags.add(cleanTag);
+        _tagController.clear();
+        _suggestions = [];
       });
     }
   }
@@ -294,6 +371,90 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                       border: InputBorder.none,
                     ),
                   ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 16),
+            
+            // Hashtags Section
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Tags', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Outfit')),
+                  const SizedBox(height: 12),
+                  // Selected Tags Chips
+                  if (_selectedTags.isNotEmpty) ...[
+                    Wrap(
+                      spacing: 8.0,
+                      runSpacing: 8.0,
+                      children: _selectedTags.map((tag) {
+                        return Chip(
+                          label: Text('#$tag', style: const TextStyle(color: Color(0xFF1A1A1A), fontWeight: FontWeight.bold, fontSize: 12)),
+                          backgroundColor: theme.primaryColor,
+                          deleteIconColor: const Color(0xFF1A1A1A),
+                          onDeleted: () {
+                            setState(() {
+                              _selectedTags.remove(tag);
+                            });
+                          },
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                  // Tag Input
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF161616),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFF2A2A2A)),
+                    ),
+                    child: TextField(
+                      controller: _tagController,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: InputDecoration(
+                        hintText: 'Add a tag (e.g. cancerfree)',
+                        hintStyle: TextStyle(color: Colors.white.withOpacity(0.3)),
+                        border: InputBorder.none,
+                        prefixText: '# ',
+                        prefixStyle: TextStyle(color: theme.primaryColor, fontWeight: FontWeight.bold),
+                        suffixIcon: _isSearchingTags 
+                            ? const Padding(
+                                padding: EdgeInsets.all(12.0),
+                                child: SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+                              )
+                            : null,
+                      ),
+                      onChanged: _onTagChanged,
+                      onSubmitted: _addTag,
+                    ),
+                  ),
+                  // Suggestions Dropdown
+                  if (_suggestions.isNotEmpty)
+                    Container(
+                      margin: const EdgeInsets.only(top: 8),
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF161616),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFF2A2A2A)),
+                      ),
+                      child: Column(
+                        children: _suggestions.map((suggestion) {
+                          return ListTile(
+                            dense: true,
+                            title: Text('#$suggestion', style: const TextStyle(color: Colors.white)),
+                            onTap: () {
+                              _addTag(suggestion);
+                            },
+                          );
+                        }).toList(),
+                      ),
+                    ),
                 ],
               ),
             ),

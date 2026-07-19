@@ -42,4 +42,26 @@ class FirebaseUserRepository implements UserRepository {
         .get();
     return query.docs.isEmpty;
   }
+
+  @override
+  Future<List<UserModel>> searchUsers(String query) async {
+    final cleanQuery = query.toLowerCase().trim();
+    if (cleanQuery.isEmpty) return [];
+
+    try {
+      final snapshot = await _firestore
+          .collection('users')
+          .where('username', isGreaterThanOrEqualTo: cleanQuery)
+          .where('username', isLessThan: '$cleanQuery\uf8ff')
+          .limit(10)
+          .get();
+
+      return snapshot.docs
+          .map((doc) => UserModel.fromMap(doc.data()))
+          .toList();
+    } catch (e) {
+      print('Error searching users: $e');
+      return [];
+    }
+  }
 }

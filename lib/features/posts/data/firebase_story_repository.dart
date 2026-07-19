@@ -26,6 +26,19 @@ class FirebaseStoryRepository implements StoryRepository {
   }
 
   @override
+  Future<List<StoryModel>> getStoriesByHashtag(String hashtag, {int limit = 20}) async {
+    final querySnapshot = await _stories
+        .where('hashtagsList', arrayContains: hashtag)
+        .orderBy('publishedAt', descending: true)
+        .limit(limit)
+        .get();
+
+    return querySnapshot.docs
+        .map((doc) => StoryModel.fromMap(doc.data() as Map<String, dynamic>, doc.id))
+        .toList();
+  }
+
+  @override
   Stream<StoryModel?> getStoryById(String storyId) {
     return _stories.doc(storyId).snapshots().map((snapshot) {
       if (!snapshot.exists) return null;

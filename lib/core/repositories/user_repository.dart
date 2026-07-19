@@ -5,4 +5,5 @@ abstract class UserRepository {
   Future<void> createUserData(UserModel user);
   Future<void> updateUserData(UserModel user);
   Future<bool> isUsernameAvailable(String username);
+  Future<List<UserModel>> searchUsers(String query);
 }
