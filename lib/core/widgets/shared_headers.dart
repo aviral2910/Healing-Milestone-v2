@@ -15,6 +15,10 @@ class CommonSliverAppBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final user = ref.watch(currentUserProvider);
+    final authState = ref.watch(authProvider);
+    final isAuthLoading = authState.isLoading;
+    final isAuthenticated = authState.valueOrNull?.status == AuthStatus.authenticated;
+    final isProfileLoading = isAuthLoading || (isAuthenticated && user == null);
 
     return SliverAppBar(
       floating: false,
@@ -59,17 +63,19 @@ class CommonSliverAppBar extends ConsumerWidget {
                     ),
                   ),
                 )
-              : Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white24),
-                  ),
-                  child: const CircleAvatar(
-                    radius: 18,
-                    backgroundColor: Colors.transparent,
-                    child: Icon(Icons.person_outline, size: 20, color: Colors.white),
-                  ),
-                ),
+              : isProfileLoading
+                  ? const _SkeletonAvatar()
+                  : Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white24),
+                      ),
+                      child: const CircleAvatar(
+                        radius: 18,
+                        backgroundColor: Colors.transparent,
+                        child: Icon(Icons.person_outline, size: 20, color: Colors.white),
+                      ),
+                    ),
         ),
       ),
       title: HealingMilestonesLogoWidget(),
@@ -177,6 +183,53 @@ class CommonSearchBarSliver extends StatelessWidget {
           const SizedBox(height: 12),
         ],
       ),
+    );
+  }
+}
+
+class _SkeletonAvatar extends StatefulWidget {
+  const _SkeletonAvatar({Key? key}) : super(key: key);
+
+  @override
+  State<_SkeletonAvatar> createState() => _SkeletonAvatarState();
+}
+
+class _SkeletonAvatarState extends State<_SkeletonAvatar>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return Opacity(
+          opacity: 0.3 + (_controller.value * 0.5),
+          child: Container(
+            width: 38,
+            height: 38,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              color: Color(0xFF3A3A3C),
+            ),
+          ),
+        );
+      },
     );
   }
 }
