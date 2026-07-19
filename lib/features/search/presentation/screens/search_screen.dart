@@ -1,3 +1,4 @@
+import 'package:healing_milestones/core/router/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -197,7 +198,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
                         story: stories[index],
                         content: stories[index].description,
                         onTap: () {
-                          context.push('/story/${stories[index].storyId}');
+                          context.push(AppRoutes.storyDetail(stories[index].storyId));
                         },
                       ),
                     );
@@ -302,9 +303,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
               onTap: () {
                 final currentUser = ref.read(currentUserProvider);
                 if (currentUser?.userId == user.userId) {
-                  context.push('/profile');
+                  context.push(AppRoutes.profile);
                 } else {
-                  context.push('/user/${user.userId}');
+                  context.push(AppRoutes.publicProfile(user.userId));
                 }
               },
             );

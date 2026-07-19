@@ -1,3 +1,4 @@
+import 'package:healing_milestones/core/router/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -48,7 +49,7 @@ class _PhoneAuthScreenState extends ConsumerState<PhoneAuthScreen> {
         onCodeSent: () {
           if (mounted) {
             setState(() => _isLoading = false);
-            context.push('/verify-otp');
+            context.push(AppRoutes.verifyOtp);
           }
         },
       );

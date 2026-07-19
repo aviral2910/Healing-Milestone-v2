@@ -1,3 +1,4 @@
+import 'package:healing_milestones/core/router/app_routes.dart';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -103,7 +104,7 @@ class LogoutButton extends ConsumerWidget {
                             onPressed: () {
                               Navigator.of(context).pop();
                               ref.read(authProvider.notifier).signOut();
-                              context.go('/');
+                              context.go(AppRoutes.home);
                             },
                             style: ElevatedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 18),

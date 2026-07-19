@@ -1,3 +1,4 @@
+import 'package:healing_milestones/core/router/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -53,9 +54,9 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
           // Check if they need onboarding, router might catch it first, but just in case:
           final newState = ref.read(authProvider).valueOrNull;
           if (newState?.status == AuthStatus.needsOnboarding) {
-            context.go('/role-selection');
+            context.go(AppRoutes.roleSelection);
           } else {
-            context.go('/');
+            context.go(AppRoutes.home);
           }
         }
       }

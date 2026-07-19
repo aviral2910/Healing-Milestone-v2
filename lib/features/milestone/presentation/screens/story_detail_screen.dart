@@ -1,3 +1,4 @@
+import 'package:healing_milestones/core/router/app_routes.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -210,7 +211,7 @@ class StoryDetailScreen extends ConsumerWidget {
                                       ? () {
                                           if (currentUser?.userId ==
                                               story.authorId) {
-                                            context.push('/profile');
+                                            context.push(AppRoutes.profile);
                                           } else {
                                             context.push(
                                                 '/user/${story.authorId}');
@@ -453,7 +454,7 @@ class StoryDetailScreen extends ConsumerWidget {
                                               : Icons.favorite_border),
                                           onPressed: () {
                                             if (currentUser == null) {
-                                              context.push('/login');
+                                              context.push(AppRoutes.login);
                                             } else {
                                               ref
                                                   .read(storyRepositoryProvider)
@@ -484,7 +485,7 @@ class StoryDetailScreen extends ConsumerWidget {
                                         : Icons.bookmark_border),
                                     onPressed: () {
                                       if (currentUser == null) {
-                                        context.push('/login');
+                                        context.push(AppRoutes.login);
                                       } else {
                                         ref
                                             .read(userRepositoryProvider)
@@ -667,9 +668,9 @@ class _TaggedPeopleList extends ConsumerWidget {
                   onTap: () {
                     final currentUser = ref.read(currentUserProvider);
                     if (currentUser?.userId == user.userId) {
-                      context.push('/profile');
+                      context.push(AppRoutes.profile);
                     } else {
-                      context.push('/user/${user.userId}');
+                      context.push(AppRoutes.publicProfile(user.userId));
                     }
                   },
                   child: Container(

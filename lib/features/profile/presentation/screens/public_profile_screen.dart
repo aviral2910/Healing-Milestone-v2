@@ -1,3 +1,4 @@
+import 'package:healing_milestones/core/router/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
@@ -156,7 +157,7 @@ class PublicProfileScreen extends ConsumerWidget {
                                       label: 'Followers',
                                       count: _formatCount(user.followersCount),
                                       onTap: () {
-                                        context.push('/user-list', extra: {
+                                        context.push(AppRoutes.userList, extra: {
                                           'title': 'Followers',
                                           'userIds': user.followersList,
                                         });
@@ -169,7 +170,7 @@ class PublicProfileScreen extends ConsumerWidget {
                                       label: 'Following',
                                       count: _formatCount(user.followingCount),
                                       onTap: () {
-                                        context.push('/user-list', extra: {
+                                        context.push(AppRoutes.userList, extra: {
                                           'title': 'Following',
                                           'userIds': user.followingList,
                                         });
@@ -189,7 +190,7 @@ class PublicProfileScreen extends ConsumerWidget {
                                   child: ElevatedButton(
                                     onPressed: () {
                                       if (currentUser == null) {
-                                        context.push('/login');
+                                        context.push(AppRoutes.login);
                                       } else {
                                         ref.read(userRepositoryProvider).toggleFollow(currentUser.userId, user.userId);
                                       }
@@ -318,7 +319,7 @@ class _StoryList extends StatelessWidget {
                       padding: const EdgeInsets.only(bottom: 24.0),
                       child: StoryCard(
                         story: story,
-                        onTap: () => context.push('/story/${story.storyId}'),
+                        onTap: () => context.push(AppRoutes.storyDetail(story.storyId)),
                         content: story.shortDescription,
                       ),
                     ),

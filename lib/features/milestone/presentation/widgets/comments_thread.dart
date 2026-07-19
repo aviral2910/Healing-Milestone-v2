@@ -1,3 +1,4 @@
+import 'package:healing_milestones/core/router/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
@@ -31,7 +32,7 @@ class _CommentsThreadState extends ConsumerState<CommentsThread> {
 
     final user = ref.read(currentUserProvider);
     if (user == null) {
-      context.push('/login');
+      context.push(AppRoutes.login);
       return;
     }
 

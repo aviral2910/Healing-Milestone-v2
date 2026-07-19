@@ -1,3 +1,4 @@
+import 'package:healing_milestones/core/router/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -32,9 +33,9 @@ class CommonSliverAppBar extends ConsumerWidget {
         child: InkWell(
           onTap: () {
             if (user != null) {
-              context.push('/profile');
+              context.push(AppRoutes.profile);
             } else {
-              context.push('/login');
+              context.push(AppRoutes.login);
             }
           },
           borderRadius: BorderRadius.circular(20),

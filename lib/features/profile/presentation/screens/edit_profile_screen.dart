@@ -1,3 +1,4 @@
+import 'package:healing_milestones/core/router/app_routes.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -515,7 +516,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     ? null
                     : () {
                         // Navigate to phone auth screen to link
-                        context.push('/phone-auth');
+                        context.push(AppRoutes.phoneAuth);
                       },
               ),
               const SizedBox(height: 16),

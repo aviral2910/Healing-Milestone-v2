@@ -1,3 +1,4 @@
+import 'package:healing_milestones/core/router/app_routes.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -99,7 +100,7 @@ class _ProfessionalOnboardingScreenState extends ConsumerState<ProfessionalOnboa
       );
 
       ref.read(authProvider.notifier).completeOnboarding(newUserModel);
-      context.go('/');
+      context.go(AppRoutes.home);
     }
   }
 
@@ -140,7 +141,7 @@ class _ProfessionalOnboardingScreenState extends ConsumerState<ProfessionalOnboa
           );
         }
         
-        context.go('/');
+        context.go(AppRoutes.home);
       }
     }
   }

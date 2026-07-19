@@ -1,3 +1,4 @@
+import 'package:healing_milestones/core/router/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -15,12 +16,12 @@ class LoginScreen extends ConsumerWidget {
     ref.listen<AsyncValue<AuthState>>(authProvider, (previous, next) {
       if (next is AsyncData) {
         if (next.value?.status == AuthStatus.needsOnboarding) {
-          context.go('/role-selection');
+          context.go(AppRoutes.roleSelection);
         } else if (next.value?.status == AuthStatus.authenticated) {
           if (context.canPop()) {
             context.pop();
           } else {
-            context.go('/');
+            context.go(AppRoutes.home);
           }
         }
       } else if (next is AsyncError) {
@@ -102,7 +103,7 @@ class LoginScreen extends ConsumerWidget {
               onPressed: authState.isLoading
                   ? null
                   : () {
-                      context.push('/phone-auth');
+                      context.push(AppRoutes.phoneAuth);
                     },
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
@@ -124,7 +125,7 @@ class LoginScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 24),
             TextButton(
-              onPressed: () => context.go('/'),
+              onPressed: () => context.go(AppRoutes.home),
               child: Text(
                 'Skip to Home / Read Articles',
                 style: TextStyle(

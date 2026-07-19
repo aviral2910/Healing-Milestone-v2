@@ -1,3 +1,4 @@
+import 'package:healing_milestones/core/router/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -268,7 +269,7 @@ class PostScreen extends ConsumerWidget {
                                       story: story,
                                       content: _truncateContent(story.description, 180),
                                       onTap: () {
-                                        context.push('/story/${story.storyId}');
+                                        context.push(AppRoutes.storyDetail(story.storyId));
                                       },
                                     ),
                                   ),
@@ -361,7 +362,7 @@ class _HorizontalCategorySection extends StatelessWidget {
                           story: story,
                           content: truncateContent(story.description, 120),
                           onTap: () {
-                            context.push('/story/${story.storyId}');
+                            context.push(AppRoutes.storyDetail(story.storyId));
                           },
                         ),
                       ),

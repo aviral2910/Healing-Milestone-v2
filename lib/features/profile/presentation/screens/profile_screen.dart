@@ -1,3 +1,4 @@
+import 'package:healing_milestones/core/router/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
@@ -60,7 +61,7 @@ class ProfileScreen extends ConsumerWidget {
                               horizontal: 12, vertical: 4),
                         ),
                         onPressed: () {
-                          context.push('/create');
+                          context.push(AppRoutes.create);
                         },
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
@@ -190,7 +191,7 @@ class ProfileScreen extends ConsumerWidget {
                                   label: 'Followers',
                                   count: _formatCount(user.followersCount),
                                   onTap: () {
-                                    context.push('/user-list', extra: {
+                                    context.push(AppRoutes.userList, extra: {
                                       'title': 'Followers',
                                       'userIds': user.followersList,
                                     });
@@ -203,7 +204,7 @@ class ProfileScreen extends ConsumerWidget {
                                   label: 'Following',
                                   count: _formatCount(user.followingCount),
                                   onTap: () {
-                                    context.push('/user-list', extra: {
+                                    context.push(AppRoutes.userList, extra: {
                                       'title': 'Following',
                                       'userIds': user.followingList,
                                     });
@@ -217,7 +218,7 @@ class ProfileScreen extends ConsumerWidget {
                           width: double.infinity,
                           child: ElevatedButton(
                             onPressed: () {
-                              context.push('/edit-profile');
+                              context.push(AppRoutes.editProfile);
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: theme.colorScheme.primary
@@ -356,7 +357,7 @@ class _StoryList extends StatelessWidget {
                       padding: const EdgeInsets.only(bottom: 24.0),
                       child: StoryCard(
                         story: story,
-                        onTap: () => context.push('/story/${story.storyId}'),
+                        onTap: () => context.push(AppRoutes.storyDetail(story.storyId)),
                         content: story.shortDescription,
                       ),
                     ),

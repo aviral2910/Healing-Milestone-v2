@@ -1,3 +1,4 @@
+import 'package:healing_milestones/core/router/app_routes.dart';
 import 'package:flutter/material.dart';
 import '../../core/models/story_model.dart';
 import '../../core/presentation/widgets/user_badge.dart';
@@ -346,7 +347,7 @@ class _StoryCardState extends ConsumerState<StoryCard>
                           onTap: () {
                             final user = ref.read(currentUserProvider);
                             if (user == null) {
-                              context.push('/login');
+                              context.push(AppRoutes.login);
                             } else {
                               ref.read(storyRepositoryProvider).toggleLike(
                                   widget.story.storyId, user.userId);
@@ -360,7 +361,7 @@ class _StoryCardState extends ConsumerState<StoryCard>
                           color: theme.textTheme.bodySmall!.color!,
                           onTap: () {
                             // Can navigate to story detail for comments
-                            context.push('/story/${widget.story.storyId}');
+                            context.push(AppRoutes.storyDetail(widget.story.storyId));
                           },
                         ),
                         const Spacer(),
@@ -368,7 +369,7 @@ class _StoryCardState extends ConsumerState<StoryCard>
                           onTap: () {
                             final user = ref.read(currentUserProvider);
                             if (user == null) {
-                              context.push('/login');
+                              context.push(AppRoutes.login);
                             } else {
                               ref.read(userRepositoryProvider).toggleBookmark(
                                   user.userId, widget.story.storyId);

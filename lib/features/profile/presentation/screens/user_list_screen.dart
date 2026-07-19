@@ -1,3 +1,4 @@
+import 'package:healing_milestones/core/router/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -124,7 +125,7 @@ class _UserListScreenState extends ConsumerState<UserListScreen> {
                       : ElevatedButton(
                           onPressed: () {
                             if (currentUser == null) {
-                              context.push('/login');
+                              context.push(AppRoutes.login);
                             } else {
                               ref.read(userRepositoryProvider).toggleFollow(currentUser.userId, user.userId);
                             }
@@ -145,9 +146,9 @@ class _UserListScreenState extends ConsumerState<UserListScreen> {
                         ),
                   onTap: () {
                     if (isCurrentUser) {
-                      context.push('/profile');
+                      context.push(AppRoutes.profile);
                     } else {
-                      context.push('/user/${user.userId}');
+                      context.push(AppRoutes.publicProfile(user.userId));
                     }
                   },
                 );

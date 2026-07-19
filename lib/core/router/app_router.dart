@@ -15,6 +15,7 @@ import '../../features/auth/presentation/screens/phone_auth_screen.dart';
 import '../../features/auth/presentation/screens/otp_verification_screen.dart';
 import '../../features/auth/data/auth_provider.dart';
 import '../../core/models/user_model.dart';
+import 'app_routes.dart';
 
 class RouterNotifier extends ChangeNotifier {
   final Ref _ref;
@@ -36,90 +37,90 @@ final routerProvider = Provider<GoRouter>((ref) {
 
   return GoRouter(
     refreshListenable: notifier,
-    initialLocation: '/',
+    initialLocation: AppRoutes.home,
     redirect: (context, state) {
       final authState = ref.read(authProvider).valueOrNull;
       final isAuth = authState?.status == AuthStatus.authenticated;
       final needsOnboarding = authState?.status == AuthStatus.needsOnboarding;
       
-      final isGoingToOnboarding = state.matchedLocation == '/role-selection' || state.matchedLocation == '/professional-onboarding';
+      final isGoingToOnboarding = state.matchedLocation == AppRoutes.roleSelection || state.matchedLocation == AppRoutes.professionalOnboarding;
       
       // Protected routes
-      final isProtectedRoute = state.matchedLocation == '/create' || 
-                               state.matchedLocation == '/profile' ||
-                               state.matchedLocation == '/edit-profile';
+      final isProtectedRoute = state.matchedLocation == AppRoutes.create || 
+                               state.matchedLocation == AppRoutes.profile ||
+                               state.matchedLocation == AppRoutes.editProfile;
 
       if (authState?.status == AuthStatus.unauthenticated && isGoingToOnboarding) {
-        return '/login';
+        return AppRoutes.login;
       }
 
       if (needsOnboarding && !isGoingToOnboarding) {
-        return '/role-selection';
+        return AppRoutes.roleSelection;
       }
 
       if (!isAuth && isProtectedRoute) {
-        return '/login';
+        return AppRoutes.login;
       }
 
-      final isAuthScreen = state.matchedLocation == '/login' ||
-                           state.matchedLocation == '/phone-auth' ||
-                           state.matchedLocation == '/verify-otp';
+      final isAuthScreen = state.matchedLocation == AppRoutes.login ||
+                           state.matchedLocation == AppRoutes.phoneAuth ||
+                           state.matchedLocation == AppRoutes.verifyOtp;
 
       if (isAuth && isAuthScreen) {
-        return '/';
+        return AppRoutes.home;
       }
 
       return null;
     },
     routes: [
       GoRoute(
-        path: '/',
+        path: AppRoutes.home,
         builder: (context, state) => const HomeScreen(),
       ),
       GoRoute(
-        path: '/phone-auth',
+        path: AppRoutes.phoneAuth,
         builder: (context, state) => const PhoneAuthScreen(),
       ),
       GoRoute(
-        path: '/verify-otp',
+        path: AppRoutes.verifyOtp,
         builder: (context, state) => const OtpVerificationScreen(),
       ),
       GoRoute(
-        path: '/create',
+        path: AppRoutes.create,
         builder: (context, state) => const PostCreationScreen(),
       ),
       GoRoute(
-        path: '/login',
+        path: AppRoutes.login,
         builder: (context, state) => const LoginScreen(),
       ),
       GoRoute(
-        path: '/role-selection',
+        path: AppRoutes.roleSelection,
         builder: (context, state) => const RoleSelectionScreen(),
       ),
       GoRoute(
-        path: '/professional-onboarding',
+        path: AppRoutes.professionalOnboarding,
         builder: (context, state) {
           final role = state.extra as UserRole;
           return ProfessionalOnboardingScreen(role: role);
         },
       ),
       GoRoute(
-        path: '/profile',
+        path: AppRoutes.profile,
         builder: (context, state) => const ProfileScreen(),
       ),
       GoRoute(
-        path: '/edit-profile',
+        path: AppRoutes.editProfile,
         builder: (context, state) => const EditProfileScreen(),
       ),
       GoRoute(
-        path: '/user/:id',
+        path: AppRoutes.publicProfilePath,
         builder: (context, state) {
           final id = state.pathParameters['id']!;
           return PublicProfileScreen(userId: id);
         },
       ),
       GoRoute(
-        path: '/user-list',
+        path: AppRoutes.userList,
         builder: (context, state) {
           final extra = state.extra as Map<String, dynamic>?;
           final title = extra?['title'] as String? ?? 'Users';
@@ -128,7 +129,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
-        path: '/story/:id',
+        path: AppRoutes.storyDetailPath,
         pageBuilder: (context, state) {
           final id = state.pathParameters['id']!;
           return CustomTransitionPage(
