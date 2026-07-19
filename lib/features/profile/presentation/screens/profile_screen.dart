@@ -11,8 +11,27 @@ import '../../../../shared/widgets/story_card.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/presentation/widgets/user_badge.dart';
 
-class ProfileScreen extends ConsumerWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
+
+  @override
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
   String _formatCount(int count) {
     if (count >= 1000000) return '${(count / 1000000).toStringAsFixed(1)}M';
@@ -21,20 +40,17 @@ class ProfileScreen extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final user = ref.watch(currentUserProvider);
     if (user == null) return const Scaffold(body: Center(child: CircularProgressIndicator()));
     final bool isProOrOrg = user.role == UserRole.healthcareProfessional || user.role == UserRole.organization;
-    final userStoriesAsync = ref.watch(userStoriesProvider(user.userId));
 
-    return DefaultTabController(
-      length: 3,
-      child: Scaffold(
-        body: SafeArea(
-          top: true,
-          bottom: false,
-          child: NestedScrollView(
+    return Scaffold(
+      body: SafeArea(
+        top: true,
+        bottom: false,
+        child: NestedScrollView(
             headerSliverBuilder: (context, innerBoxIsScrolled) {
               return [
                 SliverAppBar(
@@ -242,6 +258,7 @@ class ProfileScreen extends ConsumerWidget {
                   pinned: true,
                   delegate: _SliverAppBarDelegate(
                     TabBar(
+                      controller: _tabController,
                       indicator: BoxDecoration(
                         color:
                             theme.colorScheme.primary.withValues(alpha: 0.15),
@@ -272,12 +289,18 @@ class ProfileScreen extends ConsumerWidget {
               ];
             },
             body: TabBarView(
+              controller: _tabController,
               children: [
                 // Own Stories
-                userStoriesAsync.when(
-                  loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFFD4AF37))),
-                  error: (err, stack) => const Center(child: Text('Failed to load stories', style: TextStyle(color: Colors.red))),
-                  data: (stories) => _StoryList(stories: stories),
+                Consumer(
+                  builder: (context, ref, child) {
+                    final userStoriesAsync = ref.watch(userStoriesProvider(user.userId));
+                    return userStoriesAsync.when(
+                      loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFFD4AF37))),
+                      error: (err, stack) => const Center(child: Text('Failed to load stories', style: TextStyle(color: Colors.red))),
+                      data: (stories) => _StoryList(stories: stories),
+                    );
+                  }
                 ),
                 // Tagged Stories
                 Consumer(
@@ -305,7 +328,6 @@ class ProfileScreen extends ConsumerWidget {
             ),
           ),
         ),
-      ),
     );
   }
 }

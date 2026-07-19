@@ -7,6 +7,10 @@ import 'package:healing_milestones/core/models/user_model.dart';
 import 'package:healing_milestones/features/auth/data/auth_provider.dart';
 import 'package:healing_milestones/core/theme/app_theme.dart';
 import 'package:healing_milestones/core/presentation/widgets/user_badge.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import 'package:uuid/uuid.dart';
+import 'package:healing_milestones/features/posts/data/story_providers.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
@@ -31,6 +35,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   bool? _isUsernameAvailable;
   Timer? _debounce;
   String? _originalUsername;
+  bool _isUploadingProfilePic = false;
 
   void _onFieldChanged() {
     setState(() {}); // Trigger rebuild to evaluate _hasChanges
@@ -39,14 +44,14 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   bool get _hasChanges {
     final user = ref.read(currentUserProvider);
     if (user == null) return false;
-    
+
     return _nameController.text.trim() != (user.displayName) ||
-           _bioController.text.trim() != (user.bio ?? '') ||
-           _phoneController.text.trim() != (user.phoneNumber ?? '') ||
-           _specialtyController.text.trim() != (user.specialty ?? '') ||
-           _licenseController.text.trim() != (user.licenseNumber ?? '') ||
-           _servicesController.text.trim() != (user.services ?? '') ||
-           _registrationController.text.trim() != (user.registrationNumber ?? '');
+        _bioController.text.trim() != (user.bio ?? '') ||
+        _phoneController.text.trim() != (user.phoneNumber ?? '') ||
+        _specialtyController.text.trim() != (user.specialty ?? '') ||
+        _licenseController.text.trim() != (user.licenseNumber ?? '') ||
+        _servicesController.text.trim() != (user.services ?? '') ||
+        _registrationController.text.trim() != (user.registrationNumber ?? '');
   }
 
   @override
@@ -82,7 +87,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     _licenseController.removeListener(_onFieldChanged);
     _servicesController.removeListener(_onFieldChanged);
     _registrationController.removeListener(_onFieldChanged);
-    
+
     _nameController.dispose();
     _usernameController.dispose();
     _bioController.dispose();
@@ -157,6 +162,54 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           const SnackBar(content: Text('Profile updated successfully')),
         );
         context.pop();
+      }
+    }
+  }
+
+  Future<void> _pickAndUploadImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 60,
+    );
+
+    if (pickedFile == null) return;
+
+    setState(() {
+      _isUploadingProfilePic = true;
+    });
+
+    try {
+      final user = ref.read(currentUserProvider);
+      if (user == null) return;
+
+      final file = File(pickedFile.path);
+      final storageRepo = ref.read(storageRepositoryProvider);
+
+      final fileName = const Uuid().v4();
+      final path = 'profile_pictures/${user.userId}/$fileName';
+
+      final downloadUrl = await storageRepo.uploadImage(path, file);
+
+      final updatedUser = user.copyWith(profilePicture: downloadUrl);
+      await ref.read(authProvider.notifier).updateProfile(updatedUser);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Profile picture updated successfully')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to upload image: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isUploadingProfilePic = false;
+        });
       }
     }
   }
@@ -324,10 +377,14 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           child: FilledButton(
             onPressed: _hasChanges ? _saveChanges : null,
             style: FilledButton.styleFrom(
-              backgroundColor: _hasChanges ? AppTheme.accentPrimary : AppTheme.surfaceLight,
-              foregroundColor: _hasChanges ? AppTheme.surface : AppTheme.textSecondary.withValues(alpha: 0.5),
+              backgroundColor:
+                  _hasChanges ? AppTheme.accentPrimary : AppTheme.surfaceLight,
+              foregroundColor: _hasChanges
+                  ? AppTheme.surface
+                  : AppTheme.textSecondary.withValues(alpha: 0.5),
               disabledBackgroundColor: AppTheme.surfaceLight,
-              disabledForegroundColor: AppTheme.textSecondary.withValues(alpha: 0.5),
+              disabledForegroundColor:
+                  AppTheme.textSecondary.withValues(alpha: 0.5),
               padding: const EdgeInsets.symmetric(vertical: 18),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
@@ -352,34 +409,53 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             children: [
               // Profile Picture Placeholder
               Center(
-                child: Stack(
-                  children: [
-                    CircleAvatar(
-                      radius: 50,
-                      backgroundColor: AppTheme.surfaceLight,
-                      backgroundImage: user.profilePicture != null
-                          ? NetworkImage(user.profilePicture!)
-                          : null,
-                      child: user.profilePicture == null
-                          ? const Icon(Icons.person,
-                              size: 50, color: AppTheme.textSecondary)
-                          : null,
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: AppTheme.accentPrimary,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: AppTheme.surface, width: 3),
-                        ),
-                        child: const Icon(Icons.camera_alt,
-                            size: 16, color: AppTheme.surface),
+                child: GestureDetector(
+                  onTap: _isUploadingProfilePic ? null : _pickAndUploadImage,
+                  child: Stack(
+                    children: [
+                      CircleAvatar(
+                        radius: 50,
+                        backgroundColor: AppTheme.surfaceLight,
+                        backgroundImage: user.profilePicture != null
+                            ? NetworkImage(user.profilePicture!)
+                            : null,
+                        child: user.profilePicture == null
+                            ? const Icon(Icons.person,
+                                size: 50, color: AppTheme.textSecondary)
+                            : null,
                       ),
-                    ),
-                  ],
+                      if (_isUploadingProfilePic)
+                        Positioned.fill(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.5),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Center(
+                              child: CircularProgressIndicator(
+                                color: AppTheme.accentPrimary,
+                              ),
+                            ),
+                          ),
+                        ),
+                      if (!_isUploadingProfilePic)
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppTheme.accentPrimary,
+                              shape: BoxShape.circle,
+                              border:
+                                  Border.all(color: AppTheme.surface, width: 3),
+                            ),
+                            child: const Icon(Icons.camera_alt,
+                                size: 16, color: AppTheme.surface),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: 32),
