@@ -86,9 +86,9 @@ class _StoryCardState extends ConsumerState<StoryCard>
                     CircleAvatar(
                       radius: 24,
                       backgroundColor: theme.scaffoldBackgroundColor,
-                      backgroundImage: NetworkImage(
-                        userAsync.valueOrNull?.profilePicture ?? 'https://api.dicebear.com/7.x/avataaars/png?seed=${widget.story.authorId}'
-                      ),
+                      backgroundImage: NetworkImage(userAsync
+                              .valueOrNull?.profilePicture ??
+                          'https://api.dicebear.com/7.x/avataaars/png?seed=${widget.story.authorId}'),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
@@ -101,31 +101,39 @@ class _StoryCardState extends ConsumerState<StoryCard>
                                 data: (user) {
                                   final displayName = user?.displayName;
                                   final username = user?.username;
-                                  
-                                  String authorText = 'Author ${widget.story.authorId}';
+
+                                  String authorText =
+                                      'Author ${widget.story.authorId}';
                                   if (!widget.story.displayAuthorName) {
                                     authorText = 'Anonymous';
-                                  } else if (displayName != null && displayName.isNotEmpty) {
+                                  } else if (displayName != null &&
+                                      displayName.isNotEmpty) {
                                     authorText = displayName;
-                                  } else if (username != null && username.isNotEmpty) {
+                                  } else if (username != null &&
+                                      username.isNotEmpty) {
                                     authorText = '@$username';
                                   }
 
                                   return Text(
                                     authorText,
-                                    style: theme.textTheme.titleMedium?.copyWith(
+                                    style:
+                                        theme.textTheme.titleMedium?.copyWith(
                                       fontWeight: FontWeight.w600,
                                     ),
                                   );
                                 },
                                 loading: () => Text(
-                                  !widget.story.displayAuthorName ? 'Anonymous' : 'Loading...',
+                                  !widget.story.displayAuthorName
+                                      ? 'Anonymous'
+                                      : 'Loading...',
                                   style: theme.textTheme.titleMedium?.copyWith(
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
                                 error: (_, __) => Text(
-                                  !widget.story.displayAuthorName ? 'Anonymous' : 'Author',
+                                  !widget.story.displayAuthorName
+                                      ? 'Anonymous'
+                                      : 'Author',
                                   style: theme.textTheme.titleMedium?.copyWith(
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -133,18 +141,49 @@ class _StoryCardState extends ConsumerState<StoryCard>
                               ),
                               const SizedBox(width: 4),
                               UserBadge(
-                                role: userAsync.valueOrNull?.role ?? widget.story.authorRole,
-                                isVerified: userAsync.valueOrNull?.isVerified ?? widget.story.isAuthorVerified,
+                                role: userAsync.valueOrNull?.role ??
+                                    widget.story.authorRole,
+                                isVerified: userAsync.valueOrNull?.isVerified ??
+                                    widget.story.isAuthorVerified,
                               ),
                             ],
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            _formatDate(widget.story.publishedAt),
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.textTheme.bodySmall?.color
-                                  ?.withValues(alpha: 0.7),
-                            ),
+                          Row(
+                            children: [
+                              userAsync.maybeWhen(
+                                data: (user) {
+                                  if (widget.story.displayAuthorName &&
+                                      user != null &&
+                                      (user.username?.isNotEmpty ?? false) &&
+                                      (user.displayName?.isNotEmpty ?? false)) {
+                                    return Padding(
+                                      padding: const EdgeInsets.only(
+                                          top: 2.0, bottom: 2.0),
+                                      child: Text(
+                                        '@${user.username}',
+                                        style:
+                                            theme.textTheme.bodySmall?.copyWith(
+                                          color: theme.colorScheme.primary,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                  return const SizedBox.shrink();
+                                },
+                                orElse: () => const SizedBox.shrink(),
+                              ),
+                              SizedBox(
+                                width: 5,
+                              ),
+                              Text(
+                                _formatDate(widget.story.publishedAt),
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: theme.textTheme.bodySmall?.color
+                                      ?.withValues(alpha: 0.7),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -173,13 +212,14 @@ class _StoryCardState extends ConsumerState<StoryCard>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (widget.story.mainImage.isNotEmpty || widget.story.imageAssets.isNotEmpty) ...[
+                    if (widget.story.mainImage.isNotEmpty ||
+                        widget.story.imageAssets.isNotEmpty) ...[
                       ClipRRect(
                         borderRadius: BorderRadius.circular(16),
                         child: Image.network(
-                          widget.story.mainImage.isNotEmpty 
-                            ? widget.story.mainImage 
-                            : widget.story.imageAssets.first,
+                          widget.story.mainImage.isNotEmpty
+                              ? widget.story.mainImage
+                              : widget.story.imageAssets.first,
                           width: double.infinity,
                           height: 250,
                           fit: BoxFit.cover,
@@ -203,7 +243,8 @@ class _StoryCardState extends ConsumerState<StoryCard>
                       Text(
                         widget.content,
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.9),
+                          color: theme.textTheme.bodyMedium?.color
+                              ?.withValues(alpha: 0.9),
                           height: 1.5,
                         ),
                       ),
@@ -223,7 +264,8 @@ class _StoryCardState extends ConsumerState<StoryCard>
                             end: Alignment.bottomRight,
                           ),
                           border: Border.all(
-                            color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                            color: theme.colorScheme.primary
+                                .withValues(alpha: 0.2),
                           ),
                         ),
                         child: Text(
@@ -264,7 +306,8 @@ class _StoryCardState extends ConsumerState<StoryCard>
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 10.0, vertical: 4.0),
                             decoration: BoxDecoration(
-                              color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                              color: theme.colorScheme.primary
+                                  .withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
@@ -283,7 +326,7 @@ class _StoryCardState extends ConsumerState<StoryCard>
                 ),
               ),
 
-            // Interaction Footer
+              // Interaction Footer
               Padding(
                 padding: const EdgeInsets.all(20.0),
                 child: Consumer(
@@ -291,11 +334,13 @@ class _StoryCardState extends ConsumerState<StoryCard>
                     return Row(
                       children: [
                         InteractionButton(
-                          icon: widget.story.likesList.contains(ref.watch(currentUserProvider)?.userId) 
-                              ? Icons.favorite 
+                          icon: widget.story.likesList.contains(
+                                  ref.watch(currentUserProvider)?.userId)
+                              ? Icons.favorite
                               : Icons.favorite_border,
                           label: widget.story.likesCount.toString(),
-                          color: widget.story.likesList.contains(ref.watch(currentUserProvider)?.userId)
+                          color: widget.story.likesList.contains(
+                                  ref.watch(currentUserProvider)?.userId)
                               ? theme.colorScheme.primary
                               : theme.colorScheme.primary,
                           onTap: () {
@@ -303,7 +348,8 @@ class _StoryCardState extends ConsumerState<StoryCard>
                             if (user == null) {
                               context.push('/login');
                             } else {
-                              ref.read(storyRepositoryProvider).toggleLike(widget.story.storyId, user.userId);
+                              ref.read(storyRepositoryProvider).toggleLike(
+                                  widget.story.storyId, user.userId);
                             }
                           },
                         ),
@@ -324,14 +370,23 @@ class _StoryCardState extends ConsumerState<StoryCard>
                             if (user == null) {
                               context.push('/login');
                             } else {
-                              ref.read(userRepositoryProvider).toggleBookmark(user.userId, widget.story.storyId);
+                              ref.read(userRepositoryProvider).toggleBookmark(
+                                  user.userId, widget.story.storyId);
                             }
                           },
                           child: Icon(
-                            ref.watch(currentUserProvider)?.bookmarkedStories.contains(widget.story.storyId) == true
+                            ref
+                                        .watch(currentUserProvider)
+                                        ?.bookmarkedStories
+                                        .contains(widget.story.storyId) ==
+                                    true
                                 ? Icons.bookmark
                                 : Icons.bookmark_border,
-                            color: ref.watch(currentUserProvider)?.bookmarkedStories.contains(widget.story.storyId) == true
+                            color: ref
+                                        .watch(currentUserProvider)
+                                        ?.bookmarkedStories
+                                        .contains(widget.story.storyId) ==
+                                    true
                                 ? theme.colorScheme.primary
                                 : theme.textTheme.bodySmall!.color!,
                             size: 22,

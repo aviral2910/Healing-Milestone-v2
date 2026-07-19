@@ -24,6 +24,16 @@ class StoryDetailScreen extends ConsumerWidget {
   const StoryDetailScreen({Key? key, required this.milestoneId})
       : super(key: key);
 
+  String _formatDate(DateTime date) {
+    final difference = DateTime.now().difference(date);
+    if (difference.inDays > 0) return '${difference.inDays}d ago';
+    if (difference.inHours > 0) return '${difference.inHours}h ago';
+    if (difference.inMinutes > 0) return '${difference.inMinutes}m ago';
+    return 'just now';
+  }
+
+
+
   void _showAccessibilityBottomSheet(BuildContext context, WidgetRef ref) {
     showModalBottomSheet(
       context: context,
@@ -145,303 +155,410 @@ class StoryDetailScreen extends ConsumerWidget {
           ));
         }
 
-    return Scaffold(
-      body: Stack(
-        children: [
-          AnimationLimiter(
-            child: CustomScrollView(
-              slivers: [
-              SliverAppBar(
-                pinned: true,
-                backgroundColor: theme.scaffoldBackgroundColor.withOpacity(0.9),
-                elevation: 0,
-                leading: IconButton(
-                  icon: const Icon(Icons.arrow_back_ios_new),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-                actions: [
-                  IconButton(
-                    icon: const Icon(Icons.settings_display_outlined),
-                    onPressed: () =>
-                        _showAccessibilityBottomSheet(context, ref),
-                  )
-                ],
-              ),
-              SliverToBoxAdapter(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Massive Editorial Typography Header
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 24.0, vertical: 16.0),
+        return Scaffold(
+          body: Stack(
+            children: [
+              AnimationLimiter(
+                child: CustomScrollView(
+                  slivers: [
+                    SliverAppBar(
+                      pinned: true,
+                      backgroundColor:
+                          theme.scaffoldBackgroundColor.withOpacity(0.9),
+                      elevation: 0,
+                      leading: IconButton(
+                        icon: const Icon(Icons.arrow_back_ios_new),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                      actions: [
+                        IconButton(
+                          icon: const Icon(Icons.settings_display_outlined),
+                          onPressed: () =>
+                              _showAccessibilityBottomSheet(context, ref),
+                        )
+                      ],
+                    ),
+                    SliverToBoxAdapter(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            story.heading.isNotEmpty
-                                ? story.heading
-                                : 'A Healing Journey',
-                            style: theme.textTheme.headlineLarge?.copyWith(
-                              fontSize: 42, // Massive scale
-                              height: 1.1,
-                              fontWeight: FontWeight.w900,
-                              color: const Color(0xFFF5F5F7), // Frost white
+                          // Massive Editorial Typography Header
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 24.0, vertical: 16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  story.heading.isNotEmpty
+                                      ? story.heading
+                                      : 'A Healing Journey',
+                                  style:
+                                      theme.textTheme.headlineLarge?.copyWith(
+                                    fontSize: 42, // Massive scale
+                                    height: 1.1,
+                                    fontWeight: FontWeight.w900,
+                                    color:
+                                        const Color(0xFFF5F5F7), // Frost white
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+
+                                // Author Metadata Row
+                                GestureDetector(
+                                  onTap: story.displayAuthorName
+                                      ? () {
+                                          if (currentUser?.userId ==
+                                              story.authorId) {
+                                            context.push('/profile');
+                                          } else {
+                                            context.push(
+                                                '/user/${story.authorId}');
+                                          }
+                                        }
+                                      : null,
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: theme.colorScheme.primary
+                                                .withValues(alpha: 0.5),
+                                            width: 1.5,
+                                          ),
+                                        ),
+                                        child: CircleAvatar(
+                                          radius: 22,
+                                          backgroundColor:
+                                              theme.colorScheme.surface,
+                                          backgroundImage: NetworkImage(userAsync
+                                                  .valueOrNull
+                                                  ?.profilePicture ??
+                                              'https://api.dicebear.com/7.x/avataaars/png?seed=${story.authorId}'),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              children: [
+                                                userAsync.when(
+                                                  data: (user) {
+                                                    final displayName =
+                                                        user?.displayName;
+                                                    final username =
+                                                        user?.username;
+
+                                                    String authorText =
+                                                        'Author ${story.authorId}';
+                                                    if (!story
+                                                        .displayAuthorName) {
+                                                      authorText = 'Anonymous';
+                                                    } else if (displayName !=
+                                                            null &&
+                                                        displayName
+                                                            .isNotEmpty) {
+                                                      authorText = displayName;
+                                                    } else if (username !=
+                                                            null &&
+                                                        username.isNotEmpty) {
+                                                      authorText = '@$username';
+                                                    }
+
+                                                    return Text(
+                                                      authorText,
+                                                      style: theme
+                                                          .textTheme.titleMedium
+                                                          ?.copyWith(
+                                                        fontSize: 16,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: const Color(
+                                                            0xFFF5F5F7),
+                                                      ),
+                                                    );
+                                                  },
+                                                  loading: () => Text(
+                                                    !story.displayAuthorName
+                                                        ? 'Anonymous'
+                                                        : 'Loading...',
+                                                    style: theme
+                                                        .textTheme.titleMedium
+                                                        ?.copyWith(
+                                                      fontSize: 16,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: const Color(
+                                                          0xFFF5F5F7),
+                                                    ),
+                                                  ),
+                                                  error: (_, __) => Text(
+                                                    !story.displayAuthorName
+                                                        ? 'Anonymous'
+                                                        : 'Author',
+                                                    style: theme
+                                                        .textTheme.titleMedium
+                                                        ?.copyWith(
+                                                      fontSize: 16,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: const Color(
+                                                          0xFFF5F5F7),
+                                                    ),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 4),
+                                                UserBadge(
+                                                  role: userAsync
+                                                          .valueOrNull?.role ??
+                                                      story.authorRole,
+                                                  isVerified: userAsync
+                                                          .valueOrNull
+                                                          ?.isVerified ??
+                                                      story.isAuthorVerified,
+                                                  iconSize: 16,
+                                                ),
+                                              ],
+                                            ),
+                                            userAsync.maybeWhen(
+                                              data: (user) {
+                                                if (story.displayAuthorName &&
+                                                    user != null &&
+                                                    (user.username
+                                                            ?.isNotEmpty ??
+                                                        false) &&
+                                                    (user.displayName
+                                                            ?.isNotEmpty ??
+                                                        false)) {
+                                                  return Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            top: 2.0,
+                                                            bottom: 2.0),
+                                                    child: Text(
+                                                      '@${user.username}',
+                                                      style: theme
+                                                          .textTheme.bodySmall
+                                                          ?.copyWith(
+                                                        color: theme.colorScheme
+                                                            .primary,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                      ),
+                                                    ),
+                                                  );
+                                                }
+                                                return const SizedBox.shrink();
+                                              },
+                                              orElse: () =>
+                                                  const SizedBox.shrink(),
+                                            ),
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.end,
+                                              children: [
+                                                Text(
+                                                  'Published ${_formatDate(story.publishedAt)} • ${story.readingTime > 0 ? story.readingTime : 1} min read',
+                                                  style: theme
+                                                      .textTheme.bodySmall
+                                                      ?.copyWith(
+                                                    color:
+                                                        const Color(0xFFA1A1A6),
+                                                    fontWeight: FontWeight.w500,
+                                                    letterSpacing: 0.5,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      if (story.isVerifiedStory)
+                                        const VerifiedStoryBadge(),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 24),
+                          // Hashtags
+                          if (story.hashtagsList.isNotEmpty) ...[
+                            const SizedBox(height: 8),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 24.0),
+                              child:
+                                  _ExpandableTagsList(tags: story.hashtagsList),
+                            ),
+                          ],
 
-                          // Author Metadata Row
-                          GestureDetector(
-                            onTap: story.displayAuthorName ? () {
-                              if (currentUser?.userId == story.authorId) {
-                                context.push('/profile');
-                              } else {
-                                context.push('/user/${story.authorId}');
-                              }
-                            } : null,
-                            child: Row(
-                              children: [
-                              Container(
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: theme.colorScheme.primary
-                                        .withValues(alpha: 0.5),
-                                    width: 1.5,
-                                  ),
-                                ),
-                                child: CircleAvatar(
-                                  radius: 22,
-                                  backgroundColor: theme.colorScheme.surface,
-                                  backgroundImage: NetworkImage(
-                                    userAsync.valueOrNull?.profilePicture ?? 'https://api.dicebear.com/7.x/avataaars/png?seed=${story.authorId}'
-                                  ),
-                                ),
+                          // Tagged People
+                          if (story.taggedPeople.isNotEmpty) ...[
+                            const SizedBox(height: 16),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 24.0),
+                              child: _TaggedPeopleList(
+                                  taggedUserIds: story.taggedPeople),
+                            ),
+                          ],
+                          const SizedBox(height: 32),
+
+                          // The Immutable Post Widget Template - NO DIVIDERS
+                          // Encased in a beautiful midnight matte if it's minimal
+                          Container(
+                            color: theme.colorScheme.surface,
+                            width: double.infinity,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 20.0, horizontal: 8.0),
+                              child: PostDisplayWidget(
+                                content: story.description,
                               ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        userAsync.when(
-                                          data: (user) {
-                                            final displayName = user?.displayName;
-                                            final username = user?.username;
-                                            
-                                            String authorText = 'Author ${story.authorId}';
-                                            if (!story.displayAuthorName) {
-                                              authorText = 'Anonymous';
-                                            } else if (displayName != null && displayName.isNotEmpty) {
-                                              authorText = displayName;
-                                            } else if (username != null && username.isNotEmpty) {
-                                              authorText = '@$username';
-                                            }
+                            ),
+                          ),
 
-                                            return Text(
-                                              authorText,
-                                              style: theme.textTheme.titleMedium
-                                                  ?.copyWith(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
-                                                color: const Color(0xFFF5F5F7),
-                                              ),
-                                            );
-                                          },
-                                          loading: () => Text(
-                                            !story.displayAuthorName ? 'Anonymous' : 'Loading...',
-                                            style: theme.textTheme.titleMedium
-                                                ?.copyWith(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color: const Color(0xFFF5F5F7),
-                                            ),
-                                          ),
-                                          error: (_, __) => Text(
-                                            !story.displayAuthorName ? 'Anonymous' : 'Author',
-                                            style: theme.textTheme.titleMedium
-                                                ?.copyWith(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color: const Color(0xFFF5F5F7),
-                                            ),
+                          const SizedBox(height: 16),
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 24.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                Consumer(
+                                  builder: (context, ref, child) {
+                                    final currentUser =
+                                        ref.watch(currentUserProvider);
+                                    final isLiked = story.likesList
+                                        .contains(currentUser?.userId);
+
+                                    return Row(
+                                      children: [
+                                        Text(
+                                          story.likesCount.toString(),
+                                          style: TextStyle(
+                                            color: isLiked
+                                                ? theme.colorScheme.primary
+                                                : const Color(0xFFA1A1A6),
+                                            fontWeight: FontWeight.w600,
                                           ),
                                         ),
-                                        const SizedBox(width: 4),
-                                        UserBadge(
-                                          role: userAsync.valueOrNull?.role ?? story.authorRole,
-                                          isVerified: userAsync.valueOrNull?.isVerified ?? story.isAuthorVerified,
-                                          iconSize: 16,
+                                        IconButton(
+                                          icon: Icon(isLiked
+                                              ? Icons.favorite
+                                              : Icons.favorite_border),
+                                          onPressed: () {
+                                            if (currentUser == null) {
+                                              context.push('/login');
+                                            } else {
+                                              ref
+                                                  .read(storyRepositoryProvider)
+                                                  .toggleLike(story.storyId,
+                                                      currentUser.userId);
+                                            }
+                                          },
+                                          color: isLiked
+                                              ? theme.colorScheme.primary
+                                              : const Color(0xFFA1A1A6),
                                         ),
                                       ],
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      'Published just now • 5 min read',
-                                      style: theme.textTheme.bodySmall?.copyWith(
-                                        color: const Color(0xFFA1A1A6),
-                                        fontWeight: FontWeight.w500,
-                                        letterSpacing: 0.5,
-                                      ),
-                                    ),
-                                  ],
+                                    );
+                                  },
                                 ),
-                              ),
-                              if (story.isVerifiedStory)
-                                const VerifiedStoryBadge(),
-                            ],
-                          ),
-                        ),
-                        ],
-                      ),
-                    ),
-                    // Hashtags
-                    if (story.hashtagsList.isNotEmpty) ...[
-                      const SizedBox(height: 8),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                        child: _ExpandableTagsList(tags: story.hashtagsList),
-                      ),
-                    ],
-                    
-                    // Tagged People
-                    if (story.taggedPeople.isNotEmpty) ...[
-                      const SizedBox(height: 16),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                        child: _TaggedPeopleList(taggedUserIds: story.taggedPeople),
-                      ),
-                    ],
-                    const SizedBox(height: 32),
+                                const SizedBox(width: 8),
+                                Consumer(builder: (context, ref, child) {
+                                  final currentUser =
+                                      ref.watch(currentUserProvider);
+                                  final isBookmarked = currentUser
+                                          ?.bookmarkedStories
+                                          .contains(story.storyId) ??
+                                      false;
 
-                    // The Immutable Post Widget Template - NO DIVIDERS
-                    // Encased in a beautiful midnight matte if it's minimal
-                    Container(
-                      color: theme.colorScheme.surface,
-                      width: double.infinity,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 20.0, horizontal: 8.0),
-                        child: PostDisplayWidget(
-                          content: story.description,
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Consumer(
-                            builder: (context, ref, child) {
-                              final currentUser = ref.watch(currentUserProvider);
-                              final isLiked = story.likesList.contains(currentUser?.userId);
-                              
-                              return Row(
-                                children: [
-                                  Text(
-                                    story.likesCount.toString(),
-                                    style: TextStyle(
-                                      color: isLiked ? theme.colorScheme.primary : const Color(0xFFA1A1A6),
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  IconButton(
-                                    icon: Icon(isLiked ? Icons.favorite : Icons.favorite_border),
+                                  return IconButton(
+                                    icon: Icon(isBookmarked
+                                        ? Icons.bookmark
+                                        : Icons.bookmark_border),
                                     onPressed: () {
                                       if (currentUser == null) {
                                         context.push('/login');
                                       } else {
-                                        ref.read(storyRepositoryProvider).toggleLike(story.storyId, currentUser.userId);
+                                        ref
+                                            .read(userRepositoryProvider)
+                                            .toggleBookmark(currentUser.userId,
+                                                story.storyId);
                                       }
                                     },
-                                    color: isLiked ? theme.colorScheme.primary : const Color(0xFFA1A1A6),
-                                  ),
-                                ],
-                              );
-                            },
-                          ),
-                          const SizedBox(width: 8),
-                          Consumer(
-                            builder: (context, ref, child) {
-                              final currentUser = ref.watch(currentUserProvider);
-                              final isBookmarked = currentUser?.bookmarkedStories.contains(story.storyId) ?? false;
-                              
-                              return IconButton(
-                                icon: Icon(isBookmarked ? Icons.bookmark : Icons.bookmark_border),
-                                onPressed: () {
-                                  if (currentUser == null) {
-                                    context.push('/login');
-                                  } else {
-                                    ref.read(userRepositoryProvider).toggleBookmark(currentUser.userId, story.storyId);
-                                  }
-                                },
-                                color: isBookmarked ? theme.colorScheme.primary : const Color(0xFFA1A1A6),
-                              );
-                            }
-                          ),
-                          const SizedBox(width: 8),
-                          IconButton(
-                            icon: const Icon(Icons.ios_share_rounded),
-                            onPressed: () {},
-                            color: const Color(0xFFA1A1A6),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (actualMedia.isNotEmpty) ...[
-                            Text(
-                              'Journey Media',
-                              style: theme.textTheme.headlineLarge
-                                  ?.copyWith(fontSize: 28),
+                                    color: isBookmarked
+                                        ? theme.colorScheme.primary
+                                        : const Color(0xFFA1A1A6),
+                                  );
+                                }),
+                                const SizedBox(width: 8),
+                                IconButton(
+                                  icon: const Icon(Icons.ios_share_rounded),
+                                  onPressed: () {},
+                                  color: const Color(0xFFA1A1A6),
+                                ),
+                              ],
                             ),
-                            const SizedBox(height: 24),
-                            MilestoneMediaGallery(media: actualMedia),
-                            const SizedBox(height: 64),
-                          ],
-                          Text(
-                            'Comments',
-                            style: theme.textTheme.headlineLarge
-                                ?.copyWith(fontSize: 28),
                           ),
-                          const SizedBox(height: 24),
-                          CommentsThread(milestone: story),
-                          const SizedBox(height: 40), // Normal padding
-                        ],
+                          const SizedBox(height: 32),
+
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 24.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (actualMedia.isNotEmpty) ...[
+                                  Text(
+                                    'Journey Media',
+                                    style: theme.textTheme.headlineLarge
+                                        ?.copyWith(fontSize: 28),
+                                  ),
+                                  const SizedBox(height: 24),
+                                  MilestoneMediaGallery(media: actualMedia),
+                                  const SizedBox(height: 64),
+                                ],
+                                Text(
+                                  'Comments',
+                                  style: theme.textTheme.headlineLarge
+                                      ?.copyWith(fontSize: 28),
+                                ),
+                                const SizedBox(height: 24),
+                                CommentsThread(milestone: story),
+                                const SizedBox(height: 40), // Normal padding
+                              ],
+                            ),
+                          ),
+                        ]
+                            .asMap()
+                            .entries
+                            .map((entry) =>
+                                AnimationConfiguration.staggeredList(
+                                  position: entry.key,
+                                  duration: const Duration(milliseconds: 600),
+                                  child: SlideAnimation(
+                                    verticalOffset: 100.0,
+                                    child: FadeInAnimation(
+                                      child: entry.value,
+                                    ),
+                                  ),
+                                ))
+                            .toList(),
                       ),
                     ),
-                  ].asMap().entries.map((entry) => 
-                    AnimationConfiguration.staggeredList(
-                      position: entry.key,
-                      duration: const Duration(milliseconds: 600),
-                      child: SlideAnimation(
-                        verticalOffset: 100.0,
-                        child: FadeInAnimation(
-                          child: entry.value,
-                        ),
-                      ),
-                    )
-                  ).toList(),
+                  ],
                 ),
               ),
             ],
           ),
-        ),
-        ],
-      ),
-    );
-    },
+        );
+      },
     );
   }
 }
@@ -521,11 +638,11 @@ class _ExpandableTagsListState extends State<_ExpandableTagsList> {
 
 class _TaggedPeopleList extends ConsumerWidget {
   final List<String> taggedUserIds;
-  const _TaggedPeopleList({Key? key, required this.taggedUserIds}) : super(key: key);
+  const _TaggedPeopleList({Key? key, required this.taggedUserIds})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -556,7 +673,8 @@ class _TaggedPeopleList extends ConsumerWidget {
                     }
                   },
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
                       color: const Color(0xFF222222),
                       borderRadius: BorderRadius.circular(20),
@@ -569,9 +687,8 @@ class _TaggedPeopleList extends ConsumerWidget {
                       children: [
                         CircleAvatar(
                           radius: 10,
-                          backgroundImage: NetworkImage(
-                            user.profilePicture ?? 'https://api.dicebear.com/7.x/avataaars/png?seed=${user.userId}'
-                          ),
+                          backgroundImage: NetworkImage(user.profilePicture ??
+                              'https://api.dicebear.com/7.x/avataaars/png?seed=${user.userId}'),
                         ),
                         const SizedBox(width: 8),
                         Text(
