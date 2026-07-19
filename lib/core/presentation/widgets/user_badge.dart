@@ -48,6 +48,8 @@ class UserBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (!isVerified) return const SizedBox.shrink();
+
     List<Widget> badges = [];
 
     // Verified Status

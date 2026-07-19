@@ -87,7 +87,8 @@ class _StoryCardState extends ConsumerState<StoryCard>
                       radius: 24,
                       backgroundColor: theme.scaffoldBackgroundColor,
                       backgroundImage: NetworkImage(
-                          'https://api.dicebear.com/7.x/avataaars/png?seed=${widget.story.authorId}'),
+                        userAsync.valueOrNull?.profilePicture ?? 'https://api.dicebear.com/7.x/avataaars/png?seed=${widget.story.authorId}'
+                      ),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
@@ -132,8 +133,8 @@ class _StoryCardState extends ConsumerState<StoryCard>
                               ),
                               const SizedBox(width: 4),
                               UserBadge(
-                                role: widget.story.authorRole,
-                                isVerified: widget.story.isAuthorVerified,
+                                role: userAsync.valueOrNull?.role ?? widget.story.authorRole,
+                                isVerified: userAsync.valueOrNull?.isVerified ?? widget.story.isAuthorVerified,
                               ),
                             ],
                           ),

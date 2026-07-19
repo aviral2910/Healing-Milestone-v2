@@ -104,6 +104,7 @@ class StoryDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final storyAsync = ref.watch(storyByIdProvider(milestoneId));
+    final currentUser = ref.watch(currentUserProvider);
     final theme = Theme.of(context);
 
     return storyAsync.when(
@@ -191,8 +192,16 @@ class StoryDetailScreen extends ConsumerWidget {
                           const SizedBox(height: 24),
 
                           // Author Metadata Row
-                          Row(
-                            children: [
+                          GestureDetector(
+                            onTap: story.displayAuthorName ? () {
+                              if (currentUser?.userId == story.authorId) {
+                                context.push('/profile');
+                              } else {
+                                context.push('/user/${story.authorId}');
+                              }
+                            } : null,
+                            child: Row(
+                              children: [
                               Container(
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
@@ -206,7 +215,8 @@ class StoryDetailScreen extends ConsumerWidget {
                                   radius: 22,
                                   backgroundColor: theme.colorScheme.surface,
                                   backgroundImage: NetworkImage(
-                                      'https://api.dicebear.com/7.x/avataaars/png?seed=${story.authorId}'),
+                                    userAsync.valueOrNull?.profilePicture ?? 'https://api.dicebear.com/7.x/avataaars/png?seed=${story.authorId}'
+                                  ),
                                 ),
                               ),
                               const SizedBox(width: 16),
@@ -261,8 +271,8 @@ class StoryDetailScreen extends ConsumerWidget {
                                         ),
                                         const SizedBox(width: 4),
                                         UserBadge(
-                                          role: story.authorRole,
-                                          isVerified: story.isAuthorVerified,
+                                          role: userAsync.valueOrNull?.role ?? story.authorRole,
+                                          isVerified: userAsync.valueOrNull?.isVerified ?? story.isAuthorVerified,
                                           iconSize: 16,
                                         ),
                                       ],
@@ -283,6 +293,7 @@ class StoryDetailScreen extends ConsumerWidget {
                                 const VerifiedStoryBadge(),
                             ],
                           ),
+                        ),
                         ],
                       ),
                     ),

@@ -37,6 +37,11 @@ final userTaggedStoriesProvider = StreamProvider.family<List<StoryModel>, String
   return ref.watch(storyRepositoryProvider).getStoriesTaggedWithUser(userId);
 });
 
+final bookmarkedStoriesProvider = FutureProvider.family<List<StoryModel>, List<String>>((ref, storyIds) {
+  if (storyIds.isEmpty) return Future.value([]);
+  return ref.watch(storyRepositoryProvider).getStoriesByIds(storyIds);
+});
+
 final commentRepositoryProvider = Provider<CommentRepository>((ref) {
   return FirebaseCommentRepository(ref.watch(firebaseFirestoreProvider));
 });

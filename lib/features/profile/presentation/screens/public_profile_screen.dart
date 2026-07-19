@@ -105,12 +105,12 @@ class PublicProfileScreen extends ConsumerWidget {
                                             fontWeight: FontWeight.bold,
                                             fontSize: 22),
                                       ),
-                                      if (user.isVerified) ...[
-                                        const SizedBox(width: 4),
-                                        Icon(Icons.verified,
-                                            color: theme.colorScheme.primary,
-                                            size: 20),
-                                      ],
+                                      const SizedBox(width: 4),
+                                      UserBadge(
+                                        role: user.role,
+                                        isVerified: user.isVerified,
+                                        iconSize: 20,
+                                      ),
                                     ],
                                   ),
                                   if (user.username != null && user.username!.isNotEmpty) ...[

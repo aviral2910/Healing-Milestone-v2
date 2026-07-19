@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/models/user_model.dart';
+import '../../../../core/presentation/widgets/user_badge.dart';
 
 class UserProfileCard extends StatelessWidget {
   final UserModel user;
@@ -71,11 +72,12 @@ class UserProfileCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      if (user.isVerified) ...[
-                        const SizedBox(width: 4),
-                        const Icon(Icons.verified,
-                            color: Colors.blue, size: 16),
-                      ],
+                      const SizedBox(width: 4),
+                      UserBadge(
+                        role: user.role,
+                        isVerified: user.isVerified,
+                        iconSize: 16,
+                      ),
                     ],
                   ),
                   const SizedBox(height: 4),

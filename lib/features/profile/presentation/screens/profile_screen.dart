@@ -8,6 +8,7 @@ import '../../../../core/models/user_model.dart';
 import '../../../../core/models/story_model.dart';
 import '../../../../shared/widgets/story_card.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/presentation/widgets/user_badge.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -122,14 +123,14 @@ class ProfileScreen extends ConsumerWidget {
                                         fontWeight: FontWeight.bold,
                                         fontSize: 22),
                                   ),
-                                  if (user.isVerified) ...[
                                     const SizedBox(width: 4),
-                                    Icon(Icons.verified,
-                                        color: theme.colorScheme.primary,
-                                        size: 20),
+                                    UserBadge(
+                                      role: user.role,
+                                      isVerified: user.isVerified,
+                                      iconSize: 20,
+                                    ),
                                   ],
-                                ],
-                              ),
+                                ),
                               if (user.username != null && user.username!.isNotEmpty) ...[
                                 const SizedBox(height: 2),
                                 Text(
@@ -292,8 +293,17 @@ class ProfileScreen extends ConsumerWidget {
                     );
                   }
                 ),
-                // Bookmarks (Placeholder for now)
-                _StoryList(stories: const []),
+                // Bookmarks
+                Consumer(
+                  builder: (context, ref, child) {
+                    final bookmarkedAsync = ref.watch(bookmarkedStoriesProvider(user.bookmarkedStories));
+                    return bookmarkedAsync.when(
+                      loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFFD4AF37))),
+                      error: (err, stack) => const Center(child: Text('Failed to load bookmarks', style: TextStyle(color: Colors.red))),
+                      data: (stories) => _StoryList(stories: stories),
+                    );
+                  }
+                ),
               ],
             ),
           ),

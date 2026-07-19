@@ -81,7 +81,7 @@ class _CommentsThreadState extends ConsumerState<CommentsThread> {
                     child: SlideAnimation(
                       verticalOffset: 50.0,
                       child: FadeInAnimation(
-                        child: _CommentBubble(comment: comment),
+                        child: _CommentBubble(comment: comment, storyOwnerId: widget.milestone.authorId),
                       ),
                     ),
                   );
@@ -150,12 +150,18 @@ class _CommentsThreadState extends ConsumerState<CommentsThread> {
 
 class _CommentBubble extends ConsumerWidget {
   final CommentModel comment;
+  final String storyOwnerId;
 
-  const _CommentBubble({Key? key, required this.comment}) : super(key: key);
+  const _CommentBubble({Key? key, required this.comment, required this.storyOwnerId}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userAsync = ref.watch(userByIdProvider(comment.userId));
+    final currentUser = ref.watch(currentUserProvider);
+
+    final isCommentOwner = currentUser?.userId == comment.userId;
+    final isStoryOwner = currentUser?.userId == storyOwnerId;
+    final canDelete = isCommentOwner || isStoryOwner;
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.end,
@@ -182,38 +188,65 @@ class _CommentBubble extends ConsumerWidget {
         ),
         const SizedBox(width: 12),
         Expanded(
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: const Color(0xFF151515),
-              border: Border.all(color: const Color(0xFF2A2A2A)),
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(20),
-                topRight: Radius.circular(20),
-                bottomRight: Radius.circular(20),
-                bottomLeft: Radius.circular(4),
+          child: GestureDetector(
+            onLongPress: canDelete
+                ? () {
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        backgroundColor: const Color(0xFF151515),
+                        title: const Text('Delete Comment', style: TextStyle(color: Colors.white)),
+                        content: const Text('Are you sure you want to delete this comment?', style: TextStyle(color: Color(0xFFA1A1A6))),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('Cancel', style: TextStyle(color: Color(0xFFA1A1A6))),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              ref.read(commentRepositoryProvider).deleteComment(comment.storyId, comment.commentId);
+                              Navigator.pop(context);
+                            },
+                            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                : null,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF151515),
+                border: Border.all(color: const Color(0xFF2A2A2A)),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                  bottomRight: Radius.circular(20),
+                  bottomLeft: Radius.circular(4),
+                ),
               ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                userAsync.when(
-                  data: (user) => Text(
-                    user?.displayName ?? '@${user?.username ?? 'Anonymous'}',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFFA1A1A6),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  userAsync.when(
+                    data: (user) => Text(
+                      user?.displayName ?? '@${user?.username ?? 'Anonymous'}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFFA1A1A6),
+                      ),
                     ),
+                    loading: () => const Text('Loading...'),
+                    error: (_, __) => const Text('Error'),
                   ),
-                  loading: () => const Text('Loading...'),
-                  error: (_, __) => const Text('Error'),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  comment.commentText,
-                  style: const TextStyle(color: Color(0xFFF5F5F7), height: 1.3),
-                ),
-              ],
+                  const SizedBox(height: 6),
+                  Text(
+                    comment.commentText,
+                    style: const TextStyle(color: Color(0xFFF5F5F7), height: 1.3),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

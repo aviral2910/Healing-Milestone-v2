@@ -109,4 +109,27 @@ class FirebaseStoryRepository implements StoryRepository {
       });
     });
   }
+
+  @override
+  Future<List<StoryModel>> getStoriesByIds(List<String> storyIds) async {
+    if (storyIds.isEmpty) return [];
+    
+    // Firestore whereIn has a limit of 30 items
+    final chunks = <List<String>>[];
+    for (var i = 0; i < storyIds.length; i += 30) {
+      chunks.add(storyIds.sublist(i, i + 30 > storyIds.length ? storyIds.length : i + 30));
+    }
+
+    final allStories = <StoryModel>[];
+    for (final chunk in chunks) {
+      final snapshot = await _stories.where(FieldPath.documentId, whereIn: chunk).get();
+      allStories.addAll(
+        snapshot.docs.map((doc) => StoryModel.fromMap(doc.data() as Map<String, dynamic>, doc.id))
+      );
+    }
+    
+    // Maintain the order of the original storyIds list (e.g. most recently bookmarked first)
+    final storyMap = {for (var story in allStories) story.storyId: story};
+    return storyIds.map((id) => storyMap[id]).whereType<StoryModel>().toList();
+  }
 }
