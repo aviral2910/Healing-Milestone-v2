@@ -33,8 +33,6 @@ class StoryDetailScreen extends ConsumerWidget {
     return 'just now';
   }
 
-
-
   void _showAccessibilityBottomSheet(BuildContext context, WidgetRef ref) {
     showModalBottomSheet(
       context: context,
@@ -196,7 +194,7 @@ class StoryDetailScreen extends ConsumerWidget {
                                       : 'A Healing Journey',
                                   style:
                                       theme.textTheme.headlineLarge?.copyWith(
-                                    fontSize: 42, // Massive scale
+                                    fontSize: 32, // Massive scale
                                     height: 1.1,
                                     fontWeight: FontWeight.w900,
                                     color:

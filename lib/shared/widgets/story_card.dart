@@ -203,7 +203,7 @@ class _StoryCardState extends ConsumerState<StoryCard>
                   child: Text(
                     widget.story.heading,
                     style:
-                        theme.textTheme.headlineLarge?.copyWith(fontSize: 24),
+                        theme.textTheme.headlineLarge?.copyWith(fontSize: 20),
                   ),
                 ),
 
@@ -361,7 +361,8 @@ class _StoryCardState extends ConsumerState<StoryCard>
                           color: theme.textTheme.bodySmall!.color!,
                           onTap: () {
                             // Can navigate to story detail for comments
-                            context.push(AppRoutes.storyDetail(widget.story.storyId));
+                            context.push(
+                                AppRoutes.storyDetail(widget.story.storyId));
                           },
                         ),
                         const Spacer(),

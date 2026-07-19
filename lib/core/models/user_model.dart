@@ -21,6 +21,7 @@ class UserModel {
   final List<String> followingList;
   final String displayName;
   final String? username;
+  final String? bio;
   final UserRole role;
   
   // Professional fields
@@ -38,6 +39,7 @@ class UserModel {
     required this.email,
     required this.displayName,
     this.username,
+    this.bio,
     this.role = UserRole.member,
     this.phoneNumber,
     this.likedStories = const [],
@@ -75,6 +77,7 @@ class UserModel {
     List<String>? followingList,
     String? displayName,
     String? username,
+    String? bio,
     UserRole? role,
     String? specialty,
     String? licenseNumber,
@@ -87,6 +90,7 @@ class UserModel {
       email: email ?? this.email,
       displayName: displayName ?? this.displayName,
       username: username ?? this.username,
+      bio: bio ?? this.bio,
       role: role ?? this.role,
       phoneNumber: phoneNumber ?? this.phoneNumber,
       likedStories: likedStories ?? this.likedStories,
@@ -126,6 +130,7 @@ class UserModel {
       'followingList': followingList,
       'displayName': displayName,
       'username': username,
+      'bio': bio,
       'role': role.name,
       'specialty': specialty,
       'licenseNumber': licenseNumber,
@@ -153,6 +158,7 @@ class UserModel {
       followingList: List<String>.from(map['followingList'] ?? []),
       displayName: map['displayName'] ?? '',
       username: map['username'],
+      bio: map['bio'],
       role: UserRole.values.firstWhere(
         (e) => e.name == map['role'],
         orElse: () => UserRole.member,

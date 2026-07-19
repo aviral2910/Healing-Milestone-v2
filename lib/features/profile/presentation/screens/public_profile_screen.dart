@@ -124,6 +124,18 @@ class PublicProfileScreen extends ConsumerWidget {
                                           color: theme.colorScheme.primary),
                                     ),
                                   ],
+                                  if (user.bio != null && user.bio!.trim().isNotEmpty) ...[
+                                    const SizedBox(height: 12),
+                                    Text(
+                                      user.bio!,
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        height: 1.4,
+                                        color: theme.textTheme.bodyMedium?.color,
+                                      ),
+                                    ),
+                                  ],
                                 ],
                               ),
                             ),

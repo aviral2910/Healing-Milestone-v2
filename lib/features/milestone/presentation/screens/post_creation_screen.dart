@@ -252,12 +252,16 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
 
     _userDebounce = Timer(const Duration(milliseconds: 400), () async {
       try {
-        final results = await ref.read(userRepositoryProvider).searchUsers(cleanQuery);
+        final results =
+            await ref.read(userRepositoryProvider).searchUsers(cleanQuery);
         if (mounted) {
           final currentUser = ref.read(currentUserProvider);
           setState(() {
             _userSuggestions = results
-                .where((u) => u.userId != currentUser?.userId && !_selectedUsers.any((selected) => selected.userId == u.userId))
+                .where((u) =>
+                    u.userId != currentUser?.userId &&
+                    !_selectedUsers
+                        .any((selected) => selected.userId == u.userId))
                 .take(4)
                 .toList();
             _isSearchingUsers = false;
@@ -446,14 +450,15 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                   TextField(
                     controller: _titleController,
                     style: const TextStyle(
-                        fontSize: 36,
+                        fontSize: 24,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                         fontFamily: 'Outfit'),
+                    maxLines: null,
                     decoration: InputDecoration(
                       hintText: 'Title your post',
                       hintStyle: TextStyle(
-                        fontSize: 36,
+                        fontSize: 24,
                         fontWeight: FontWeight.bold,
                         fontFamily: 'Outfit',
                         color: Colors.white.withValues(alpha: 0.2),
@@ -621,7 +626,8 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                           deleteIconColor: Colors.white70,
                           onDeleted: () {
                             setState(() {
-                              _selectedUsers.removeWhere((selected) => selected.userId == u.userId);
+                              _selectedUsers.removeWhere(
+                                  (selected) => selected.userId == u.userId);
                             });
                           },
                         );
@@ -645,8 +651,10 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                         hintStyle:
                             TextStyle(color: Colors.white.withOpacity(0.3)),
                         border: InputBorder.none,
-                        prefixIcon: const Icon(Icons.search, color: Colors.white54, size: 20),
-                        prefixIconConstraints: const BoxConstraints(minWidth: 40),
+                        prefixIcon: const Icon(Icons.search,
+                            color: Colors.white54, size: 20),
+                        prefixIconConstraints:
+                            const BoxConstraints(minWidth: 40),
                         suffixIcon: _isSearchingUsers
                             ? const Padding(
                                 padding: EdgeInsets.all(12.0),
@@ -681,8 +689,15 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                                   'https://api.dicebear.com/7.x/avataaars/png?seed=${u.userId}'),
                             ),
                             title: Text(u.displayName,
-                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                            subtitle: u.username != null ? Text('@${u.username}', style: TextStyle(color: theme.primaryColor, fontSize: 12)) : null,
+                                style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold)),
+                            subtitle: u.username != null
+                                ? Text('@${u.username}',
+                                    style: TextStyle(
+                                        color: theme.primaryColor,
+                                        fontSize: 12))
+                                : null,
                             onTap: () {
                               _addUser(u);
                             },

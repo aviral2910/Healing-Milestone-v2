@@ -20,6 +20,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
   late TextEditingController _nameController;
   late TextEditingController _usernameController;
+  late TextEditingController _bioController;
   late TextEditingController _phoneController;
   late TextEditingController _specialtyController;
   late TextEditingController _licenseController;
@@ -40,6 +41,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     if (user == null) return false;
     
     return _nameController.text.trim() != (user.displayName) ||
+           _bioController.text.trim() != (user.bio ?? '') ||
            _phoneController.text.trim() != (user.phoneNumber ?? '') ||
            _specialtyController.text.trim() != (user.specialty ?? '') ||
            _licenseController.text.trim() != (user.licenseNumber ?? '') ||
@@ -54,6 +56,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     _originalUsername = user?.username;
     _nameController = TextEditingController(text: user?.displayName ?? '');
     _usernameController = TextEditingController(text: user?.username ?? '');
+    _bioController = TextEditingController(text: user?.bio ?? '');
     _phoneController = TextEditingController(text: user?.phoneNumber ?? '');
     _specialtyController = TextEditingController(text: user?.specialty ?? '');
     _licenseController = TextEditingController(text: user?.licenseNumber ?? '');
@@ -62,6 +65,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         TextEditingController(text: user?.registrationNumber ?? '');
 
     _nameController.addListener(_onFieldChanged);
+    _bioController.addListener(_onFieldChanged);
     _phoneController.addListener(_onFieldChanged);
     _specialtyController.addListener(_onFieldChanged);
     _licenseController.addListener(_onFieldChanged);
@@ -72,6 +76,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   @override
   void dispose() {
     _nameController.removeListener(_onFieldChanged);
+    _bioController.removeListener(_onFieldChanged);
     _phoneController.removeListener(_onFieldChanged);
     _specialtyController.removeListener(_onFieldChanged);
     _licenseController.removeListener(_onFieldChanged);
@@ -80,6 +85,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     
     _nameController.dispose();
     _usernameController.dispose();
+    _bioController.dispose();
     _phoneController.dispose();
     _specialtyController.dispose();
     _licenseController.dispose();
@@ -136,6 +142,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       final updatedUser = user.copyWith(
         displayName: _nameController.text.trim(),
         username: _usernameController.text.trim().toLowerCase(),
+        bio: _bioController.text.trim(),
         phoneNumber: _phoneController.text.trim(),
         specialty: _specialtyController.text.trim(),
         licenseNumber: _licenseController.text.trim(),
@@ -413,6 +420,19 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 validator: (value) => (value == null || value.isEmpty)
                     ? 'Please enter a name'
                     : null,
+              ),
+              const SizedBox(height: 16),
+
+              TextFormField(
+                controller: _bioController,
+                textInputAction: TextInputAction.newline,
+                style: const TextStyle(color: AppTheme.textPrimary),
+                maxLines: 3,
+                minLines: 1,
+                decoration: _buildInputDecoration(
+                  'Bio',
+                  Icons.info_outline,
+                ),
               ),
 
               const SizedBox(height: 32),
