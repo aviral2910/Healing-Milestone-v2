@@ -253,17 +253,24 @@ final authProvider = StateNotifierProvider<AuthNotifier, AsyncValue<AuthState>>(
   return AuthNotifier(authRepository, userRepository);
 });
 
+final userStreamProvider = StreamProvider.family<UserModel?, String>((ref, userId) {
+  final userRepository = ref.watch(userRepositoryProvider);
+  return userRepository.getUserStream(userId);
+});
+
 // A convenient provider just to get the authenticated UserModel
 final currentUserProvider = Provider<UserModel?>((ref) {
   final authState = ref.watch(authProvider).valueOrNull;
-  if (authState?.status == AuthStatus.authenticated) {
-    return authState?.userModel;
+  if (authState?.status == AuthStatus.authenticated && authState?.authUser != null) {
+    // Watch the real-time stream of the user's data
+    final userStream = ref.watch(userStreamProvider(authState!.authUser!.uid));
+    return userStream.valueOrNull ?? authState!.userModel;
   }
   return null;
 });
 
 // A provider to fetch any user's profile by ID
-final userByIdProvider = FutureProvider.family<UserModel?, String>((ref, userId) async {
+final userByIdProvider = StreamProvider.family<UserModel?, String>((ref, userId) {
   final userRepository = ref.watch(userRepositoryProvider);
-  return await userRepository.getUserData(userId);
+  return userRepository.getUserStream(userId);
 });

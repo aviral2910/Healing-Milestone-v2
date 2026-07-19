@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:async';
 import '../../data/search_providers.dart';
+import '../../../auth/data/auth_provider.dart';
 import '../widgets/user_profile_card.dart';
 import '../../../posts/data/hashtag_repository.dart';
 import '../../../../shared/widgets/story_card.dart';
@@ -299,7 +300,12 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
             return UserProfileCard(
               user: user,
               onTap: () {
-                context.push('/user/${user.userId}');
+                final currentUser = ref.read(currentUserProvider);
+                if (currentUser?.userId == user.userId) {
+                  context.push('/profile');
+                } else {
+                  context.push('/user/${user.userId}');
+                }
               },
             );
           },

@@ -2,8 +2,11 @@ import '../models/user_model.dart';
 
 abstract class UserRepository {
   Future<UserModel?> getUserData(String uid);
+  Stream<UserModel?> getUserStream(String uid);
   Future<void> createUserData(UserModel user);
   Future<void> updateUserData(UserModel user);
   Future<bool> isUsernameAvailable(String username);
   Future<List<UserModel>> searchUsers(String query);
+  Future<void> toggleFollow(String currentUserId, String targetUserId);
+  Future<void> toggleBookmark(String userId, String storyId);
 }

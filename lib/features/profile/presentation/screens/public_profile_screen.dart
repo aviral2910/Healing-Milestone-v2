@@ -6,7 +6,11 @@ import 'package:healing_milestones/features/auth/data/auth_provider.dart';
 import 'package:healing_milestones/features/posts/data/story_providers.dart';
 import '../../../../core/models/user_model.dart';
 import '../../../../core/models/story_model.dart';
+import '../../../../core/presentation/widgets/user_badge.dart';
 import '../../../../shared/widgets/story_card.dart';
+import '../../../auth/data/auth_provider.dart';
+import '../../../auth/data/repository_providers.dart';
+import '../../../posts/data/story_providers.dart';
 
 class PublicProfileScreen extends ConsumerWidget {
   final String userId;
@@ -163,27 +167,38 @@ class PublicProfileScreen extends ConsumerWidget {
                             ),
                             const SizedBox(height: 24),
                             // Action Buttons
-                            SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  // TODO: Implement Follow Logic
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: theme.colorScheme.primary,
-                                  foregroundColor: Colors.black,
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                            Consumer(
+                              builder: (context, ref, child) {
+                                final currentUser = ref.watch(currentUserProvider);
+                                final isFollowing = currentUser?.followingList.contains(user.userId) ?? false;
+                                
+                                return SizedBox(
+                                  width: double.infinity,
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      if (currentUser == null) {
+                                        context.push('/login');
+                                      } else {
+                                        ref.read(userRepositoryProvider).toggleFollow(currentUser.userId, user.userId);
+                                      }
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: isFollowing ? const Color(0xFF2A2A2A) : theme.colorScheme.primary,
+                                      foregroundColor: isFollowing ? Colors.white : Colors.black,
+                                      elevation: 0,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      padding: const EdgeInsets.symmetric(vertical: 14),
+                                    ),
+                                    child: Text(
+                                      isFollowing ? 'Following' : 'Follow',
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold, fontSize: 16),
+                                    ),
                                   ),
-                                  padding: const EdgeInsets.symmetric(vertical: 14),
-                                ),
-                                child: const Text(
-                                  'Follow',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold, fontSize: 16),
-                                ),
-                              ),
+                                );
+                              }
                             ),
                             const SizedBox(height: 16),
                           ],

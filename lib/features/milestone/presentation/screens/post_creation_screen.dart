@@ -254,9 +254,10 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
       try {
         final results = await ref.read(userRepositoryProvider).searchUsers(cleanQuery);
         if (mounted) {
+          final currentUser = ref.read(currentUserProvider);
           setState(() {
             _userSuggestions = results
-                .where((u) => !_selectedUsers.any((selected) => selected.userId == u.userId))
+                .where((u) => u.userId != currentUser?.userId && !_selectedUsers.any((selected) => selected.userId == u.userId))
                 .take(4)
                 .toList();
             _isSearchingUsers = false;

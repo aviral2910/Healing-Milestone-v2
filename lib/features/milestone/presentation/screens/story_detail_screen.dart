@@ -8,9 +8,10 @@ import '../../../../core/presentation/widgets/user_badge.dart';
 import '../../../../core/presentation/widgets/verified_story_badge.dart';
 import '../../../posts/presentation/widgets/post_display_widget.dart';
 import '../widgets/milestone_media_gallery.dart';
-import '../widgets/qna_thread.dart';
+import '../widgets/comments_thread.dart';
 import '../../../accessibility/data/accessibility_providers.dart';
 import '../../../auth/data/auth_provider.dart';
+import '../../../auth/data/repository_providers.dart';
 import '../../../posts/data/story_providers.dart';
 
 import '../../../../core/data/dummy_data.dart';
@@ -324,10 +325,53 @@ class StoryDetailScreen extends ConsumerWidget {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          IconButton(
-                            icon: const Icon(Icons.favorite_border),
-                            onPressed: () {},
-                            color: const Color(0xFFA1A1A6),
+                          Consumer(
+                            builder: (context, ref, child) {
+                              final currentUser = ref.watch(currentUserProvider);
+                              final isLiked = story.likesList.contains(currentUser?.userId);
+                              
+                              return Row(
+                                children: [
+                                  Text(
+                                    story.likesCount.toString(),
+                                    style: TextStyle(
+                                      color: isLiked ? theme.colorScheme.primary : const Color(0xFFA1A1A6),
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  IconButton(
+                                    icon: Icon(isLiked ? Icons.favorite : Icons.favorite_border),
+                                    onPressed: () {
+                                      if (currentUser == null) {
+                                        context.push('/login');
+                                      } else {
+                                        ref.read(storyRepositoryProvider).toggleLike(story.storyId, currentUser.userId);
+                                      }
+                                    },
+                                    color: isLiked ? theme.colorScheme.primary : const Color(0xFFA1A1A6),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                          const SizedBox(width: 8),
+                          Consumer(
+                            builder: (context, ref, child) {
+                              final currentUser = ref.watch(currentUserProvider);
+                              final isBookmarked = currentUser?.bookmarkedStories.contains(story.storyId) ?? false;
+                              
+                              return IconButton(
+                                icon: Icon(isBookmarked ? Icons.bookmark : Icons.bookmark_border),
+                                onPressed: () {
+                                  if (currentUser == null) {
+                                    context.push('/login');
+                                  } else {
+                                    ref.read(userRepositoryProvider).toggleBookmark(currentUser.userId, story.storyId);
+                                  }
+                                },
+                                color: isBookmarked ? theme.colorScheme.primary : const Color(0xFFA1A1A6),
+                              );
+                            }
                           ),
                           const SizedBox(width: 8),
                           IconButton(
@@ -361,7 +405,7 @@ class StoryDetailScreen extends ConsumerWidget {
                                 ?.copyWith(fontSize: 28),
                           ),
                           const SizedBox(height: 24),
-                          QnAThread(milestone: story),
+                          CommentsThread(milestone: story),
                           const SizedBox(height: 40), // Normal padding
                         ],
                       ),
@@ -493,7 +537,12 @@ class _TaggedPeopleList extends ConsumerWidget {
                 if (user == null) return const SizedBox.shrink();
                 return GestureDetector(
                   onTap: () {
-                    context.push('/user/${user.userId}');
+                    final currentUser = ref.read(currentUserProvider);
+                    if (currentUser?.userId == user.userId) {
+                      context.push('/profile');
+                    } else {
+                      context.push('/user/${user.userId}');
+                    }
                   },
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),

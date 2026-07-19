@@ -4,7 +4,10 @@ import '../../core/presentation/widgets/user_badge.dart';
 import '../../core/presentation/widgets/verified_story_badge.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:healing_milestones/features/posts/data/story_providers.dart';
+import 'package:healing_milestones/features/auth/data/repository_providers.dart';
 import '../../features/auth/data/auth_provider.dart';
+
 class StoryCard extends ConsumerStatefulWidget {
   final StoryModel story;
   final VoidCallback onTap;
@@ -287,30 +290,30 @@ class _StoryCardState extends ConsumerState<StoryCard>
                     return Row(
                       children: [
                         InteractionButton(
-                          icon: Icons.favorite_border,
-                          label: '2.4k',
-                          color: theme.colorScheme.primary,
+                          icon: widget.story.likesList.contains(ref.watch(currentUserProvider)?.userId) 
+                              ? Icons.favorite 
+                              : Icons.favorite_border,
+                          label: widget.story.likesCount.toString(),
+                          color: widget.story.likesList.contains(ref.watch(currentUserProvider)?.userId)
+                              ? theme.colorScheme.primary
+                              : theme.colorScheme.primary,
                           onTap: () {
                             final user = ref.read(currentUserProvider);
                             if (user == null) {
                               context.push('/login');
                             } else {
-                              // Handle Like
+                              ref.read(storyRepositoryProvider).toggleLike(widget.story.storyId, user.userId);
                             }
                           },
                         ),
                         const SizedBox(width: 16),
                         InteractionButton(
                           icon: Icons.chat_bubble_outline,
-                          label: '142',
+                          label: widget.story.commentCount.toString(),
                           color: theme.textTheme.bodySmall!.color!,
                           onTap: () {
-                            final user = ref.read(currentUserProvider);
-                            if (user == null) {
-                              context.push('/login');
-                            } else {
-                              // Handle Comment
-                            }
+                            // Can navigate to story detail for comments
+                            context.push('/story/${widget.story.storyId}');
                           },
                         ),
                         const Spacer(),
@@ -320,11 +323,18 @@ class _StoryCardState extends ConsumerState<StoryCard>
                             if (user == null) {
                               context.push('/login');
                             } else {
-                              // Handle Save
+                              ref.read(userRepositoryProvider).toggleBookmark(user.userId, widget.story.storyId);
                             }
                           },
-                          child: Icon(Icons.bookmark_border,
-                              color: theme.textTheme.bodySmall!.color!, size: 22),
+                          child: Icon(
+                            ref.watch(currentUserProvider)?.bookmarkedStories.contains(widget.story.storyId) == true
+                                ? Icons.bookmark
+                                : Icons.bookmark_border,
+                            color: ref.watch(currentUserProvider)?.bookmarkedStories.contains(widget.story.storyId) == true
+                                ? theme.colorScheme.primary
+                                : theme.textTheme.bodySmall!.color!,
+                            size: 22,
+                          ),
                         ),
                       ],
                     );

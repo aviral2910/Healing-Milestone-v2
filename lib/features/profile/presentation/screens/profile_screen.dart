@@ -261,23 +261,28 @@ class ProfileScreen extends ConsumerWidget {
                 ),
               ];
             },
-            body: userStoriesAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFFD4AF37))),
-              error: (err, stack) => const Center(child: Text('Failed to load stories', style: TextStyle(color: Colors.red))),
-              data: (stories) {
-                final ownStories = stories;
-                // In a real app, taggedStories and bookmarkedStories would be separate queries.
-                final taggedStories = <StoryModel>[];
-                final bookmarkedStories = <StoryModel>[];
-
-                return TabBarView(
-                  children: [
-                    _StoryList(stories: ownStories),
-                    _StoryList(stories: taggedStories),
-                    _StoryList(stories: bookmarkedStories),
-                  ],
-                );
-              },
+            body: TabBarView(
+              children: [
+                // Own Stories
+                userStoriesAsync.when(
+                  loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFFD4AF37))),
+                  error: (err, stack) => const Center(child: Text('Failed to load stories', style: TextStyle(color: Colors.red))),
+                  data: (stories) => _StoryList(stories: stories),
+                ),
+                // Tagged Stories
+                Consumer(
+                  builder: (context, ref, child) {
+                    final taggedAsync = ref.watch(userTaggedStoriesProvider(user.userId));
+                    return taggedAsync.when(
+                      loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFFD4AF37))),
+                      error: (err, stack) => const Center(child: Text('Failed to load tagged stories', style: TextStyle(color: Colors.red))),
+                      data: (stories) => _StoryList(stories: stories),
+                    );
+                  }
+                ),
+                // Bookmarks (Placeholder for now)
+                _StoryList(stories: const []),
+              ],
             ),
           ),
         ),

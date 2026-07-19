@@ -73,25 +73,39 @@ class FirebaseStoryRepository implements StoryRepository {
   @override
   Future<void> toggleLike(String storyId, String userId) async {
     final docRef = _stories.doc(storyId);
+    final userRef = _firestore.collection('users').doc(userId);
+
     await _firestore.runTransaction((transaction) async {
       final doc = await transaction.get(docRef);
       if (!doc.exists) return;
       
+      final userDoc = await transaction.get(userRef);
+      if (!userDoc.exists) return;
+
       final data = doc.data() as Map<String, dynamic>;
       final likesList = List<String>.from(data['likesList'] ?? []);
       int likesCount = data['likesCount'] ?? 0;
 
+      final userData = userDoc.data() as Map<String, dynamic>;
+      final likedStories = List<String>.from(userData['likedStories'] ?? []);
+
       if (likesList.contains(userId)) {
         likesList.remove(userId);
         likesCount--;
+        likedStories.remove(storyId);
       } else {
         likesList.add(userId);
         likesCount++;
+        likedStories.add(storyId);
       }
 
       transaction.update(docRef, {
         'likesList': likesList,
         'likesCount': likesCount,
+      });
+
+      transaction.update(userRef, {
+        'likedStories': likedStories,
       });
     });
   }
