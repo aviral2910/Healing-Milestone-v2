@@ -181,47 +181,67 @@ class StoryDetailScreen extends ConsumerWidget {
                                   context: context,
                                   builder: (context) => AlertDialog(
                                     title: const Text('Delete Story'),
-                                    content: const Text('Are you sure you want to delete this story? This action cannot be undone.'),
+                                    content: const Text(
+                                        'Are you sure you want to delete this story? This action cannot be undone.'),
                                     actions: [
                                       TextButton(
-                                        onPressed: () => Navigator.pop(context, false),
+                                        onPressed: () =>
+                                            Navigator.pop(context, false),
                                         child: const Text('Cancel'),
                                       ),
                                       TextButton(
-                                        onPressed: () => Navigator.pop(context, true),
-                                        style: TextButton.styleFrom(foregroundColor: Colors.red),
+                                        onPressed: () =>
+                                            Navigator.pop(context, true),
+                                        style: TextButton.styleFrom(
+                                            foregroundColor: Colors.red),
                                         child: const Text('Delete'),
                                       ),
                                     ],
                                   ),
                                 );
-                                
+
                                 if (confirm == true) {
                                   try {
                                     if (story.mainImage.isNotEmpty) {
-                                      await ref.read(storageRepositoryProvider).deleteImageFromUrl(story.mainImage);
+                                      await ref
+                                          .read(storageRepositoryProvider)
+                                          .deleteImageFromUrl(story.mainImage);
                                     }
                                     for (final asset in story.imageAssets) {
                                       if (asset.isNotEmpty) {
-                                        await ref.read(storageRepositoryProvider).deleteImageFromUrl(asset);
+                                        await ref
+                                            .read(storageRepositoryProvider)
+                                            .deleteImageFromUrl(asset);
                                       }
                                     }
 
-                                    await ref.read(storyRepositoryProvider).deleteStory(story.storyId);
+                                    await ref
+                                        .read(storyRepositoryProvider)
+                                        .deleteStory(story.storyId);
                                     final updatedUser = currentUser!.copyWith(
-                                      ownStories: currentUser.ownStories.where((id) => id != story.storyId).toList(),
+                                      ownStories: currentUser.ownStories
+                                          .where((id) => id != story.storyId)
+                                          .toList(),
                                     );
-                                    await ref.read(authProvider.notifier).updateProfile(updatedUser);
+                                    await ref
+                                        .read(authProvider.notifier)
+                                        .updateProfile(updatedUser);
                                     if (context.mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(content: Text('Story deleted successfully')),
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                            content: Text(
+                                                'Story deleted successfully')),
                                       );
                                       context.pop();
                                     }
                                   } catch (e) {
                                     if (context.mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(content: Text('Failed to delete: $e')),
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        SnackBar(
+                                            content:
+                                                Text('Failed to delete: $e')),
                                       );
                                     }
                                   }
@@ -243,9 +263,11 @@ class StoryDetailScreen extends ConsumerWidget {
                                 value: 'delete',
                                 child: Row(
                                   children: [
-                                    Icon(Icons.delete_outline, size: 20, color: Colors.red),
+                                    Icon(Icons.delete_outline,
+                                        size: 20, color: Colors.red),
                                     SizedBox(width: 8),
-                                    Text('Delete Story', style: TextStyle(color: Colors.red)),
+                                    Text('Delete Story',
+                                        style: TextStyle(color: Colors.red)),
                                   ],
                                 ),
                               ),
@@ -282,6 +304,14 @@ class StoryDetailScreen extends ConsumerWidget {
                                         const Color(0xFFF5F5F7), // Frost white
                                   ),
                                 ),
+                                const SizedBox(height: 12),
+                                if (story.isVerifiedStory)
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      const VerifiedStoryBadge(),
+                                    ],
+                                  ),
                                 const SizedBox(height: 24),
 
                                 // Author Metadata Row
@@ -457,8 +487,6 @@ class StoryDetailScreen extends ConsumerWidget {
                                           ],
                                         ),
                                       ),
-                                      if (story.isVerifiedStory)
-                                        const VerifiedStoryBadge(),
                                     ],
                                   ),
                                 ),

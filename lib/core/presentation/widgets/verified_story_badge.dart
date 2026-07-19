@@ -39,7 +39,7 @@ class VerifiedStoryBadge extends StatelessWidget {
           ),
           const SizedBox(width: 4),
           Text(
-            'VERIFIED',
+            'VERIFIED STORY',
             style: TextStyle(
               color: const Color(0xFFFFD700),
               fontSize: 8,

@@ -81,7 +81,8 @@ class _StoryCardState extends ConsumerState<StoryCard>
             children: [
               // Editorial Header
               Padding(
-                padding: const EdgeInsets.all(20.0),
+                padding: const EdgeInsets.only(
+                    left: 20.0, right: 20.0, top: 20.0, bottom: 20),
                 child: Row(
                   children: [
                     CircleAvatar(
@@ -189,8 +190,6 @@ class _StoryCardState extends ConsumerState<StoryCard>
                         ],
                       ),
                     ),
-                    if (widget.story.isVerifiedStory)
-                      const VerifiedStoryBadge(),
                   ],
                 ),
               ),
@@ -206,7 +205,17 @@ class _StoryCardState extends ConsumerState<StoryCard>
                         theme.textTheme.headlineLarge?.copyWith(fontSize: 20),
                   ),
                 ),
-
+              if (widget.story.isVerifiedStory)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    const Padding(
+                      padding: const EdgeInsets.only(
+                          right: 20.0, left: 20.0, top: 0, bottom: 16),
+                      child: const VerifiedStoryBadge(),
+                    ),
+                  ],
+                ),
               // The Content
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20.0),
