@@ -61,6 +61,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         return '/login';
       }
 
+      final isAuthScreen = state.matchedLocation == '/login' ||
+                           state.matchedLocation == '/phone-auth' ||
+                           state.matchedLocation == '/verify-otp';
+
+      if (isAuth && isAuthScreen) {
+        return '/';
+      }
+
       return null;
     },
     routes: [

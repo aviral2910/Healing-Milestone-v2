@@ -56,25 +56,29 @@ class AuthNotifier extends StateNotifier<AsyncValue<AuthState>> {
       if (user == null) {
         state = const AsyncData(AuthState(status: AuthStatus.unauthenticated));
       } else {
-        try {
-          final userModel = await _userRepository.getUserData(user.uid);
-          if (userModel == null) {
-            state = AsyncData(AuthState(
-              status: AuthStatus.needsOnboarding,
-              authUser: user,
-            ));
-          } else {
-            state = AsyncData(AuthState(
-              status: AuthStatus.authenticated,
-              authUser: user,
-              userModel: userModel,
-            ));
-          }
-        } catch (e, st) {
-          state = AsyncError(e, st);
-        }
+        await _handleUserAuthenticated(user);
       }
     });
+  }
+
+  Future<void> _handleUserAuthenticated(AuthUser user) async {
+    try {
+      final userModel = await _userRepository.getUserData(user.uid);
+      if (userModel == null) {
+        state = AsyncData(AuthState(
+          status: AuthStatus.needsOnboarding,
+          authUser: user,
+        ));
+      } else {
+        state = AsyncData(AuthState(
+          status: AuthStatus.authenticated,
+          authUser: user,
+          userModel: userModel,
+        ));
+      }
+    } catch (e, st) {
+      state = AsyncError(e, st);
+    }
   }
 
   Future<void> signInWithGoogle() async {
@@ -84,8 +88,9 @@ class AuthNotifier extends StateNotifier<AsyncValue<AuthState>> {
       if (user == null) {
         // User canceled sign-in
         state = const AsyncData(AuthState(status: AuthStatus.unauthenticated));
+      } else {
+        await _handleUserAuthenticated(user);
       }
-      // The authStateChanges listener will handle the rest if user != null
     } catch (e, st) {
       state = AsyncError(e, st);
     }
