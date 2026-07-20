@@ -79,9 +79,10 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
     if (_titleController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('A title is mandatory for your story.',
-              style:
-                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          content: Text('A title is mandatory for your story.',
+              style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
+                  fontWeight: FontWeight.bold)),
           backgroundColor: Theme.of(context).colorScheme.error,
           behavior: SnackBarBehavior.floating,
           shape:
@@ -102,7 +103,8 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
       String? imageUrl;
       if (_selectedImage != null) {
         final storage = ref.read(storageRepositoryProvider);
-        if (widget.existingStory != null && widget.existingStory!.mainImage.isNotEmpty) {
+        if (widget.existingStory != null &&
+            widget.existingStory!.mainImage.isNotEmpty) {
           await storage.deleteImageFromUrl(widget.existingStory!.mainImage);
         }
         final file = File(_selectedImage!.path);
@@ -110,8 +112,11 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
         final imagePath = 'stories/${user.userId}/${const Uuid().v4()}.$ext';
         imageUrl = await storage.uploadImage(imagePath, file);
       } else if (_removeExistingImage) {
-        if (widget.existingStory != null && widget.existingStory!.mainImage.isNotEmpty) {
-          await ref.read(storageRepositoryProvider).deleteImageFromUrl(widget.existingStory!.mainImage);
+        if (widget.existingStory != null &&
+            widget.existingStory!.mainImage.isNotEmpty) {
+          await ref
+              .read(storageRepositoryProvider)
+              .deleteImageFromUrl(widget.existingStory!.mainImage);
         }
         imageUrl = '';
       } else {
@@ -120,19 +125,20 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
 
       final contentText = _contentController.text.trim();
       final tagText = _tagController.text.trim();
-      
+
       final Set<String> finalTags = Set.from(_selectedTags);
-      
+
       // Extract from description
       final RegExp hashtagRegExp = RegExp(r'#([a-zA-Z0-9_]+)');
-      final Iterable<RegExpMatch> matches = hashtagRegExp.allMatches(contentText);
+      final Iterable<RegExpMatch> matches =
+          hashtagRegExp.allMatches(contentText);
       for (final match in matches) {
         final tag = match.group(1)?.toLowerCase().trim();
         if (tag != null && tag.isNotEmpty) {
           finalTags.add(tag);
         }
       }
-      
+
       // Extract unsubmitted tags from input field
       if (tagText.isNotEmpty) {
         final remainingTags = tagText.split(RegExp(r'[\s,]+'));
@@ -177,9 +183,13 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(widget.existingStory != null ? 'Post updated successfully!' : 'Post published successfully!',
-                style: const TextStyle(
-                    color: Colors.white, fontWeight: FontWeight.bold)),
+            content: Text(
+                widget.existingStory != null
+                    ? 'Post updated successfully!'
+                    : 'Post published successfully!',
+                style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
+                    fontWeight: FontWeight.bold)),
             backgroundColor: Colors.green,
             behavior: SnackBarBehavior.floating,
           ),
@@ -191,7 +201,8 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to publish: $e',
-                style: const TextStyle(color: Colors.white)),
+                style:
+                    TextStyle(color: Theme.of(context).colorScheme.onSurface)),
             backgroundColor: Theme.of(context).colorScheme.error,
             behavior: SnackBarBehavior.floating,
           ),
@@ -368,22 +379,24 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0F0F),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.close, color: Colors.white),
+          icon:
+              Icon(Icons.close, color: Theme.of(context).colorScheme.onSurface),
           onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
           if (ref.watch(uatModeProvider))
             IconButton(
-              icon: Icon(Icons.auto_fix_high, color: Theme.of(context).primaryColor),
+              icon: Icon(Icons.auto_fix_high,
+                  color: Theme.of(context).primaryColor),
               tooltip: 'Populate Dummy Post',
               onPressed: () {
                 final selected = UatDummyData.getRandomPost();
-                
+
                 setState(() {
                   _titleController.text = selected['title'] as String;
                   _contentController.text = selected['content'] as String;
@@ -397,7 +410,10 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
             child: Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [theme.colorScheme.primary, theme.colorScheme.secondary],
+                  colors: [
+                    theme.colorScheme.primary,
+                    theme.colorScheme.secondary
+                  ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -420,7 +436,10 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                         height: 20,
                         child: CircularProgressIndicator(
                             color: theme.colorScheme.onPrimary, strokeWidth: 2))
-                    : Text(widget.existingStory != null ? 'Save Changes' : 'Publish',
+                    : Text(
+                        widget.existingStory != null
+                            ? 'Save Changes'
+                            : 'Publish',
                         style: const TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 16)),
               ),
@@ -437,42 +456,64 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
               onTap: _pickImage,
               child: Container(
                 width: double.infinity,
-                height: (_selectedImage == null && (widget.existingStory?.mainImage.isEmpty ?? true || _removeExistingImage)) ? 180 : 250,
+                height: (_selectedImage == null &&
+                        (widget.existingStory?.mainImage.isEmpty ??
+                            true || _removeExistingImage))
+                    ? 180
+                    : 250,
                 margin: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1A1A1A),
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(16),
                   image: _selectedImage != null
                       ? DecorationImage(
                           image: FileImage(File(_selectedImage!.path)),
                           fit: BoxFit.cover,
                           colorFilter: ColorFilter.mode(
-                              Colors.black.withValues(alpha: 0.3),
+                              Theme.of(context)
+                                  .colorScheme
+                                  .onSurface
+                                  .withValues(alpha: 0.3),
                               BlendMode.darken),
                         )
-                      : (widget.existingStory != null && widget.existingStory!.mainImage.isNotEmpty && !_removeExistingImage)
+                      : (widget.existingStory != null &&
+                              widget.existingStory!.mainImage.isNotEmpty &&
+                              !_removeExistingImage)
                           ? DecorationImage(
-                              image: NetworkImage(widget.existingStory!.mainImage),
+                              image:
+                                  NetworkImage(widget.existingStory!.mainImage),
                               fit: BoxFit.cover,
                               colorFilter: ColorFilter.mode(
-                                  Colors.black.withValues(alpha: 0.3),
+                                  Theme.of(context)
+                                      .colorScheme
+                                      .onSurface
+                                      .withValues(alpha: 0.3),
                                   BlendMode.darken),
                             )
                           : null,
-                  border: (_selectedImage == null && (widget.existingStory?.mainImage.isEmpty ?? true || _removeExistingImage))
-                      ? Border.all(color: const Color(0xFF333333), width: 1.5)
+                  border: (_selectedImage == null &&
+                          (widget.existingStory?.mainImage.isEmpty ??
+                              true || _removeExistingImage))
+                      ? Border.all(
+                          color: Theme.of(context).dividerColor, width: 1.5)
                       : null,
                 ),
-                child: (_selectedImage == null && (widget.existingStory?.mainImage.isEmpty ?? true || _removeExistingImage))
+                child: (_selectedImage == null &&
+                        (widget.existingStory?.mainImage.isEmpty ??
+                            true || _removeExistingImage))
                     ? Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(Icons.add_photo_alternate_outlined,
                               color: theme.primaryColor, size: 48),
                           const SizedBox(height: 12),
-                          const Text('Add Cover Image',
+                          Text('Add Cover Image',
                               style: TextStyle(
-                                  color: Color(0xFFA0A0A0),
+                                  color: (Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
+                                          ?.color ??
+                                      Colors.grey),
                                   fontSize: 16,
                                   fontWeight: FontWeight.w500)),
                         ],
@@ -483,10 +524,14 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                             top: 12,
                             right: 12,
                             child: IconButton(
-                              icon:
-                                  const Icon(Icons.close, color: Colors.white),
+                              icon: Icon(Icons.close,
+                                  color:
+                                      Theme.of(context).colorScheme.onSurface),
                               style: IconButton.styleFrom(
-                                  backgroundColor: Colors.black54),
+                                  backgroundColor: Theme.of(context)
+                                      .colorScheme
+                                      .onSurface
+                                      .withValues(alpha: 0.54)),
                               onPressed: () {
                                 setState(() {
                                   _selectedImage = null;
@@ -502,18 +547,26 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 12, vertical: 6),
                               decoration: BoxDecoration(
-                                color: Colors.black54,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurface
+                                    .withValues(alpha: 0.54),
                                 borderRadius: BorderRadius.circular(20),
                               ),
-                              child: const Row(
+                              child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Icon(Icons.edit,
-                                      color: Colors.white, size: 14),
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface,
+                                      size: 14),
                                   SizedBox(width: 6),
                                   Text('Change Cover',
                                       style: TextStyle(
-                                          color: Colors.white,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface,
                                           fontSize: 12,
                                           fontWeight: FontWeight.w600)),
                                 ],
@@ -534,10 +587,10 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                 children: [
                   TextField(
                     controller: _titleController,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontFamily: 'Outfit'),
                     maxLines: null,
                     decoration: InputDecoration(
@@ -546,7 +599,10 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                         fontFamily: 'Outfit',
-                        color: Colors.white.withValues(alpha: 0.2),
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: 0.2),
                       ),
                       border: InputBorder.none,
                     ),
@@ -555,8 +611,10 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                   const SizedBox(height: 8),
                   TextField(
                     controller: _contentController,
-                    style: const TextStyle(
-                        fontSize: 18, height: 1.6, color: Color(0xFFE0E0E0)),
+                    style: TextStyle(
+                        fontSize: 18,
+                        height: 1.6,
+                        color: Theme.of(context).colorScheme.onSurface),
                     maxLines: null,
                     minLines: 5,
                     decoration: InputDecoration(
@@ -564,7 +622,10 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                           'Share your experience, feelings, and milestones...',
                       hintStyle: TextStyle(
                         fontSize: 18,
-                        color: Colors.white.withValues(alpha: 0.3),
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: 0.3),
                       ),
                       border: InputBorder.none,
                     ),
@@ -582,9 +643,9 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Tags',
+                  Text('Tags',
                       style: TextStyle(
-                          color: Colors.white,
+                          color: Theme.of(context).colorScheme.onSurface,
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           fontFamily: 'Outfit')),
@@ -597,12 +658,13 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                       children: _selectedTags.map((tag) {
                         return Chip(
                           label: Text('#$tag',
-                              style: const TextStyle(
-                                  color: Color(0xFF1A1A1A),
+                              style: TextStyle(
+                                  color: Theme.of(context).colorScheme.surface,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 12)),
                           backgroundColor: theme.primaryColor,
-                          deleteIconColor: const Color(0xFF1A1A1A),
+                          deleteIconColor:
+                              Theme.of(context).colorScheme.surface,
                           onDeleted: () {
                             setState(() {
                               _selectedTags.remove(tag);
@@ -617,21 +679,26 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF161616),
+                      color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: Theme.of(context).dividerColor),
                     ),
                     child: TextField(
                       controller: _tagController,
-                      style: const TextStyle(color: Colors.white),
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface),
                       inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9]')),
+                        FilteringTextInputFormatter.allow(
+                            RegExp(r'[a-zA-Z0-9]')),
                         _LowerCaseTextFormatter(),
                       ],
                       decoration: InputDecoration(
                         hintText: 'Add a tag (e.g. cancerfree)',
-                        hintStyle:
-                            TextStyle(color: Colors.white.withOpacity(0.3)),
+                        hintStyle: TextStyle(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withValues(alpha: 0.3)),
                         border: InputBorder.none,
                         prefixText: '# ',
                         prefixStyle: TextStyle(
@@ -658,16 +725,20 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                       margin: const EdgeInsets.only(top: 8),
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF161616),
+                        color: Theme.of(context).cardColor,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Theme.of(context).dividerColor),
+                        border:
+                            Border.all(color: Theme.of(context).dividerColor),
                       ),
                       child: Column(
                         children: _suggestions.map((suggestion) {
                           return ListTile(
                             dense: true,
                             title: Text('#$suggestion',
-                                style: const TextStyle(color: Colors.white)),
+                                style: TextStyle(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface)),
                             onTap: () {
                               _addTag(suggestion);
                             },
@@ -688,9 +759,9 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Tag People & Medical Professionals',
+                  Text('Tag People & Medical Professionals',
                       style: TextStyle(
-                          color: Colors.white,
+                          color: Theme.of(context).colorScheme.onSurface,
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           fontFamily: 'Outfit')),
@@ -707,12 +778,17 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                                 'https://api.dicebear.com/7.x/avataaars/png?seed=${u.userId}'),
                           ),
                           label: Text('@${u.username ?? u.displayName}',
-                              style: const TextStyle(
-                                  color: Colors.white,
+                              style: TextStyle(
+                                  color:
+                                      Theme.of(context).colorScheme.onSurface,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 12)),
-                          backgroundColor: const Color(0xFF222222),
-                          deleteIconColor: Colors.white70,
+                          backgroundColor:
+                              Theme.of(context).colorScheme.secondaryContainer,
+                          deleteIconColor: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.7),
                           onDeleted: () {
                             setState(() {
                               _selectedUsers.removeWhere(
@@ -728,20 +804,28 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF161616),
+                      color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: Theme.of(context).dividerColor),
                     ),
                     child: TextField(
                       controller: _userSearchController,
-                      style: const TextStyle(color: Colors.white),
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface),
                       decoration: InputDecoration(
                         hintText: 'Search people to tag...',
-                        hintStyle:
-                            TextStyle(color: Colors.white.withOpacity(0.3)),
+                        hintStyle: TextStyle(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withValues(alpha: 0.3)),
                         border: InputBorder.none,
-                        prefixIcon: const Icon(Icons.search,
-                            color: Colors.white54, size: 20),
+                        prefixIcon: Icon(Icons.search,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withValues(alpha: 0.54),
+                            size: 20),
                         prefixIconConstraints:
                             const BoxConstraints(minWidth: 40),
                         suffixIcon: _isSearchingUsers
@@ -764,9 +848,10 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                       margin: const EdgeInsets.only(top: 8),
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF161616),
+                        color: Theme.of(context).cardColor,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Theme.of(context).dividerColor),
+                        border:
+                            Border.all(color: Theme.of(context).dividerColor),
                       ),
                       child: Column(
                         children: _userSuggestions.map((u) {
@@ -778,8 +863,9 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                                   'https://api.dicebear.com/7.x/avataaars/png?seed=${u.userId}'),
                             ),
                             title: Text(u.displayName,
-                                style: const TextStyle(
-                                    color: Colors.white,
+                                style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.onSurface,
                                     fontWeight: FontWeight.bold)),
                             subtitle: u.username != null
                                 ? Text('@${u.username}',
@@ -805,23 +891,25 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
               margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: const Color(0xFF161616),
+                color: Theme.of(context).cardColor,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(color: Theme.of(context).dividerColor),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Post Settings',
+                  Text('Post Settings',
                       style: TextStyle(
-                          color: Colors.white,
+                          color: Theme.of(context).colorScheme.onSurface,
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           fontFamily: 'Outfit')),
                   const SizedBox(height: 20),
-                  const Text('POST TYPE',
+                  Text('POST TYPE',
                       style: TextStyle(
-                          color: Color(0xFFA0A0A0),
+                          color:
+                              (Theme.of(context).textTheme.bodySmall?.color ??
+                                  Colors.grey),
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                           letterSpacing: 1.2)),
@@ -838,13 +926,17 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
                             color: isSelected
-                                ? const Color(0xFF1A1A1A)
-                                : Colors.white70,
+                                ? Theme.of(context).colorScheme.surface
+                                : Theme.of(context)
+                                    .colorScheme
+                                    .onSurface
+                                    .withValues(alpha: 0.7),
                           ),
                         ),
                         selected: isSelected,
                         selectedColor: theme.primaryColor,
-                        backgroundColor: const Color(0xFF222222),
+                        backgroundColor:
+                            Theme.of(context).colorScheme.secondaryContainer,
                         padding: const EdgeInsets.symmetric(
                             horizontal: 12, vertical: 8),
                         shape: RoundedRectangleBorder(
@@ -868,24 +960,34 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                           Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                                color: const Color(0xFF222222),
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .secondaryContainer,
                                 borderRadius: BorderRadius.circular(10)),
-                            child: const Icon(Icons.visibility_off_outlined,
-                                color: Colors.white, size: 20),
+                            child: Icon(Icons.visibility_off_outlined,
+                                color: Theme.of(context).colorScheme.onSurface,
+                                size: 20),
                           ),
                           const SizedBox(width: 16),
-                          const Column(
+                          Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text('Post Anonymously',
                                   style: TextStyle(
-                                      color: Colors.white,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface,
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600)),
                               SizedBox(height: 4),
                               Text('Hide your name and profile picture',
                                   style: TextStyle(
-                                      color: Color(0xFFA0A0A0), fontSize: 12)),
+                                      color: (Theme.of(context)
+                                              .textTheme
+                                              .bodySmall
+                                              ?.color ??
+                                          Colors.grey),
+                                      fontSize: 12)),
                             ],
                           ),
                         ],

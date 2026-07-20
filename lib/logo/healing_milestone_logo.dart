@@ -17,7 +17,7 @@ class HealingMilestonesLogoWidget extends StatelessWidget {
     Key? key,
     this.logoSize = 35.0,
     this.logoColor,
-    this.textColor = Colors.white,
+    this.textColor,
     this.showText = true,
   }) : super(key: key);
 
@@ -29,7 +29,7 @@ class HealingMilestonesLogoWidget extends StatelessWidget {
 
     // Determine colors based on context or parameters
     final Color effectiveLogoColor = logoColor ?? Theme.of(context).primaryColor;
-    final Color effectiveTextColor = textColor ?? effectiveLogoColor;
+    final Color effectiveTextColor = textColor ?? Theme.of(context).colorScheme.onSurface;
 
     return Row(
       mainAxisSize: MainAxisSize.min,

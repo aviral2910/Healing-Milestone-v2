@@ -87,63 +87,63 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           _onBottomNavTapped(0);
         }
       },
-      child: SafeArea(
-        child: Scaffold(
-          resizeToAvoidBottomInset: false,
-          extendBody: false, // Solid background
-          body: IndexedStack(
-            index: _currentIndex,
-            children: [
-              PostScreen(
-                scrollController: _postsScrollController,
-                isActiveTab: _currentIndex == 0,
-                onSearchTapped: () => _onBottomNavTapped(1),
-              ),
-              SearchScreen(
-                scrollController: _searchScrollController,
-                isActiveTab: _currentIndex == 1,
-              ),
-              HealthAwarenessScreen(
-                scrollController: _awarenessScrollController,
-                isActiveTab: _currentIndex == 2,
-                onSearchTapped: () => _onBottomNavTapped(1),
-              ),
-            ],
-          ),
-          bottomNavigationBar: Container(
-            decoration: BoxDecoration(
-              color: const Color(0xFF0A0A0A), // Solid dark background
-              border: Border(
-                top: BorderSide(
-                    color: Theme.of(context).dividerColor, width: 0.5), // Very thin border
-              ),
+      child: Scaffold(
+        resizeToAvoidBottomInset: false,
+        extendBody: false, // Solid background
+        body: IndexedStack(
+          index: _currentIndex,
+          children: [
+            PostScreen(
+              scrollController: _postsScrollController,
+              isActiveTab: _currentIndex == 0,
+              onSearchTapped: () => _onBottomNavTapped(1),
             ),
-            child: SafeArea(
-              child: SizedBox(
-                height: 60,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _buildNavItem(
-                      icon: Icons.feed_outlined,
-                      activeIcon: Icons.feed,
-                      index: 0,
-                      theme: theme,
-                    ),
-                    _buildNavItem(
-                      icon: Icons.search_outlined,
-                      activeIcon: Icons.search,
-                      index: 1,
-                      theme: theme,
-                    ),
-                    _buildNavItem(
-                      icon: Icons.health_and_safety_outlined,
-                      activeIcon: Icons.health_and_safety,
-                      index: 2,
-                      theme: theme,
-                    ),
-                  ],
-                ),
+            SearchScreen(
+              scrollController: _searchScrollController,
+              isActiveTab: _currentIndex == 1,
+            ),
+            HealthAwarenessScreen(
+              scrollController: _awarenessScrollController,
+              isActiveTab: _currentIndex == 2,
+              onSearchTapped: () => _onBottomNavTapped(1),
+            ),
+          ],
+        ),
+        bottomNavigationBar: Container(
+          decoration: BoxDecoration(
+            color:
+                Theme.of(context).scaffoldBackgroundColor, // dynamic background
+            border: Border(
+              top: BorderSide(
+                  color: Theme.of(context).dividerColor,
+                  width: 0.5), // Very thin border
+            ),
+          ),
+          child: SafeArea(
+            child: SizedBox(
+              height: 60,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _buildNavItem(
+                    icon: Icons.feed_outlined,
+                    activeIcon: Icons.feed,
+                    index: 0,
+                    theme: theme,
+                  ),
+                  _buildNavItem(
+                    icon: Icons.search_outlined,
+                    activeIcon: Icons.search,
+                    index: 1,
+                    theme: theme,
+                  ),
+                  _buildNavItem(
+                    icon: Icons.health_and_safety_outlined,
+                    activeIcon: Icons.health_and_safety,
+                    index: 2,
+                    theme: theme,
+                  ),
+                ],
               ),
             ),
           ),
@@ -175,7 +175,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             key: ValueKey<bool>(isSelected),
             color: isSelected
                 ? theme.colorScheme.primary
-                : const Color(0xFF5A5A5C),
+                : theme.colorScheme.onSurface.withValues(alpha: 0.5),
             size: 28,
             shadows: isSelected
                 ? [

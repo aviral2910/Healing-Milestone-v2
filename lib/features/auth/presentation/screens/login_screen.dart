@@ -62,7 +62,10 @@ class LoginScreen extends ConsumerWidget {
             Text(
               'Sign in to share your story, connect with others, and access more features.',
               style: theme.textTheme.bodyLarge?.copyWith(
-                color: Colors.white70,
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.7),
               ),
               textAlign: TextAlign.center,
             ),
@@ -75,8 +78,8 @@ class LoginScreen extends ConsumerWidget {
                     },
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                backgroundColor: Colors.white,
-                foregroundColor: Colors.black,
+                backgroundColor: Theme.of(context).colorScheme.onSurface,
+                foregroundColor: Theme.of(context).colorScheme.onSurface,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -108,10 +111,12 @@ class LoginScreen extends ConsumerWidget {
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 backgroundColor: const Color(0xFF1E1E1E), // Premium dark gray
-                foregroundColor: Colors.white,
+                foregroundColor: Theme.of(context).colorScheme.onSurface,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5)),
+                  side: BorderSide(
+                      color: theme.colorScheme.outlineVariant
+                          .withValues(alpha: 0.5)),
                 ),
               ),
               icon: const Icon(Icons.phone_iphone),

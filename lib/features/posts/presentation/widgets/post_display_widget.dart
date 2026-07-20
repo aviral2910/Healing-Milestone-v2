@@ -15,8 +15,8 @@ class PostDisplayWidget extends HookConsumerWidget {
       padding: const EdgeInsets.all(16.0),
       child: Text(
         content,
-        style: const TextStyle(
-          color: Color(0xFFF5F5F7),
+        style: TextStyle(
+          color: Theme.of(context).colorScheme.onSurface,
           fontSize: 16,
           height: 1.5,
           fontWeight: FontWeight.w400,

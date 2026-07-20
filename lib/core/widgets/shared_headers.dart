@@ -19,7 +19,8 @@ class CommonSliverAppBar extends ConsumerWidget {
     final user = ref.watch(currentUserProvider);
     final authState = ref.watch(authProvider);
     final isAuthLoading = authState.isLoading;
-    final isAuthenticated = authState.valueOrNull?.status == AuthStatus.authenticated;
+    final isAuthenticated =
+        authState.valueOrNull?.status == AuthStatus.authenticated;
     final isProfileLoading = isAuthLoading || (isAuthenticated && user == null);
 
     return SliverAppBar(
@@ -50,7 +51,10 @@ class CommonSliverAppBar extends ConsumerWidget {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         gradient: LinearGradient(
-                          colors: [theme.colorScheme.primary, theme.colorScheme.secondary],
+                          colors: [
+                            theme.colorScheme.primary,
+                            theme.colorScheme.secondary
+                          ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -59,7 +63,8 @@ class CommonSliverAppBar extends ConsumerWidget {
                         radius: 18,
                         backgroundColor: theme.scaffoldBackgroundColor,
                         backgroundImage: NetworkImage(
-                          user.profilePicture ?? 'https://api.dicebear.com/7.x/avataaars/png?seed=${user.userId}',
+                          user.profilePicture ??
+                              'https://api.dicebear.com/7.x/avataaars/png?seed=${user.userId}',
                         ),
                       ),
                     ),
@@ -70,12 +75,18 @@ class CommonSliverAppBar extends ConsumerWidget {
                   : Container(
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white24),
+                        border: Border.all(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withValues(alpha: 0.24)),
                       ),
-                      child: const CircleAvatar(
+                      child: CircleAvatar(
                         radius: 18,
                         backgroundColor: Colors.transparent,
-                        child: Icon(Icons.person_outline, size: 20, color: Colors.white),
+                        child: Icon(Icons.person_outline,
+                            size: 20,
+                            color: Theme.of(context).colorScheme.onSurface),
                       ),
                     ),
         ),
@@ -87,7 +98,7 @@ class CommonSliverAppBar extends ConsumerWidget {
           child: TextButton(
             style: TextButton.styleFrom(
               backgroundColor: theme.colorScheme.primary,
-              foregroundColor: Colors.black,
+              foregroundColor: Theme.of(context).colorScheme.onSurface,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(6),
               ),
@@ -141,7 +152,7 @@ class CommonSearchBarSliver extends StatelessWidget {
                 style: theme.textTheme.headlineLarge?.copyWith(
                   fontSize: 32,
                   fontWeight: FontWeight.w800,
-                  color: const Color(0xFFF5F5F7), // Frost white
+                  color: theme.colorScheme.onSurface,
                 ),
               ),
             ),
@@ -152,7 +163,7 @@ class CommonSearchBarSliver extends StatelessWidget {
                 displayName,
                 style: theme.textTheme.headlineMedium?.copyWith(
                   fontSize: 22,
-                  color: const Color(0xFFA1A1A6), // Titanium
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
               ),
             ),
@@ -173,11 +184,13 @@ class CommonSearchBarSliver extends StatelessWidget {
               child: TextField(
                 readOnly: onTap != null,
                 onTap: onTap,
-                style: const TextStyle(color: Colors.white),
+                style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface),
                 decoration: InputDecoration(
                   hintText: hintText,
                   hintStyle: const TextStyle(color: Color(0xFF7A7A7A)),
-                  prefixIcon: const Icon(Icons.search, color: Color(0xFFA1A1A6)),
+                  prefixIcon:
+                      const Icon(Icons.search, color: Color(0xFFA1A1A6)),
                   border: InputBorder.none,
                   contentPadding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 16),

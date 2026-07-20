@@ -43,10 +43,10 @@ class StoryDetailScreen extends ConsumerWidget {
           child: Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface.withOpacity(0.9),
+              color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.9),
               borderRadius:
                   const BorderRadius.vertical(top: Radius.circular(32)),
-              border: Border.all(color: Colors.black.withOpacity(0.05)),
+              border: Border.all(color: Theme.of(context).dividerColor),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -57,7 +57,7 @@ class StoryDetailScreen extends ConsumerWidget {
                     width: 40,
                     height: 5,
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Theme.of(context).dividerColor,
                       borderRadius: BorderRadius.circular(2.5),
                     ),
                   ),
@@ -302,7 +302,7 @@ class StoryDetailScreen extends ConsumerWidget {
                                     letterSpacing: 1.1,
                                     fontWeight: FontWeight.w900,
                                     color:
-                                        const Color(0xFFF5F5F7), // Frost white
+                                        theme.colorScheme.onSurface, // Frost white
                                   ),
                                 ),
                                 const SizedBox(height: 12),
@@ -388,8 +388,7 @@ class StoryDetailScreen extends ConsumerWidget {
                                                         fontSize: 16,
                                                         fontWeight:
                                                             FontWeight.bold,
-                                                        color: const Color(
-                                                            0xFFF5F5F7),
+                                                        color: theme.colorScheme.onSurface,
                                                       ),
                                                     );
                                                   },
@@ -403,8 +402,7 @@ class StoryDetailScreen extends ConsumerWidget {
                                                       fontSize: 16,
                                                       fontWeight:
                                                           FontWeight.bold,
-                                                      color: const Color(
-                                                          0xFFF5F5F7),
+                                                      color: theme.colorScheme.onSurface,
                                                     ),
                                                   ),
                                                   error: (_, __) => Text(
@@ -417,8 +415,7 @@ class StoryDetailScreen extends ConsumerWidget {
                                                       fontSize: 16,
                                                       fontWeight:
                                                           FontWeight.bold,
-                                                      color: const Color(
-                                                          0xFFF5F5F7),
+                                                      color: theme.colorScheme.onSurface,
                                                     ),
                                                   ),
                                                 ),
@@ -785,10 +782,10 @@ class _TaggedPeopleList extends ConsumerWidget {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF222222),
+                      color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: const Color(0xFF333333),
+                        color: Theme.of(context).dividerColor,
                       ),
                     ),
                     child: Row(
@@ -802,10 +799,10 @@ class _TaggedPeopleList extends ConsumerWidget {
                         const SizedBox(width: 8),
                         Text(
                           '@${user.username ?? user.displayName}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
-                            color: Colors.white,
+                            color: Theme.of(context).colorScheme.onSurface,
                           ),
                         ),
                       ],

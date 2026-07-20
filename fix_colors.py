@@ -1,63 +1,46 @@
+import re
 import sys
 
-def process_edit_profile():
-    filepath = '/Users/aviraldixit/self/healing_milestones/lib/features/profile/presentation/screens/edit_profile_screen.dart'
+def fix_file(filepath):
     with open(filepath, 'r') as f:
         content = f.read()
 
-    # Pass context to helper functions
-    content = content.replace('InputDecoration _buildInputDecoration(String hint', 'InputDecoration _buildInputDecoration(BuildContext context, String hint')
-    content = content.replace('_buildInputDecoration(\'', '_buildInputDecoration(context, \'')
-    content = content.replace('_buildInputDecoration("', '_buildInputDecoration(context, "')
+    # Replace specific const widgets that will become dynamic
+    # e.g., const Text('...', style: TextStyle(color: Colors.white)) -> Text('...', style: TextStyle(color: Theme.of(context).colorScheme.onSurface))
     
-    content = content.replace('Widget _buildLinkButton({', 'Widget _buildLinkButton(BuildContext context, {')
-    content = content.replace('_buildLinkButton(', '_buildLinkButton(context, ')
+    # 1. Remove const from specific widgets that have Colors.white/black
+    content = re.sub(r'const\s+(Text\([^)]*Colors\.(white|black).*?\))', r'\1', content, flags=re.DOTALL)
+    content = re.sub(r'const\s+(Icon\([^)]*Colors\.(white|black).*?\))', r'\1', content, flags=re.DOTALL)
+    content = re.sub(r'const\s+(TextStyle\([^)]*Colors\.(white|black).*?\))', r'\1', content, flags=re.DOTALL)
     
-    content = content.replace('Widget _buildSocialLink({', 'Widget _buildSocialLink(BuildContext context, {')
-    content = content.replace('_buildSocialLink(', '_buildSocialLink(context, ')
+    # 2. Colors.white.withOpacity(X) -> Theme.of(context).colorScheme.onSurface.withValues(alpha: X)
+    content = re.sub(r'Colors\.white\.withOpacity\((.*?)\)', r'Theme.of(context).colorScheme.onSurface.withValues(alpha: \1)', content)
+    content = re.sub(r'Colors\.white\.withValues\(alpha:\s*(.*?)\)', r'Theme.of(context).colorScheme.onSurface.withValues(alpha: \1)', content)
     
-    content = content.replace('Widget _buildPrivacyToggle({', 'Widget _buildPrivacyToggle(BuildContext context, {')
-    content = content.replace('_buildPrivacyToggle(', '_buildPrivacyToggle(context, ')
-
-    content = content.replace('Widget _buildStatCard(', 'Widget _buildStatCard(BuildContext context, ')
-    content = content.replace('_buildStatCard(', '_buildStatCard(context, ')
+    # 3. Colors.black.withOpacity(X) -> Theme.of(context).colorScheme.onSurface.withValues(alpha: X)
+    content = re.sub(r'Colors\.black\.withOpacity\((.*?)\)', r'Theme.of(context).colorScheme.onSurface.withValues(alpha: \1)', content)
+    content = re.sub(r'Colors\.black\.withValues\(alpha:\s*(.*?)\)', r'Theme.of(context).colorScheme.onSurface.withValues(alpha: \1)', content)
     
-    content = content.replace('Widget _buildEmptyState(', 'Widget _buildEmptyState(BuildContext context, ')
-    content = content.replace('_buildEmptyState(', '_buildEmptyState(context, ')
-
-    # Colors
-    content = content.replace('AppTheme.surfaceLight', 'Theme.of(context).cardColor')
-    content = content.replace('AppTheme.surface', 'Theme.of(context).scaffoldBackgroundColor')
-    content = content.replace('AppTheme.accentPrimary', 'Theme.of(context).colorScheme.primary')
-    content = content.replace('AppTheme.textPrimary', '(Theme.of(context).textTheme.bodyLarge?.color ?? Colors.white)')
-    content = content.replace('AppTheme.textSecondary', '(Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)')
-
-    # Edge cases with const
-    content = content.replace('const TextStyle(color: (Theme.of(context)', 'TextStyle(color: (Theme.of(context)')
-    content = content.replace('const BorderSide(color: Theme.of(context)', 'BorderSide(color: Theme.of(context)')
-    content = content.replace('const IconThemeData(color: Theme.of(context)', 'IconThemeData(color: Theme.of(context)')
-
+    # 4. Colors.white70 -> Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)
+    content = re.sub(r'Colors\.white70', r'Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)', content)
+    content = re.sub(r'Colors\.white54', r'Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.54)', content)
+    content = re.sub(r'Colors\.black54', r'Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.54)', content)
+    
+    # 5. Colors.white -> Theme.of(context).colorScheme.onSurface
+    content = re.sub(r'Colors\.white(?![a-zA-Z0-9_])', r'Theme.of(context).colorScheme.onSurface', content)
+    
+    # 6. Colors.black -> Theme.of(context).colorScheme.onSurface
+    content = re.sub(r'Colors\.black(?![a-zA-Z0-9_])', r'Theme.of(context).colorScheme.onSurface', content)
+    
+    # Now fix invalid const structures that might be left over:
+    # const Padding(child: Text(..., Theme.of(context)...))
+    # It's better to just run the flutter analyze and manually fix the consts, but we can try to strip obvious ones.
+    content = re.sub(r'const\s+(Padding\([^)]*Theme\.of\(context\).*?\))', r'\1', content, flags=re.DOTALL)
+    content = re.sub(r'const\s+(Center\([^)]*Theme\.of\(context\).*?\))', r'\1', content, flags=re.DOTALL)
+    content = re.sub(r'const\s+(SizedBox\([^)]*Theme\.of\(context\).*?\))', r'\1', content, flags=re.DOTALL)
+    
     with open(filepath, 'w') as f:
         f.write(content)
 
-def process_settings():
-    filepath = '/Users/aviraldixit/self/healing_milestones/lib/features/settings/presentation/screens/settings_screen.dart'
-    with open(filepath, 'r') as f:
-        content = f.read()
-
-    content = content.replace('AppTheme.surfaceLight', 'Theme.of(context).cardColor')
-    content = content.replace('AppTheme.surface', 'Theme.of(context).scaffoldBackgroundColor')
-    content = content.replace('AppTheme.accentPrimary', 'Theme.of(context).colorScheme.primary')
-    content = content.replace('AppTheme.textPrimary', '(Theme.of(context).textTheme.bodyLarge?.color ?? Colors.white)')
-    content = content.replace('AppTheme.textSecondary', '(Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)')
-
-    content = content.replace('const TextStyle(color: (Theme.of(context)', 'TextStyle(color: (Theme.of(context)')
-    content = content.replace('const BorderSide(color: Theme.of(context)', 'BorderSide(color: Theme.of(context)')
-    content = content.replace('const IconThemeData(color: Theme.of(context)', 'IconThemeData(color: Theme.of(context)')
-
-    with open(filepath, 'w') as f:
-        f.write(content)
-
-process_edit_profile()
-process_settings()
-print("Done")
+if __name__ == '__main__':
+    fix_file(sys.argv[1])

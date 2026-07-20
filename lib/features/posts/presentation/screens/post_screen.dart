@@ -442,7 +442,7 @@ class __MiniStoryCardState extends ConsumerState<_MiniStoryCard>
         scale: _scaleAnimation,
         child: Container(
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface, 
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(24),
             border: Border.all(color: Theme.of(context).dividerColor, width: 1),
           ),
@@ -627,7 +627,8 @@ class __MiniStoryCardState extends ConsumerState<_MiniStoryCard>
               // Interaction Footer
               Container(
                 decoration: BoxDecoration(
-                  border: Border(top: BorderSide(color: Theme.of(context).dividerColor)),
+                  border: Border(
+                      top: BorderSide(color: Theme.of(context).dividerColor)),
                 ),
                 padding: const EdgeInsets.symmetric(
                     horizontal: 16.0, vertical: 12.0),

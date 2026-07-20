@@ -119,14 +119,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
                     child: TextField(
                       controller: _searchController,
                       focusNode: _focusNode,
-                      style: const TextStyle(color: Colors.white),
+                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                       onChanged: _onSearchChanged,
                       decoration: InputDecoration(
                         hintText: _tabController.index == 0 ? 'Search hashtags...' : 'Search people...',
-                        hintStyle: const TextStyle(color: Color(0xFF7A7A7A)),
-                        prefixIcon: const Icon(Icons.search, color: Color(0xFFA1A1A6)),
+                        hintStyle: TextStyle(color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)),
+                        prefixIcon: Icon(Icons.search, color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)),
                         suffixIcon: IconButton(
-                          icon: const Icon(Icons.clear, color: Color(0xFFA1A1A6), size: 20),
+                          icon: Icon(Icons.clear, color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey), size: 20),
                           onPressed: () {
                             _searchController.clear();
                             _onSearchChanged('');
@@ -154,7 +154,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
                         dividerColor: Colors.transparent,
                         labelColor: theme.colorScheme.primary,
                         labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Outfit', fontSize: 16),
-                        unselectedLabelColor: const Color(0xFFA1A1A6),
+                        unselectedLabelColor: Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey,
                         unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontFamily: 'Outfit', fontSize: 16),
                         splashBorderRadius: BorderRadius.circular(8),
                         tabs: const [
@@ -198,13 +198,13 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
             child: Row(
               children: [
                 IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.white, size: 24),
+                  icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onSurface, size: 24),
                   onPressed: () => setState(() => _selectedHashtag = null),
                 ),
                 const SizedBox(width: 8),
                 Text(
                   '#$_selectedHashtag',
-                  style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold, fontFamily: 'Outfit'),
+                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 20, fontWeight: FontWeight.bold, fontFamily: 'Outfit'),
                 ),
               ],
             ),
@@ -306,7 +306,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
               children: [
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                  child: Text(title, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Outfit')),
+                  child: Text(title, style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Outfit')),
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -352,7 +352,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
                                         const SizedBox(width: 6),
                                         Text(
                                           tag,
-                                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
+                                          style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.bold, fontSize: 15),
                                         ),
                                       ],
                                     ),
@@ -384,7 +384,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
           children: [
             Icon(Icons.people_outline, size: 64, color: Theme.of(context).primaryColor.withValues(alpha: 0.2)),
             const SizedBox(height: 16),
-            const Text('Search for people by username', style: TextStyle(color: Color(0xFFA1A1A6), fontSize: 16)),
+            Text('Search for people by username', style: TextStyle(color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey), fontSize: 16)),
           ],
         ),
       );

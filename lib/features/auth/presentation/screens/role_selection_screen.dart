@@ -46,7 +46,8 @@ class RoleSelectionScreen extends ConsumerWidget {
             const SizedBox(height: 32),
             _RoleOptionCard(
               title: 'Member',
-              description: 'I want to read stories and share my own healing journey.',
+              description:
+                  'I want to read stories and share my own healing journey.',
               icon: Icons.person,
               onTap: () => handleRoleSelection(UserRole.member),
             ),
@@ -93,7 +94,8 @@ class _RoleOptionCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.5)),
+          border: Border.all(
+              color: theme.colorScheme.primary.withValues(alpha: 0.5)),
           borderRadius: BorderRadius.circular(16),
           color: theme.colorScheme.surface,
         ),
@@ -115,13 +117,21 @@ class _RoleOptionCard extends StatelessWidget {
                   Text(
                     description,
                     style: theme.textTheme.bodyMedium?.copyWith(
-                      color: Colors.white70,
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.7),
                     ),
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.white54),
+            Icon(Icons.arrow_forward_ios,
+                size: 16,
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.54)),
           ],
         ),
       ),
