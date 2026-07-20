@@ -8,7 +8,9 @@ enum AppThemeType {
   lavenderLight,
   slateLight,
   sapphireDark,
+  greyscaleDark,
   sapphireLight,
+  greyscaleLight,
 }
 
 class ThemePalette {
@@ -141,14 +143,42 @@ class ThemePalette {
     accentSecondary: Color(0xFFA1A1A6), // Titanium
   );
 
+  static const ThemePalette greyscaleDark = ThemePalette(
+    type: AppThemeType.greyscaleDark,
+    name: 'Greyscale Dark',
+    isDark: true,
+    background: Color(0xFF1C1C1C), // Deep, dark gray
+    surface: Color(0xFF262626), // Slightly lighter gray for cards
+    surfaceLight: Color(0xFF333333),
+    textPrimary: Color(0xFF999999), // Soft, mid-tone gray
+    textSecondary: Color(0xFF666666),
+    accentPrimary: Color(0xFFE0E0E0), // Light grey for contrast/CTAs
+    accentSecondary: Color(0xFF7A7A7A),
+  );
+
+  static const ThemePalette greyscaleLight = ThemePalette(
+    type: AppThemeType.greyscaleLight,
+    name: 'Greyscale Light',
+    isDark: false,
+    background: Color(0xFFEBEBEB), // Light clean grey background
+    surface: Color(0xFFFFFFFF), // Pure white surface
+    surfaceLight: Color(0xFFD6D6D6),
+    textPrimary: Color(0xFF1C1C1C), // Deep dark gray for text
+    textSecondary: Color(0xFF999999), // Soft mid-tone gray
+    accentPrimary: Color(0xFF4A4A4A), // Dark grey accent
+    accentSecondary: Color(0xFFA1A1A6),
+  );
+
   static const List<ThemePalette> allThemes = [
     goldenDark,
     lavenderDark,
     slateDark,
     sapphireDark,
+    greyscaleDark,
     goldenLight,
     lavenderLight,
     slateLight,
     sapphireLight,
+    greyscaleLight,
   ];
 }

@@ -28,6 +28,7 @@ class AppTheme {
         primary: palette.accentPrimary,
         secondary: palette.accentSecondary,
         surface: palette.surface,
+        onSurface: palette.textPrimary,
         onPrimary: palette.accentPrimary.computeLuminance() > 0.25
             ? Colors.black
             : Colors.white,
