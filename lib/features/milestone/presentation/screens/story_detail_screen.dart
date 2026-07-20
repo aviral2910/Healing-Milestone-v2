@@ -43,7 +43,8 @@ class StoryDetailScreen extends ConsumerWidget {
           child: Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.9),
+              color:
+                  Theme.of(context).colorScheme.surface.withValues(alpha: 0.9),
               borderRadius:
                   const BorderRadius.vertical(top: Radius.circular(32)),
               border: Border.all(color: Theme.of(context).dividerColor),
@@ -63,8 +64,27 @@ class StoryDetailScreen extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 32),
-                Text('Reading Settings',
-                    style: Theme.of(context).textTheme.titleLarge),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Reading Settings',
+                        style: Theme.of(context).textTheme.titleLarge),
+                    Consumer(builder: (context, ref, child) {
+                      return TextButton(
+                        onPressed: () {
+                          ref
+                              .read(accessibilityProvider.notifier)
+                              .updateTextSizeFactor(1.0);
+                          ref
+                              .read(accessibilityProvider.notifier)
+                              .updateTextOpacity(1.0);
+                        },
+                        child: const Text('Reset',
+                            style: TextStyle(fontWeight: FontWeight.bold)),
+                      );
+                    }),
+                  ],
+                ),
                 const SizedBox(height: 24),
                 const Text('Text Size',
                     style: TextStyle(
@@ -301,8 +321,8 @@ class StoryDetailScreen extends ConsumerWidget {
                                     height: 1.1,
                                     letterSpacing: 1.1,
                                     fontWeight: FontWeight.w900,
-                                    color:
-                                        theme.colorScheme.onSurface, // Frost white
+                                    color: theme
+                                        .colorScheme.onSurface, // Frost white
                                   ),
                                 ),
                                 const SizedBox(height: 12),
@@ -388,7 +408,8 @@ class StoryDetailScreen extends ConsumerWidget {
                                                         fontSize: 16,
                                                         fontWeight:
                                                             FontWeight.bold,
-                                                        color: theme.colorScheme.onSurface,
+                                                        color: theme.colorScheme
+                                                            .onSurface,
                                                       ),
                                                     );
                                                   },
@@ -402,7 +423,8 @@ class StoryDetailScreen extends ConsumerWidget {
                                                       fontSize: 16,
                                                       fontWeight:
                                                           FontWeight.bold,
-                                                      color: theme.colorScheme.onSurface,
+                                                      color: theme.colorScheme
+                                                          .onSurface,
                                                     ),
                                                   ),
                                                   error: (_, __) => Text(
@@ -415,7 +437,8 @@ class StoryDetailScreen extends ConsumerWidget {
                                                       fontSize: 16,
                                                       fontWeight:
                                                           FontWeight.bold,
-                                                      color: theme.colorScheme.onSurface,
+                                                      color: theme.colorScheme
+                                                          .onSurface,
                                                     ),
                                                   ),
                                                 ),

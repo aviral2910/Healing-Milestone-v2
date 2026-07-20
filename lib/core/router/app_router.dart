@@ -8,6 +8,7 @@ import '../../features/profile/presentation/screens/edit_profile_screen.dart';
 import '../../features/profile/presentation/screens/user_list_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../features/settings/presentation/screens/theme_selection_screen.dart';
+import '../../features/settings/presentation/screens/accessibility_settings_screen.dart';
 import '../../features/uat/presentation/screens/uat_screen.dart';
 import '../../features/milestone/presentation/screens/post_creation_screen.dart';
 import '../../features/milestone/presentation/screens/story_detail_screen.dart';
@@ -46,15 +47,18 @@ final routerProvider = Provider<GoRouter>((ref) {
       final authState = ref.read(authProvider).valueOrNull;
       final isAuth = authState?.status == AuthStatus.authenticated;
       final needsOnboarding = authState?.status == AuthStatus.needsOnboarding;
-      
-      final isGoingToOnboarding = state.matchedLocation == AppRoutes.roleSelection || state.matchedLocation == AppRoutes.professionalOnboarding;
-      
-      // Protected routes
-      final isProtectedRoute = state.matchedLocation == AppRoutes.create || 
-                               state.matchedLocation == AppRoutes.profile ||
-                               state.matchedLocation == AppRoutes.editProfile;
 
-      if (authState?.status == AuthStatus.unauthenticated && isGoingToOnboarding) {
+      final isGoingToOnboarding =
+          state.matchedLocation == AppRoutes.roleSelection ||
+              state.matchedLocation == AppRoutes.professionalOnboarding;
+
+      // Protected routes
+      final isProtectedRoute = state.matchedLocation == AppRoutes.create ||
+          state.matchedLocation == AppRoutes.profile ||
+          state.matchedLocation == AppRoutes.editProfile;
+
+      if (authState?.status == AuthStatus.unauthenticated &&
+          isGoingToOnboarding) {
         return AppRoutes.login;
       }
 
@@ -67,8 +71,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
 
       final isAuthScreen = state.matchedLocation == AppRoutes.login ||
-                           state.matchedLocation == AppRoutes.phoneAuth ||
-                           state.matchedLocation == AppRoutes.verifyOtp;
+          state.matchedLocation == AppRoutes.phoneAuth ||
+          state.matchedLocation == AppRoutes.verifyOtp;
 
       if (isAuth && isAuthScreen) {
         return AppRoutes.home;
@@ -131,6 +135,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const ThemeSelectionScreen(),
       ),
       GoRoute(
+        path: AppRoutes.accessibilitySettings,
+        builder: (context, state) => const AccessibilitySettingsScreen(),
+      ),
+      GoRoute(
         path: AppRoutes.editProfile,
         builder: (context, state) => const EditProfileScreen(),
       ),
@@ -157,12 +165,14 @@ final routerProvider = Provider<GoRouter>((ref) {
           return CustomTransitionPage(
             key: state.pageKey,
             child: StoryDetailScreen(milestoneId: id),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
               const begin = Offset(0.0, 1.0);
               const end = Offset.zero;
               const curve = Curves.easeOutCubic;
 
-              var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+              var tween =
+                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
               var offsetAnimation = animation.drive(tween);
 
               return SlideTransition(

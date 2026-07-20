@@ -6,6 +6,8 @@ import 'package:healing_milestones/features/auth/data/auth_provider.dart';
 import 'package:healing_milestones/core/presentation/widgets/logout_button.dart';
 import 'package:healing_milestones/core/router/app_routes.dart';
 
+import 'package:healing_milestones/features/accessibility/data/accessibility_providers.dart';
+
 enum MenuContext { home, profile }
 
 class SettingsScreen extends ConsumerWidget {
@@ -29,6 +31,15 @@ class SettingsScreen extends ConsumerWidget {
           subtitle: 'Customize your visual experience',
           onTap: () {
             context.push(AppRoutes.themeSelection);
+          },
+        ),
+        _buildOptionCard(
+          context,
+          icon: Icons.text_format_rounded,
+          title: 'Text & Accessibility',
+          subtitle: 'Adjust text size and contrast',
+          onTap: () {
+            context.push(AppRoutes.accessibilitySettings);
           },
         ),
         if (user != null)
@@ -121,7 +132,9 @@ class SettingsScreen extends ConsumerWidget {
     bool isDestructive = false,
   }) {
     final theme = Theme.of(context);
-    final color = isDestructive ? Colors.redAccent : Theme.of(context).colorScheme.primary;
+    final color = isDestructive
+        ? Colors.redAccent
+        : Theme.of(context).colorScheme.primary;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
@@ -160,14 +173,19 @@ class SettingsScreen extends ConsumerWidget {
                       Text(
                         subtitle,
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.6),
+                          color: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.color
+                              ?.withOpacity(0.6),
                           fontSize: 14,
                         ),
                       ),
                     ],
                   ),
                 ),
-                Icon(Icons.chevron_right_rounded, color: Theme.of(context).iconTheme.color?.withOpacity(0.4)),
+                Icon(Icons.chevron_right_rounded,
+                    color: Theme.of(context).iconTheme.color?.withOpacity(0.4)),
               ],
             ),
           ),

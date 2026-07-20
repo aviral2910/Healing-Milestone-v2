@@ -18,11 +18,11 @@ final selectedTagProvider = StateProvider<String>((ref) => 'All');
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  
+
   final prefs = await SharedPreferences.getInstance();
 
   runApp(
@@ -48,9 +48,10 @@ class HealingMilestonesApp extends ConsumerWidget {
     // Apply accessibility scaling to the base dark theme
     ThemeData baseTheme = AppTheme.getThemeData(themePalette);
     TextTheme scaledTextTheme = baseTheme.textTheme.apply(
-      fontSizeFactor: accessibilityState.textSizeFactor,
-      bodyColor: themePalette.textPrimary.withValues(alpha: accessibilityState.textOpacity),
-      displayColor: themePalette.textPrimary.withValues(alpha: accessibilityState.textOpacity),
+      bodyColor: themePalette.textPrimary
+          .withValues(alpha: accessibilityState.textOpacity),
+      displayColor: themePalette.textPrimary
+          .withValues(alpha: accessibilityState.textOpacity),
     );
 
     return DevicePreview(
@@ -62,7 +63,17 @@ class HealingMilestonesApp extends ConsumerWidget {
         debugShowCheckedModeBanner: false,
         useInheritedMediaQuery: true,
         locale: DevicePreview.locale(context),
-        builder: DevicePreview.appBuilder,
+        builder: (context, child) {
+          final widget = DevicePreview.appBuilder(context, child);
+          final data = MediaQuery.of(context);
+          return MediaQuery(
+            data: data.copyWith(
+              textScaler: TextScaler.linear(
+                  data.textScaler.scale(1) * accessibilityState.textSizeFactor),
+            ),
+            child: widget,
+          );
+        },
       ),
     );
   }

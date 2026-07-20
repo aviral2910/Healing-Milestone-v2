@@ -11,6 +11,7 @@ class AppRoutes {
   static const String userList = '/user-list';
   static const String settings = '/settings';
   static const String themeSelection = '/theme-selection';
+  static const String accessibilitySettings = '/accessibility-settings';
   static const uat = '/uat';
 
   // Dynamic routes
