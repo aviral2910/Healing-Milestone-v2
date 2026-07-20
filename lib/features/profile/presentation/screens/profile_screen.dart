@@ -120,17 +120,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                             Hero(
                               tag: 'profile-avatar-${user.userId}',
                               child: Container(
-                                padding: const EdgeInsets.all(1),
+                                padding: const EdgeInsets.all(2),
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      theme.colorScheme.primary,
-                                      theme.colorScheme.secondary
-                                    ],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
+                                  color: theme.colorScheme.primary,
                                 ),
                                 child: CircleAvatar(
                                   radius: 50,
