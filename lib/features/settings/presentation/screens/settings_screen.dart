@@ -121,7 +121,7 @@ class SettingsScreen extends ConsumerWidget {
     bool isDestructive = false,
   }) {
     final theme = Theme.of(context);
-    final color = isDestructive ? Colors.redAccent : AppTheme.accentPrimary;
+    final color = isDestructive ? Colors.redAccent : Theme.of(context).colorScheme.primary;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),

@@ -118,14 +118,40 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
         imageUrl = widget.existingStory?.mainImage ?? '';
       }
 
+      final contentText = _contentController.text.trim();
+      final tagText = _tagController.text.trim();
+      
+      final Set<String> finalTags = Set.from(_selectedTags);
+      
+      // Extract from description
+      final RegExp hashtagRegExp = RegExp(r'#([a-zA-Z0-9_]+)');
+      final Iterable<RegExpMatch> matches = hashtagRegExp.allMatches(contentText);
+      for (final match in matches) {
+        final tag = match.group(1)?.toLowerCase().trim();
+        if (tag != null && tag.isNotEmpty) {
+          finalTags.add(tag);
+        }
+      }
+      
+      // Extract unsubmitted tags from input field
+      if (tagText.isNotEmpty) {
+        final remainingTags = tagText.split(RegExp(r'[\s,]+'));
+        for (var tag in remainingTags) {
+          tag = tag.replaceAll('#', '').toLowerCase().trim();
+          if (tag.isNotEmpty) {
+            finalTags.add(tag);
+          }
+        }
+      }
+
       final story = StoryModel(
         storyId: widget.existingStory?.storyId ?? const Uuid().v4(),
         heading: _titleController.text.trim(),
-        description: _contentController.text.trim(),
+        description: contentText,
         publishedAt: widget.existingStory?.publishedAt ?? DateTime.now(),
-        shortDescription: _contentController.text.trim().length > 50
-            ? _contentController.text.trim().substring(0, 50)
-            : _contentController.text.trim(),
+        shortDescription: contentText.length > 50
+            ? contentText.substring(0, 50)
+            : contentText,
         mainImage: imageUrl,
         authorId: user.userId,
         qrId: widget.existingStory?.qrId ?? '',
@@ -134,7 +160,7 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
         displayAuthorName: !_isAnonymous,
         authorRole: user.role,
         type: _selectedType,
-        hashtagsList: _selectedTags,
+        hashtagsList: finalTags.toList(),
         taggedPeople: _selectedUsers.map((u) => u.userId).toList(),
       );
 

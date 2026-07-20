@@ -220,12 +220,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       hintText: hint,
       labelText: hint,
       hintStyle:
-          TextStyle(color: AppTheme.textSecondary.withValues(alpha: 0.7)),
-      labelStyle: const TextStyle(color: AppTheme.textSecondary),
-      prefixIcon: Icon(icon, color: AppTheme.accentPrimary),
+          TextStyle(color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey).withValues(alpha: 0.7)),
+      labelStyle: TextStyle(color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)),
+      prefixIcon: Icon(icon, color: Theme.of(context).colorScheme.primary),
       suffixIcon: suffixIcon,
       filled: true,
-      fillColor: AppTheme.surfaceLight,
+      fillColor: Theme.of(context).cardColor,
       contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
@@ -237,7 +237,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: AppTheme.accentPrimary, width: 1.5),
+        borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1.5),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
@@ -260,11 +260,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppTheme.surfaceLight,
+          color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color:
-                AppTheme.accentPrimary.withValues(alpha: isLinked ? 0.6 : 0.3),
+                Theme.of(context).colorScheme.primary.withValues(alpha: isLinked ? 0.6 : 0.3),
           ),
         ),
         child: Row(
@@ -272,11 +272,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppTheme.accentPrimary
+                color: Theme.of(context).colorScheme.primary
                     .withValues(alpha: isLinked ? 0.2 : 0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: AppTheme.accentPrimary),
+              child: Icon(icon, color: Theme.of(context).colorScheme.primary),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -287,10 +287,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     children: [
                       Text(
                         title,
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
-                            color: AppTheme.textPrimary),
+                            color: (Theme.of(context).textTheme.bodyLarge?.color ?? Colors.white)),
                       ),
                       if (isLinked) ...[
                         const SizedBox(width: 8),
@@ -299,12 +299,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                               horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
                             color:
-                                AppTheme.accentPrimary.withValues(alpha: 0.2),
+                                Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(4),
                           ),
-                          child: const Text('Linked',
+                          child: Text('Linked',
                               style: TextStyle(
-                                  color: AppTheme.accentPrimary,
+                                  color: Theme.of(context).colorScheme.primary,
                                   fontSize: 10,
                                   fontWeight: FontWeight.bold)),
                         ),
@@ -316,19 +316,19 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     subtitle,
                     style: TextStyle(
                         color: isLinked
-                            ? AppTheme.accentPrimary
-                            : AppTheme.textSecondary,
+                            ? Theme.of(context).colorScheme.primary
+                            : (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                         fontSize: 13),
                   ),
                 ],
               ),
             ),
             if (isLinked)
-              const Icon(Icons.check_circle,
-                  size: 20, color: AppTheme.accentPrimary)
+              Icon(Icons.check_circle,
+                  size: 20, color: Theme.of(context).colorScheme.primary)
             else
-              const Icon(Icons.arrow_forward_ios,
-                  size: 16, color: AppTheme.textSecondary),
+              Icon(Icons.arrow_forward_ios,
+                  size: 16, color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)),
           ],
         ),
       ),
@@ -342,10 +342,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     final authUser = authState?.authUser;
 
     if (user == null) {
-      return const Scaffold(
-        backgroundColor: AppTheme.surface,
+      return Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: Center(
-            child: CircularProgressIndicator(color: AppTheme.accentPrimary)),
+            child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary)),
       );
     }
 
@@ -361,15 +361,15 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     // (Username logic removed since it is read-only)
 
     return Scaffold(
-      backgroundColor: AppTheme.surface,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Edit Profile',
+        title: Text('Edit Profile',
             style: TextStyle(
-                fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
+                fontWeight: FontWeight.w600, color: (Theme.of(context).textTheme.bodyLarge?.color ?? Colors.white))),
         centerTitle: true,
         elevation: 0,
-        backgroundColor: AppTheme.surface,
-        iconTheme: const IconThemeData(color: AppTheme.accentPrimary),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        iconTheme: IconThemeData(color: Theme.of(context).colorScheme.primary),
       ),
       bottomNavigationBar: SafeArea(
         child: Padding(
@@ -378,19 +378,19 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             onPressed: _hasChanges ? _saveChanges : null,
             style: FilledButton.styleFrom(
               backgroundColor:
-                  _hasChanges ? AppTheme.accentPrimary : AppTheme.surfaceLight,
+                  _hasChanges ? Theme.of(context).colorScheme.primary : Theme.of(context).cardColor,
               foregroundColor: _hasChanges
-                  ? AppTheme.surface
-                  : AppTheme.textSecondary.withValues(alpha: 0.5),
-              disabledBackgroundColor: AppTheme.surfaceLight,
+                  ? Theme.of(context).scaffoldBackgroundColor
+                  : (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey).withValues(alpha: 0.5),
+              disabledBackgroundColor: Theme.of(context).cardColor,
               disabledForegroundColor:
-                  AppTheme.textSecondary.withValues(alpha: 0.5),
+                  (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey).withValues(alpha: 0.5),
               padding: const EdgeInsets.symmetric(vertical: 18),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
             ),
-            child: const Text(
+            child: Text(
               'Save Changes',
               style: TextStyle(
                 fontSize: 16,
@@ -445,13 +445,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                           child: Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: AppTheme.accentPrimary,
+                              color: Theme.of(context).colorScheme.primary,
                               shape: BoxShape.circle,
                               border:
-                                  Border.all(color: AppTheme.surface, width: 3),
+                                  Border.all(color: Theme.of(context).scaffoldBackgroundColor, width: 3),
                             ),
-                            child: const Icon(Icons.camera_alt,
-                                size: 16, color: AppTheme.surface),
+                            child: Icon(Icons.camera_alt,
+                                size: 16, color: Theme.of(context).scaffoldBackgroundColor),
                           ),
                         ),
                     ],
@@ -461,26 +461,26 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               const SizedBox(height: 32),
 
               // Basic Info Section
-              const Text('Basic Information',
+              Text('Basic Information',
                   style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: AppTheme.accentPrimary)),
+                      color: Theme.of(context).colorScheme.primary)),
               const SizedBox(height: 16),
 
               TextFormField(
                 controller: _usernameController,
                 readOnly: true,
                 style: TextStyle(
-                    color: AppTheme.textPrimary.withValues(alpha: 0.5)),
+                    color: (Theme.of(context).textTheme.bodyLarge?.color ?? Colors.white).withValues(alpha: 0.5)),
                 decoration: _buildInputDecoration(
                   'Unique Username (@handle)',
                   Icons.alternate_email,
                   suffixIcon: Icon(Icons.lock_outline,
-                      color: AppTheme.textSecondary.withValues(alpha: 0.5),
+                      color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey).withValues(alpha: 0.5),
                       size: 20),
                 ).copyWith(
-                  fillColor: AppTheme.surfaceLight.withValues(alpha: 0.5),
+                  fillColor: Theme.of(context).cardColor.withValues(alpha: 0.5),
                 ),
               ),
               const SizedBox(height: 16),
@@ -488,7 +488,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               TextFormField(
                 controller: _nameController,
                 textInputAction: TextInputAction.next,
-                style: const TextStyle(color: AppTheme.textPrimary),
+                style: TextStyle(color: (Theme.of(context).textTheme.bodyLarge?.color ?? Colors.white)),
                 decoration: _buildInputDecoration(
                   isOrg ? 'Organization Name' : 'Display Name',
                   isOrg ? Icons.domain : Icons.person_outline,
@@ -502,7 +502,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               TextFormField(
                 controller: _bioController,
                 textInputAction: TextInputAction.newline,
-                style: const TextStyle(color: AppTheme.textPrimary),
+                style: TextStyle(color: (Theme.of(context).textTheme.bodyLarge?.color ?? Colors.white)),
                 maxLines: 3,
                 minLines: 1,
                 decoration: _buildInputDecoration(
@@ -515,17 +515,17 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
               // Role Specific Section
               if (!isMember) ...[
-                const Text('Professional Details',
+                Text('Professional Details',
                     style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: AppTheme.accentPrimary)),
+                        color: Theme.of(context).colorScheme.primary)),
                 const SizedBox(height: 16),
                 if (isPro) ...[
                   TextFormField(
                     controller: _specialtyController,
                     textInputAction: TextInputAction.next,
-                    style: const TextStyle(color: AppTheme.textPrimary),
+                    style: TextStyle(color: (Theme.of(context).textTheme.bodyLarge?.color ?? Colors.white)),
                     decoration: _buildInputDecoration(
                         'Specialty', Icons.medical_information_outlined),
                   ),
@@ -533,7 +533,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   TextFormField(
                     controller: _licenseController,
                     textInputAction: TextInputAction.next,
-                    style: const TextStyle(color: AppTheme.textPrimary),
+                    style: TextStyle(color: (Theme.of(context).textTheme.bodyLarge?.color ?? Colors.white)),
                     decoration: _buildInputDecoration(
                         'License Number', Icons.badge_outlined),
                   ),
@@ -542,7 +542,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   TextFormField(
                     controller: _servicesController,
                     textInputAction: TextInputAction.next,
-                    style: const TextStyle(color: AppTheme.textPrimary),
+                    style: TextStyle(color: (Theme.of(context).textTheme.bodyLarge?.color ?? Colors.white)),
                     decoration: _buildInputDecoration(
                         'Services', Icons.business_center_outlined),
                   ),
@@ -550,7 +550,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   TextFormField(
                     controller: _registrationController,
                     textInputAction: TextInputAction.next,
-                    style: const TextStyle(color: AppTheme.textPrimary),
+                    style: TextStyle(color: (Theme.of(context).textTheme.bodyLarge?.color ?? Colors.white)),
                     decoration: _buildInputDecoration(
                         'Registration Number', Icons.badge_outlined),
                   ),
@@ -559,11 +559,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               ],
 
               // Account Linking Section
-              const Text('Account Security',
+              Text('Account Security',
                   style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: AppTheme.accentPrimary)),
+                      color: Theme.of(context).colorScheme.primary)),
               const SizedBox(height: 16),
 
               _buildLinkButton(
@@ -623,10 +623,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: AppTheme.surfaceLight,
+                    color: Theme.of(context).cardColor,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: AppTheme.accentPrimary.withValues(alpha: 0.3),
+                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
                     ),
                   ),
                   child: Column(
@@ -643,20 +643,20 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
+                                Text(
                                   'Verification Badge',
                                   style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 16,
-                                      color: AppTheme.textPrimary),
+                                      color: (Theme.of(context).textTheme.bodyLarge?.color ?? Colors.white)),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
                                   user.appliedForVerification
                                       ? 'Application under review'
                                       : 'Establish trust in the community',
-                                  style: const TextStyle(
-                                      color: AppTheme.textSecondary,
+                                  style: TextStyle(
+                                      color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                                       fontSize: 13),
                                 ),
                               ],
@@ -682,14 +682,14 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                               }
                             },
                             style: OutlinedButton.styleFrom(
-                              foregroundColor: AppTheme.accentPrimary,
-                              side: const BorderSide(
-                                  color: AppTheme.accentPrimary),
+                              foregroundColor: Theme.of(context).colorScheme.primary,
+                              side: BorderSide(
+                                  color: Theme.of(context).colorScheme.primary),
                               padding: const EdgeInsets.symmetric(vertical: 12),
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12)),
                             ),
-                            child: const Text('Apply Now',
+                            child: Text('Apply Now',
                                 style: TextStyle(fontWeight: FontWeight.bold)),
                           ),
                         ),

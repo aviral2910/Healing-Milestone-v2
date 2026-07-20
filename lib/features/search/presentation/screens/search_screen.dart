@@ -93,6 +93,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
       resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: NestedScrollView(
+          floatHeaderSlivers: true,
           controller: widget.scrollController,
           headerSliverBuilder: (context, innerBoxIsScrolled) {
             return [
