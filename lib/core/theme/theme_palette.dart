@@ -7,6 +7,8 @@ enum AppThemeType {
   goldenLight,
   lavenderLight,
   slateLight,
+  sapphireDark,
+  sapphireLight,
 }
 
 class ThemePalette {
@@ -113,12 +115,40 @@ class ThemePalette {
     accentSecondary: Color(0xFFA1A1A6),
   );
 
+  static const ThemePalette sapphireDark = ThemePalette(
+    type: AppThemeType.sapphireDark,
+    name: 'Sapphire Dark',
+    isDark: true,
+    background: Color(0xFF010205), // Extremely dark blue/black
+    surface: Color(0xFF060B14), // Dark sapphire surface
+    surfaceLight: Color(0xFF0E1726), // Lighter sapphire surface
+    textPrimary: Color(0xFFF5F5F7), // Frost White
+    textSecondary: Color(0xFFA1A1A6), // Titanium Silver
+    accentPrimary: Color(0xFF0A84FF), // Vibrant Sapphire Blue
+    accentSecondary: Color(0xFF878681), // Natural Titanium
+  );
+
+  static const ThemePalette sapphireLight = ThemePalette(
+    type: AppThemeType.sapphireLight,
+    name: 'Sapphire Light',
+    isDark: false,
+    background: Color(0xFFF2F5F9), // Very light icy blue/grey
+    surface: Color(0xFFFFFFFF), // Pure white
+    surfaceLight: Color(0xFFE6ECF2), // Slightly darker icy grey
+    textPrimary: Color(0xFF1C1C1E),
+    textSecondary: Color(0xFF8E8E93),
+    accentPrimary: Color(0xFF007AFF), // Vibrant Sapphire Blue
+    accentSecondary: Color(0xFFA1A1A6), // Titanium
+  );
+
   static const List<ThemePalette> allThemes = [
     goldenDark,
     lavenderDark,
     slateDark,
+    sapphireDark,
     goldenLight,
     lavenderLight,
     slateLight,
+    sapphireLight,
   ];
 }
