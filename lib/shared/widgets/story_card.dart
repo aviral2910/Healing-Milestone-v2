@@ -198,7 +198,7 @@ class _StoryCardState extends ConsumerState<StoryCard>
               if (widget.story.heading.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(
-                      left: 20.0, right: 20.0, bottom: 16.0),
+                      left: 20.0, right: 20.0, bottom: 20.0, top: 0),
                   child: Text(
                     widget.story.heading,
                     style: theme.textTheme.headlineLarge

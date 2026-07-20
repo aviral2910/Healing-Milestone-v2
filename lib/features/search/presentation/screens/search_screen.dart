@@ -24,7 +24,8 @@ class SearchScreen extends ConsumerStatefulWidget {
   ConsumerState<SearchScreen> createState() => _SearchScreenState();
 }
 
-class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerProviderStateMixin {
+class _SearchScreenState extends ConsumerState<SearchScreen>
+    with SingleTickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
   late TabController _tabController;
@@ -74,7 +75,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
       } else {
         ref.read(peopleSearchQueryProvider.notifier).state = query;
       }
-      
+
       // If user types, we leave the selected hashtag view
       if (query.isNotEmpty && _selectedHashtag != null) {
         setState(() {
@@ -106,7 +107,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
                 titleSpacing: 0,
                 toolbarHeight: 72,
                 title: Padding(
-                  padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0),
+                  padding:
+                      const EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0),
                   child: Container(
                     decoration: BoxDecoration(
                       color: Theme.of(context).cardColor,
@@ -119,14 +121,29 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
                     child: TextField(
                       controller: _searchController,
                       focusNode: _focusNode,
-                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface),
                       onChanged: _onSearchChanged,
                       decoration: InputDecoration(
-                        hintText: _tabController.index == 0 ? 'Search hashtags...' : 'Search people...',
-                        hintStyle: TextStyle(color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)),
-                        prefixIcon: Icon(Icons.search, color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)),
+                        hintText: _tabController.index == 0
+                            ? 'Search hashtags...'
+                            : 'Search people...',
+                        hintStyle: TextStyle(
+                            color:
+                                (Theme.of(context).textTheme.bodySmall?.color ??
+                                    Colors.grey)),
+                        prefixIcon: Icon(Icons.search,
+                            color:
+                                (Theme.of(context).textTheme.bodySmall?.color ??
+                                    Colors.grey)),
                         suffixIcon: IconButton(
-                          icon: Icon(Icons.clear, color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey), size: 20),
+                          icon: Icon(Icons.clear,
+                              color: (Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.color ??
+                                  Colors.grey),
+                              size: 20),
                           onPressed: () {
                             _searchController.clear();
                             _onSearchChanged('');
@@ -136,7 +153,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
                           },
                         ),
                         border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 16),
                       ),
                     ),
                   ),
@@ -153,9 +171,17 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
                         indicatorWeight: 3.0,
                         dividerColor: Colors.transparent,
                         labelColor: theme.colorScheme.primary,
-                        labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Outfit', fontSize: 16),
-                        unselectedLabelColor: Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey,
-                        unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontFamily: 'Outfit', fontSize: 16),
+                        labelStyle: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Outfit',
+                            fontSize: 16),
+                        unselectedLabelColor:
+                            Theme.of(context).textTheme.bodySmall?.color ??
+                                Colors.grey,
+                        unselectedLabelStyle: const TextStyle(
+                            fontWeight: FontWeight.w500,
+                            fontFamily: 'Outfit',
+                            fontSize: 16),
                         splashBorderRadius: BorderRadius.circular(8),
                         tabs: const [
                           Tab(text: 'Tags & Stories'),
@@ -198,13 +224,18 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
             child: Row(
               children: [
                 IconButton(
-                  icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onSurface, size: 24),
+                  icon: Icon(Icons.arrow_back,
+                      color: Theme.of(context).colorScheme.onSurface, size: 24),
                   onPressed: () => setState(() => _selectedHashtag = null),
                 ),
                 const SizedBox(width: 8),
                 Text(
                   '#$_selectedHashtag',
-                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 20, fontWeight: FontWeight.bold, fontFamily: 'Outfit'),
+                  style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Outfit'),
                 ),
               ],
             ),
@@ -212,10 +243,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
           Expanded(
             child: storiesAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, stack) => Center(child: Text('Error: $err', style: const TextStyle(color: Colors.red))),
+              error: (err, stack) => Center(
+                  child: Text('Error: $err',
+                      style: const TextStyle(color: Colors.red))),
               data: (stories) {
                 if (stories.isEmpty) {
-                  return const Center(child: Text('No stories found for this tag.', style: TextStyle(color: Colors.grey)));
+                  return const Center(
+                      child: Text('No stories found for this tag.',
+                          style: TextStyle(color: Colors.grey)));
                 }
                 return RefreshIndicator(
                   color: Theme.of(context).primaryColor,
@@ -236,12 +271,15 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
                             verticalOffset: 50.0,
                             child: FadeInAnimation(
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 8),
                                 child: StoryCard(
                                   story: stories[index],
-                                  content: _truncateContent(stories[index].description, 180),
+                                  content: _truncateContent(
+                                      stories[index].description, 180),
                                   onTap: () {
-                                    context.push(AppRoutes.storyDetail(stories[index].storyId));
+                                    context.push(AppRoutes.storyDetail(
+                                        stories[index].storyId));
                                   },
                                 ),
                               ),
@@ -264,9 +302,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
       final trendingAsync = ref.watch(trendingHashtagsProvider);
       return trendingAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('Error: $err', style: const TextStyle(color: Colors.red))),
+        error: (err, stack) => Center(
+            child:
+                Text('Error: $err', style: const TextStyle(color: Colors.red))),
         data: (tags) {
-          if (tags.isEmpty) return const Center(child: Text('No trending tags yet.', style: TextStyle(color: Colors.grey)));
+          if (tags.isEmpty)
+            return const Center(
+                child: Text('No trending tags yet.',
+                    style: TextStyle(color: Colors.grey)));
           return _buildHashtagList(tags, 'Trending Tags');
         },
       );
@@ -275,15 +318,21 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
     final searchAsync = ref.watch(searchHashtagsProvider);
     return searchAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (err, stack) => Center(child: Text('Error: $err', style: const TextStyle(color: Colors.red))),
+      error: (err, stack) => Center(
+          child:
+              Text('Error: $err', style: const TextStyle(color: Colors.red))),
       data: (tags) {
-        if (tags.isEmpty) return const Center(child: Text('No tags found.', style: TextStyle(color: Colors.grey)));
+        if (tags.isEmpty)
+          return const Center(
+              child:
+                  Text('No tags found.', style: TextStyle(color: Colors.grey)));
         return _buildHashtagList(tags, 'Results', isSearch: true);
       },
     );
   }
 
-  Widget _buildHashtagList(List<String> tags, String title, {bool isSearch = false}) {
+  Widget _buildHashtagList(List<String> tags, String title,
+      {bool isSearch = false}) {
     final theme = Theme.of(context);
     return RefreshIndicator(
       color: theme.primaryColor,
@@ -305,14 +354,20 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                  child: Text(title, style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Outfit')),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  child: Text(title,
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Outfit')),
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: AnimationLimiter(
                     child: Wrap(
-                      spacing: 12,
+                      spacing: 16,
                       runSpacing: 16,
                       children: List.generate(
                         tags.length,
@@ -331,28 +386,46 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
                                     setState(() {
                                       _selectedHashtag = tag;
                                       _searchController.clear();
-                                      ref.read(hashtagSearchQueryProvider.notifier).state = '';
+                                      ref
+                                          .read(hashtagSearchQueryProvider
+                                              .notifier)
+                                          .state = '';
                                     });
                                   },
                                   child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 14, vertical: 10),
                                     decoration: BoxDecoration(
                                       gradient: LinearGradient(
-                                        colors: [theme.colorScheme.primary.withValues(alpha: 0.15), theme.colorScheme.primary.withValues(alpha: 0.05)],
+                                        colors: [
+                                          theme.colorScheme.primary
+                                              .withValues(alpha: 0.15),
+                                          theme.colorScheme.primary
+                                              .withValues(alpha: 0.05)
+                                        ],
                                         begin: Alignment.topLeft,
                                         end: Alignment.bottomRight,
                                       ),
                                       borderRadius: BorderRadius.circular(20),
-                                      border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.3)),
+                                      border: Border.all(
+                                          color: theme.colorScheme.primary
+                                              .withValues(alpha: 0.3)),
                                     ),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Icon(Icons.tag, color: theme.colorScheme.primary, size: 18),
+                                        Icon(Icons.tag,
+                                            color: theme.colorScheme.primary,
+                                            size: 14),
                                         const SizedBox(width: 6),
                                         Text(
                                           tag,
-                                          style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.bold, fontSize: 15),
+                                          style: TextStyle(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .onSurface,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 14),
                                         ),
                                       ],
                                     ),
@@ -382,9 +455,15 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.people_outline, size: 64, color: Theme.of(context).primaryColor.withValues(alpha: 0.2)),
+            Icon(Icons.people_outline,
+                size: 64,
+                color: Theme.of(context).primaryColor.withValues(alpha: 0.2)),
             const SizedBox(height: 16),
-            Text('Search for people by username', style: TextStyle(color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey), fontSize: 16)),
+            Text('Search for people by username',
+                style: TextStyle(
+                    color: (Theme.of(context).textTheme.bodySmall?.color ??
+                        Colors.grey),
+                    fontSize: 16)),
           ],
         ),
       );
@@ -393,10 +472,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
     final usersAsync = ref.watch(searchUsersProvider);
     return usersAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (err, stack) => Center(child: Text('Error: $err', style: const TextStyle(color: Colors.red))),
+      error: (err, stack) => Center(
+          child:
+              Text('Error: $err', style: const TextStyle(color: Colors.red))),
       data: (users) {
         if (users.isEmpty) {
-          return const Center(child: Text('No people found.', style: TextStyle(color: Colors.grey)));
+          return const Center(
+              child: Text('No people found.',
+                  style: TextStyle(color: Colors.grey)));
         }
         return RefreshIndicator(
           color: Theme.of(context).primaryColor,
