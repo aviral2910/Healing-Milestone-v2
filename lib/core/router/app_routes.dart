@@ -10,6 +10,7 @@ class AppRoutes {
   static const String editProfile = '/edit-profile';
   static const String userList = '/user-list';
   static const String settings = '/settings';
+  static const String themeSelection = '/theme-selection';
   static const uat = '/uat';
 
   // Dynamic routes

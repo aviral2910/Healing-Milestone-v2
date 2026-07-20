@@ -415,25 +415,25 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     children: [
                       CircleAvatar(
                         radius: 50,
-                        backgroundColor: AppTheme.surfaceLight,
+                        backgroundColor: Theme.of(context).cardColor,
                         backgroundImage: user.profilePicture != null
                             ? NetworkImage(user.profilePicture!)
                             : null,
                         child: user.profilePicture == null
-                            ? const Icon(Icons.person,
-                                size: 50, color: AppTheme.textSecondary)
+                            ? Icon(Icons.person,
+                                size: 50, color: Theme.of(context).textTheme.bodySmall?.color)
                             : null,
                       ),
                       if (_isUploadingProfilePic)
                         Positioned.fill(
                           child: Container(
                             decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.5),
+                              color: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.5),
                               shape: BoxShape.circle,
                             ),
-                            child: const Center(
+                            child: Center(
                               child: CircularProgressIndicator(
-                                color: AppTheme.accentPrimary,
+                                color: Theme.of(context).primaryColor,
                               ),
                             ),
                           ),

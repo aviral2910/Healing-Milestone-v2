@@ -27,14 +27,14 @@ class UserProfileCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: const Color(0xFF161616),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFF2A2A2A)),
+          border: Border.all(color: Theme.of(context).dividerColor),
         ),
         child: Row(
           children: [
             // Avatar
             CircleAvatar(
               radius: 28,
-              backgroundColor: const Color(0xFF2A2A2A),
+              backgroundColor: Theme.of(context).dividerColor,
               backgroundImage: (user.profilePicture != null && user.profilePicture!.isNotEmpty)
                   ? NetworkImage(user.profilePicture!)
                   : null,

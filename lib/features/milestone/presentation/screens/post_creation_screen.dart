@@ -353,7 +353,7 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
         actions: [
           if (ref.watch(uatModeProvider))
             IconButton(
-              icon: const Icon(Icons.auto_fix_high, color: Color(0xFFD4AF37)),
+              icon: Icon(Icons.auto_fix_high, color: Theme.of(context).primaryColor),
               tooltip: 'Populate Dummy Post',
               onPressed: () {
                 final selected = UatDummyData.getRandomPost();
@@ -371,7 +371,7 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
             child: Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [theme.primaryColor, const Color(0xFFFFDF73)],
+                  colors: [theme.colorScheme.primary, theme.colorScheme.secondary],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -382,18 +382,18 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.transparent,
                   shadowColor: Colors.transparent,
-                  foregroundColor: const Color(0xFF1A1A1A),
+                  foregroundColor: theme.colorScheme.onPrimary,
                   disabledBackgroundColor: Colors.transparent,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(24)),
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                 ),
                 child: _isUploading
-                    ? const SizedBox(
+                    ? SizedBox(
                         width: 20,
                         height: 20,
                         child: CircularProgressIndicator(
-                            color: Color(0xFF1A1A1A), strokeWidth: 2))
+                            color: theme.colorScheme.onPrimary, strokeWidth: 2))
                     : Text(widget.existingStory != null ? 'Save Changes' : 'Publish',
                         style: const TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 16)),
@@ -593,7 +593,7 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                     decoration: BoxDecoration(
                       color: const Color(0xFF161616),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFF2A2A2A)),
+                      border: Border.all(color: Theme.of(context).dividerColor),
                     ),
                     child: TextField(
                       controller: _tagController,
@@ -634,7 +634,7 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                       decoration: BoxDecoration(
                         color: const Color(0xFF161616),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFF2A2A2A)),
+                        border: Border.all(color: Theme.of(context).dividerColor),
                       ),
                       child: Column(
                         children: _suggestions.map((suggestion) {
@@ -704,7 +704,7 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                     decoration: BoxDecoration(
                       color: const Color(0xFF161616),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFF2A2A2A)),
+                      border: Border.all(color: Theme.of(context).dividerColor),
                     ),
                     child: TextField(
                       controller: _userSearchController,
@@ -740,7 +740,7 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                       decoration: BoxDecoration(
                         color: const Color(0xFF161616),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFF2A2A2A)),
+                        border: Border.all(color: Theme.of(context).dividerColor),
                       ),
                       child: Column(
                         children: _userSuggestions.map((u) {
@@ -781,7 +781,7 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
               decoration: BoxDecoration(
                 color: const Color(0xFF161616),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: const Color(0xFF2A2A2A)),
+                border: Border.all(color: Theme.of(context).dividerColor),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -830,9 +830,9 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                       );
                     }).toList(),
                   ),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 20),
-                    child: Divider(color: Color(0xFF2A2A2A)),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    child: Divider(color: Theme.of(context).dividerColor),
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -111,11 +111,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             ],
           ),
           bottomNavigationBar: Container(
-            decoration: const BoxDecoration(
-              color: Color(0xFF0A0A0A), // Solid dark background
+            decoration: BoxDecoration(
+              color: const Color(0xFF0A0A0A), // Solid dark background
               border: Border(
                 top: BorderSide(
-                    color: Color(0xFF2A2A2A), width: 0.5), // Very thin border
+                    color: Theme.of(context).dividerColor, width: 0.5), // Very thin border
               ),
             ),
             child: SafeArea(

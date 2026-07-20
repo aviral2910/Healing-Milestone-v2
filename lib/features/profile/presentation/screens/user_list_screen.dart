@@ -92,10 +92,10 @@ class _UserListScreenState extends ConsumerState<UserListScreen> {
               itemCount: _users.length + (_isLoading ? 1 : 0),
               itemBuilder: (context, index) {
                 if (index == _users.length) {
-                  return const Padding(
-                    padding: EdgeInsets.all(16.0),
+                  return Padding(
+                    padding: const EdgeInsets.all(16.0),
                     child: Center(
-                      child: CircularProgressIndicator(color: Color(0xFFD4AF37)),
+                      child: CircularProgressIndicator(color: theme.primaryColor),
                     ),
                   );
                 }
@@ -131,8 +131,8 @@ class _UserListScreenState extends ConsumerState<UserListScreen> {
                             }
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: isFollowing ? const Color(0xFF2A2A2A) : theme.colorScheme.primary,
-                            foregroundColor: isFollowing ? Colors.white : Colors.black,
+                            backgroundColor: isFollowing ? Theme.of(context).dividerColor : theme.colorScheme.primary,
+                            foregroundColor: isFollowing ? Theme.of(context).colorScheme.onPrimary : Theme.of(context).textTheme.bodyMedium?.color,
                             elevation: 0,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),

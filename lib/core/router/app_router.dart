@@ -7,6 +7,7 @@ import '../../features/profile/presentation/screens/public_profile_screen.dart';
 import '../../features/profile/presentation/screens/edit_profile_screen.dart';
 import '../../features/profile/presentation/screens/user_list_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
+import '../../features/settings/presentation/screens/theme_selection_screen.dart';
 import '../../features/uat/presentation/screens/uat_screen.dart';
 import '../../features/milestone/presentation/screens/post_creation_screen.dart';
 import '../../features/milestone/presentation/screens/story_detail_screen.dart';
@@ -124,6 +125,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           final contextType = state.extra as MenuContext? ?? MenuContext.home;
           return SettingsScreen(menuContext: contextType);
         },
+      ),
+      GoRoute(
+        path: AppRoutes.themeSelection,
+        builder: (context, state) => const ThemeSelectionScreen(),
       ),
       GoRoute(
         path: AppRoutes.editProfile,

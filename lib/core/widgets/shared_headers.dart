@@ -50,7 +50,7 @@ class CommonSliverAppBar extends ConsumerWidget {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         gradient: LinearGradient(
-                          colors: [theme.colorScheme.primary, Colors.amber],
+                          colors: [theme.colorScheme.primary, theme.colorScheme.secondary],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -163,10 +163,10 @@ class CommonSearchBarSliver extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Container(
               decoration: BoxDecoration(
-                color: const Color(0xFF151515),
+                color: Theme.of(context).cardColor,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: const Color(0xFF2A2A2A),
+                  color: Theme.of(context).dividerColor,
                   width: 1.0,
                 ),
               ),
@@ -186,7 +186,7 @@ class CommonSearchBarSliver extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-          const Divider(color: Color(0xFF2A2A2A), height: 1),
+          Divider(color: Theme.of(context).dividerColor, height: 1),
           const SizedBox(height: 12),
         ],
       ),

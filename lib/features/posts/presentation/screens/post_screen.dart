@@ -62,12 +62,12 @@ class _SliverTagsDelegate extends SliverPersistentHeaderDelegate {
                       decoration: BoxDecoration(
                         color: isSelected
                             ? theme.colorScheme.primary
-                            : const Color(0xFF151515),
+                            : theme.colorScheme.surface,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                           color: isSelected
                               ? theme.colorScheme.primary
-                              : const Color(0xFF2A2A2A),
+                              : theme.dividerColor,
                           width: 1.0,
                         ),
                       ),
@@ -91,7 +91,7 @@ class _SliverTagsDelegate extends SliverPersistentHeaderDelegate {
             ),
           ),
           const SizedBox(height: 16),
-          const Divider(color: Color(0xFF2A2A2A), height: 1),
+          Divider(color: Theme.of(context).dividerColor, height: 1),
         ],
       ),
     );
@@ -153,7 +153,7 @@ class PostScreen extends ConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(Icons.error_outline,
-                        size: 48, color: const Color(0xFF2A2A2A)),
+                        size: 48, color: Theme.of(context).dividerColor),
                     const SizedBox(height: 16),
                     Text(
                       'Unable to load stories',
@@ -193,7 +193,7 @@ class PostScreen extends ConsumerWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(Icons.auto_awesome_mosaic_outlined,
-                            size: 64, color: const Color(0xFF2A2A2A)),
+                            size: 64, color: Theme.of(context).dividerColor),
                         const SizedBox(height: 16),
                         Text(
                           'No stories yet',
@@ -442,15 +442,9 @@ class __MiniStoryCardState extends ConsumerState<_MiniStoryCard>
         scale: _scaleAnimation,
         child: Container(
           decoration: BoxDecoration(
-            color: const Color(
-                0xFF151515), // Slightly lighter than pure black for depth
+            color: Theme.of(context).colorScheme.surface, 
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: const Color(0xFF2A2A2A), width: 1),
-            gradient: const LinearGradient(
-              colors: [Color(0xFF1E1E1E), Color(0xFF0F0F0F)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+            border: Border.all(color: Theme.of(context).dividerColor, width: 1),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -632,8 +626,8 @@ class __MiniStoryCardState extends ConsumerState<_MiniStoryCard>
 
               // Interaction Footer
               Container(
-                decoration: const BoxDecoration(
-                  border: Border(top: BorderSide(color: Color(0xFF2A2A2A))),
+                decoration: BoxDecoration(
+                  border: Border(top: BorderSide(color: Theme.of(context).dividerColor)),
                 ),
                 padding: const EdgeInsets.symmetric(
                     horizontal: 16.0, vertical: 12.0),

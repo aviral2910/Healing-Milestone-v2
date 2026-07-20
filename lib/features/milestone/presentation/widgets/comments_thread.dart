@@ -107,15 +107,15 @@ class _CommentsThreadState extends ConsumerState<CommentsThread> {
                   hintText: 'Add a comment...',
                   hintStyle: const TextStyle(color: Color(0xFFA1A1A6)),
                   filled: true,
-                  fillColor: const Color(0xFF151515),
+                  fillColor: Theme.of(context).cardColor,
                   contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(24),
-                    borderSide: const BorderSide(color: Color(0xFF2A2A2A)),
+                    borderSide: BorderSide(color: Theme.of(context).dividerColor),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(24),
-                    borderSide: const BorderSide(color: Color(0xFF2A2A2A)),
+                    borderSide: BorderSide(color: Theme.of(context).dividerColor),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(24),
@@ -195,7 +195,7 @@ class _CommentBubble extends ConsumerWidget {
                     showDialog(
                       context: context,
                       builder: (context) => AlertDialog(
-                        backgroundColor: const Color(0xFF151515),
+                        backgroundColor: Theme.of(context).cardColor,
                         title: const Text('Delete Comment', style: TextStyle(color: Colors.white)),
                         content: const Text('Are you sure you want to delete this comment?', style: TextStyle(color: Color(0xFFA1A1A6))),
                         actions: [
@@ -218,8 +218,8 @@ class _CommentBubble extends ConsumerWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: const Color(0xFF151515),
-                border: Border.all(color: const Color(0xFF2A2A2A)),
+                color: Theme.of(context).cardColor,
+                border: Border.all(color: Theme.of(context).dividerColor),
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(20),
                   topRight: Radius.circular(20),

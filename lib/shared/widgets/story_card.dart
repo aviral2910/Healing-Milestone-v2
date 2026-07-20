@@ -74,7 +74,7 @@ class _StoryCardState extends ConsumerState<StoryCard>
           decoration: BoxDecoration(
             color: theme.colorScheme.surface,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFF2A2A2A), width: 1),
+            border: Border.all(color: Theme.of(context).dividerColor, width: 1),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,

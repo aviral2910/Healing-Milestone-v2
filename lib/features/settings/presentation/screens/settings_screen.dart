@@ -28,7 +28,7 @@ class SettingsScreen extends ConsumerWidget {
           title: 'Theme & Appearance',
           subtitle: 'Customize your visual experience',
           onTap: () {
-            // TODO: Theme customization
+            context.push(AppRoutes.themeSelection);
           },
         ),
         if (user != null)
@@ -126,7 +126,7 @@ class SettingsScreen extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
       child: Material(
-        color: const Color(0xFF151515), // Premium dark card background
+        color: Theme.of(context).cardColor, // Premium dark card background
         borderRadius: BorderRadius.circular(16),
         child: InkWell(
           onTap: onTap,
@@ -151,7 +151,7 @@ class SettingsScreen extends ConsumerWidget {
                       Text(
                         title,
                         style: theme.textTheme.bodyLarge?.copyWith(
-                          color: Colors.white,
+                          color: Theme.of(context).textTheme.bodyMedium?.color,
                           fontWeight: FontWeight.bold,
                           fontSize: 18,
                         ),
@@ -160,14 +160,14 @@ class SettingsScreen extends ConsumerWidget {
                       Text(
                         subtitle,
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          color: Colors.white60,
+                          color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.6),
                           fontSize: 14,
                         ),
                       ),
                     ],
                   ),
                 ),
-                Icon(Icons.chevron_right_rounded, color: Colors.white.withOpacity(0.4)),
+                Icon(Icons.chevron_right_rounded, color: Theme.of(context).iconTheme.color?.withOpacity(0.4)),
               ],
             ),
           ),

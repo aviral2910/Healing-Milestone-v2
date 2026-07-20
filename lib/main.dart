@@ -5,6 +5,8 @@ import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'core/theme/theme_provider.dart';
 import 'features/accessibility/data/accessibility_providers.dart';
 
 // UAT Mode providers
@@ -20,9 +22,15 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  
+  final prefs = await SharedPreferences.getInstance();
+
   runApp(
-    const ProviderScope(
-      child: HealingMilestonesApp(),
+    ProviderScope(
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+      ],
+      child: const HealingMilestonesApp(),
     ),
   );
 }
@@ -35,13 +43,14 @@ class HealingMilestonesApp extends ConsumerWidget {
     final router = ref.watch(routerProvider);
     final accessibilityState = ref.watch(accessibilityProvider);
     final isDevicePreview = ref.watch(devicePreviewProvider);
+    final themePalette = ref.watch(themeProvider);
 
     // Apply accessibility scaling to the base dark theme
-    ThemeData baseTheme = AppTheme.darkTheme;
+    ThemeData baseTheme = AppTheme.getThemeData(themePalette);
     TextTheme scaledTextTheme = baseTheme.textTheme.apply(
       fontSizeFactor: accessibilityState.textSizeFactor,
-      bodyColor: AppTheme.textPrimary.withValues(alpha: accessibilityState.textOpacity),
-      displayColor: AppTheme.textPrimary.withValues(alpha: accessibilityState.textOpacity),
+      bodyColor: themePalette.textPrimary.withValues(alpha: accessibilityState.textOpacity),
+      displayColor: themePalette.textPrimary.withValues(alpha: accessibilityState.textOpacity),
     );
 
     return DevicePreview(

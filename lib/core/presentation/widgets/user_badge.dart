@@ -13,7 +13,7 @@ class UserBadge extends StatelessWidget {
     this.iconSize = 16.0,
   });
 
-  Widget _buildShinyBadge(IconData innerIcon) {
+  Widget _buildShinyBadge(BuildContext context, IconData innerIcon) {
     return Stack(
       alignment: Alignment.center,
       children: [
@@ -39,7 +39,7 @@ class UserBadge extends StatelessWidget {
         // 3. The actual role icon, colored to look like it's cut out (background color)
         Icon(
           innerIcon,
-          color: const Color(0xFF151515), // App background color
+          color: Theme.of(context).cardColor, // App background color
           size: iconSize - 4, // Smaller to fit inside
         ),
       ],
@@ -79,10 +79,10 @@ class UserBadge extends StatelessWidget {
     Widget? roleBadge;
     switch (role) {
       case UserRole.healthcareProfessional:
-        roleBadge = _buildShinyBadge(Icons.medical_services);
+        roleBadge = _buildShinyBadge(context, Icons.medical_services);
         break;
       case UserRole.organization:
-        roleBadge = _buildShinyBadge(Icons.domain);
+        roleBadge = _buildShinyBadge(context, Icons.domain);
         break;
 
       case UserRole.member:

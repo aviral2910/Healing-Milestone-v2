@@ -108,10 +108,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
                   padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: const Color(0xFF151515),
+                      color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: const Color(0xFF2A2A2A),
+                        color: Theme.of(context).dividerColor,
                         width: 1.0,
                       ),
                     ),
@@ -218,7 +218,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
                 }
                 return RefreshIndicator(
                   color: Theme.of(context).primaryColor,
-                  backgroundColor: const Color(0xFF151515),
+                  backgroundColor: Theme.of(context).cardColor,
                   onRefresh: () async {
                     // ignore: unused_result
                     ref.refresh(hashtagStoriesProvider(_selectedHashtag!));
@@ -286,7 +286,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
     final theme = Theme.of(context);
     return RefreshIndicator(
       color: theme.primaryColor,
-      backgroundColor: const Color(0xFF151515),
+      backgroundColor: Theme.of(context).cardColor,
       onRefresh: () async {
         if (isSearch) {
           // ignore: unused_result
@@ -399,7 +399,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
         }
         return RefreshIndicator(
           color: Theme.of(context).primaryColor,
-          backgroundColor: const Color(0xFF151515),
+          backgroundColor: Theme.of(context).cardColor,
           onRefresh: () async {
             // ignore: unused_result
             ref.refresh(searchUsersProvider);

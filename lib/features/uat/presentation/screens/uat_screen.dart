@@ -26,12 +26,12 @@ class UatScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Developer Tools',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFFD4AF37),
+                color: Theme.of(context).primaryColor,
               ),
             ),
             const SizedBox(height: 24),
@@ -39,17 +39,17 @@ class UatScreen extends ConsumerWidget {
               title: const Text('Enable UAT Features'),
               subtitle: const Text('Enables dummy data creation and other developer bypasses.'),
               value: isUatMode,
-              activeColor: const Color(0xFFD4AF37),
+              activeColor: Theme.of(context).primaryColor,
               onChanged: (value) {
                 ref.read(uatModeProvider.notifier).state = value;
               },
             ),
-            const Divider(color: Color(0xFF2A2A2A)),
+            Divider(color: Theme.of(context).dividerColor),
             SwitchListTile(
               title: const Text('Enable Device Preview'),
               subtitle: const Text('Simulate the app on different device sizes.'),
               value: isDevicePreview,
-              activeColor: const Color(0xFFD4AF37),
+              activeColor: Theme.of(context).primaryColor,
               onChanged: (value) {
                 ref.read(devicePreviewProvider.notifier).state = value;
               },

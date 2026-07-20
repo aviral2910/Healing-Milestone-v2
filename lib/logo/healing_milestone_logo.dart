@@ -5,7 +5,7 @@ class HealingMilestonesLogoWidget extends StatelessWidget {
   final double logoSize;
 
   /// The color applied to the logo mark.
-  final Color logoColor;
+  final Color? logoColor;
 
   /// The color applied to the text. If null, it defaults to the [logoColor].
   final Color? textColor;
@@ -16,7 +16,7 @@ class HealingMilestonesLogoWidget extends StatelessWidget {
   const HealingMilestonesLogoWidget({
     Key? key,
     this.logoSize = 35.0,
-    this.logoColor = const Color(0xFFD4AF37),
+    this.logoColor,
     this.textColor = Colors.white,
     this.showText = true,
   }) : super(key: key);
@@ -27,8 +27,9 @@ class HealingMilestonesLogoWidget extends StatelessWidget {
     final double baseFontSize = (logoSize * 30) / 80;
     final double lateralGap = (logoSize * 24) / 80;
 
-    // Determine which color to use for the text
-    final Color effectiveTextColor = textColor ?? logoColor;
+    // Determine colors based on context or parameters
+    final Color effectiveLogoColor = logoColor ?? Theme.of(context).primaryColor;
+    final Color effectiveTextColor = textColor ?? effectiveLogoColor;
 
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -39,7 +40,7 @@ class HealingMilestonesLogoWidget extends StatelessWidget {
           width: logoSize,
           height: logoSize,
           child: CustomPaint(
-            painter: _LogoMarkPainter(logoColor),
+            painter: _LogoMarkPainter(effectiveLogoColor),
           ),
         ),
 

@@ -73,7 +73,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                     child: TextButton(
                       style: TextButton.styleFrom(
                         backgroundColor: theme.colorScheme.primary,
-                        foregroundColor: Colors.black,
+                        foregroundColor: theme.colorScheme.onPrimary,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(6),
                         ),
@@ -122,7 +122,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                   gradient: LinearGradient(
                                     colors: [
                                       theme.colorScheme.primary,
-                                      Colors.amber
+                                      theme.colorScheme.secondary
                                     ],
                                     begin: Alignment.topLeft,
                                     end: Alignment.bottomRight,
@@ -189,12 +189,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       Container(
                         padding: const EdgeInsets.symmetric(vertical: 20),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF151515),
+                          color: theme.cardColor,
                           borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: const Color(0xFF2A2A2A)),
+                          border: Border.all(color: theme.dividerColor),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.5),
+                              color: theme.shadowColor.withValues(alpha: 0.5),
                               blurRadius: 10,
                               offset: const Offset(0, 4),
                             ),
@@ -209,7 +209,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                             Container(
                                 width: 1,
                                 height: 40,
-                                color: const Color(0xFF2A2A2A)),
+                                color: Theme.of(context).dividerColor),
                             _StatColumn(
                                 label: 'Followers',
                                 count: _formatCount(user.followersCount),
@@ -222,7 +222,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                             Container(
                                 width: 1,
                                 height: 40,
-                                color: const Color(0xFF2A2A2A)),
+                                color: Theme.of(context).dividerColor),
                             _StatColumn(
                                 label: 'Following',
                                 count: _formatCount(user.followingCount),
@@ -278,7 +278,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                         const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                     indicatorSize: TabBarIndicatorSize.tab,
                     labelColor: theme.colorScheme.primary,
-                    unselectedLabelColor: const Color(0xFFA1A1A6),
+                    unselectedLabelColor: theme.unselectedWidgetColor,
                     dividerColor:
                         Colors.transparent, // Remove the ugly default line
                     tabs: const [
@@ -305,9 +305,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 final userStoriesAsync =
                     ref.watch(userStoriesProvider(user.userId));
                 return userStoriesAsync.when(
-                  loading: () => const Center(
+                  loading: () => Center(
                       child:
-                          CircularProgressIndicator(color: Color(0xFFD4AF37))),
+                          CircularProgressIndicator(color: Theme.of(context).primaryColor)),
                   error: (err, stack) => const Center(
                       child: Text('Failed to load stories',
                           style: TextStyle(color: Colors.red))),
@@ -319,9 +319,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 final taggedAsync =
                     ref.watch(userTaggedStoriesProvider(user.userId));
                 return taggedAsync.when(
-                  loading: () => const Center(
+                  loading: () => Center(
                       child:
-                          CircularProgressIndicator(color: Color(0xFFD4AF37))),
+                          CircularProgressIndicator(color: Theme.of(context).primaryColor)),
                   error: (err, stack) => const Center(
                       child: Text('Failed to load tagged stories',
                           style: TextStyle(color: Colors.red))),
@@ -333,9 +333,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 final bookmarkedAsync = ref
                     .watch(bookmarkedStoriesProvider(user.bookmarkedStories));
                 return bookmarkedAsync.when(
-                  loading: () => const Center(
+                  loading: () => Center(
                       child:
-                          CircularProgressIndicator(color: Color(0xFFD4AF37))),
+                          CircularProgressIndicator(color: Theme.of(context).primaryColor)),
                   error: (err, stack) => const Center(
                       child: Text('Failed to load bookmarks',
                           style: TextStyle(color: Colors.red))),
@@ -362,13 +362,13 @@ class _StoryList extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: const Color(0xFF151515),
+            color: Theme.of(context).cardColor,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFF2A2A2A), width: 1),
+            border: Border.all(color: Theme.of(context).dividerColor, width: 1),
           ),
-          child: const Text(
+          child: Text(
             'No stories found.',
-            style: TextStyle(color: Color(0xFFA1A1A6)),
+            style: TextStyle(color: Theme.of(context).textTheme.bodySmall?.color),
           ),
         ),
       );
@@ -437,7 +437,7 @@ class _StatColumn extends StatelessWidget {
           Text(
             count,
             style: theme.textTheme.titleLarge?.copyWith(
-              color: const Color(0xFFF5F5F7),
+              color: theme.textTheme.titleLarge?.color,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -445,7 +445,7 @@ class _StatColumn extends StatelessWidget {
           Text(
             label.toUpperCase(),
             style: theme.textTheme.labelSmall?.copyWith(
-              color: const Color(0xFFA1A1A6),
+              color: theme.textTheme.bodySmall?.color,
               letterSpacing: 1.2,
               fontWeight: FontWeight.w600,
             ),
