@@ -125,7 +125,8 @@ class PostScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final storiesAsync = ref.watch(storiesStreamProvider);
-    final categories = []; // Replace with actual categories if needed, or keep empty
+    final categories =
+        []; // Replace with actual categories if needed, or keep empty
     final selectedTag = ref.watch(selectedTagProvider);
     final user = ref.watch(currentUserProvider);
     final theme = Theme.of(context);
@@ -141,17 +142,18 @@ class PostScreen extends ConsumerWidget {
             hintText: 'Search stories, topics, people...',
             onTap: onSearchTapped,
           ),
-          
           storiesAsync.when(
             loading: () => const SliverFillRemaining(
-              child: Center(child: CircularProgressIndicator(color: Color(0xFFD4AF37))),
+              child: Center(
+                  child: CircularProgressIndicator(color: Color(0xFFD4AF37))),
             ),
             error: (err, stack) => SliverFillRemaining(
               child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.error_outline, size: 48, color: const Color(0xFF2A2A2A)),
+                    Icon(Icons.error_outline,
+                        size: 48, color: const Color(0xFF2A2A2A)),
                     const SizedBox(height: 16),
                     Text(
                       'Unable to load stories',
@@ -190,7 +192,8 @@ class PostScreen extends ConsumerWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.auto_awesome_mosaic_outlined, size: 64, color: const Color(0xFF2A2A2A)),
+                        Icon(Icons.auto_awesome_mosaic_outlined,
+                            size: 64, color: const Color(0xFF2A2A2A)),
                         const SizedBox(height: 16),
                         Text(
                           'No stories yet',
@@ -203,7 +206,8 @@ class PostScreen extends ConsumerWidget {
                         Text(
                           'Be the first to share a milestone.',
                           style: theme.textTheme.bodyMedium?.copyWith(
-                            color: const Color(0xFFA1A1A6).withValues(alpha: 0.7),
+                            color:
+                                const Color(0xFFA1A1A6).withValues(alpha: 0.7),
                           ),
                         ),
                       ],
@@ -229,10 +233,12 @@ class PostScreen extends ConsumerWidget {
                   // Divider for the main feed
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.only(left: 20.0, top: 32.0, bottom: 24.0),
+                      padding: const EdgeInsets.only(
+                          left: 20.0, top: 32.0, bottom: 24.0),
                       child: Text(
                         'All Stories',
-                        style: theme.textTheme.headlineLarge?.copyWith(fontSize: 28),
+                        style: theme.textTheme.headlineLarge
+                            ?.copyWith(fontSize: 28),
                       ),
                     ),
                   ),
@@ -244,7 +250,8 @@ class PostScreen extends ConsumerWidget {
                         child: Center(
                           child: Text(
                             'No stories found for #$selectedTag',
-                            style: theme.textTheme.bodyLarge?.copyWith(color: const Color(0xFFA1A1A6)),
+                            style: theme.textTheme.bodyLarge
+                                ?.copyWith(color: const Color(0xFFA1A1A6)),
                           ),
                         ),
                       ),
@@ -264,12 +271,15 @@ class PostScreen extends ConsumerWidget {
                                 verticalOffset: 50.0,
                                 child: FadeInAnimation(
                                   child: Padding(
-                                    padding: const EdgeInsets.only(bottom: 24.0),
+                                    padding:
+                                        const EdgeInsets.only(bottom: 32.0),
                                     child: StoryCard(
                                       story: story,
-                                      content: _truncateContent(story.description, 180),
+                                      content: _truncateContent(
+                                          story.description, 180),
                                       onTap: () {
-                                        context.push(AppRoutes.storyDetail(story.storyId));
+                                        context.push(AppRoutes.storyDetail(
+                                            story.storyId));
                                       },
                                     ),
                                   ),
@@ -283,7 +293,8 @@ class PostScreen extends ConsumerWidget {
                     ),
 
                   const SliverToBoxAdapter(
-                    child: SizedBox(height: 100), // bottom padding for scrolling
+                    child:
+                        SizedBox(height: 100), // bottom padding for scrolling
                   ),
                 ],
               );
@@ -294,7 +305,6 @@ class PostScreen extends ConsumerWidget {
     );
   }
 }
-
 
 class _HorizontalCategorySection extends StatelessWidget {
   final String title;
@@ -476,13 +486,16 @@ class __MiniStoryCardState extends ConsumerState<_MiniStoryCard>
                               data: (user) {
                                 final displayName = user?.displayName;
                                 final username = user?.username;
-                                
-                                String authorText = 'Author ${widget.story.authorId}';
+
+                                String authorText =
+                                    'Author ${widget.story.authorId}';
                                 if (!widget.story.displayAuthorName) {
                                   authorText = 'Anonymous';
-                                } else if (displayName != null && displayName.isNotEmpty) {
+                                } else if (displayName != null &&
+                                    displayName.isNotEmpty) {
                                   authorText = displayName;
-                                } else if (username != null && username.isNotEmpty) {
+                                } else if (username != null &&
+                                    username.isNotEmpty) {
                                   authorText = '@$username';
                                 }
 
@@ -496,14 +509,18 @@ class __MiniStoryCardState extends ConsumerState<_MiniStoryCard>
                                 );
                               },
                               loading: () => Text(
-                                !widget.story.displayAuthorName ? 'Anonymous' : 'Loading...',
+                                !widget.story.displayAuthorName
+                                    ? 'Anonymous'
+                                    : 'Loading...',
                                 style: theme.textTheme.titleMedium?.copyWith(
                                   fontSize: 13,
                                   color: const Color(0xFFA1A1A6), // Titanium
                                 ),
                               ),
                               error: (_, __) => Text(
-                                !widget.story.displayAuthorName ? 'Anonymous' : 'Author',
+                                !widget.story.displayAuthorName
+                                    ? 'Anonymous'
+                                    : 'Author',
                                 style: theme.textTheme.titleMedium?.copyWith(
                                   fontSize: 13,
                                   color: const Color(0xFFA1A1A6), // Titanium
