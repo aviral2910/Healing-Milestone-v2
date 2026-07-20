@@ -190,6 +190,29 @@ class StoryDetailScreen extends ConsumerWidget {
                         onPressed: () => Navigator.of(context).pop(),
                       ),
                       actions: [
+                        Consumer(
+                          builder: (context, ref, child) {
+                            final isGreyscale = ref.watch(accessibilityProvider).isGreyscaleMode;
+                            return IconButton(
+                              icon: Icon(
+                                isGreyscale ? Icons.visibility_off : Icons.visibility,
+                                color: isGreyscale ? theme.colorScheme.primary : theme.iconTheme.color,
+                              ),
+                              tooltip: 'Toggle Reading Mode (Greyscale)',
+                              onPressed: () {
+                                ref.read(accessibilityProvider.notifier).toggleGreyscaleMode();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(isGreyscale 
+                                      ? 'Reading Mode Off' 
+                                      : 'Reading Mode On (Eye-friendly Greyscale)'),
+                                    duration: const Duration(seconds: 2),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
                         if (currentUser?.userId == story.authorId)
                           PopupMenuButton<String>(
                             icon: const Icon(Icons.more_vert),

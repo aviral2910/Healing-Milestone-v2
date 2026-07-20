@@ -106,6 +106,12 @@ class AppTheme {
         elevation: 8,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
       ),
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: palette.surfaceLight,
+        contentTextStyle: TextStyle(color: palette.textPrimary),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        behavior: SnackBarBehavior.floating,
+      ),
     );
   }
 

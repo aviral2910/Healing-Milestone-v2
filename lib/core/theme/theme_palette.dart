@@ -143,29 +143,29 @@ class ThemePalette {
     accentSecondary: Color(0xFFA1A1A6), // Titanium
   );
 
-  static const ThemePalette greyscaleDark = ThemePalette(
+  static const ThemePalette eyeCareDark = ThemePalette(
     type: AppThemeType.greyscaleDark,
-    name: 'Greyscale Dark',
+    name: 'Eye Care Dark',
     isDark: true,
     background: Color(0xFF1C1C1C), // Deep, dark gray
-    surface: Color(0xFF262626), // Slightly lighter gray for cards
+    surface: Color(0xFF262626), 
     surfaceLight: Color(0xFF333333),
     textPrimary: Color(0xFF999999), // Soft, mid-tone gray
-    textSecondary: Color(0xFF666666),
-    accentPrimary: Color(0xFFE0E0E0), // Light grey for contrast/CTAs
+    textSecondary: Color(0xFF666666), // Darker grey
+    accentPrimary: Color(0xFFE0E0E0), // Light grey for CTAs
     accentSecondary: Color(0xFF7A7A7A),
   );
 
-  static const ThemePalette greyscaleLight = ThemePalette(
+  static const ThemePalette eyeCareLight = ThemePalette(
     type: AppThemeType.greyscaleLight,
-    name: 'Greyscale Light',
+    name: 'Eye Care Light',
     isDark: false,
-    background: Color(0xFFEBEBEB), // Light clean grey background
+    background: Color(0xFFF5F5F5), // Soft grey background (reduces glare)
     surface: Color(0xFFFFFFFF), // Pure white surface
-    surfaceLight: Color(0xFFD6D6D6),
-    textPrimary: Color(0xFF1C1C1C), // Deep dark gray for text
-    textSecondary: Color(0xFF999999), // Soft mid-tone gray
-    accentPrimary: Color(0xFF4A4A4A), // Dark grey accent
+    surfaceLight: Color(0xFFE0E0E0),
+    textPrimary: Color(0xFF212121), // Off-black for high readability
+    textSecondary: Color(0xFF616161), // Legible mid-grey
+    accentPrimary: Color(0xFF000000), // Pure black for CTAs
     accentSecondary: Color(0xFFA1A1A6),
   );
 
@@ -174,11 +174,9 @@ class ThemePalette {
     lavenderDark,
     slateDark,
     sapphireDark,
-    greyscaleDark,
     goldenLight,
     lavenderLight,
     slateLight,
     sapphireLight,
-    greyscaleLight,
   ];
 }

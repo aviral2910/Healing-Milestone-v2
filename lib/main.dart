@@ -7,6 +7,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'core/theme/theme_provider.dart';
+import 'core/theme/theme_palette.dart';
 import 'features/accessibility/data/accessibility_providers.dart';
 
 // UAT Mode providers
@@ -45,12 +46,20 @@ class HealingMilestonesApp extends ConsumerWidget {
     final isDevicePreview = ref.watch(devicePreviewProvider);
     final themePalette = ref.watch(themeProvider);
 
+    // Select the optimal eye-care palette if Reading Mode (Greyscale) is active
+    ThemePalette activePalette = themePalette;
+    if (accessibilityState.isGreyscaleMode) {
+      activePalette = themePalette.isDark 
+          ? ThemePalette.eyeCareDark 
+          : ThemePalette.eyeCareLight;
+    }
+
     // Apply accessibility scaling to the base dark theme
-    ThemeData baseTheme = AppTheme.getThemeData(themePalette);
+    ThemeData baseTheme = AppTheme.getThemeData(activePalette);
     TextTheme scaledTextTheme = baseTheme.textTheme.apply(
-      bodyColor: themePalette.textPrimary
+      bodyColor: activePalette.textPrimary
           .withValues(alpha: accessibilityState.textOpacity),
-      displayColor: themePalette.textPrimary
+      displayColor: activePalette.textPrimary
           .withValues(alpha: accessibilityState.textOpacity),
     );
 
@@ -66,13 +75,28 @@ class HealingMilestonesApp extends ConsumerWidget {
         builder: (context, child) {
           final widget = DevicePreview.appBuilder(context, child);
           final data = MediaQuery.of(context);
-          return MediaQuery(
+          Widget appContent = MediaQuery(
             data: data.copyWith(
               textScaler: TextScaler.linear(
                   data.textScaler.scale(1) * accessibilityState.textSizeFactor),
             ),
             child: widget,
           );
+
+          if (accessibilityState.isGreyscaleMode) {
+            const greyscaleMatrix = <double>[
+              0.2126, 0.7152, 0.0722, 0, 0,
+              0.2126, 0.7152, 0.0722, 0, 0,
+              0.2126, 0.7152, 0.0722, 0, 0,
+              0,      0,      0,      1, 0,
+            ];
+            appContent = ColorFiltered(
+              colorFilter: const ColorFilter.matrix(greyscaleMatrix),
+              child: appContent,
+            );
+          }
+
+          return appContent;
         },
       ),
     );

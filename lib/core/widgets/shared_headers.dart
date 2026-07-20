@@ -6,6 +6,7 @@ import 'package:healing_milestones/logo/healing_milestone_logo.dart';
 import '../../main.dart';
 import '../../features/auth/data/auth_provider.dart';
 import 'package:healing_milestones/features/settings/presentation/screens/settings_screen.dart';
+import 'package:healing_milestones/features/accessibility/data/accessibility_providers.dart';
 
 class CommonSliverAppBar extends ConsumerWidget {
   final bool isHeroEnabled;
@@ -163,7 +164,72 @@ class CommonSearchBarSliver extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 16),
+            // Minimal UI Reading Mode Toggle
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Consumer(
+                builder: (context, ref, child) {
+                  final isGreyscale = ref.watch(accessibilityProvider).isGreyscaleMode;
+                  return GestureDetector(
+                    onTap: () {
+                      ref.read(accessibilityProvider.notifier).toggleGreyscaleMode();
+                    },
+                    behavior: HitTestBehavior.opaque,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: isGreyscale 
+                            ? theme.colorScheme.primary.withOpacity(0.12)
+                            : theme.dividerColor.withOpacity(0.3),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isGreyscale 
+                              ? theme.colorScheme.primary.withOpacity(0.3)
+                              : Colors.transparent,
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.auto_stories_rounded,
+                            size: 18,
+                            color: isGreyscale ? theme.colorScheme.primary : theme.iconTheme.color?.withOpacity(0.7),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: RichText(
+                              text: TextSpan(
+                                text: isGreyscale 
+                                    ? 'Want to turn off reading mode? ' 
+                                    : 'Want to turn on reading mode? ',
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: theme.colorScheme.onSurface.withOpacity(0.9),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                children: [
+                                  TextSpan(
+                                    text: isGreyscale ? 'OFF' : 'ON',
+                                    style: TextStyle(
+                                      color: theme.colorScheme.primary,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 16),
           ],
           // Search Bar
           Padding(
