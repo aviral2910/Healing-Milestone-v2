@@ -565,7 +565,6 @@ class __MiniStoryCardState extends ConsumerState<_MiniStoryCard>
                       overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.headlineLarge?.copyWith(
                         fontSize: 20,
-                        color: const Color(0xFFF5F5F7), // Frost white
                         height: 1.2,
                       ),
                     ),

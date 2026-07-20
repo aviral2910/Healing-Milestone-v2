@@ -10,9 +10,9 @@ class HealthAwarenessScreen extends ConsumerWidget {
   final ScrollController? scrollController;
   final bool isActiveTab;
   final VoidCallback? onSearchTapped;
-  
+
   const HealthAwarenessScreen({
-    Key? key, 
+    Key? key,
     this.scrollController,
     this.isActiveTab = true,
     this.onSearchTapped,
@@ -35,7 +35,8 @@ class HealthAwarenessScreen extends ConsumerWidget {
           ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.only(left: 20.0, top: 24.0, bottom: 24.0),
+              padding:
+                  const EdgeInsets.only(left: 20.0, top: 24.0, bottom: 24.0),
               child: Text(
                 'Educational Resources',
                 style: theme.textTheme.headlineLarge?.copyWith(fontSize: 28),
@@ -108,7 +109,8 @@ class _EduContentCard extends StatelessWidget {
           // Thumbnail
           if (content.thumbnailUrl != null)
             ClipRRect(
-              borderRadius: const BorderRadius.horizontal(left: Radius.circular(16)),
+              borderRadius:
+                  const BorderRadius.horizontal(left: Radius.circular(16)),
               child: Image.network(
                 content.thumbnailUrl!,
                 width: 120,
@@ -116,7 +118,7 @@ class _EduContentCard extends StatelessWidget {
                 fit: BoxFit.cover,
               ),
             ),
-          
+
           // Details
           Expanded(
             child: Padding(
@@ -126,7 +128,8 @@ class _EduContentCard extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Icon(_getIconForType(), size: 16, color: theme.colorScheme.primary),
+                      Icon(_getIconForType(),
+                          size: 16, color: theme.colorScheme.primary),
                       const SizedBox(width: 8),
                       Text(
                         content.type.name.toUpperCase(),
@@ -140,16 +143,15 @@ class _EduContentCard extends StatelessWidget {
                   const SizedBox(height: 8),
                   Text(
                     content.title,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      color: const Color(0xFFF5F5F7),
-                    ),
+                    style: theme.textTheme.titleMedium,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      Icon(Icons.verified, color: theme.colorScheme.primary, size: 14),
+                      Icon(Icons.verified,
+                          color: theme.colorScheme.primary, size: 14),
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
