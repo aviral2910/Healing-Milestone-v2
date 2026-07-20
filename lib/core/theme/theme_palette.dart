@@ -5,6 +5,8 @@ enum AppThemeType {
   lavenderDark,
   slateDark,
   goldenLight,
+  lavenderLight,
+  slateLight,
 }
 
 class ThemePalette {
@@ -85,10 +87,38 @@ class ThemePalette {
     accentSecondary: Color(0xFFA1A1A6),
   );
 
+  static const ThemePalette lavenderLight = ThemePalette(
+    type: AppThemeType.lavenderLight,
+    name: 'Lavender Light',
+    isDark: false,
+    background: Color(0xFFF9F7FC), // Very light lavender tint
+    surface: Color(0xFFFFFFFF), // Pure white
+    surfaceLight: Color(0xFFF0EBF5), // Slightly darker lavender grey
+    textPrimary: Color(0xFF1C1C1E),
+    textSecondary: Color(0xFF8E8E93),
+    accentPrimary: Color(0xFF8C7A9E), // Soft muted lavender
+    accentSecondary: Color(0xFFA1A1A6),
+  );
+
+  static const ThemePalette slateLight = ThemePalette(
+    type: AppThemeType.slateLight,
+    name: 'Slate Light',
+    isDark: false,
+    background: Color(0xFFF5F5F6), // Light cool grey
+    surface: Color(0xFFFFFFFF), // Pure white
+    surfaceLight: Color(0xFFEBEBEC), // Slightly darker slate grey
+    textPrimary: Color(0xFF1C1C1E),
+    textSecondary: Color(0xFF8E8E93),
+    accentPrimary: Color(0xFF9E9E9E), // Muted neutral silver/slate
+    accentSecondary: Color(0xFFA1A1A6),
+  );
+
   static const List<ThemePalette> allThemes = [
     goldenDark,
     lavenderDark,
     slateDark,
     goldenLight,
+    lavenderLight,
+    slateLight,
   ];
 }
