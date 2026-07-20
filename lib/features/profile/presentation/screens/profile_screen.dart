@@ -73,7 +73,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                     child: TextButton(
                       style: TextButton.styleFrom(
                         backgroundColor: theme.colorScheme.primary,
-                        foregroundColor: theme.colorScheme.onPrimary,
+                        foregroundColor:
+                            Colors.black, // Dark text on golden background
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(6),
                         ),
@@ -97,7 +98,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                   IconButton(
                     icon: const Icon(Icons.more_vert),
                     onPressed: () {
-                      context.push(AppRoutes.settings, extra: MenuContext.profile);
+                      context.push(AppRoutes.settings,
+                          extra: MenuContext.profile);
                     },
                   ),
                 ],
@@ -306,8 +308,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                     ref.watch(userStoriesProvider(user.userId));
                 return userStoriesAsync.when(
                   loading: () => Center(
-                      child:
-                          CircularProgressIndicator(color: Theme.of(context).primaryColor)),
+                      child: CircularProgressIndicator(
+                          color: Theme.of(context).primaryColor)),
                   error: (err, stack) => const Center(
                       child: Text('Failed to load stories',
                           style: TextStyle(color: Colors.red))),
@@ -320,8 +322,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                     ref.watch(userTaggedStoriesProvider(user.userId));
                 return taggedAsync.when(
                   loading: () => Center(
-                      child:
-                          CircularProgressIndicator(color: Theme.of(context).primaryColor)),
+                      child: CircularProgressIndicator(
+                          color: Theme.of(context).primaryColor)),
                   error: (err, stack) => const Center(
                       child: Text('Failed to load tagged stories',
                           style: TextStyle(color: Colors.red))),
@@ -334,8 +336,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                     .watch(bookmarkedStoriesProvider(user.bookmarkedStories));
                 return bookmarkedAsync.when(
                   loading: () => Center(
-                      child:
-                          CircularProgressIndicator(color: Theme.of(context).primaryColor)),
+                      child: CircularProgressIndicator(
+                          color: Theme.of(context).primaryColor)),
                   error: (err, stack) => const Center(
                       child: Text('Failed to load bookmarks',
                           style: TextStyle(color: Colors.red))),
@@ -368,7 +370,8 @@ class _StoryList extends StatelessWidget {
           ),
           child: Text(
             'No stories found.',
-            style: TextStyle(color: Theme.of(context).textTheme.bodySmall?.color),
+            style:
+                TextStyle(color: Theme.of(context).textTheme.bodySmall?.color),
           ),
         ),
       );

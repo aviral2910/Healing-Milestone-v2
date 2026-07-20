@@ -50,7 +50,8 @@ class _CommentsThreadState extends ConsumerState<CommentsThread> {
 
   @override
   Widget build(BuildContext context) {
-    final commentsAsync = ref.watch(storyCommentsProvider(widget.milestone.storyId));
+    final commentsAsync =
+        ref.watch(storyCommentsProvider(widget.milestone.storyId));
     final theme = Theme.of(context);
 
     return Column(
@@ -63,7 +64,9 @@ class _CommentsThreadState extends ConsumerState<CommentsThread> {
                 padding: const EdgeInsets.symmetric(vertical: 16.0),
                 child: Text(
                   'No comments yet. Be the first!',
-                  style: TextStyle(color: const Color(0xFFA1A1A6)),
+                  style: TextStyle(
+                      color: (Theme.of(context).textTheme.bodySmall?.color ??
+                          Colors.grey)),
                 ),
               );
             }
@@ -73,7 +76,8 @@ class _CommentsThreadState extends ConsumerState<CommentsThread> {
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: comments.length,
-                separatorBuilder: (context, index) => const SizedBox(height: 24),
+                separatorBuilder: (context, index) =>
+                    const SizedBox(height: 24),
                 itemBuilder: (context, index) {
                   final comment = comments[index];
                   return AnimationConfiguration.staggeredList(
@@ -82,7 +86,9 @@ class _CommentsThreadState extends ConsumerState<CommentsThread> {
                     child: SlideAnimation(
                       verticalOffset: 50.0,
                       child: FadeInAnimation(
-                        child: _CommentBubble(comment: comment, storyOwnerId: widget.milestone.authorId),
+                        child: _CommentBubble(
+                            comment: comment,
+                            storyOwnerId: widget.milestone.authorId),
                       ),
                     ),
                   );
@@ -102,20 +108,26 @@ class _CommentsThreadState extends ConsumerState<CommentsThread> {
                 controller: _commentController,
                 textInputAction: TextInputAction.send,
                 onSubmitted: (_) => _submitComment(),
-                style: const TextStyle(color: Color(0xFFF5F5F7)),
+                style:
+                    TextStyle(color: Theme.of(context).colorScheme.onSurface),
                 decoration: InputDecoration(
                   hintText: 'Add a comment...',
-                  hintStyle: const TextStyle(color: Color(0xFFA1A1A6)),
+                  hintStyle: TextStyle(
+                      color: (Theme.of(context).textTheme.bodySmall?.color ??
+                          Colors.grey)),
                   filled: true,
                   fillColor: Theme.of(context).cardColor,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(24),
-                    borderSide: BorderSide(color: Theme.of(context).dividerColor),
+                    borderSide:
+                        BorderSide(color: Theme.of(context).dividerColor),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(24),
-                    borderSide: BorderSide(color: Theme.of(context).dividerColor),
+                    borderSide:
+                        BorderSide(color: Theme.of(context).dividerColor),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(24),
@@ -153,7 +165,9 @@ class _CommentBubble extends ConsumerWidget {
   final CommentModel comment;
   final String storyOwnerId;
 
-  const _CommentBubble({Key? key, required this.comment, required this.storyOwnerId}) : super(key: key);
+  const _CommentBubble(
+      {Key? key, required this.comment, required this.storyOwnerId})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -170,21 +184,25 @@ class _CommentBubble extends ConsumerWidget {
         userAsync.when(
           data: (user) {
             return CircleAvatar(
-              backgroundColor: const Color(0xFF1E1E1E),
-              backgroundImage: user?.profilePicture != null 
-                  ? NetworkImage(user!.profilePicture!) 
-                  : NetworkImage('https://api.dicebear.com/7.x/avataaars/png?seed=${comment.userId}'),
+              backgroundColor:
+                  Theme.of(context).colorScheme.surfaceContainerHighest,
+              backgroundImage: user?.profilePicture != null
+                  ? NetworkImage(user!.profilePicture!)
+                  : NetworkImage(
+                      'https://api.dicebear.com/7.x/avataaars/png?seed=${comment.userId}'),
               radius: 18,
             );
           },
-          loading: () => const CircleAvatar(
-            backgroundColor: Color(0xFF1E1E1E),
+          loading: () => CircleAvatar(
+            backgroundColor:
+                Theme.of(context).colorScheme.surfaceContainerHighest,
             radius: 18,
           ),
-          error: (_, __) => const CircleAvatar(
-            backgroundColor: Color(0xFF1E1E1E),
+          error: (_, __) => CircleAvatar(
+            backgroundColor:
+                Theme.of(context).colorScheme.surfaceContainerHighest,
             radius: 18,
-            child: Icon(Icons.error, size: 16),
+            child: const Icon(Icons.error, size: 16),
           ),
         ),
         const SizedBox(width: 12),
@@ -196,19 +214,37 @@ class _CommentBubble extends ConsumerWidget {
                       context: context,
                       builder: (context) => AlertDialog(
                         backgroundColor: Theme.of(context).cardColor,
-                        title: const Text('Delete Comment', style: TextStyle(color: Colors.white)),
-                        content: const Text('Are you sure you want to delete this comment?', style: TextStyle(color: Color(0xFFA1A1A6))),
+                        title: Text('Delete Comment',
+                            style: TextStyle(
+                                color:
+                                    Theme.of(context).colorScheme.onSurface)),
+                        content: Text(
+                            'Are you sure you want to delete this comment?',
+                            style: TextStyle(
+                                color: (Theme.of(context)
+                                        .textTheme
+                                        .bodySmall
+                                        ?.color ??
+                                    Colors.grey))),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.pop(context),
-                            child: const Text('Cancel', style: TextStyle(color: Color(0xFFA1A1A6))),
+                            child: Text('Cancel',
+                                style: TextStyle(
+                                    color: (Theme.of(context)
+                                            .textTheme
+                                            .bodySmall
+                                            ?.color ??
+                                        Colors.grey))),
                           ),
                           TextButton(
                             onPressed: () {
-                              ref.read(commentRepositoryProvider).deleteComment(comment.storyId, comment.commentId);
+                              ref.read(commentRepositoryProvider).deleteComment(
+                                  comment.storyId, comment.commentId);
                               Navigator.pop(context);
                             },
-                            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                            child: const Text('Delete',
+                                style: TextStyle(color: Colors.red)),
                           ),
                         ],
                       ),
@@ -233,9 +269,10 @@ class _CommentBubble extends ConsumerWidget {
                   userAsync.when(
                     data: (user) => Text(
                       user?.displayName ?? '@${user?.username ?? 'Anonymous'}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFFA1A1A6),
+                        color: (Theme.of(context).textTheme.bodySmall?.color ??
+                            Colors.grey),
                       ),
                     ),
                     loading: () => const Text('Loading...'),
@@ -244,7 +281,9 @@ class _CommentBubble extends ConsumerWidget {
                   const SizedBox(height: 6),
                   Text(
                     comment.commentText,
-                    style: const TextStyle(color: Color(0xFFF5F5F7), height: 1.3),
+                    style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
+                        height: 1.3),
                   ),
                 ],
               ),

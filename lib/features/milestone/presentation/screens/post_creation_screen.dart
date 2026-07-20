@@ -379,10 +379,15 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
     }
 
     return Scaffold(
+      extendBody: true,
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        title: Text(
+          widget.existingStory != null ? 'Edit Story' : 'Create a Post',
+        ),
+        centerTitle: true,
         leading: IconButton(
           icon:
               Icon(Icons.close, color: Theme.of(context).colorScheme.onSurface),
@@ -404,38 +409,47 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                 });
               },
             ),
-          Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+        ],
+      ),
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              theme.scaffoldBackgroundColor.withValues(alpha: 0.2),
+              theme.scaffoldBackgroundColor.withValues(alpha: 0.8),
+              // theme.scaffoldBackgroundColor,
+            ],
+            stops: const [0.0, 1.0],
+          ),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 16.0),
             child: Container(
+              height: 56,
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    theme.colorScheme.primary,
-                    theme.colorScheme.secondary
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(24),
+                color: theme.colorScheme.primary,
+                borderRadius: BorderRadius.circular(28),
               ),
               child: ElevatedButton(
                 onPressed: _isUploading ? null : _submitPost,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.transparent,
                   shadowColor: Colors.transparent,
-                  foregroundColor: theme.colorScheme.onPrimary,
+                  foregroundColor:
+                      Colors.black, // Dark text on golden background
                   disabledBackgroundColor: Colors.transparent,
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24)),
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                      borderRadius: BorderRadius.circular(28)),
                 ),
                 child: _isUploading
                     ? SizedBox(
-                        width: 20,
-                        height: 20,
+                        width: 24,
+                        height: 24,
                         child: CircularProgressIndicator(
-                            color: theme.colorScheme.onPrimary, strokeWidth: 2))
+                            color: Colors.black, strokeWidth: 2))
                     : Text(
                         widget.existingStory != null
                             ? 'Save Changes'
@@ -444,8 +458,8 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                             fontWeight: FontWeight.bold, fontSize: 16)),
               ),
             ),
-          )
-        ],
+          ),
+        ),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -926,7 +940,7 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
                             color: isSelected
-                                ? Theme.of(context).colorScheme.surface
+                                ? Colors.black
                                 : Theme.of(context)
                                     .colorScheme
                                     .onSurface
@@ -1003,7 +1017,7 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 40),
+            const SizedBox(height: 120),
           ],
         ),
       ),
