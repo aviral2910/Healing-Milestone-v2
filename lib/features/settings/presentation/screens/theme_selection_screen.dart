@@ -10,7 +10,10 @@ class ThemeSelectionScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final currentTheme = ref.watch(themeProvider);
     final theme = Theme.of(context);
-    
+
+    final darkThemes = ThemePalette.allThemes.where((t) => t.isDark).toList();
+    final lightThemes = ThemePalette.allThemes.where((t) => !t.isDark).toList();
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -29,117 +32,124 @@ class ThemeSelectionScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
         children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 8.0, bottom: 16.0),
-            child: Text(
-              'Select a Theme',
-              style: theme.textTheme.titleLarge,
-            ),
-          ),
-          ...ThemePalette.allThemes.map((palette) {
-            final isSelected = currentTheme.type == palette.type;
-            
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12.0),
-              child: _buildThemeCard(
-                context: context,
-                ref: ref,
-                palette: palette,
-                isSelected: isSelected,
-              ),
-            );
-          }).toList(),
+          _buildThemeGroupCard(
+              context, ref, currentTheme, 'Dark Theme', darkThemes),
+          const SizedBox(height: 24),
+          _buildThemeGroupCard(
+              context, ref, currentTheme, 'Light Theme', lightThemes),
         ],
       ),
     );
   }
 
-  Widget _buildThemeCard({
-    required BuildContext context,
-    required WidgetRef ref,
-    required ThemePalette palette,
-    required bool isSelected,
-  }) {
-    return Material(
-      color: palette.surface,
-      borderRadius: BorderRadius.circular(16),
-      elevation: isSelected ? 4 : 0,
-      child: InkWell(
-        onTap: () {
-          ref.read(themeProvider.notifier).setTheme(palette);
-        },
+  Widget _buildThemeGroupCard(BuildContext context, WidgetRef ref,
+      ThemePalette currentTheme, String title, List<ThemePalette> themes) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardTheme.color ?? Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: isSelected ? palette.accentPrimary : Colors.transparent,
-              width: 2,
+        border: Border.all(color: Theme.of(context).dividerColor),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding:
+                const EdgeInsets.only(left: 16, top: 16, right: 16, bottom: 8),
+            child: Text(
+              title,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                  ),
             ),
           ),
-          padding: const EdgeInsets.all(20.0),
-          child: Row(
+          Padding(
+            padding:
+                const EdgeInsets.only(left: 4, right: 4, bottom: 4, top: 8),
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+              decoration: BoxDecoration(
+                color: Theme.of(context).scaffoldBackgroundColor,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Theme.of(context).dividerColor),
+              ),
+              child: _buildThemeRow(context, ref, currentTheme, themes),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildThemeRow(BuildContext context, WidgetRef ref,
+      ThemePalette currentTheme, List<ThemePalette> themes) {
+    return Wrap(
+      alignment: WrapAlignment.spaceEvenly,
+      spacing: 16,
+      runSpacing: 16,
+      children: themes.map((palette) {
+        final isSelected = currentTheme.type == palette.type;
+
+        // Extract a short name for display under the circle
+        String shortName = palette.name;
+        if (shortName.contains(' (Default)')) {
+          shortName = shortName.replaceAll(' (Default)', '');
+        }
+        shortName = shortName.replaceAll(' Dark', '').replaceAll(' Light', '');
+
+        return GestureDetector(
+          onTap: () {
+            ref.read(themeProvider.notifier).setTheme(palette);
+          },
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              // Color preview circle
               Container(
-                width: 48,
-                height: 48,
+                width: 42,
+                height: 42,
                 decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: palette.background,
-                  border: Border.all(color: palette.accentPrimary, width: 3),
-                ),
+                    shape: BoxShape.circle,
+                    color: palette.background,
+                    border: Border.all(
+                      color: isSelected
+                          ? palette.accentPrimary
+                          : Theme.of(context).dividerColor,
+                      width: isSelected ? 3 : 1,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      )
+                    ]),
                 child: Center(
                   child: Container(
                     width: 20,
                     height: 20,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: palette.accentSecondary,
+                      color: palette.accentPrimary,
                     ),
                   ),
                 ),
               ),
-              const SizedBox(width: 20),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      palette.name,
-                      style: TextStyle(
-                        color: palette.textPrimary,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      palette.isDark ? 'Dark Mode' : 'Light Mode',
-                      style: TextStyle(
-                        color: palette.textSecondary,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
+              const SizedBox(height: 8),
+              Text(
+                shortName,
+                style: TextStyle(
+                  color: isSelected
+                      ? palette.accentPrimary
+                      : Theme.of(context).textTheme.bodyMedium?.color,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                  fontSize: 12,
                 ),
-              ),
-              if (isSelected)
-                Icon(
-                  Icons.check_circle_rounded,
-                  color: palette.accentPrimary,
-                  size: 28,
-                )
-              else
-                Icon(
-                  Icons.circle_outlined,
-                  color: palette.textSecondary.withOpacity(0.5),
-                  size: 28,
-                ),
+              )
             ],
           ),
-        ),
-      ),
+        );
+      }).toList(),
     );
   }
 }
