@@ -9,6 +9,7 @@ class AppRoutes {
   static const String profile = '/profile';
   static const String editProfile = '/edit-profile';
   static const String userList = '/user-list';
+  static const String settings = '/settings';
   static const uat = '/uat';
 
   // Dynamic routes

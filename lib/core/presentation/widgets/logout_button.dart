@@ -16,8 +16,13 @@ class LogoutButton extends ConsumerWidget {
     return IconButton(
       icon: const Icon(Icons.logout),
       tooltip: 'Logout',
-      onPressed: () {
-        showGeneralDialog(
+      onPressed: () => showLogoutDialog(context, ref),
+    );
+  }
+
+  static void showLogoutDialog(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    showGeneralDialog(
           context: context,
           barrierDismissible: true,
           barrierLabel: 'Dismiss',
@@ -141,7 +146,5 @@ class LogoutButton extends ConsumerWidget {
             );
           },
         );
-      },
-    );
   }
 }

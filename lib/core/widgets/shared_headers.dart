@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:healing_milestones/logo/healing_milestone_logo.dart';
 import '../../main.dart';
 import '../../features/auth/data/auth_provider.dart';
+import 'package:healing_milestones/features/settings/presentation/screens/settings_screen.dart';
 
 class CommonSliverAppBar extends ConsumerWidget {
   final bool isHeroEnabled;
@@ -82,7 +83,7 @@ class CommonSliverAppBar extends ConsumerWidget {
       title: HealingMilestonesLogoWidget(),
       actions: [
         Padding(
-          padding: const EdgeInsets.only(right: 16.0),
+          padding: const EdgeInsets.only(right: 8.0),
           child: TextButton(
             style: TextButton.styleFrom(
               backgroundColor: theme.colorScheme.primary,
@@ -98,6 +99,12 @@ class CommonSliverAppBar extends ConsumerWidget {
             child: const Text('UAT',
                 style: TextStyle(fontWeight: FontWeight.bold)),
           ),
+        ),
+        IconButton(
+          icon: const Icon(Icons.more_vert),
+          onPressed: () {
+            context.push(AppRoutes.settings, extra: MenuContext.home);
+          },
         ),
       ],
     );

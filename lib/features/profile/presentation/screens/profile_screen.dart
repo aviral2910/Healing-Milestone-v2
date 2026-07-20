@@ -9,6 +9,7 @@ import '../../../../core/models/user_model.dart';
 import '../../../../core/models/story_model.dart';
 import '../../../../shared/widgets/story_card.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../features/settings/presentation/screens/settings_screen.dart';
 import '../../../../core/presentation/widgets/user_badge.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
@@ -18,7 +19,8 @@ class ProfileScreen extends ConsumerStatefulWidget {
   ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTickerProviderStateMixin {
+class _ProfileScreenState extends ConsumerState<ProfileScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   @override
@@ -43,291 +45,307 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final user = ref.watch(currentUserProvider);
-    if (user == null) return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    final bool isProOrOrg = user.role == UserRole.healthcareProfessional || user.role == UserRole.organization;
+    if (user == null)
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    final bool isProOrOrg = user.role == UserRole.healthcareProfessional ||
+        user.role == UserRole.organization;
 
     return Scaffold(
       body: SafeArea(
         top: true,
         bottom: false,
         child: NestedScrollView(
-            headerSliverBuilder: (context, innerBoxIsScrolled) {
-              return [
-                SliverAppBar(
-                  floating: true,
-                  snap: true,
-                  title: const Text(
-                    'Profile',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  centerTitle: true,
-                  backgroundColor: theme.scaffoldBackgroundColor,
-                  elevation: 0,
-                  actions: [
-                    Padding(
-                      padding: const EdgeInsets.only(right: 8.0),
-                      child: TextButton(
-                        style: TextButton.styleFrom(
-                          backgroundColor: theme.colorScheme.primary,
-                          foregroundColor: Colors.black,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 4),
+          headerSliverBuilder: (context, innerBoxIsScrolled) {
+            return [
+              SliverAppBar(
+                floating: true,
+                snap: true,
+                title: const Text(
+                  'Profile',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                centerTitle: true,
+                backgroundColor: theme.scaffoldBackgroundColor,
+                elevation: 0,
+                actions: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: TextButton(
+                      style: TextButton.styleFrom(
+                        backgroundColor: theme.colorScheme.primary,
+                        foregroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(6),
                         ),
-                        onPressed: () {
-                          context.push(AppRoutes.create);
-                        },
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 4),
+                      ),
+                      onPressed: () {
+                        context.push(AppRoutes.create);
+                      },
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.add, size: 16),
+                          SizedBox(width: 4),
+                          Text('Create',
+                              style: TextStyle(fontWeight: FontWeight.bold)),
+                        ],
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.more_vert),
+                    onPressed: () {
+                      context.push(AppRoutes.settings, extra: MenuContext.profile);
+                    },
+                  ),
+                ],
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 16),
+                      // Centered Profile Header
+                      Center(
+                        child: Column(
                           children: [
-                            Icon(Icons.add, size: 16),
-                            SizedBox(width: 4),
-                            Text('Create',
-                                style: TextStyle(fontWeight: FontWeight.bold)),
+                            Hero(
+                              tag: 'profile-avatar-${user.userId}',
+                              child: Container(
+                                padding: const EdgeInsets.all(1),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      theme.colorScheme.primary,
+                                      Colors.amber
+                                    ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                ),
+                                child: CircleAvatar(
+                                  radius: 50,
+                                  backgroundColor:
+                                      theme.scaffoldBackgroundColor,
+                                  backgroundImage: NetworkImage(
+                                    user.profilePicture ??
+                                        'https://api.dicebear.com/7.x/avataaars/png?seed=${user.userId}',
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  user.displayName,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 22),
+                                ),
+                                const SizedBox(width: 4),
+                                UserBadge(
+                                  role: user.role,
+                                  isVerified: user.isVerified,
+                                  iconSize: 20,
+                                ),
+                              ],
+                            ),
+                            if (user.username != null &&
+                                user.username!.isNotEmpty) ...[
+                              const SizedBox(height: 2),
+                              Text(
+                                '@${user.username}',
+                                style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: theme.colorScheme.primary),
+                              ),
+                            ],
+                            if (user.bio != null &&
+                                user.bio!.trim().isNotEmpty) ...[
+                              const SizedBox(height: 12),
+                              Text(
+                                user.bio!,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  height: 1.4,
+                                  color: theme.textTheme.bodyMedium?.color,
+                                ),
+                              ),
+                            ],
                           ],
                         ),
                       ),
-                    ),
-                    LogoutButton()
-                  ],
-                ),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 16),
-                        // Centered Profile Header
-                        Center(
-                          child: Column(
-                            children: [
-                              Hero(
-                                tag: 'profile-avatar-${user.userId}',
-                                child: Container(
-                                  padding: const EdgeInsets.all(1),
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        theme.colorScheme.primary,
-                                        Colors.amber
-                                      ],
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                    ),
-                                  ),
-                                  child: CircleAvatar(
-                                    radius: 50,
-                                    backgroundColor:
-                                        theme.scaffoldBackgroundColor,
-                                    backgroundImage: NetworkImage(
-                                      user.profilePicture ??
-                                          'https://api.dicebear.com/7.x/avataaars/png?seed=${user.userId}',
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    user.displayName,
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 22),
-                                  ),
-                                    const SizedBox(width: 4),
-                                    UserBadge(
-                                      role: user.role,
-                                      isVerified: user.isVerified,
-                                      iconSize: 20,
-                                    ),
-                                  ],
-                                ),
-                              if (user.username != null && user.username!.isNotEmpty) ...[
-                                const SizedBox(height: 2),
-                                Text(
-                                  '@${user.username}',
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                      color: theme.colorScheme.primary),
-                                ),
-                              ],
-                              if (user.bio != null && user.bio!.trim().isNotEmpty) ...[
-                                const SizedBox(height: 12),
-                                Text(
-                                  user.bio!,
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    height: 1.4,
-                                    color: theme.textTheme.bodyMedium?.color,
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        // Stats Row
-                        Container(
-                          padding: const EdgeInsets.symmetric(vertical: 20),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF151515),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: const Color(0xFF2A2A2A)),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.5),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              _StatColumn(
-                                  label: 'Stories',
-                                  count: user.ownStories.length.toString()),
-                              Container(
-                                  width: 1,
-                                  height: 40,
-                                  color: const Color(0xFF2A2A2A)),
-                              _StatColumn(
-                                  label: 'Followers',
-                                  count: _formatCount(user.followersCount),
-                                  onTap: () {
-                                    context.push(AppRoutes.userList, extra: {
-                                      'title': 'Followers',
-                                      'userIds': user.followersList,
-                                    });
-                                  }),
-                              Container(
-                                  width: 1,
-                                  height: 40,
-                                  color: const Color(0xFF2A2A2A)),
-                              _StatColumn(
-                                  label: 'Following',
-                                  count: _formatCount(user.followingCount),
-                                  onTap: () {
-                                    context.push(AppRoutes.userList, extra: {
-                                      'title': 'Following',
-                                      'userIds': user.followingList,
-                                    });
-                                  }),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        // Action Buttons
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              context.push(AppRoutes.editProfile);
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: theme.colorScheme.primary
-                                  .withValues(alpha: 0.15),
-                              foregroundColor: theme.colorScheme.primary,
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              padding: const EdgeInsets.symmetric(vertical: 14),
+                      const SizedBox(height: 24),
+                      // Stats Row
+                      Container(
+                        padding: const EdgeInsets.symmetric(vertical: 20),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF151515),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: const Color(0xFF2A2A2A)),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.5),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
                             ),
-                            child: const Text(
-                              'Edit Profile',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 16),
-                            ),
-                          ),
+                          ],
                         ),
-                        const SizedBox(height: 16),
-                      ],
-                    ),
-                  ),
-                ),
-                SliverPersistentHeader(
-                  pinned: true,
-                  delegate: _SliverAppBarDelegate(
-                    TabBar(
-                      controller: _tabController,
-                      indicator: BoxDecoration(
-                        color:
-                            theme.colorScheme.primary.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(100),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            _StatColumn(
+                                label: 'Stories',
+                                count: user.ownStories.length.toString()),
+                            Container(
+                                width: 1,
+                                height: 40,
+                                color: const Color(0xFF2A2A2A)),
+                            _StatColumn(
+                                label: 'Followers',
+                                count: _formatCount(user.followersCount),
+                                onTap: () {
+                                  context.push(AppRoutes.userList, extra: {
+                                    'title': 'Followers',
+                                    'userIds': user.followersList,
+                                  });
+                                }),
+                            Container(
+                                width: 1,
+                                height: 40,
+                                color: const Color(0xFF2A2A2A)),
+                            _StatColumn(
+                                label: 'Following',
+                                count: _formatCount(user.followingCount),
+                                onTap: () {
+                                  context.push(AppRoutes.userList, extra: {
+                                    'title': 'Following',
+                                    'userIds': user.followingList,
+                                  });
+                                }),
+                          ],
+                        ),
                       ),
-                      indicatorPadding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 4),
-                      indicatorSize: TabBarIndicatorSize.tab,
-                      labelColor: theme.colorScheme.primary,
-                      unselectedLabelColor: const Color(0xFFA1A1A6),
-                      dividerColor:
-                          Colors.transparent, // Remove the ugly default line
-                      tabs: const [
-                        Tab(
-                          icon:
-                              Icon(Icons.auto_awesome_mosaic_rounded, size: 24),
+                      const SizedBox(height: 24),
+                      // Action Buttons
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            context.push(AppRoutes.editProfile);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: theme.colorScheme.primary
+                                .withValues(alpha: 0.15),
+                            foregroundColor: theme.colorScheme.primary,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                          child: const Text(
+                            'Edit Profile',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 16),
+                          ),
                         ),
-                        Tab(
-                          icon: Icon(Icons.person_pin_rounded, size: 24),
-                        ),
-                        Tab(
-                          icon: Icon(Icons.bookmark_rounded, size: 24),
-                        ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
                   ),
                 ),
-              ];
-            },
-            body: TabBarView(
-              controller: _tabController,
-              children: [
-                // Own Stories
-                Consumer(
-                  builder: (context, ref, child) {
-                    final userStoriesAsync = ref.watch(userStoriesProvider(user.userId));
-                    return userStoriesAsync.when(
-                      loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFFD4AF37))),
-                      error: (err, stack) => const Center(child: Text('Failed to load stories', style: TextStyle(color: Colors.red))),
-                      data: (stories) => _StoryList(stories: stories),
-                    );
-                  }
+              ),
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: _SliverAppBarDelegate(
+                  TabBar(
+                    controller: _tabController,
+                    indicator: BoxDecoration(
+                      color: theme.colorScheme.primary.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(100),
+                    ),
+                    indicatorPadding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    indicatorSize: TabBarIndicatorSize.tab,
+                    labelColor: theme.colorScheme.primary,
+                    unselectedLabelColor: const Color(0xFFA1A1A6),
+                    dividerColor:
+                        Colors.transparent, // Remove the ugly default line
+                    tabs: const [
+                      Tab(
+                        icon: Icon(Icons.auto_awesome_mosaic_rounded, size: 24),
+                      ),
+                      Tab(
+                        icon: Icon(Icons.person_pin_rounded, size: 24),
+                      ),
+                      Tab(
+                        icon: Icon(Icons.bookmark_rounded, size: 24),
+                      ),
+                    ],
+                  ),
                 ),
-                // Tagged Stories
-                Consumer(
-                  builder: (context, ref, child) {
-                    final taggedAsync = ref.watch(userTaggedStoriesProvider(user.userId));
-                    return taggedAsync.when(
-                      loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFFD4AF37))),
-                      error: (err, stack) => const Center(child: Text('Failed to load tagged stories', style: TextStyle(color: Colors.red))),
-                      data: (stories) => _StoryList(stories: stories),
-                    );
-                  }
-                ),
-                // Bookmarks
-                Consumer(
-                  builder: (context, ref, child) {
-                    final bookmarkedAsync = ref.watch(bookmarkedStoriesProvider(user.bookmarkedStories));
-                    return bookmarkedAsync.when(
-                      loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFFD4AF37))),
-                      error: (err, stack) => const Center(child: Text('Failed to load bookmarks', style: TextStyle(color: Colors.red))),
-                      data: (stories) => _StoryList(stories: stories),
-                    );
-                  }
-                ),
-              ],
-            ),
+              ),
+            ];
+          },
+          body: TabBarView(
+            controller: _tabController,
+            children: [
+              // Own Stories
+              Consumer(builder: (context, ref, child) {
+                final userStoriesAsync =
+                    ref.watch(userStoriesProvider(user.userId));
+                return userStoriesAsync.when(
+                  loading: () => const Center(
+                      child:
+                          CircularProgressIndicator(color: Color(0xFFD4AF37))),
+                  error: (err, stack) => const Center(
+                      child: Text('Failed to load stories',
+                          style: TextStyle(color: Colors.red))),
+                  data: (stories) => _StoryList(stories: stories),
+                );
+              }),
+              // Tagged Stories
+              Consumer(builder: (context, ref, child) {
+                final taggedAsync =
+                    ref.watch(userTaggedStoriesProvider(user.userId));
+                return taggedAsync.when(
+                  loading: () => const Center(
+                      child:
+                          CircularProgressIndicator(color: Color(0xFFD4AF37))),
+                  error: (err, stack) => const Center(
+                      child: Text('Failed to load tagged stories',
+                          style: TextStyle(color: Colors.red))),
+                  data: (stories) => _StoryList(stories: stories),
+                );
+              }),
+              // Bookmarks
+              Consumer(builder: (context, ref, child) {
+                final bookmarkedAsync = ref
+                    .watch(bookmarkedStoriesProvider(user.bookmarkedStories));
+                return bookmarkedAsync.when(
+                  loading: () => const Center(
+                      child:
+                          CircularProgressIndicator(color: Color(0xFFD4AF37))),
+                  error: (err, stack) => const Center(
+                      child: Text('Failed to load bookmarks',
+                          style: TextStyle(color: Colors.red))),
+                  data: (stories) => _StoryList(stories: stories),
+                );
+              }),
+            ],
           ),
         ),
+      ),
     );
   }
 }
@@ -375,7 +393,8 @@ class _StoryList extends StatelessWidget {
                       padding: const EdgeInsets.only(bottom: 24.0),
                       child: StoryCard(
                         story: story,
-                        onTap: () => context.push(AppRoutes.storyDetail(story.storyId)),
+                        onTap: () =>
+                            context.push(AppRoutes.storyDetail(story.storyId)),
                         content: story.shortDescription,
                       ),
                     ),
@@ -403,7 +422,8 @@ class _StatColumn extends StatelessWidget {
   final String count;
   final VoidCallback? onTap;
 
-  const _StatColumn({Key? key, required this.label, required this.count, this.onTap})
+  const _StatColumn(
+      {Key? key, required this.label, required this.count, this.onTap})
       : super(key: key);
 
   @override
@@ -414,23 +434,23 @@ class _StatColumn extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       child: Column(
         children: [
-        Text(
-          count,
-          style: theme.textTheme.titleLarge?.copyWith(
-            color: const Color(0xFFF5F5F7),
-            fontWeight: FontWeight.w800,
+          Text(
+            count,
+            style: theme.textTheme.titleLarge?.copyWith(
+              color: const Color(0xFFF5F5F7),
+              fontWeight: FontWeight.w800,
+            ),
           ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label.toUpperCase(),
-          style: theme.textTheme.labelSmall?.copyWith(
-            color: const Color(0xFFA1A1A6),
-            letterSpacing: 1.2,
-            fontWeight: FontWeight.w600,
+          const SizedBox(height: 4),
+          Text(
+            label.toUpperCase(),
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: const Color(0xFFA1A1A6),
+              letterSpacing: 1.2,
+              fontWeight: FontWeight.w600,
+            ),
           ),
-        ),
-      ],
+        ],
       ),
     );
   }

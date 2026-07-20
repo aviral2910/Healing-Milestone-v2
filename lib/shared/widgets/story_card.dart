@@ -201,8 +201,8 @@ class _StoryCardState extends ConsumerState<StoryCard>
                       left: 20.0, right: 20.0, bottom: 16.0),
                   child: Text(
                     widget.story.heading,
-                    style:
-                        theme.textTheme.headlineLarge?.copyWith(fontSize: 20),
+                    style: theme.textTheme.headlineLarge
+                        ?.copyWith(fontSize: 20, letterSpacing: 1.1),
                   ),
                 ),
               if (widget.story.isVerifiedStory)
@@ -262,7 +262,7 @@ class _StoryCardState extends ConsumerState<StoryCard>
                       // Text-only treatment
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(24.0),
+                        padding: const EdgeInsets.all(16.0),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(16),
                           gradient: LinearGradient(

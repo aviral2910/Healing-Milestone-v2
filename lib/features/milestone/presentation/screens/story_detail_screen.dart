@@ -299,6 +299,7 @@ class StoryDetailScreen extends ConsumerWidget {
                                       theme.textTheme.headlineLarge?.copyWith(
                                     fontSize: 32, // Massive scale
                                     height: 1.1,
+                                    letterSpacing: 1.1,
                                     fontWeight: FontWeight.w900,
                                     color:
                                         const Color(0xFFF5F5F7), // Frost white
