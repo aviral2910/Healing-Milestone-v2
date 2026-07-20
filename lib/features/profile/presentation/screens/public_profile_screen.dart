@@ -53,7 +53,8 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen>
     return Scaffold(
       body: userAsync.when(
         loading: () => Center(
-            child: CircularProgressIndicator(color: Theme.of(context).primaryColor)),
+            child: CircularProgressIndicator(
+                color: Theme.of(context).primaryColor)),
         error: (err, stack) => const Center(
             child: Text('Failed to load user profile.',
                 style: TextStyle(color: Colors.red))),
@@ -168,11 +169,11 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen>
                             decoration: BoxDecoration(
                               color: theme.cardColor,
                               borderRadius: BorderRadius.circular(20),
-                              border:
-                                  Border.all(color: theme.dividerColor),
+                              border: Border.all(color: theme.dividerColor),
                               boxShadow: [
                                 BoxShadow(
-                                  color: theme.shadowColor.withValues(alpha: 0.5),
+                                  color:
+                                      theme.shadowColor.withValues(alpha: 0.5),
                                   blurRadius: 10,
                                   offset: const Offset(0, 4),
                                 ),
@@ -238,8 +239,13 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen>
                                   backgroundColor: isFollowing
                                       ? theme.dividerColor
                                       : theme.colorScheme.primary,
-                                  foregroundColor:
-                                      isFollowing ? theme.colorScheme.onPrimary : theme.textTheme.bodyMedium?.color,
+                                  foregroundColor: isFollowing
+                                      ? theme.textTheme.bodyMedium?.color
+                                      : (theme.colorScheme.primary
+                                                  .computeLuminance() >
+                                              0.25
+                                          ? Colors.black
+                                          : Colors.white),
                                   elevation: 0,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
@@ -351,7 +357,8 @@ class _StoryList extends StatelessWidget {
           ),
           child: Text(
             'No stories found.',
-            style: TextStyle(color: Theme.of(context).textTheme.bodySmall?.color),
+            style:
+                TextStyle(color: Theme.of(context).textTheme.bodySmall?.color),
           ),
         ),
       );

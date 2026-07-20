@@ -74,7 +74,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       style: TextButton.styleFrom(
                         backgroundColor: theme.colorScheme.primary,
                         foregroundColor:
-                            Colors.black, // Dark text on golden background
+                            theme.colorScheme.primary.computeLuminance() > 0.25
+                                ? Colors.black
+                                : Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(6),
                         ),

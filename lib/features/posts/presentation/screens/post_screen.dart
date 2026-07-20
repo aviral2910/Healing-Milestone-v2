@@ -79,7 +79,11 @@ class _SliverTagsDelegate extends SliverPersistentHeaderDelegate {
                             fontWeight:
                                 isSelected ? FontWeight.bold : FontWeight.w600,
                             color: isSelected
-                                ? Colors.black
+                                ? (theme.colorScheme.primary
+                                            .computeLuminance() >
+                                        0.25
+                                    ? Colors.black
+                                    : Colors.white)
                                 : const Color(0xFFA1A1A6),
                           ),
                         ),

@@ -98,7 +98,10 @@ class CommonSliverAppBar extends ConsumerWidget {
           child: TextButton(
             style: TextButton.styleFrom(
               backgroundColor: theme.colorScheme.primary,
-              foregroundColor: Theme.of(context).colorScheme.onSurface,
+              foregroundColor:
+                  theme.colorScheme.primary.computeLuminance() > 0.25
+                      ? Colors.black
+                      : Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(6),
               ),
@@ -184,8 +187,8 @@ class CommonSearchBarSliver extends StatelessWidget {
               child: TextField(
                 readOnly: onTap != null,
                 onTap: onTap,
-                style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurface),
+                style:
+                    TextStyle(color: Theme.of(context).colorScheme.onSurface),
                 decoration: InputDecoration(
                   hintText: hintText,
                   hintStyle: const TextStyle(color: Color(0xFF7A7A7A)),

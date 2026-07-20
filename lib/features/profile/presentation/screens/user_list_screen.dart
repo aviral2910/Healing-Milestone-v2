@@ -132,7 +132,7 @@ class _UserListScreenState extends ConsumerState<UserListScreen> {
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: isFollowing ? Theme.of(context).dividerColor : theme.colorScheme.primary,
-                            foregroundColor: isFollowing ? Theme.of(context).colorScheme.onPrimary : Theme.of(context).textTheme.bodyMedium?.color,
+                            foregroundColor: isFollowing ? theme.textTheme.bodyMedium?.color : (theme.colorScheme.primary.computeLuminance() > 0.25 ? Colors.black : Colors.white),
                             elevation: 0,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),

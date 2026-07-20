@@ -395,19 +395,28 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
         ),
         actions: [
           if (ref.watch(uatModeProvider))
-            IconButton(
-              icon: Icon(Icons.auto_fix_high,
-                  color: Theme.of(context).primaryColor),
-              tooltip: 'Populate Dummy Post',
-              onPressed: () {
-                final selected = UatDummyData.getRandomPost();
+            Container(
+              margin: const EdgeInsets.only(right: 8),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary,
+                shape: BoxShape.circle,
+              ),
+              child: IconButton(
+                icon: Icon(Icons.auto_fix_high,
+                    color: theme.colorScheme.primary.computeLuminance() > 0.25
+                        ? Colors.black
+                        : Colors.white),
+                tooltip: 'Populate Dummy Post',
+                onPressed: () {
+                  final selected = UatDummyData.getRandomPost();
 
-                setState(() {
-                  _titleController.text = selected['title'] as String;
-                  _contentController.text = selected['content'] as String;
-                  _selectedTags = List<String>.from(selected['tags'] as List);
-                });
-              },
+                  setState(() {
+                    _titleController.text = selected['title'] as String;
+                    _contentController.text = selected['content'] as String;
+                    _selectedTags = List<String>.from(selected['tags'] as List);
+                  });
+                },
+              ),
             ),
         ],
       ),
@@ -439,7 +448,9 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                   backgroundColor: Colors.transparent,
                   shadowColor: Colors.transparent,
                   foregroundColor:
-                      Colors.black, // Dark text on golden background
+                      theme.colorScheme.primary.computeLuminance() > 0.25
+                          ? Colors.black
+                          : Colors.white,
                   disabledBackgroundColor: Colors.transparent,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(28)),
@@ -673,12 +684,19 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                         return Chip(
                           label: Text('#$tag',
                               style: TextStyle(
-                                  color: Theme.of(context).colorScheme.surface,
+                                  color: theme.colorScheme.primary
+                                              .computeLuminance() >
+                                          0.25
+                                      ? Colors.black
+                                      : Colors.white,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 12)),
                           backgroundColor: theme.primaryColor,
                           deleteIconColor:
-                              Theme.of(context).colorScheme.surface,
+                              theme.colorScheme.primary.computeLuminance() >
+                                      0.25
+                                  ? Colors.black
+                                  : Colors.white,
                           onDeleted: () {
                             setState(() {
                               _selectedTags.remove(tag);
