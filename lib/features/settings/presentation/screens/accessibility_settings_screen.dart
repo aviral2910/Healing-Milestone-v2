@@ -80,29 +80,54 @@ class AccessibilitySettingsScreen extends ConsumerWidget {
             },
           ),
           const SizedBox(height: 32),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: theme.cardColor,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: theme.dividerColor),
+            Container(
+              decoration: BoxDecoration(
+                color: theme.cardColor,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: theme.dividerColor),
+              ),
+              child: Consumer(
+                builder: (context, ref, child) {
+                  final state = ref.watch(accessibilityProvider);
+                  return SwitchListTile(
+                    title: const Text('Show Reading Mode Floating Icon'),
+                    subtitle: const Text('Displays a draggable button when reading mode is active'),
+                    activeColor: theme.colorScheme.primary,
+                    value: state.showGreyscaleFloatingIcon,
+                    onChanged: (val) {
+                      ref.read(accessibilityProvider.notifier).toggleFloatingIcon(val);
+                    },
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  );
+                },
+              ),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Preview',
-                  style:
-                      theme.textTheme.titleSmall?.copyWith(color: Colors.grey),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'This is how your text will look throughout the app. Adjust the sliders above to find a comfortable reading size and contrast level.',
-                  style: theme.textTheme.bodyMedium,
-                ),
-              ],
-            ),
-          )
+            const SizedBox(height: 32),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: theme.cardColor,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: theme.dividerColor),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Preview',
+                    style:
+                        theme.textTheme.titleSmall?.copyWith(color: Colors.grey),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'This is how your text will look throughout the app. Adjust the sliders above to find a comfortable reading size and contrast level.',
+                    style: theme.textTheme.bodyMedium,
+                  ),
+                ],
+              ),
+            )
         ],
       ),
     );

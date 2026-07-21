@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'core/theme/theme_provider.dart';
 import 'core/theme/theme_palette.dart';
 import 'features/accessibility/data/accessibility_providers.dart';
+import 'features/accessibility/presentation/widgets/greyscale_floating_overlay.dart';
 
 // UAT Mode providers
 final uatModeProvider = StateProvider<bool>((ref) => false);
@@ -96,7 +97,7 @@ class HealingMilestonesApp extends ConsumerWidget {
             );
           }
 
-          return appContent;
+          return GreyscaleFloatingOverlay(child: appContent);
         },
       ),
     );
