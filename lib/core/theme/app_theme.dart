@@ -55,18 +55,42 @@ class AppTheme {
           letterSpacing: -1.0,
           height: 1.1,
         )),
-        bodyLarge: baseTextTheme.bodyLarge
-            ?.copyWith(color: palette.textPrimary, height: 1.6),
-        bodyMedium: baseTextTheme.bodyMedium
-            ?.copyWith(color: palette.textPrimary, height: 1.6),
-        bodySmall:
-            baseTextTheme.bodySmall?.copyWith(color: palette.textSecondary),
-        titleLarge: baseTextTheme.titleLarge?.copyWith(
+        bodyLarge: GoogleFonts.lora(
+          textStyle: TextStyle(
+            color: palette.textPrimary,
+            height: 1.7,
+            fontSize: 16,
+            letterSpacing: 0.2,
+          ),
+        ),
+        bodyMedium: GoogleFonts.lora(
+          textStyle: TextStyle(
+            color: palette.textPrimary,
+            height: 1.7,
+            fontSize: 14,
+            letterSpacing: 0.1,
+          ),
+        ),
+        bodySmall: GoogleFonts.lora(
+          textStyle: TextStyle(
+            color: palette.textSecondary,
+            height: 1.5,
+            fontSize: 12,
+          ),
+        ),
+        titleLarge: GoogleFonts.outfit(
+          textStyle: TextStyle(
             color: palette.textPrimary,
             fontWeight: FontWeight.w800,
-            letterSpacing: -0.5),
-        titleMedium: baseTextTheme.titleMedium
-            ?.copyWith(color: palette.textPrimary, fontWeight: FontWeight.w700),
+            letterSpacing: -0.5,
+          ),
+        ),
+        titleMedium: GoogleFonts.outfit(
+          textStyle: TextStyle(
+            color: palette.textPrimary,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
       ),
       cardTheme: CardThemeData(
         color: palette.surface,

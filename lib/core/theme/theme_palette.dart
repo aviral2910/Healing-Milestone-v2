@@ -148,9 +148,9 @@ class ThemePalette {
     name: 'Eye Care Dark',
     isDark: true,
     background: Color(0xFF1C1C1C), // Deep, dark gray
-    surface: Color(0xFF262626), 
+    surface: Color(0xFF262626),
     surfaceLight: Color(0xFF333333),
-    textPrimary: Color(0xFF999999), // Soft, mid-tone gray
+    textPrimary: Color.fromARGB(255, 171, 171, 171), // Soft, mid-tone gray
     textSecondary: Color(0xFF666666), // Darker grey
     accentPrimary: Color(0xFFE0E0E0), // Light grey for CTAs
     accentSecondary: Color(0xFF7A7A7A),

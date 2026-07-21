@@ -255,7 +255,6 @@ class _StoryCardState extends ConsumerState<StoryCard>
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: theme.textTheme.bodyMedium?.color
                               ?.withValues(alpha: 0.9),
-                          height: 1.5,
                         ),
                       ),
                     ] else ...[
@@ -281,7 +280,6 @@ class _StoryCardState extends ConsumerState<StoryCard>
                         child: Text(
                           widget.content,
                           style: theme.textTheme.bodyLarge?.copyWith(
-                            height: 1.6,
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
                           ),

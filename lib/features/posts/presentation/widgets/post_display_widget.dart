@@ -17,7 +17,6 @@ class PostDisplayWidget extends HookConsumerWidget {
         content,
         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
           fontSize: 16,
-          height: 1.5,
           fontWeight: FontWeight.w400,
         ),
       ),

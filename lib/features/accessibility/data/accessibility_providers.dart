@@ -1,4 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:healing_milestones/core/theme/theme_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+// To access sharedPreferencesProvider
 
 class AccessibilityState {
   final double textSizeFactor;
@@ -6,13 +9,13 @@ class AccessibilityState {
   final bool isGreyscaleMode;
 
   AccessibilityState({
-    this.textSizeFactor = 1.0, 
+    this.textSizeFactor = 1.0,
     this.textOpacity = 1.0,
     this.isGreyscaleMode = false,
   });
 
   AccessibilityState copyWith({
-    double? textSizeFactor, 
+    double? textSizeFactor,
     double? textOpacity,
     bool? isGreyscaleMode,
   }) {
@@ -25,7 +28,17 @@ class AccessibilityState {
 }
 
 class AccessibilityNotifier extends StateNotifier<AccessibilityState> {
-  AccessibilityNotifier() : super(AccessibilityState());
+  final SharedPreferences _prefs;
+  static const String _greyscaleKey = 'isGreyscaleMode';
+
+  AccessibilityNotifier(this._prefs) : super(AccessibilityState()) {
+    _loadState();
+  }
+
+  void _loadState() {
+    final isGreyscale = _prefs.getBool(_greyscaleKey) ?? false;
+    state = state.copyWith(isGreyscaleMode: isGreyscale);
+  }
 
   void updateTextSizeFactor(double factor) {
     state = state.copyWith(textSizeFactor: factor);
@@ -36,10 +49,14 @@ class AccessibilityNotifier extends StateNotifier<AccessibilityState> {
   }
 
   void toggleGreyscaleMode() {
-    state = state.copyWith(isGreyscaleMode: !state.isGreyscaleMode);
+    final newValue = !state.isGreyscaleMode;
+    state = state.copyWith(isGreyscaleMode: newValue);
+    _prefs.setBool(_greyscaleKey, newValue);
   }
 }
 
-final accessibilityProvider = StateNotifierProvider<AccessibilityNotifier, AccessibilityState>((ref) {
-  return AccessibilityNotifier();
+final accessibilityProvider =
+    StateNotifierProvider<AccessibilityNotifier, AccessibilityState>((ref) {
+  final prefs = ref.watch(sharedPreferencesProvider);
+  return AccessibilityNotifier(prefs);
 });
