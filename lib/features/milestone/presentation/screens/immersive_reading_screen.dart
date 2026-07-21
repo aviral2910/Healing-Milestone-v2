@@ -17,17 +17,24 @@ class ImmersiveReadingScreen extends StatefulWidget {
 
 class _ImmersiveReadingScreenState extends State<ImmersiveReadingScreen> {
   late ScrollController _scrollController;
+  double _initialScrollOffset = 0.0;
 
   @override
   void initState() {
     super.initState();
-    // If the text was scrolled offscreen, we start the scroll controller at that offset.
-    final scrollOffset = widget.initialDy < 0 ? -widget.initialDy : 0.0;
-    _scrollController = ScrollController(initialScrollOffset: scrollOffset);
+    _scrollController = ScrollController();
     
-    if (scrollOffset > 0) {
-      _jumpToOffset(scrollOffset);
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final safeAreaTop = MediaQuery.of(context).padding.top;
+        final topPadding = widget.initialDy > safeAreaTop ? widget.initialDy : safeAreaTop;
+        _initialScrollOffset = topPadding - widget.initialDy;
+        
+        if (_initialScrollOffset > 0) {
+          _jumpToOffset(_initialScrollOffset);
+        }
+      }
+    });
   }
 
   int _jumpRetries = 0;
@@ -56,29 +63,37 @@ class _ImmersiveReadingScreenState extends State<ImmersiveReadingScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    // Top padding if the text was lower on the screen than the top edge.
-    final topPadding = widget.initialDy > 0 ? widget.initialDy : 0.0;
+    final safeAreaTop = MediaQuery.of(context).padding.top;
+    
+    // The minimum padding at the top should be the safe area so text isn't hidden under the notch.
+    // But if they tapped it while it was lower than the safe area, we use that exact position.
+    final topPadding = widget.initialDy > safeAreaTop ? widget.initialDy : safeAreaTop;
 
     final screenHeight = MediaQuery.of(context).size.height;
-    final scrollOffset = widget.initialDy < 0 ? -widget.initialDy : 0.0;
+    // We calculate the minimum scroll offset needed to match the screen position
+    final requiredScrollOffset = topPadding - widget.initialDy;
 
     return PopScope(
       canPop: false,
       onPopInvoked: (didPop) {
         if (didPop) return;
-        Navigator.of(context).pop(_scrollController.offset);
+        final delta = _scrollController.hasClients ? _scrollController.offset - _initialScrollOffset : 0.0;
+        Navigator.of(context).pop(delta);
       },
       child: Scaffold(
         backgroundColor: theme.scaffoldBackgroundColor,
         body: GestureDetector(
-          onTap: () => Navigator.of(context).pop(_scrollController.offset),
+          onTap: () {
+            final delta = _scrollController.hasClients ? _scrollController.offset - _initialScrollOffset : 0.0;
+            Navigator.of(context).pop(delta);
+          },
           behavior: HitTestBehavior.opaque,
           child: SingleChildScrollView(
             controller: _scrollController,
             physics: const AlwaysScrollableScrollPhysics(),
             child: Container(
               constraints: BoxConstraints(
-                minHeight: screenHeight + scrollOffset,
+                minHeight: screenHeight + requiredScrollOffset,
               ),
               color: theme.colorScheme.surface,
               width: double.infinity,

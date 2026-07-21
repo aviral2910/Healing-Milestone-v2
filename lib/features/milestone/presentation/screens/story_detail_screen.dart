@@ -581,7 +581,7 @@ class StoryDetailScreen extends HookConsumerWidget {
                                   if (renderBox != null) {
                                     final position = renderBox.localToGlobal(Offset.zero);
                                     
-                                    final finalOffset = await Navigator.of(context).push<double>(
+                                    final delta = await Navigator.of(context).push<double>(
                                       PageRouteBuilder(
                                         opaque: false,
                                         pageBuilder: (context, animation, secondaryAnimation) =>
@@ -595,12 +595,8 @@ class StoryDetailScreen extends HookConsumerWidget {
                                       ),
                                     );
                                     
-                                    if (finalOffset != null) {
-                                      final initialOverlayOffset = position.dy < 0 ? -position.dy : 0.0;
-                                      final delta = finalOffset - initialOverlayOffset;
-                                      if (delta != 0) {
-                                        mainScrollController.jumpTo(mainScrollController.offset + delta);
-                                      }
+                                    if (delta != null && delta != 0) {
+                                      mainScrollController.jumpTo(mainScrollController.offset + delta);
                                     }
                                   }
                                 },
