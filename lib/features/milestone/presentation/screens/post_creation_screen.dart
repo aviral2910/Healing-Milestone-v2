@@ -946,10 +946,15 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                           fontWeight: FontWeight.w600,
                           letterSpacing: 1.2)),
                   const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 12.0,
-                    runSpacing: 12.0,
-                    children: allowedTypes.map((type) {
+                  Theme(
+                    data: Theme.of(context).copyWith(
+                      splashColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.1),
+                      highlightColor: Colors.transparent,
+                    ),
+                    child: Wrap(
+                      spacing: 12.0,
+                      runSpacing: 12.0,
+                      children: allowedTypes.map((type) {
                       final isSelected = _selectedType == type;
                       return ChoiceChip(
                         label: Text(
@@ -968,7 +973,8 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                         selected: isSelected,
                         selectedColor: theme.primaryColor,
                         backgroundColor:
-                            Theme.of(context).colorScheme.secondaryContainer,
+                            Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.08),
+                        surfaceTintColor: Colors.transparent,
                         padding: const EdgeInsets.symmetric(
                             horizontal: 12, vertical: 8),
                         shape: RoundedRectangleBorder(
@@ -978,7 +984,8 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                           if (selected) setState(() => _selectedType = type);
                         },
                       );
-                    }).toList(),
+                      }).toList(),
+                    ),
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 20),
@@ -995,7 +1002,8 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                               decoration: BoxDecoration(
                                   color: Theme.of(context)
                                       .colorScheme
-                                      .secondaryContainer,
+                                      .onSurface
+                                      .withValues(alpha: 0.08),
                                   borderRadius: BorderRadius.circular(10)),
                               child: Icon(Icons.visibility_off_outlined,
                                   color: Theme.of(context).colorScheme.onSurface,
