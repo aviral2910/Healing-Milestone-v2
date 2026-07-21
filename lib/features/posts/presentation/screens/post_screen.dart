@@ -1,6 +1,7 @@
 import 'package:healing_milestones/core/router/app_routes.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:healing_milestones/features/auth/data/auth_provider.dart';
 import 'package:healing_milestones/shared/widgets/story_card.dart';
@@ -107,7 +108,7 @@ class _SliverTagsDelegate extends SliverPersistentHeaderDelegate {
   }
 }
 
-class PostScreen extends ConsumerWidget {
+class PostScreen extends HookConsumerWidget {
   final ScrollController? scrollController;
   final bool isActiveTab;
   final VoidCallback? onSearchTapped;
@@ -128,7 +129,21 @@ class PostScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final storiesAsync = ref.watch(storiesStreamProvider);
+    final storiesAsync = ref.watch(paginatedStoriesProvider);
+    final isPaginating = ref.watch(paginatedStoriesProvider.notifier).isLoadingMore;
+    final hasMore = ref.watch(paginatedStoriesProvider.notifier).hasMore;
+
+    useEffect(() {
+      if (scrollController == null) return null;
+      void listener() {
+        if (scrollController!.position.pixels >= scrollController!.position.maxScrollExtent - 500) {
+          ref.read(paginatedStoriesProvider.notifier).fetchNextPage();
+        }
+      }
+      scrollController!.addListener(listener);
+      return () => scrollController!.removeListener(listener);
+    }, [scrollController]);
+
     final categories =
         []; // Replace with actual categories if needed, or keep empty
     final selectedTag = ref.watch(selectedTagProvider);
@@ -137,8 +152,13 @@ class PostScreen extends ConsumerWidget {
 
     return SafeArea(
       bottom: false,
-      child: AnimationLimiter(
-        child: CustomScrollView(
+      child: RefreshIndicator(
+        color: const Color(0xFFD4AF37),
+        onRefresh: () async {
+          await ref.read(paginatedStoriesProvider.notifier).refresh();
+        },
+        child: AnimationLimiter(
+          child: CustomScrollView(
           controller: scrollController,
           slivers: [
             CommonSliverAppBar(isHeroEnabled: isActiveTab),
@@ -299,10 +319,32 @@ class PostScreen extends ConsumerWidget {
                           ),
                         ),
                       ),
-
+                    if (isPaginating)
+                      const SliverToBoxAdapter(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(vertical: 32.0),
+                          child: Center(
+                            child: CircularProgressIndicator(color: Color(0xFFD4AF37)),
+                          ),
+                        ),
+                      ),
+                    if (!hasMore && allStories.isNotEmpty)
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 32.0),
+                          child: Center(
+                            child: Text(
+                              "You've reached the end!",
+                              style: TextStyle(
+                                color: Theme.of(context).disabledColor,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                     const SliverToBoxAdapter(
-                      child:
-                          SizedBox(height: 100), // bottom padding for scrolling
+                      child: SizedBox(height: 100), // Bottom padding
                     ),
                   ],
                 );
@@ -310,6 +352,7 @@ class PostScreen extends ConsumerWidget {
             ),
           ],
         ),
+      ),
       ),
     );
   }

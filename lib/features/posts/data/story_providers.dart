@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:healing_milestones/core/models/story_model.dart';
 import 'package:healing_milestones/core/repositories/firebase_storage_repository.dart';
@@ -48,4 +49,69 @@ final commentRepositoryProvider = Provider<CommentRepository>((ref) {
 
 final storyCommentsProvider = StreamProvider.family<List<CommentModel>, String>((ref, storyId) {
   return ref.watch(commentRepositoryProvider).getComments(storyId);
+});
+
+class PaginatedStoriesNotifier extends AsyncNotifier<List<StoryModel>> {
+  dynamic _lastDoc;
+  bool hasMore = true;
+  bool isLoadingMore = false;
+
+  @override
+  Future<List<StoryModel>> build() async {
+    debugPrint('PaginatedStoriesNotifier: build() initialized');
+    _lastDoc = null;
+    hasMore = true;
+    isLoadingMore = false;
+    return _fetchPage();
+  }
+
+  Future<List<StoryModel>> _fetchPage() async {
+    if (!hasMore) {
+      debugPrint('PaginatedStoriesNotifier: no more stories to fetch');
+      return state.value ?? [];
+    }
+    
+    debugPrint('PaginatedStoriesNotifier: fetching page... (startAfter: ${_lastDoc != null ? "yes" : "null"})');
+    final repo = ref.read(storyRepositoryProvider);
+    final result = await repo.getPaginatedStories(startAfter: _lastDoc, limit: 5);
+    
+    _lastDoc = result.lastDoc;
+    debugPrint('PaginatedStoriesNotifier: fetched ${result.stories.length} stories');
+    if (result.stories.length < 5) {
+      hasMore = false;
+      debugPrint('PaginatedStoriesNotifier: reached end of feed');
+    }
+    
+    return result.stories;
+  }
+
+  Future<void> fetchNextPage() async {
+    if (isLoadingMore || !hasMore || state.isLoading) {
+      debugPrint('PaginatedStoriesNotifier: fetchNextPage skipped (isLoadingMore: $isLoadingMore, hasMore: $hasMore, isLoading: ${state.isLoading})');
+      return;
+    }
+    
+    debugPrint('PaginatedStoriesNotifier: fetchNextPage called');
+    isLoadingMore = true;
+    try {
+      final nextStories = await _fetchPage();
+      state = AsyncData([...state.value ?? [], ...nextStories]);
+    } catch (e) {
+      print('Error fetching next page: $e');
+    } finally {
+      isLoadingMore = false;
+    }
+  }
+
+  Future<void> refresh() async {
+    _lastDoc = null;
+    hasMore = true;
+    isLoadingMore = false;
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() => _fetchPage());
+  }
+}
+
+final paginatedStoriesProvider = AsyncNotifierProvider<PaginatedStoriesNotifier, List<StoryModel>>(() {
+  return PaginatedStoriesNotifier();
 });

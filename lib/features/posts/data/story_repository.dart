@@ -2,6 +2,7 @@ import 'package:healing_milestones/core/models/story_model.dart';
 
 abstract class StoryRepository {
   Stream<List<StoryModel>> getStories();
+  Future<({List<StoryModel> stories, dynamic lastDoc})> getPaginatedStories({dynamic startAfter, int limit = 5});
   Stream<List<StoryModel>> getUserStories(String userId);
   Stream<List<StoryModel>> getStoriesTaggedWithUser(String userId);
   Future<List<StoryModel>> getStoriesByHashtag(String hashtag);

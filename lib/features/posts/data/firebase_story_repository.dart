@@ -17,6 +17,20 @@ class FirebaseStoryRepository implements StoryRepository {
   }
 
   @override
+  Future<({List<StoryModel> stories, dynamic lastDoc})> getPaginatedStories({dynamic startAfter, int limit = 5}) async {
+    Query query = _stories.orderBy('publishedAt', descending: true).limit(limit);
+    if (startAfter != null) {
+      query = query.startAfterDocument(startAfter as DocumentSnapshot);
+    }
+    
+    final snapshot = await query.get();
+    final stories = snapshot.docs.map((doc) => StoryModel.fromMap(doc.data() as Map<String, dynamic>, doc.id)).toList();
+    final lastDoc = snapshot.docs.isNotEmpty ? snapshot.docs.last : null;
+    
+    return (stories: stories, lastDoc: lastDoc);
+  }
+
+  @override
   Stream<List<StoryModel>> getUserStories(String userId) {
     return _stories.where('authorId', isEqualTo: userId).snapshots().map((snapshot) {
       final stories = snapshot.docs.map((doc) => StoryModel.fromMap(doc.data() as Map<String, dynamic>, doc.id)).toList();
