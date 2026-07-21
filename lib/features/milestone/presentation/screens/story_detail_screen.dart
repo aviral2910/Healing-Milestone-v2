@@ -192,10 +192,17 @@ class StoryDetailScreen extends ConsumerWidget {
                       actions: [
                         Consumer(
                           builder: (context, ref, child) {
-                            final isGreyscale = ref.watch(accessibilityProvider).isGreyscaleMode;
+                            final accessibilityState = ref.watch(accessibilityProvider);
+                            final isGreyscale = accessibilityState.isGreyscaleMode;
+                            
+                            // Only show in AppBar if the floating icon is disabled
+                            if (accessibilityState.showGreyscaleFloatingIcon) {
+                              return const SizedBox.shrink();
+                            }
+                            
                             return IconButton(
                               icon: Icon(
-                                isGreyscale ? Icons.visibility_off : Icons.visibility,
+                                isGreyscale ? Icons.auto_stories_rounded : Icons.auto_stories_outlined,
                                 color: isGreyscale ? theme.colorScheme.primary : theme.iconTheme.color,
                               ),
                               tooltip: 'Toggle Reading Mode (Greyscale)',

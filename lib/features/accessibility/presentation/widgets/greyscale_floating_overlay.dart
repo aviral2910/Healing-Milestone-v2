@@ -27,7 +27,7 @@ class _GreyscaleFloatingOverlayState
   late Animation<double> _pulseAnimation;
 
   final double _buttonSize = 36.0;
-  final double _closeZoneRadius = 65.0;
+  final double _closeZoneRadius = 60.0;
 
   @override
   void initState() {
