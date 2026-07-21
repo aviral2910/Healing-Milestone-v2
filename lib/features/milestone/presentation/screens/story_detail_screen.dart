@@ -2,6 +2,7 @@ import 'package:healing_milestones/core/router/app_routes.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:shimmer/shimmer.dart';
 import 'immersive_reading_screen.dart';
 import '../../../../core/models/media_attachment.dart';
 import '../../../../core/models/story_model.dart';
@@ -393,14 +394,31 @@ class StoryDetailScreen extends HookConsumerWidget {
                                             width: 1.5,
                                           ),
                                         ),
-                                        child: CircleAvatar(
-                                          radius: 22,
-                                          backgroundColor:
-                                              theme.colorScheme.surface,
-                                          backgroundImage: NetworkImage(userAsync
-                                                  .valueOrNull
-                                                  ?.profilePicture ??
-                                              'https://api.dicebear.com/7.x/avataaars/png?seed=${story.authorId}'),
+                                        child: ClipOval(
+                                          child: Image.network(
+                                            userAsync.valueOrNull?.profilePicture ??
+                                                'https://api.dicebear.com/7.x/avataaars/png?seed=${story.authorId}',
+                                            width: 44,
+                                            height: 44,
+                                            fit: BoxFit.cover,
+                                            frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+                                              if (wasSynchronouslyLoaded || frame != null) return child;
+                                              return Shimmer.fromColors(
+                                                baseColor: theme.colorScheme.primary.withValues(alpha: 0.1),
+                                                highlightColor: theme.colorScheme.primary.withValues(alpha: 0.25),
+                                                child: Container(
+                                                  width: 44,
+                                                  height: 44,
+                                                  color: Colors.white,
+                                                ),
+                                              );
+                                            },
+                                            errorBuilder: (context, error, stackTrace) => CircleAvatar(
+                                              radius: 22,
+                                              backgroundColor: theme.scaffoldBackgroundColor,
+                                              child: Icon(Icons.person, color: theme.colorScheme.onSurface),
+                                            ),
+                                          ),
                                         ),
                                       ),
                                       const SizedBox(width: 16),
@@ -878,10 +896,31 @@ class _TaggedPeopleList extends ConsumerWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        CircleAvatar(
-                          radius: 10,
-                          backgroundImage: NetworkImage(user.profilePicture ??
-                              'https://api.dicebear.com/7.x/avataaars/png?seed=${user.userId}'),
+                        ClipOval(
+                          child: Image.network(
+                            user.profilePicture ??
+                                'https://api.dicebear.com/7.x/avataaars/png?seed=${user.userId}',
+                            width: 20,
+                            height: 20,
+                            fit: BoxFit.cover,
+                            frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+                              if (wasSynchronouslyLoaded || frame != null) return child;
+                              return Shimmer.fromColors(
+                                baseColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                                highlightColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.25),
+                                child: Container(
+                                  width: 20,
+                                  height: 20,
+                                  color: Colors.white,
+                                ),
+                              );
+                            },
+                            errorBuilder: (context, error, stackTrace) => CircleAvatar(
+                              radius: 10,
+                              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                              child: Icon(Icons.person, size: 12, color: Theme.of(context).colorScheme.onSurface),
+                            ),
+                          ),
                         ),
                         const SizedBox(width: 8),
                         Text(

@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../../../core/models/media_attachment.dart';
+import 'package:shimmer/shimmer.dart';
 
 class MilestoneMediaGallery extends StatelessWidget {
   final List<MediaAttachment> media;
@@ -57,6 +58,14 @@ class MilestoneMediaGallery extends StatelessWidget {
                     Image.network(
                       attachment.url,
                       fit: BoxFit.cover,
+                      frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+                        if (wasSynchronouslyLoaded || frame != null) return child;
+                        return Shimmer.fromColors(
+                          baseColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                          highlightColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.25),
+                          child: Container(color: Colors.white),
+                        );
+                      },
                       errorBuilder: (context, error, stackTrace) => Container(
                         color: const Color(0xFF1E1E1E),
                         child: const Center(
@@ -111,6 +120,14 @@ class FullScreenMediaViewer extends StatelessWidget {
                 child: Image.network(
                   media.url,
                   fit: BoxFit.contain,
+                  frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+                    if (wasSynchronouslyLoaded || frame != null) return child;
+                    return Shimmer.fromColors(
+                      baseColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                      highlightColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.25),
+                      child: Container(color: Colors.white),
+                    );
+                  },
                   errorBuilder: (context, error, stackTrace) => const Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
