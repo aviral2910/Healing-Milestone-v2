@@ -27,7 +27,7 @@ class _GreyscaleFloatingOverlayState
   late Animation<double> _pulseAnimation;
 
   final double _buttonSize = 36.0;
-  final double _closeZoneRadius = 52.0;
+  final double _closeZoneRadius = 65.0;
 
   @override
   void initState() {
@@ -211,42 +211,48 @@ class _GreyscaleFloatingOverlayState
               _pulseController.stop();
               _pulseController.value = 0.0;
             },
-            child: SafeArea(
-              left: false,
-              right: false,
-              child: Container(
-                width: _buttonSize,
-                height: _buttonSize,
-                decoration: BoxDecoration(
-                  color: accessibilityState.isGreyscaleMode
-                      ? Theme.of(context).colorScheme.primary
-                      : Theme.of(context).cardColor,
-                  shape: BoxShape.circle,
-                  border: Border.all(
+            child: AnimatedOpacity(
+              duration: const Duration(milliseconds: 200),
+              opacity: _isDragging ? 1.0 : 0.65,
+              child: SafeArea(
+                left: false,
+                right: false,
+                child: Container(
+                  width: _buttonSize,
+                  height: _buttonSize,
+                  decoration: BoxDecoration(
                     color: accessibilityState.isGreyscaleMode
-                        ? Colors.transparent
-                        : Theme.of(context)
-                            .colorScheme
-                            .primary
-                            .withOpacity(0.5),
-                    width: 2,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
-                      blurRadius: 12,
-                      offset: const Offset(0, 6),
+                        ? Colors.grey[900]
+                        : Theme.of(context).cardColor,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: accessibilityState.isGreyscaleMode
+                          ? Colors.grey[700]!
+                          : Theme.of(context)
+                              .colorScheme
+                              .primary
+                              .withOpacity(0.5),
+                      width: 2,
                     ),
-                  ],
-                ),
-                child: Icon(
-                  accessibilityState.isGreyscaleMode
-                      ? Icons.auto_stories_rounded
-                      : Icons.auto_stories_outlined,
-                  color: accessibilityState.isGreyscaleMode
-                      ? Colors.black
-                      : Theme.of(context).colorScheme.primary,
-                  size: 22,
+                    boxShadow: _isDragging
+                        ? [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.3),
+                              blurRadius: 12,
+                              offset: const Offset(0, 6),
+                            ),
+                          ]
+                        : null,
+                  ),
+                  child: Icon(
+                    accessibilityState.isGreyscaleMode
+                        ? Icons.auto_stories_rounded
+                        : Icons.auto_stories_outlined,
+                    color: accessibilityState.isGreyscaleMode
+                        ? Colors.grey[300]
+                        : Theme.of(context).colorScheme.primary,
+                    size: 22,
+                  ),
                 ),
               ),
             ),
