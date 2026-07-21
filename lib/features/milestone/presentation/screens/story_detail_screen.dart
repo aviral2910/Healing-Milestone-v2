@@ -1,7 +1,8 @@
 import 'package:healing_milestones/core/router/app_routes.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'immersive_reading_screen.dart';
 import '../../../../core/models/media_attachment.dart';
 import '../../../../core/models/story_model.dart';
 import '../../../../core/models/user_model.dart';
@@ -18,8 +19,9 @@ import '../../../posts/data/story_providers.dart';
 import '../../../../core/data/dummy_data.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 
-class StoryDetailScreen extends ConsumerWidget {
+class StoryDetailScreen extends HookConsumerWidget {
   final String milestoneId;
 
   const StoryDetailScreen({Key? key, required this.milestoneId})
@@ -135,6 +137,7 @@ class StoryDetailScreen extends ConsumerWidget {
     final storyAsync = ref.watch(storyByIdProvider(milestoneId));
     final currentUser = ref.watch(currentUserProvider);
     final theme = Theme.of(context);
+    final mainScrollController = useScrollController();
 
     return storyAsync.when(
       loading: () => const Scaffold(
@@ -179,6 +182,7 @@ class StoryDetailScreen extends ConsumerWidget {
             children: [
               AnimationLimiter(
                 child: CustomScrollView(
+                  controller: mainScrollController,
                   slivers: [
                     SliverAppBar(
                       pinned: true,
@@ -569,16 +573,50 @@ class StoryDetailScreen extends ConsumerWidget {
 
                           // The Immutable Post Widget Template - NO DIVIDERS
                           // Encased in a beautiful midnight matte if it's minimal
-                          Container(
-                            color: theme.colorScheme.surface,
-                            width: double.infinity,
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 20.0, horizontal: 8.0),
-                              child: PostDisplayWidget(
-                                content: story.description,
-                              ),
-                            ),
+                          Builder(
+                            builder: (context) {
+                              return GestureDetector(
+                                onTap: () async {
+                                  final renderBox = context.findRenderObject() as RenderBox?;
+                                  if (renderBox != null) {
+                                    final position = renderBox.localToGlobal(Offset.zero);
+                                    
+                                    final finalOffset = await Navigator.of(context).push<double>(
+                                      PageRouteBuilder(
+                                        opaque: false,
+                                        pageBuilder: (context, animation, secondaryAnimation) =>
+                                            FadeTransition(
+                                          opacity: animation,
+                                          child: ImmersiveReadingScreen(
+                                            content: story.description,
+                                            initialDy: position.dy,
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                    
+                                    if (finalOffset != null) {
+                                      final initialOverlayOffset = position.dy < 0 ? -position.dy : 0.0;
+                                      final delta = finalOffset - initialOverlayOffset;
+                                      if (delta != 0) {
+                                        mainScrollController.jumpTo(mainScrollController.offset + delta);
+                                      }
+                                    }
+                                  }
+                                },
+                                child: Container(
+                                  color: theme.colorScheme.surface,
+                                  width: double.infinity,
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 20.0, horizontal: 8.0),
+                                    child: PostDisplayWidget(
+                                      content: story.description,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }
                           ),
 
                           const SizedBox(height: 16),
