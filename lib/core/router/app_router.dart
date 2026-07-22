@@ -18,6 +18,7 @@ import '../../features/auth/presentation/screens/professional_onboarding_screen.
 import '../../features/auth/presentation/screens/phone_auth_screen.dart';
 import '../../features/auth/presentation/screens/otp_verification_screen.dart';
 import '../../features/auth/data/auth_provider.dart';
+import '../../features/splash/presentation/screens/splash_screen.dart';
 import '../../core/models/user_model.dart';
 import '../../core/models/story_model.dart';
 import 'app_routes.dart';
@@ -42,8 +43,12 @@ final routerProvider = Provider<GoRouter>((ref) {
 
   return GoRouter(
     refreshListenable: notifier,
-    initialLocation: AppRoutes.home,
+    initialLocation: AppRoutes.splash,
     redirect: (context, state) {
+      if (state.matchedLocation == AppRoutes.splash) {
+        return null;
+      }
+
       final authState = ref.read(authProvider).valueOrNull;
       final isAuth = authState?.status == AuthStatus.authenticated;
       final needsOnboarding = authState?.status == AuthStatus.needsOnboarding;
@@ -81,6 +86,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
+      GoRoute(
+        path: AppRoutes.splash,
+        builder: (context, state) => const SplashScreen(),
+      ),
       GoRoute(
         path: AppRoutes.home,
         builder: (context, state) => const HomeScreen(),
