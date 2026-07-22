@@ -62,8 +62,8 @@ class ImmersiveReadingEdgePanel extends ConsumerWidget {
               onTap: onToggle,
               onPanUpdate: onPanUpdate,
               child: Container(
-                width: 16,
-                height: 48,
+                width: 24,
+                height: 56,
                 decoration: BoxDecoration(
                   color: panelBgColor,
                   border: Border(

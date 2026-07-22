@@ -150,6 +150,11 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
         }
       }
 
+      int wordCount =
+          contentText.isEmpty ? 0 : contentText.split(RegExp(r'\s+')).length;
+      int calculatedReadingTime = (wordCount / 200).ceil();
+      if (calculatedReadingTime < 1) calculatedReadingTime = 1;
+
       final story = StoryModel(
         storyId: widget.existingStory?.storyId ?? const Uuid().v4(),
         heading: _titleController.text.trim(),
@@ -161,7 +166,7 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
         mainImage: imageUrl,
         authorId: user.userId,
         qrId: widget.existingStory?.qrId ?? '',
-        readingTime: widget.existingStory?.readingTime ?? 3,
+        readingTime: calculatedReadingTime,
         verifierId: widget.existingStory?.verifierId ?? '',
         displayAuthorName: !_isAnonymous,
         authorRole: user.role,
