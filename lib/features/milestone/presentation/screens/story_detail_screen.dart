@@ -1,5 +1,6 @@
 import 'package:healing_milestones/core/router/app_routes.dart';
 import 'dart:ui';
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shimmer/shimmer.dart';
@@ -502,9 +503,15 @@ class StoryDetailScreen extends HookConsumerWidget {
                                   if (renderBox != null) {
                                     final position = renderBox.localToGlobal(Offset.zero);
                                     
+                                    // Instantly request the OS to hide the status bar
+                                    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.bottom]);
+                                    
+                                    if (!context.mounted) return;
+                                    
                                     final delta = await Navigator.of(context).push<double>(
                                       PageRouteBuilder(
                                         opaque: false,
+                                        transitionDuration: const Duration(milliseconds: 300),
                                         pageBuilder: (context, animation, secondaryAnimation) =>
                                             FadeTransition(
                                           opacity: animation,
@@ -515,6 +522,9 @@ class StoryDetailScreen extends HookConsumerWidget {
                                         ),
                                       ),
                                     );
+                                    
+                                    // Restore status bar
+                                    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
                                     
                                     if (delta != null && delta != 0) {
                                       mainScrollController.jumpTo(mainScrollController.offset + delta);
