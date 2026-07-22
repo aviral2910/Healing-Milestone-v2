@@ -129,9 +129,9 @@ class _AscensionOverlayScreenState extends State<AscensionOverlayScreen>
   late Animation<double> _sweepAnimation;
   late Animation<double> _bottomLeavesAnimation;
   late Animation<double> _topLeafAnimation;
-  
+
   bool _isClosing = false;
-  
+
   void _closeScreen() {
     if (!_isClosing && mounted) {
       _isClosing = true;
@@ -316,10 +316,18 @@ class _AscensionLogoPainter extends CustomPainter {
   Path _buildLeaf(Offset center, double size, double rotation, double scale) {
     final Path path = Path();
     path.moveTo(center.dx, center.dy - (size * 0.5 * scale));
-    path.quadraticBezierTo(center.dx + (size * 0.2 * scale), center.dy - (size * 0.1 * scale), center.dx, center.dy + (size * 0.5 * scale));
-    path.quadraticBezierTo(center.dx - (size * 0.2 * scale), center.dy - (size * 0.1 * scale), center.dx, center.dy - (size * 0.5 * scale));
+    path.quadraticBezierTo(
+        center.dx + (size * 0.2 * scale),
+        center.dy - (size * 0.1 * scale),
+        center.dx,
+        center.dy + (size * 0.5 * scale));
+    path.quadraticBezierTo(
+        center.dx - (size * 0.2 * scale),
+        center.dy - (size * 0.1 * scale),
+        center.dx,
+        center.dy - (size * 0.5 * scale));
     path.close();
-    
+
     final Matrix4 matrix = Matrix4.identity()
       ..translate(center.dx, center.dy)
       ..rotateZ(rotation)
@@ -375,28 +383,42 @@ class _AscensionLogoPainter extends CustomPainter {
 
     if (bottomLeavesProgress > 0) {
       final double currentScale = bottomLeavesProgress * breathScale;
-      cutout.addPath(_buildLeaf(midLeafCenter, leafSize, -0.392 - swayAngle, currentScale), Offset.zero);
-      cutout.addPath(_buildLeaf(bottomLeafCenter, leafSize, 0.392 + (swayAngle * 1.5), currentScale), Offset.zero);
+      cutout.addPath(
+          _buildLeaf(midLeafCenter, leafSize, -0.392 - swayAngle, currentScale),
+          Offset.zero);
+      cutout.addPath(
+          _buildLeaf(bottomLeafCenter, leafSize, 0.392 + (swayAngle * 1.5),
+              currentScale),
+          Offset.zero);
     }
 
     if (topLeafProgress > 0) {
       final double currentScale = topLeafProgress * breathScale;
-      cutout.addPath(_buildLeaf(topLeafCenter, leafSize, 0 + swayAngle, currentScale), Offset.zero);
+      cutout.addPath(
+          _buildLeaf(topLeafCenter, leafSize, 0 + swayAngle, currentScale),
+          Offset.zero);
     }
 
     final Path rawSolidShape =
         Path.combine(PathOperation.difference, hull, cutout);
 
-    final Path oldBottomRight = Path()..addRect(const Rect.fromLTRB(54, 68, 100, 100));
-    final Path topPieceOnly = Path.combine(PathOperation.difference, rawSolidShape, oldBottomRight);
-    
-    final Path newBottomRight = Path()..addRRect(RRect.fromLTRBAndCorners(
-      54, 68, 95, 100,
-      topLeft: const Radius.circular(10),
-      topRight: const Radius.circular(10),
-    ));
-    
-    final Path solidShape = Path.combine(PathOperation.union, topPieceOnly, newBottomRight);
+    final Path oldBottomRight = Path()
+      ..addRect(const Rect.fromLTRB(54, 68, 100, 100));
+    final Path topPieceOnly =
+        Path.combine(PathOperation.difference, rawSolidShape, oldBottomRight);
+
+    final Path newBottomRight = Path()
+      ..addRRect(RRect.fromLTRBAndCorners(
+        54,
+        68,
+        95,
+        100,
+        topLeft: const Radius.circular(10),
+        topRight: const Radius.circular(10),
+      ));
+
+    final Path solidShape =
+        Path.combine(PathOperation.union, topPieceOnly, newBottomRight);
 
     final Paint fillPaint = Paint()
       ..color = logoColor
@@ -525,10 +547,13 @@ class HealingMilestonesStaticLogoWidget extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<HealingMilestonesStaticLogoWidget> createState() => _HealingMilestonesStaticLogoWidgetState();
+  State<HealingMilestonesStaticLogoWidget> createState() =>
+      _HealingMilestonesStaticLogoWidgetState();
 }
 
-class _HealingMilestonesStaticLogoWidgetState extends State<HealingMilestonesStaticLogoWidget> with SingleTickerProviderStateMixin {
+class _HealingMilestonesStaticLogoWidgetState
+    extends State<HealingMilestonesStaticLogoWidget>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
   @override
@@ -567,7 +592,8 @@ class _HealingMilestonesStaticLogoWidgetState extends State<HealingMilestonesSta
             animation: _controller,
             builder: (context, child) {
               return CustomPaint(
-                painter: _LogoMarkPainter(effectiveLogoColor, _controller.value),
+                painter:
+                    _LogoMarkPainter(effectiveLogoColor, _controller.value),
               );
             },
           ),
@@ -617,10 +643,18 @@ class _LogoMarkPainter extends CustomPainter {
   Path _buildLeaf(Offset center, double size, double rotation, double scale) {
     final Path path = Path();
     path.moveTo(center.dx, center.dy - (size * 0.5 * scale));
-    path.quadraticBezierTo(center.dx + (size * 0.2 * scale), center.dy - (size * 0.1 * scale), center.dx, center.dy + (size * 0.5 * scale));
-    path.quadraticBezierTo(center.dx - (size * 0.2 * scale), center.dy - (size * 0.1 * scale), center.dx, center.dy - (size * 0.5 * scale));
+    path.quadraticBezierTo(
+        center.dx + (size * 0.2 * scale),
+        center.dy - (size * 0.1 * scale),
+        center.dx,
+        center.dy + (size * 0.5 * scale));
+    path.quadraticBezierTo(
+        center.dx - (size * 0.2 * scale),
+        center.dy - (size * 0.1 * scale),
+        center.dx,
+        center.dy - (size * 0.5 * scale));
     path.close();
-    
+
     final Matrix4 matrix = Matrix4.identity()
       ..translate(center.dx, center.dy)
       ..rotateZ(rotation)
@@ -686,9 +720,16 @@ class _LogoMarkPainter extends CustomPainter {
     final breathScale = 1.0 + (animationValue * 0.15); // Pulse up to 15% larger
     final swayAngle = (animationValue - 0.5) * 0.15; // Rotate back and forth
 
-    cutout.addPath(_buildLeaf(topLeafCenter, leafSize, 0 + swayAngle, breathScale), Offset.zero);
-    cutout.addPath(_buildLeaf(midLeafCenter, leafSize, -0.392 - swayAngle, breathScale), Offset.zero); // -pi/8 approx -0.392
-    cutout.addPath(_buildLeaf(bottomLeafCenter, leafSize, 0.392 + (swayAngle * 1.5), breathScale), Offset.zero);
+    cutout.addPath(
+        _buildLeaf(topLeafCenter, leafSize, 0 + swayAngle, breathScale),
+        Offset.zero);
+    cutout.addPath(
+        _buildLeaf(midLeafCenter, leafSize, -0.392 - swayAngle, breathScale),
+        Offset.zero); // -pi/8 approx -0.392
+    cutout.addPath(
+        _buildLeaf(
+            bottomLeafCenter, leafSize, 0.392 + (swayAngle * 1.5), breathScale),
+        Offset.zero);
 
     final Path rawSolidShape = Path.combine(
       PathOperation.difference,
@@ -696,16 +737,23 @@ class _LogoMarkPainter extends CustomPainter {
       cutout,
     );
 
-    final Path oldBottomRight = Path()..addRect(const Rect.fromLTRB(54, 68, 100, 100));
-    final Path topPieceOnly = Path.combine(PathOperation.difference, rawSolidShape, oldBottomRight);
-    
-    final Path newBottomRight = Path()..addRRect(RRect.fromLTRBAndCorners(
-      54, 68, 95, 100,
-      topLeft: const Radius.circular(10),
-      topRight: const Radius.circular(10),
-    ));
-    
-    final Path finalLogoPath = Path.combine(PathOperation.union, topPieceOnly, newBottomRight);
+    final Path oldBottomRight = Path()
+      ..addRect(const Rect.fromLTRB(54, 68, 100, 100));
+    final Path topPieceOnly =
+        Path.combine(PathOperation.difference, rawSolidShape, oldBottomRight);
+
+    final Path newBottomRight = Path()
+      ..addRRect(RRect.fromLTRBAndCorners(
+        54,
+        68,
+        95,
+        100,
+        topLeft: const Radius.circular(10),
+        topRight: const Radius.circular(10),
+      ));
+
+    final Path finalLogoPath =
+        Path.combine(PathOperation.union, topPieceOnly, newBottomRight);
 
     canvas.drawPath(finalLogoPath, paint);
     canvas.restore();
