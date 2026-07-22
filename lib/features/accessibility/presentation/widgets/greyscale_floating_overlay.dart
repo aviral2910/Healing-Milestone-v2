@@ -54,16 +54,27 @@ class _GreyscaleFloatingOverlayState
     final isShowingNow = accessibilityState.showGreyscaleFloatingIcon;
 
     if (_wasShowing != null && isShowingNow && !_wasShowing!) {
-      // It was just re-triggered during the session. Reset position to right side, top 1/4 of height.
+      // It was just re-triggered during the session.
+      // Animate it popping out of the edge panel.
       final screenSize = MediaQuery.of(context).size;
-      _position = Offset(
+      
+      // Start position: Right edge, middle of screen (where the edge panel handle is)
+      _position = Offset(screenSize.width - 10.0, screenSize.height / 2);
+
+      // Final target position
+      final targetPosition = Offset(
           screenSize.width - _buttonSize - 16.0, screenSize.height * 0.25);
 
-      // Save this new default position
+      // Animate to target position in the next frame
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        ref
-            .read(accessibilityProvider.notifier)
-            .updateFloatingIconPosition(_position!.dx, _position!.dy);
+        if (mounted) {
+          setState(() {
+            _position = targetPosition;
+          });
+          ref
+              .read(accessibilityProvider.notifier)
+              .updateFloatingIconPosition(targetPosition.dx, targetPosition.dy);
+        }
       });
     }
     _wasShowing = isShowingNow;

@@ -811,16 +811,19 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                           ),
                           label: Text('@${u.username ?? u.displayName}',
                               style: TextStyle(
-                                  color:
-                                      Theme.of(context).colorScheme.onSurface,
+                                  color: theme.colorScheme.primary
+                                              .computeLuminance() >
+                                          0.25
+                                      ? Colors.black
+                                      : Colors.white,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 12)),
-                          backgroundColor:
-                              Theme.of(context).colorScheme.secondaryContainer,
-                          deleteIconColor: Theme.of(context)
-                              .colorScheme
-                              .onSurface
-                              .withValues(alpha: 0.7),
+                          backgroundColor: theme.primaryColor,
+                          deleteIconColor:
+                              theme.colorScheme.primary.computeLuminance() >
+                                      0.25
+                                  ? Colors.black
+                                  : Colors.white,
                           onDeleted: () {
                             setState(() {
                               _selectedUsers.removeWhere(
@@ -948,42 +951,48 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                   const SizedBox(height: 12),
                   Theme(
                     data: Theme.of(context).copyWith(
-                      splashColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.1),
+                      splashColor: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.1),
                       highlightColor: Colors.transparent,
                     ),
                     child: Wrap(
                       spacing: 12.0,
                       runSpacing: 12.0,
                       children: allowedTypes.map((type) {
-                      final isSelected = _selectedType == type;
-                      return ChoiceChip(
-                        label: Text(
-                          type.name.toUpperCase(),
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                            color: isSelected
-                                ? Colors.black
-                                : Theme.of(context)
-                                    .colorScheme
-                                    .onSurface
-                                    .withValues(alpha: 0.7),
+                        final isSelected = _selectedType == type;
+                        return ChoiceChip(
+                          label: Text(
+                            type.name.toUpperCase(),
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: isSelected
+                                  ? Colors.black
+                                  : Theme.of(context)
+                                      .colorScheme
+                                      .onSurface
+                                      .withValues(alpha: 0.7),
+                            ),
                           ),
-                        ),
-                        selected: isSelected,
-                        selectedColor: theme.primaryColor,
-                        backgroundColor:
-                            Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.08),
-                        surfaceTintColor: Colors.transparent,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 8),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                            side: const BorderSide(color: Colors.transparent)),
-                        onSelected: (selected) {
-                          if (selected) setState(() => _selectedType = type);
-                        },
-                      );
+                          selected: isSelected,
+                          selectedColor: theme.primaryColor,
+                          backgroundColor: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.08),
+                          surfaceTintColor: Colors.transparent,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              side:
+                                  const BorderSide(color: Colors.transparent)),
+                          onSelected: (selected) {
+                            if (selected) setState(() => _selectedType = type);
+                          },
+                        );
                       }).toList(),
                     ),
                   ),
@@ -1006,7 +1015,8 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                                       .withValues(alpha: 0.08),
                                   borderRadius: BorderRadius.circular(10)),
                               child: Icon(Icons.visibility_off_outlined,
-                                  color: Theme.of(context).colorScheme.onSurface,
+                                  color:
+                                      Theme.of(context).colorScheme.onSurface,
                                   size: 20),
                             ),
                             const SizedBox(width: 16),

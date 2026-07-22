@@ -40,47 +40,56 @@ class ImmersiveReadingEdgePanel extends ConsumerWidget {
         : theme.colorScheme.primary.withValues(alpha: 0.3);
 
     const panelWidth = 120.0;
-    const panelHeight = 280.0;
+    final showReadingButton =
+        !ref.watch(accessibilityProvider).showGreyscaleFloatingIcon;
+    final panelHeight = showReadingButton ? 350.0 : 280.0;
 
     return AnimatedPositioned(
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeOutCubic,
       right: isEdgePanelOpen ? 0 : -panelWidth,
-      top: (screenHeight - panelHeight) / 2,
+      top: (screenHeight - 280.0) /
+          2, // Anchor top position based on standard height
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Handle Tab
-          GestureDetector(
-            onTap: onToggle,
-            onPanUpdate: onPanUpdate,
-            child: Container(
-              width: 16,
-              height: 48,
-              decoration: BoxDecoration(
-                color: panelBgColor,
-                border: Border(
-                  left: BorderSide(color: borderColor, width: 1),
-                  top: BorderSide(color: borderColor, width: 1),
-                  bottom: BorderSide(color: borderColor, width: 1),
+          Padding(
+            padding: const EdgeInsets.only(
+                top: (280.0 - 48.0) /
+                    2), // Keep handle centered relative to 280px portion
+            child: GestureDetector(
+              onTap: onToggle,
+              onPanUpdate: onPanUpdate,
+              child: Container(
+                width: 16,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: panelBgColor,
+                  border: Border(
+                    left: BorderSide(color: borderColor, width: 1),
+                    top: BorderSide(color: borderColor, width: 1),
+                    bottom: BorderSide(color: borderColor, width: 1),
+                  ),
+                  borderRadius:
+                      const BorderRadius.horizontal(left: Radius.circular(8)),
+                  boxShadow: [
+                    if (!isEdgePanelOpen)
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 4,
+                        offset: const Offset(-2, 0),
+                      )
+                  ],
                 ),
-                borderRadius: const BorderRadius.horizontal(left: Radius.circular(8)),
-                boxShadow: [
-                  if (!isEdgePanelOpen)
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
-                      blurRadius: 4,
-                      offset: const Offset(-2, 0),
-                    )
-                ],
-              ),
-              child: Center(
-                child: Container(
-                  width: 2,
-                  height: 20,
-                  decoration: BoxDecoration(
-                    color: handleColor.withValues(alpha: .6),
-                    borderRadius: BorderRadius.circular(2),
+                child: Center(
+                  child: Container(
+                    width: 2,
+                    height: 20,
+                    decoration: BoxDecoration(
+                      color: handleColor.withValues(alpha: .6),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
                   ),
                 ),
               ),
@@ -120,7 +129,8 @@ class ImmersiveReadingEdgePanel extends ConsumerWidget {
                       // Text Size Column
                       Column(
                         children: [
-                          Icon(Icons.format_size_rounded, color: handleColor, size: 20),
+                          Icon(Icons.format_size_rounded,
+                              color: handleColor, size: 20),
                           const SizedBox(height: 8),
                           Expanded(
                             child: RotatedBox(
@@ -129,9 +139,11 @@ class ImmersiveReadingEdgePanel extends ConsumerWidget {
                                 data: SliderThemeData(
                                   trackHeight: 2,
                                   activeTrackColor: handleColor,
-                                  inactiveTrackColor: handleColor.withValues(alpha: 0.2),
+                                  inactiveTrackColor:
+                                      handleColor.withValues(alpha: 0.2),
                                   thumbColor: handleColor,
-                                  overlayColor: handleColor.withValues(alpha: 0.1),
+                                  overlayColor:
+                                      handleColor.withValues(alpha: 0.1),
                                 ),
                                 child: Slider(
                                   value: textSizeFactor,
@@ -147,7 +159,8 @@ class ImmersiveReadingEdgePanel extends ConsumerWidget {
                       // Opacity Column
                       Column(
                         children: [
-                          Icon(Icons.opacity_rounded, color: handleColor, size: 20),
+                          Icon(Icons.opacity_rounded,
+                              color: handleColor, size: 20),
                           const SizedBox(height: 8),
                           Expanded(
                             child: RotatedBox(
@@ -156,9 +169,11 @@ class ImmersiveReadingEdgePanel extends ConsumerWidget {
                                 data: SliderThemeData(
                                   trackHeight: 2,
                                   activeTrackColor: handleColor,
-                                  inactiveTrackColor: handleColor.withValues(alpha: 0.2),
+                                  inactiveTrackColor:
+                                      handleColor.withValues(alpha: 0.2),
                                   thumbColor: handleColor,
-                                  overlayColor: handleColor.withValues(alpha: 0.1),
+                                  overlayColor:
+                                      handleColor.withValues(alpha: 0.1),
                                 ),
                                 child: Slider(
                                   value: textOpacity,
@@ -182,9 +197,30 @@ class ImmersiveReadingEdgePanel extends ConsumerWidget {
                     minimumSize: const Size(80, 36),
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
-                  child: const Text('Reset', style: TextStyle(fontWeight: FontWeight.w600)),
+                  child: const Text('Reset',
+                      style: TextStyle(fontWeight: FontWeight.w600)),
                 ),
-                const SizedBox(height: 12),
+                if (!ref
+                    .watch(accessibilityProvider)
+                    .showGreyscaleFloatingIcon) ...[
+                  const SizedBox(height: 12),
+                  Divider(color: borderColor, height: 1),
+                  const SizedBox(height: 8),
+                  IconButton(
+                    onPressed: () {
+                      final notifier = ref.read(accessibilityProvider.notifier);
+                      notifier.toggleFloatingIcon(true);
+                      if (!ref.read(accessibilityProvider).isGreyscaleMode) {
+                        notifier.toggleGreyscaleMode();
+                      }
+                    },
+                    icon: Icon(Icons.auto_stories_rounded, color: handleColor),
+                    tooltip: 'Enable Read Mode',
+                  ),
+                  const SizedBox(height: 12),
+                ] else ...[
+                  const SizedBox(height: 12),
+                ],
               ],
             ),
           ),
