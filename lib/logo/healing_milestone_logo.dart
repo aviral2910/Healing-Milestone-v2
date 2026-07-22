@@ -128,7 +128,15 @@ class _AscensionOverlayScreenState extends State<AscensionOverlayScreen>
   late Animation<double> _sweepAnimation;
   late Animation<double> _bottomLeavesAnimation;
   late Animation<double> _topLeafAnimation;
-  late Animation<double> _textAnimation;
+  
+  bool _isClosing = false;
+  
+  void _closeScreen() {
+    if (!_isClosing && mounted) {
+      _isClosing = true;
+      Navigator.of(context).pop();
+    }
+  }
 
   @override
   void initState() {
@@ -177,22 +185,12 @@ class _AscensionOverlayScreenState extends State<AscensionOverlayScreen>
       ),
     );
 
-    // 5. Text glides in
-    _textAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.8, 1.0, curve: Curves.easeOutCubic),
-      ),
-    );
-
     _controller.forward();
 
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
         Future.delayed(const Duration(milliseconds: 2000), () {
-          if (mounted) {
-            Navigator.of(context).pop();
-          }
+          _closeScreen();
         });
       }
     });
@@ -212,7 +210,7 @@ class _AscensionOverlayScreenState extends State<AscensionOverlayScreen>
       backgroundColor: theme.colorScheme.surface.withValues(alpha: 0.95),
       body: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: () => Navigator.of(context).pop(),
+        onTap: _closeScreen,
         child: Center(
           child: AnimatedBuilder(
             animation: _controller,
@@ -226,7 +224,6 @@ class _AscensionOverlayScreenState extends State<AscensionOverlayScreen>
                 sweepProgress: _sweepAnimation.value,
                 bottomLeavesProgress: _bottomLeavesAnimation.value,
                 topLeafProgress: _topLeafAnimation.value,
-                textProgress: _textAnimation.value,
               );
             },
           ),
@@ -248,7 +245,6 @@ class HealingMilestonesAnimatedLogoMark extends StatelessWidget {
   final double sweepProgress;
   final double bottomLeavesProgress;
   final double topLeafProgress;
-  final double textProgress;
 
   const HealingMilestonesAnimatedLogoMark({
     Key? key,
@@ -260,7 +256,6 @@ class HealingMilestonesAnimatedLogoMark extends StatelessWidget {
     required this.sweepProgress,
     required this.bottomLeavesProgress,
     required this.topLeafProgress,
-    required this.textProgress,
   }) : super(key: key);
 
   @override
@@ -286,43 +281,6 @@ class HealingMilestonesAnimatedLogoMark extends StatelessWidget {
             ),
           ),
         ),
-        if (textProgress > 0) ...[
-          SizedBox(width: lateralGap * textProgress),
-          Opacity(
-            opacity: textProgress.clamp(0.0, 1.0),
-            child: Transform.translate(
-              offset: Offset(20 * (1 - textProgress), 0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'HEALING',
-                    style: TextStyle(
-                      fontSize: baseFontSize,
-                      fontWeight: FontWeight.w500,
-                      height: 1.0,
-                      letterSpacing: baseFontSize * 0.05,
-                      color: textColor,
-                      fontFamily: 'Oswald',
-                    ),
-                  ),
-                  Text(
-                    'MILESTONES',
-                    style: TextStyle(
-                      fontSize: baseFontSize,
-                      fontWeight: FontWeight.w500,
-                      height: 1.0,
-                      letterSpacing: baseFontSize * 0.013,
-                      color: textColor,
-                      fontFamily: 'Oswald',
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
       ],
     );
   }
