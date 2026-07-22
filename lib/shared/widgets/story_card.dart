@@ -88,32 +88,45 @@ class _StoryCardState extends ConsumerState<StoryCard>
                     left: 20.0, right: 20.0, top: 20.0, bottom: 20),
                 child: Row(
                   children: [
-                    ClipOval(
-                      child: Image.network(
-                        userAsync.valueOrNull?.profilePicture ??
-                            'https://api.dicebear.com/7.x/avataaars/png?seed=${widget.story.authorId}',
-                        width: 48,
-                        height: 48,
-                        fit: BoxFit.cover,
-                        frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-                          if (wasSynchronouslyLoaded || frame != null) return child;
-                          return Shimmer.fromColors(
-                            baseColor: theme.colorScheme.primary.withValues(alpha: 0.1),
-                            highlightColor: theme.colorScheme.primary.withValues(alpha: 0.25),
-                            child: Container(
+                    !widget.story.displayAuthorName
+                        ? CircleAvatar(
+                            radius: 24,
+                            backgroundColor: theme.colorScheme.surface,
+                            child: Icon(Icons.person,
+                                color: theme.colorScheme.onSurface),
+                          )
+                        : ClipOval(
+                            child: Image.network(
+                              userAsync.valueOrNull?.profilePicture ??
+                                  'https://api.dicebear.com/7.x/avataaars/png?seed=${widget.story.authorId}',
                               width: 48,
                               height: 48,
-                              color: Colors.white,
+                              fit: BoxFit.cover,
+                              frameBuilder: (context, child, frame,
+                                  wasSynchronouslyLoaded) {
+                                if (wasSynchronouslyLoaded || frame != null)
+                                  return child;
+                                return Shimmer.fromColors(
+                                  baseColor: theme.colorScheme.primary
+                                      .withValues(alpha: 0.1),
+                                  highlightColor: theme.colorScheme.primary
+                                      .withValues(alpha: 0.25),
+                                  child: Container(
+                                    width: 48,
+                                    height: 48,
+                                    color: Colors.white,
+                                  ),
+                                );
+                              },
+                              errorBuilder: (context, error, stackTrace) =>
+                                  CircleAvatar(
+                                radius: 24,
+                                backgroundColor: theme.scaffoldBackgroundColor,
+                                child: Icon(Icons.person,
+                                    color: theme.colorScheme.onSurface),
+                              ),
                             ),
-                          );
-                        },
-                        errorBuilder: (context, error, stackTrace) => CircleAvatar(
-                          radius: 24,
-                          backgroundColor: theme.scaffoldBackgroundColor,
-                          child: Icon(Icons.person, color: theme.colorScheme.onSurface),
-                        ),
-                      ),
-                    ),
+                          ),
                     const SizedBox(width: 16),
                     Expanded(
                       child: Column(
@@ -255,11 +268,15 @@ class _StoryCardState extends ConsumerState<StoryCard>
                           width: double.infinity,
                           height: 250,
                           fit: BoxFit.cover,
-                          frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-                            if (wasSynchronouslyLoaded || frame != null) return child;
+                          frameBuilder:
+                              (context, child, frame, wasSynchronouslyLoaded) {
+                            if (wasSynchronouslyLoaded || frame != null)
+                              return child;
                             return Shimmer.fromColors(
-                              baseColor: theme.colorScheme.primary.withValues(alpha: 0.1),
-                              highlightColor: theme.colorScheme.primary.withValues(alpha: 0.25),
+                              baseColor: theme.colorScheme.primary
+                                  .withValues(alpha: 0.1),
+                              highlightColor: theme.colorScheme.primary
+                                  .withValues(alpha: 0.25),
                               child: Container(
                                 width: double.infinity,
                                 height: 250,
@@ -375,5 +392,5 @@ class _StoryCardState extends ConsumerState<StoryCard>
         ),
       ),
     );
-}
+  }
 }

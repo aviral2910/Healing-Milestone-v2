@@ -39,8 +39,6 @@ class StoryDetailScreen extends HookConsumerWidget {
     return 'just now';
   }
 
-
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final storyAsync = ref.watch(storyByIdProvider(milestoneId));
@@ -105,27 +103,35 @@ class StoryDetailScreen extends HookConsumerWidget {
                       actions: [
                         Consumer(
                           builder: (context, ref, child) {
-                            final accessibilityState = ref.watch(accessibilityProvider);
-                            final isGreyscale = accessibilityState.isGreyscaleMode;
-                            
+                            final accessibilityState =
+                                ref.watch(accessibilityProvider);
+                            final isGreyscale =
+                                accessibilityState.isGreyscaleMode;
+
                             // Only show in AppBar if the floating icon is disabled
                             if (accessibilityState.showGreyscaleFloatingIcon) {
                               return const SizedBox.shrink();
                             }
-                            
+
                             return IconButton(
                               icon: Icon(
-                                isGreyscale ? Icons.auto_stories_rounded : Icons.auto_stories_outlined,
-                                color: isGreyscale ? theme.colorScheme.primary : theme.iconTheme.color,
+                                isGreyscale
+                                    ? Icons.auto_stories_rounded
+                                    : Icons.auto_stories_outlined,
+                                color: isGreyscale
+                                    ? theme.colorScheme.primary
+                                    : theme.iconTheme.color,
                               ),
                               tooltip: 'Toggle Reading Mode (Greyscale)',
                               onPressed: () {
-                                ref.read(accessibilityProvider.notifier).toggleGreyscaleMode();
+                                ref
+                                    .read(accessibilityProvider.notifier)
+                                    .toggleGreyscaleMode();
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text(isGreyscale 
-                                      ? 'Reading Mode Off' 
-                                      : 'Reading Mode On (Eye-friendly Greyscale)'),
+                                    content: Text(isGreyscale
+                                        ? 'Reading Mode Off'
+                                        : 'Reading Mode On (Eye-friendly Greyscale)'),
                                     duration: const Duration(seconds: 2),
                                   ),
                                 );
@@ -236,7 +242,6 @@ class StoryDetailScreen extends HookConsumerWidget {
                               ),
                             ],
                           ),
-
                       ],
                     ),
                     SliverToBoxAdapter(
@@ -298,32 +303,58 @@ class StoryDetailScreen extends HookConsumerWidget {
                                             width: 1.5,
                                           ),
                                         ),
-                                        child: ClipOval(
-                                          child: Image.network(
-                                            userAsync.valueOrNull?.profilePicture ??
-                                                'https://api.dicebear.com/7.x/avataaars/png?seed=${story.authorId}',
-                                            width: 44,
-                                            height: 44,
-                                            fit: BoxFit.cover,
-                                            frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-                                              if (wasSynchronouslyLoaded || frame != null) return child;
-                                              return Shimmer.fromColors(
-                                                baseColor: theme.colorScheme.primary.withValues(alpha: 0.1),
-                                                highlightColor: theme.colorScheme.primary.withValues(alpha: 0.25),
-                                                child: Container(
+                                        child: !story.displayAuthorName
+                                            ? CircleAvatar(
+                                                radius: 22,
+                                                backgroundColor:
+                                                    theme.colorScheme.surface,
+                                                child: Icon(Icons.person,
+                                                    color: theme
+                                                        .colorScheme.onSurface),
+                                              )
+                                            : ClipOval(
+                                                child: Image.network(
+                                                  userAsync.valueOrNull
+                                                          ?.profilePicture ??
+                                                      'https://api.dicebear.com/7.x/avataaars/png?seed=${story.authorId}',
                                                   width: 44,
                                                   height: 44,
-                                                  color: Colors.white,
+                                                  fit: BoxFit.cover,
+                                                  frameBuilder: (context,
+                                                      child,
+                                                      frame,
+                                                      wasSynchronouslyLoaded) {
+                                                    if (wasSynchronouslyLoaded ||
+                                                        frame != null)
+                                                      return child;
+                                                    return Shimmer.fromColors(
+                                                      baseColor: theme
+                                                          .colorScheme.primary
+                                                          .withValues(
+                                                              alpha: 0.1),
+                                                      highlightColor: theme
+                                                          .colorScheme.primary
+                                                          .withValues(
+                                                              alpha: 0.25),
+                                                      child: Container(
+                                                        width: 44,
+                                                        height: 44,
+                                                        color: Colors.white,
+                                                      ),
+                                                    );
+                                                  },
+                                                  errorBuilder: (context, error,
+                                                          stackTrace) =>
+                                                      CircleAvatar(
+                                                    radius: 22,
+                                                    backgroundColor: theme
+                                                        .scaffoldBackgroundColor,
+                                                    child: Icon(Icons.person,
+                                                        color: theme.colorScheme
+                                                            .onSurface),
+                                                  ),
                                                 ),
-                                              );
-                                            },
-                                            errorBuilder: (context, error, stackTrace) => CircleAvatar(
-                                              radius: 22,
-                                              backgroundColor: theme.scaffoldBackgroundColor,
-                                              child: Icon(Icons.person, color: theme.colorScheme.onSurface),
-                                            ),
-                                          ),
-                                        ),
+                                              ),
                                       ),
                                       const SizedBox(width: 16),
                                       Expanded(
@@ -495,56 +526,63 @@ class StoryDetailScreen extends HookConsumerWidget {
 
                           // The Immutable Post Widget Template - NO DIVIDERS
                           // Encased in a beautiful midnight matte if it's minimal
-                          Builder(
-                            builder: (context) {
-                              return GestureDetector(
-                                onTap: () async {
-                                  final renderBox = context.findRenderObject() as RenderBox?;
-                                  if (renderBox != null) {
-                                    final position = renderBox.localToGlobal(Offset.zero);
-                                    
-                                    // Instantly request the OS to hide the status bar
-                                    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.bottom]);
-                                    
-                                    if (!context.mounted) return;
-                                    
-                                    final delta = await Navigator.of(context).push<double>(
-                                      PageRouteBuilder(
-                                        opaque: false,
-                                        transitionDuration: const Duration(milliseconds: 300),
-                                        pageBuilder: (context, animation, secondaryAnimation) =>
-                                            FadeTransition(
-                                          opacity: animation,
-                                          child: ImmersiveReadingScreen(
-                                            content: story.description,
-                                            initialDy: position.dy,
-                                          ),
+                          Builder(builder: (context) {
+                            return GestureDetector(
+                              onTap: () async {
+                                final renderBox =
+                                    context.findRenderObject() as RenderBox?;
+                                if (renderBox != null) {
+                                  final position =
+                                      renderBox.localToGlobal(Offset.zero);
+
+                                  // Instantly request the OS to hide the status bar
+                                  SystemChrome.setEnabledSystemUIMode(
+                                      SystemUiMode.manual,
+                                      overlays: [SystemUiOverlay.bottom]);
+
+                                  if (!context.mounted) return;
+
+                                  final delta =
+                                      await Navigator.of(context).push<double>(
+                                    PageRouteBuilder(
+                                      opaque: false,
+                                      transitionDuration:
+                                          const Duration(milliseconds: 300),
+                                      pageBuilder: (context, animation,
+                                              secondaryAnimation) =>
+                                          FadeTransition(
+                                        opacity: animation,
+                                        child: ImmersiveReadingScreen(
+                                          content: story.description,
+                                          initialDy: position.dy,
                                         ),
                                       ),
-                                    );
-                                    
-                                    // Restore status bar
-                                    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-                                    
-                                    if (delta != null && delta != 0) {
-                                      mainScrollController.jumpTo(mainScrollController.offset + delta);
-                                    }
-                                  }
-                                },
-                                child: Container(
-                                  color: theme.colorScheme.surface,
-                                  width: double.infinity,
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 20.0, horizontal: 8.0),
-                                    child: PostDisplayWidget(
-                                      content: story.description,
                                     ),
+                                  );
+
+                                  // Restore status bar
+                                  SystemChrome.setEnabledSystemUIMode(
+                                      SystemUiMode.edgeToEdge);
+
+                                  if (delta != null && delta != 0) {
+                                    mainScrollController.jumpTo(
+                                        mainScrollController.offset + delta);
+                                  }
+                                }
+                              },
+                              child: Container(
+                                color: theme.colorScheme.surface,
+                                width: double.infinity,
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 20.0, horizontal: 8.0),
+                                  child: PostDisplayWidget(
+                                    content: story.description,
                                   ),
                                 ),
-                              );
-                            }
-                          ),
+                              ),
+                            );
+                          }),
 
                           const SizedBox(height: 16),
                           InteractionSection(story: story, showLabels: false),
@@ -734,11 +772,19 @@ class _TaggedPeopleList extends ConsumerWidget {
                             width: 20,
                             height: 20,
                             fit: BoxFit.cover,
-                            frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-                              if (wasSynchronouslyLoaded || frame != null) return child;
+                            frameBuilder: (context, child, frame,
+                                wasSynchronouslyLoaded) {
+                              if (wasSynchronouslyLoaded || frame != null)
+                                return child;
                               return Shimmer.fromColors(
-                                baseColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                                highlightColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.25),
+                                baseColor: Theme.of(context)
+                                    .colorScheme
+                                    .primary
+                                    .withValues(alpha: 0.1),
+                                highlightColor: Theme.of(context)
+                                    .colorScheme
+                                    .primary
+                                    .withValues(alpha: 0.25),
                                 child: Container(
                                   width: 20,
                                   height: 20,
@@ -746,10 +792,15 @@ class _TaggedPeopleList extends ConsumerWidget {
                                 ),
                               );
                             },
-                            errorBuilder: (context, error, stackTrace) => CircleAvatar(
+                            errorBuilder: (context, error, stackTrace) =>
+                                CircleAvatar(
                               radius: 10,
-                              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-                              child: Icon(Icons.person, size: 12, color: Theme.of(context).colorScheme.onSurface),
+                              backgroundColor:
+                                  Theme.of(context).scaffoldBackgroundColor,
+                              child: Icon(Icons.person,
+                                  size: 12,
+                                  color:
+                                      Theme.of(context).colorScheme.onSurface),
                             ),
                           ),
                         ),
