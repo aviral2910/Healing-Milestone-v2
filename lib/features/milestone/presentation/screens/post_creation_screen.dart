@@ -406,20 +406,60 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                 color: theme.colorScheme.primary,
                 shape: BoxShape.circle,
               ),
-              child: IconButton(
+              child: PopupMenuButton<Map<String, dynamic>>(
                 icon: Icon(Icons.auto_fix_high,
                     color: theme.colorScheme.primary.computeLuminance() > 0.25
                         ? Colors.black
                         : Colors.white),
                 tooltip: 'Populate Dummy Post',
-                onPressed: () {
-                  final selected = UatDummyData.getRandomPost();
-
+                onSelected: (selected) {
                   setState(() {
                     _titleController.text = selected['title'] as String;
                     _contentController.text = selected['content'] as String;
                     _selectedTags = List<String>.from(selected['tags'] as List);
                   });
+                },
+                itemBuilder: (BuildContext context) {
+                  return UatDummyData.getAllPosts().map((post) {
+                    final content = post['content'] as String;
+                    final wordCount = content.isEmpty
+                        ? 0
+                        : content.split(RegExp(r'\s+')).length;
+                    var time = (wordCount / 200).ceil();
+                    if (time < 1) time = 1;
+
+                    return PopupMenuItem<Map<String, dynamic>>(
+                      value: post,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            post['title'] as String,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 13),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 2),
+                          Row(
+                            children: [
+                              Icon(Icons.timer_outlined,
+                                  size: 12,
+                                  color: theme.colorScheme.onSurfaceVariant),
+                              const SizedBox(width: 4),
+                              Text(
+                                '$time min read',
+                                style: TextStyle(
+                                    fontSize: 11,
+                                    color: theme.colorScheme.onSurfaceVariant),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList();
                 },
               ),
             ),
