@@ -104,54 +104,74 @@ class InteractionSection extends HookConsumerWidget {
                             return;
                           }
                           final targetReaction = entry.key;
-                          
+
                           if (hasReactedThis) {
                             optimisticUserReaction.value = null;
-                            optimisticTotalReactions.value = (optimisticTotalReactions.value - 1).clamp(0, 999999);
-                            
-                            final newCounts = Map<ReactionType, int>.from(optimisticReactionCounts.value);
-                            newCounts[targetReaction] = (newCounts[targetReaction] ?? 1) - 1;
-                            if (newCounts[targetReaction]! <= 0) newCounts.remove(targetReaction);
+                            optimisticTotalReactions.value =
+                                (optimisticTotalReactions.value - 1)
+                                    .clamp(0, 999999);
+
+                            final newCounts = Map<ReactionType, int>.from(
+                                optimisticReactionCounts.value);
+                            newCounts[targetReaction] =
+                                (newCounts[targetReaction] ?? 1) - 1;
+                            if (newCounts[targetReaction]! <= 0)
+                              newCounts.remove(targetReaction);
                             optimisticReactionCounts.value = newCounts;
                           } else {
-                            final newCounts = Map<ReactionType, int>.from(optimisticReactionCounts.value);
-                            
+                            final newCounts = Map<ReactionType, int>.from(
+                                optimisticReactionCounts.value);
+
                             if (optimisticUserReaction.value == null) {
                               optimisticTotalReactions.value++;
                             } else {
                               final oldReaction = optimisticUserReaction.value!;
-                              newCounts[oldReaction] = (newCounts[oldReaction] ?? 1) - 1;
-                              if (newCounts[oldReaction]! <= 0) newCounts.remove(oldReaction);
+                              newCounts[oldReaction] =
+                                  (newCounts[oldReaction] ?? 1) - 1;
+                              if (newCounts[oldReaction]! <= 0)
+                                newCounts.remove(oldReaction);
                             }
-                            
+
                             optimisticUserReaction.value = targetReaction;
-                            newCounts[targetReaction] = (newCounts[targetReaction] ?? 0) + 1;
+                            newCounts[targetReaction] =
+                                (newCounts[targetReaction] ?? 0) + 1;
                             optimisticReactionCounts.value = newCounts;
                           }
-                          ref.read(storyRepositoryProvider).toggleReaction(story.storyId, user.userId, targetReaction.name);
+                          ref.read(storyRepositoryProvider).toggleReaction(
+                              story.storyId, user.userId, targetReaction.name);
                         },
                         behavior: HitTestBehavior.opaque,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: hasReactedThis ? theme.colorScheme.primary.withValues(alpha: 0.1) : theme.colorScheme.surfaceContainerHighest,
+                            color: hasReactedThis
+                                ? theme.colorScheme.primary
+                                    .withValues(alpha: 0.1)
+                                : theme.colorScheme.surfaceContainerHighest,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: hasReactedThis ? theme.colorScheme.primary.withValues(alpha: 0.5) : Colors.transparent,
+                              color: hasReactedThis
+                                  ? theme.colorScheme.primary
+                                      .withValues(alpha: 0.5)
+                                  : Colors.transparent,
                               width: 1,
                             ),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(entry.key.emoji, style: const TextStyle(fontSize: 14)),
+                              Text(entry.key.emoji,
+                                  style: const TextStyle(fontSize: 14)),
                               const SizedBox(width: 4),
                               Text(
                                 '${entry.value}',
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
-                                  color: hasReactedThis ? theme.colorScheme.primary : theme.textTheme.bodySmall?.color,
+                                  color: hasReactedThis
+                                      ? theme.colorScheme.primary
+                                      : theme.textTheme.bodySmall?.color,
                                 ),
                               ),
                             ],
@@ -234,20 +254,24 @@ class InteractionSection extends HookConsumerWidget {
                     context.push(AppRoutes.login);
                     return;
                   }
-                  
+
                   // Delay showing the dialog slightly so that the unfocus has time to propagate
                   // and the dialog doesn't capture the text field as the "previously focused" node.
                   Future.delayed(const Duration(milliseconds: 50), () {
                     if (!context.mounted) return;
-                    showReactionPicker(context, details.globalPosition, (reaction) {
-                      final newCounts = Map<ReactionType, int>.from(optimisticReactionCounts.value);
+                    showReactionPicker(context, details.globalPosition,
+                        (reaction) {
+                      final newCounts = Map<ReactionType, int>.from(
+                          optimisticReactionCounts.value);
 
                       if (optimisticUserReaction.value == null) {
                         optimisticTotalReactions.value++;
                       } else {
                         final oldReaction = optimisticUserReaction.value!;
-                        newCounts[oldReaction] = (newCounts[oldReaction] ?? 1) - 1;
-                        if (newCounts[oldReaction]! <= 0) newCounts.remove(oldReaction);
+                        newCounts[oldReaction] =
+                            (newCounts[oldReaction] ?? 1) - 1;
+                        if (newCounts[oldReaction]! <= 0)
+                          newCounts.remove(oldReaction);
                       }
 
                       optimisticUserReaction.value = reaction;
@@ -258,18 +282,6 @@ class InteractionSection extends HookConsumerWidget {
                           story.storyId, user.userId, reaction.name);
                     });
                   });
-                },
-              ),
-
-              // COMMENT BUTTON
-              _ActionButton(
-                icon: Icon(Icons.chat_bubble_outline, color: theme.textTheme.bodySmall?.color, size: 20),
-                label: 'Comment',
-                labelColor: theme.textTheme.bodySmall?.color,
-                showLabel: showLabels,
-                onTap: () {
-                  FocusManager.instance.primaryFocus?.unfocus();
-                  context.push(AppRoutes.storyDetail(story.storyId));
                 },
               ),
 
