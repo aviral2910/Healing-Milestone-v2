@@ -1,5 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:healing_milestones/core/router/app_routes.dart';
 
 // ==========================================
 // 1. Interactive Wrapper / Trigger Widget
@@ -113,7 +115,9 @@ class HealingMilestonesLogoWidget extends StatelessWidget {
 // 2. Ascension Overlay Screen with Refined Animation
 // ==========================================
 class AscensionOverlayScreen extends StatefulWidget {
-  const AscensionOverlayScreen({Key? key}) : super(key: key);
+  final bool isTransitionMode;
+  
+  const AscensionOverlayScreen({Key? key, this.isTransitionMode = false}) : super(key: key);
 
   @override
   State<AscensionOverlayScreen> createState() => _AscensionOverlayScreenState();
@@ -135,7 +139,11 @@ class _AscensionOverlayScreenState extends State<AscensionOverlayScreen>
   void _closeScreen() {
     if (!_isClosing && mounted) {
       _isClosing = true;
-      Navigator.of(context).pop();
+      if (widget.isTransitionMode) {
+        context.go(AppRoutes.home);
+      } else {
+        Navigator.of(context).pop();
+      }
     }
   }
 
@@ -195,7 +203,8 @@ class _AscensionOverlayScreenState extends State<AscensionOverlayScreen>
 
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
-        Future.delayed(const Duration(milliseconds: 8000), () {
+        final delay = widget.isTransitionMode ? 1000 : 8000;
+        Future.delayed(Duration(milliseconds: delay), () {
           _closeScreen();
         });
       }
@@ -214,7 +223,9 @@ class _AscensionOverlayScreenState extends State<AscensionOverlayScreen>
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: theme.colorScheme.surface.withValues(alpha: 0.95),
+      backgroundColor: widget.isTransitionMode 
+          ? Colors.black 
+          : theme.colorScheme.surface.withValues(alpha: 0.95),
       body: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: _closeScreen,

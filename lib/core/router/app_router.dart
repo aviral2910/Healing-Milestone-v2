@@ -19,6 +19,7 @@ import '../../features/auth/presentation/screens/phone_auth_screen.dart';
 import '../../features/auth/presentation/screens/otp_verification_screen.dart';
 import '../../features/auth/data/auth_provider.dart';
 import '../../features/splash/presentation/screens/splash_screen.dart';
+import '../../logo/healing_milestone_logo.dart';
 import '../../core/models/user_model.dart';
 import '../../core/models/story_model.dart';
 import 'app_routes.dart';
@@ -45,7 +46,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     refreshListenable: notifier,
     initialLocation: AppRoutes.splash,
     redirect: (context, state) {
-      if (state.matchedLocation == AppRoutes.splash) {
+      if (state.matchedLocation == AppRoutes.splash || state.matchedLocation == AppRoutes.ascensionTransition) {
         return null;
       }
 
@@ -80,7 +81,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           state.matchedLocation == AppRoutes.verifyOtp;
 
       if (isAuth && isAuthScreen) {
-        return AppRoutes.home;
+        return AppRoutes.ascensionTransition;
       }
 
       return null;
@@ -89,6 +90,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.splash,
         builder: (context, state) => const SplashScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.ascensionTransition,
+        builder: (context, state) => const AscensionOverlayScreen(isTransitionMode: true),
       ),
       GoRoute(
         path: AppRoutes.home,

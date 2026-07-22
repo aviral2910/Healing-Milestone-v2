@@ -108,7 +108,7 @@ class _ProfessionalOnboardingScreenState
       );
 
       ref.read(authProvider.notifier).completeOnboarding(newUserModel);
-      context.go(AppRoutes.home);
+      context.go(AppRoutes.ascensionTransition);
     }
   }
 
@@ -165,7 +165,7 @@ class _ProfessionalOnboardingScreenState
           );
         }
 
-        context.go(AppRoutes.home);
+        context.go(AppRoutes.ascensionTransition);
       }
     }
   }

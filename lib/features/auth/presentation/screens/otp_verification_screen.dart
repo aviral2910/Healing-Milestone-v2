@@ -56,7 +56,7 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
           if (newState?.status == AuthStatus.needsOnboarding) {
             context.go(AppRoutes.roleSelection);
           } else {
-            context.go(AppRoutes.home);
+            context.go(AppRoutes.ascensionTransition);
           }
         }
       }

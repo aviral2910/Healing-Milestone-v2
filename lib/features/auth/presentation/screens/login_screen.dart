@@ -21,7 +21,7 @@ class LoginScreen extends ConsumerWidget {
           if (context.canPop()) {
             context.pop();
           } else {
-            context.go(AppRoutes.home);
+            context.go(AppRoutes.ascensionTransition);
           }
         }
       } else if (next is AsyncError) {
@@ -130,7 +130,7 @@ class LoginScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 24),
             TextButton(
-              onPressed: () => context.go(AppRoutes.home),
+              onPressed: () => context.go(AppRoutes.ascensionTransition),
               child: Text(
                 'Skip to Home / Read Articles',
                 style: TextStyle(

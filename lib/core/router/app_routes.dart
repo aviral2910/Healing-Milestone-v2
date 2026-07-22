@@ -1,5 +1,6 @@
 class AppRoutes {
   static const String splash = '/splash';
+  static const String ascensionTransition = '/ascension-transition';
   static const String home = '/';
   static const String phoneAuth = '/phone-auth';
   static const String verifyOtp = '/verify-otp';
