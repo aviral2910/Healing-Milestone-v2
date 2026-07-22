@@ -21,6 +21,7 @@ class StoryModel {
   final List<String> likesList;
   final int commentCount;
   final List<String> comments;
+  final Map<String, List<String>> reactions;
   final String authorId;
   final String qrId;
   final int readingTime;
@@ -46,6 +47,7 @@ class StoryModel {
     this.likesList = const [],
     this.commentCount = 0,
     this.comments = const [],
+    this.reactions = const {},
     required this.authorId,
     required this.qrId,
     required this.readingTime,
@@ -72,6 +74,7 @@ class StoryModel {
     List<String>? likesList,
     int? commentCount,
     List<String>? comments,
+    Map<String, List<String>>? reactions,
     String? authorId,
     String? qrId,
     int? readingTime,
@@ -97,6 +100,7 @@ class StoryModel {
       likesList: likesList ?? this.likesList,
       commentCount: commentCount ?? this.commentCount,
       comments: comments ?? this.comments,
+      reactions: reactions ?? this.reactions,
       authorId: authorId ?? this.authorId,
       qrId: qrId ?? this.qrId,
       readingTime: readingTime ?? this.readingTime,
@@ -124,6 +128,7 @@ class StoryModel {
       'likesList': likesList,
       'commentCount': commentCount,
       'comments': comments,
+      'reactions': reactions,
       'authorId': authorId,
       'qrId': qrId,
       'readingTime': readingTime,
@@ -152,6 +157,11 @@ class StoryModel {
       likesList: List<String>.from(map['likesList'] ?? []),
       commentCount: map['commentCount'] ?? 0,
       comments: List<String>.from(map['comments'] ?? []),
+      reactions: map['reactions'] != null 
+          ? (map['reactions'] as Map<String, dynamic>).map(
+              (key, value) => MapEntry(key, List<String>.from(value)),
+            )
+          : {},
       authorId: map['authorId'] ?? '',
       qrId: map['qrId'] ?? '',
       readingTime: map['readingTime'] ?? 0,

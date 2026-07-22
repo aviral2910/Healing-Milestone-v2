@@ -1,6 +1,7 @@
 import 'package:healing_milestones/core/router/app_routes.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shimmer/shimmer.dart';
 import 'immersive_reading_screen.dart';
@@ -18,6 +19,8 @@ import '../../../auth/data/repository_providers.dart';
 import '../../../posts/data/story_providers.dart';
 
 import '../../../../core/data/dummy_data.dart';
+import '../../../../shared/widgets/story_card.dart';
+import '../../../../shared/widgets/interaction_section.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -34,103 +37,6 @@ class StoryDetailScreen extends HookConsumerWidget {
     if (difference.inHours > 0) return '${difference.inHours}h ago';
     if (difference.inMinutes > 0) return '${difference.inMinutes}m ago';
     return 'just now';
-  }
-
-  void _showAccessibilityBottomSheet(BuildContext context, WidgetRef ref) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color:
-                  Theme.of(context).colorScheme.surface.withValues(alpha: 0.9),
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(32)),
-              border: Border.all(color: Theme.of(context).dividerColor),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 5,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).dividerColor,
-                      borderRadius: BorderRadius.circular(2.5),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 32),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('Reading Settings',
-                        style: Theme.of(context).textTheme.titleLarge),
-                    Consumer(builder: (context, ref, child) {
-                      return TextButton(
-                        onPressed: () {
-                          ref
-                              .read(accessibilityProvider.notifier)
-                              .updateTextSizeFactor(1.0);
-                          ref
-                              .read(accessibilityProvider.notifier)
-                              .updateTextOpacity(1.0);
-                        },
-                        child: const Text('Reset',
-                            style: TextStyle(fontWeight: FontWeight.bold)),
-                      );
-                    }),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                const Text('Text Size',
-                    style: TextStyle(
-                        color: Colors.grey, fontWeight: FontWeight.w600)),
-                Consumer(
-                  builder: (context, ref, child) {
-                    final state = ref.watch(accessibilityProvider);
-                    return Slider(
-                      value: state.textSizeFactor,
-                      min: 0.8,
-                      max: 2.0,
-                      activeColor: Theme.of(context).primaryColor,
-                      onChanged: (val) => ref
-                          .read(accessibilityProvider.notifier)
-                          .updateTextSizeFactor(val),
-                    );
-                  },
-                ),
-                const SizedBox(height: 16),
-                const Text('Contrast/Opacity',
-                    style: TextStyle(
-                        color: Colors.grey, fontWeight: FontWeight.w600)),
-                Consumer(
-                  builder: (context, ref, child) {
-                    final state = ref.watch(accessibilityProvider);
-                    return Slider(
-                      value: state.textOpacity,
-                      min: 0.5,
-                      max: 1.0,
-                      activeColor: Theme.of(context).colorScheme.secondary,
-                      onChanged: (val) => ref
-                          .read(accessibilityProvider.notifier)
-                          .updateTextOpacity(val),
-                    );
-                  },
-                ),
-                const SizedBox(height: 32),
-              ],
-            ),
-          ),
-        );
-      },
-    );
   }
 
   @override
@@ -197,27 +103,35 @@ class StoryDetailScreen extends HookConsumerWidget {
                       actions: [
                         Consumer(
                           builder: (context, ref, child) {
-                            final accessibilityState = ref.watch(accessibilityProvider);
-                            final isGreyscale = accessibilityState.isGreyscaleMode;
-                            
+                            final accessibilityState =
+                                ref.watch(accessibilityProvider);
+                            final isGreyscale =
+                                accessibilityState.isGreyscaleMode;
+
                             // Only show in AppBar if the floating icon is disabled
                             if (accessibilityState.showGreyscaleFloatingIcon) {
                               return const SizedBox.shrink();
                             }
-                            
+
                             return IconButton(
                               icon: Icon(
-                                isGreyscale ? Icons.auto_stories_rounded : Icons.auto_stories_outlined,
-                                color: isGreyscale ? theme.colorScheme.primary : theme.iconTheme.color,
+                                isGreyscale
+                                    ? Icons.auto_stories_rounded
+                                    : Icons.auto_stories_outlined,
+                                color: isGreyscale
+                                    ? theme.colorScheme.primary
+                                    : theme.iconTheme.color,
                               ),
                               tooltip: 'Toggle Reading Mode (Greyscale)',
                               onPressed: () {
-                                ref.read(accessibilityProvider.notifier).toggleGreyscaleMode();
+                                ref
+                                    .read(accessibilityProvider.notifier)
+                                    .toggleGreyscaleMode();
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text(isGreyscale 
-                                      ? 'Reading Mode Off' 
-                                      : 'Reading Mode On (Eye-friendly Greyscale)'),
+                                    content: Text(isGreyscale
+                                        ? 'Reading Mode Off'
+                                        : 'Reading Mode On (Eye-friendly Greyscale)'),
                                     duration: const Duration(seconds: 2),
                                   ),
                                 );
@@ -328,11 +242,6 @@ class StoryDetailScreen extends HookConsumerWidget {
                               ),
                             ],
                           ),
-                        IconButton(
-                          icon: const Icon(Icons.settings_display_outlined),
-                          onPressed: () =>
-                              _showAccessibilityBottomSheet(context, ref),
-                        )
                       ],
                     ),
                     SliverToBoxAdapter(
@@ -396,16 +305,23 @@ class StoryDetailScreen extends HookConsumerWidget {
                                         ),
                                         child: ClipOval(
                                           child: Image.network(
-                                            userAsync.valueOrNull?.profilePicture ??
+                                            userAsync.valueOrNull
+                                                    ?.profilePicture ??
                                                 'https://api.dicebear.com/7.x/avataaars/png?seed=${story.authorId}',
                                             width: 44,
                                             height: 44,
                                             fit: BoxFit.cover,
-                                            frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-                                              if (wasSynchronouslyLoaded || frame != null) return child;
+                                            frameBuilder: (context, child,
+                                                frame, wasSynchronouslyLoaded) {
+                                              if (wasSynchronouslyLoaded ||
+                                                  frame != null) return child;
                                               return Shimmer.fromColors(
-                                                baseColor: theme.colorScheme.primary.withValues(alpha: 0.1),
-                                                highlightColor: theme.colorScheme.primary.withValues(alpha: 0.25),
+                                                baseColor: theme
+                                                    .colorScheme.primary
+                                                    .withValues(alpha: 0.1),
+                                                highlightColor: theme
+                                                    .colorScheme.primary
+                                                    .withValues(alpha: 0.25),
                                                 child: Container(
                                                   width: 44,
                                                   height: 44,
@@ -413,10 +329,15 @@ class StoryDetailScreen extends HookConsumerWidget {
                                                 ),
                                               );
                                             },
-                                            errorBuilder: (context, error, stackTrace) => CircleAvatar(
+                                            errorBuilder:
+                                                (context, error, stackTrace) =>
+                                                    CircleAvatar(
                                               radius: 22,
-                                              backgroundColor: theme.scaffoldBackgroundColor,
-                                              child: Icon(Icons.person, color: theme.colorScheme.onSurface),
+                                              backgroundColor:
+                                                  theme.scaffoldBackgroundColor,
+                                              child: Icon(Icons.person,
+                                                  color: theme
+                                                      .colorScheme.onSurface),
                                             ),
                                           ),
                                         ),
@@ -591,132 +512,82 @@ class StoryDetailScreen extends HookConsumerWidget {
 
                           // The Immutable Post Widget Template - NO DIVIDERS
                           // Encased in a beautiful midnight matte if it's minimal
-                          Builder(
-                            builder: (context) {
-                              return GestureDetector(
-                                onTap: () async {
-                                  final renderBox = context.findRenderObject() as RenderBox?;
-                                  if (renderBox != null) {
-                                    final position = renderBox.localToGlobal(Offset.zero);
-                                    
-                                    final delta = await Navigator.of(context).push<double>(
-                                      PageRouteBuilder(
-                                        opaque: false,
-                                        pageBuilder: (context, animation, secondaryAnimation) =>
-                                            FadeTransition(
-                                          opacity: animation,
-                                          child: ImmersiveReadingScreen(
-                                            content: story.description,
-                                            initialDy: position.dy,
-                                          ),
+                          Builder(builder: (context) {
+                            return GestureDetector(
+                              onTap: () async {
+                                final renderBox =
+                                    context.findRenderObject() as RenderBox?;
+                                if (renderBox != null) {
+                                  final position =
+                                      renderBox.localToGlobal(Offset.zero);
+
+                                  final textOffset =
+                                      await Navigator.of(context).push<double>(
+                                    PageRouteBuilder(
+                                      opaque: false,
+                                      pageBuilder: (context, animation,
+                                              secondaryAnimation) =>
+                                          FadeTransition(
+                                        opacity: animation,
+                                        child: ImmersiveReadingScreen(
+                                          content: story.description,
+                                          initialDy: position.dy,
                                         ),
                                       ),
-                                    );
-                                    
-                                    if (delta != null && delta != 0) {
-                                      mainScrollController.jumpTo(mainScrollController.offset + delta);
-                                    }
-                                  }
-                                },
-                                child: Container(
-                                  color: theme.colorScheme.surface,
-                                  width: double.infinity,
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 20.0, horizontal: 8.0),
-                                    child: PostDisplayWidget(
-                                      content: story.description,
                                     ),
+                                  );
+
+                                  if (textOffset != null) {
+                                    WidgetsBinding.instance
+                                        .addPostFrameCallback((_) {
+                                      if (context.mounted) {
+                                        final currentRenderBox = context
+                                            .findRenderObject() as RenderBox?;
+                                        if (currentRenderBox != null) {
+                                          final viewport =
+                                              RenderAbstractViewport.of(
+                                                  currentRenderBox);
+                                          final offsetToRevealTop = viewport
+                                              .getOffsetToReveal(
+                                                  currentRenderBox, 0.0)
+                                              .offset;
+
+                                          // The textOffset is the amount of pixels into the text the user scrolled.
+                                          // offsetToRevealTop puts the start of the text at the top of the viewport.
+                                          // By adding textOffset, we perfectly align the exact word they were reading!
+                                          mainScrollController.jumpTo(
+                                              offsetToRevealTop + textOffset);
+                                        }
+                                      }
+                                    });
+                                  }
+                                }
+                              },
+                              child: Container(
+                                color: theme.colorScheme.surface,
+                                width: double.infinity,
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 20.0, horizontal: 8.0),
+                                  child: PostDisplayWidget(
+                                    content: story.description,
                                   ),
                                 ),
-                              );
-                            }
-                          ),
+                              ),
+                            );
+                          }),
 
-                          const SizedBox(height: 16),
-                          Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 24.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                Consumer(
-                                  builder: (context, ref, child) {
-                                    final currentUser =
-                                        ref.watch(currentUserProvider);
-                                    final isLiked = story.likesList
-                                        .contains(currentUser?.userId);
-
-                                    return Row(
-                                      children: [
-                                        Text(
-                                          story.likesCount.toString(),
-                                          style: TextStyle(
-                                            color: isLiked
-                                                ? theme.colorScheme.primary
-                                                : const Color(0xFFA1A1A6),
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                        IconButton(
-                                          icon: Icon(isLiked
-                                              ? Icons.favorite
-                                              : Icons.favorite_border),
-                                          onPressed: () {
-                                            if (currentUser == null) {
-                                              context.push(AppRoutes.login);
-                                            } else {
-                                              ref
-                                                  .read(storyRepositoryProvider)
-                                                  .toggleLike(story.storyId,
-                                                      currentUser.userId);
-                                            }
-                                          },
-                                          color: isLiked
-                                              ? theme.colorScheme.primary
-                                              : const Color(0xFFA1A1A6),
-                                        ),
-                                      ],
-                                    );
-                                  },
-                                ),
-                                const SizedBox(width: 8),
-                                Consumer(builder: (context, ref, child) {
-                                  final currentUser =
-                                      ref.watch(currentUserProvider);
-                                  final isBookmarked = currentUser
-                                          ?.bookmarkedStories
-                                          .contains(story.storyId) ??
-                                      false;
-
-                                  return IconButton(
-                                    icon: Icon(isBookmarked
-                                        ? Icons.bookmark
-                                        : Icons.bookmark_border),
-                                    onPressed: () {
-                                      if (currentUser == null) {
-                                        context.push(AppRoutes.login);
-                                      } else {
-                                        ref
-                                            .read(userRepositoryProvider)
-                                            .toggleBookmark(currentUser.userId,
-                                                story.storyId);
-                                      }
-                                    },
-                                    color: isBookmarked
-                                        ? theme.colorScheme.primary
-                                        : const Color(0xFFA1A1A6),
-                                  );
-                                }),
-                                const SizedBox(width: 8),
-                                IconButton(
-                                  icon: const Icon(Icons.ios_share_rounded),
-                                  onPressed: () {},
-                                  color: const Color(0xFFA1A1A6),
-                                ),
-                              ],
+                          if (actualMedia.isNotEmpty) ...[
+                            const SizedBox(height: 8),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 24.0),
+                              child: MilestoneMediaGallery(media: actualMedia),
                             ),
-                          ),
+                            const SizedBox(height: 16),
+                          ],
+
+                          InteractionSection(story: story, showLabels: false),
                           const SizedBox(height: 32),
 
                           Padding(
@@ -725,24 +596,15 @@ class StoryDetailScreen extends HookConsumerWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                if (actualMedia.isNotEmpty) ...[
-                                  Text(
-                                    'Journey Media',
-                                    style: theme.textTheme.headlineLarge
-                                        ?.copyWith(fontSize: 28),
-                                  ),
-                                  const SizedBox(height: 24),
-                                  MilestoneMediaGallery(media: actualMedia),
-                                  const SizedBox(height: 64),
-                                ],
                                 Text(
                                   'Comments',
-                                  style: theme.textTheme.headlineLarge
-                                      ?.copyWith(fontSize: 28),
+                                  style: theme.textTheme.titleLarge?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                                const SizedBox(height: 24),
+                                const SizedBox(height: 16),
                                 CommentsThread(milestone: story),
-                                const SizedBox(height: 40), // Normal padding
+                                const SizedBox(height: 40),
                               ],
                             ),
                           ),
@@ -903,11 +765,19 @@ class _TaggedPeopleList extends ConsumerWidget {
                             width: 20,
                             height: 20,
                             fit: BoxFit.cover,
-                            frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-                              if (wasSynchronouslyLoaded || frame != null) return child;
+                            frameBuilder: (context, child, frame,
+                                wasSynchronouslyLoaded) {
+                              if (wasSynchronouslyLoaded || frame != null)
+                                return child;
                               return Shimmer.fromColors(
-                                baseColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                                highlightColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.25),
+                                baseColor: Theme.of(context)
+                                    .colorScheme
+                                    .primary
+                                    .withValues(alpha: 0.1),
+                                highlightColor: Theme.of(context)
+                                    .colorScheme
+                                    .primary
+                                    .withValues(alpha: 0.25),
                                 child: Container(
                                   width: 20,
                                   height: 20,
@@ -915,10 +785,15 @@ class _TaggedPeopleList extends ConsumerWidget {
                                 ),
                               );
                             },
-                            errorBuilder: (context, error, stackTrace) => CircleAvatar(
+                            errorBuilder: (context, error, stackTrace) =>
+                                CircleAvatar(
                               radius: 10,
-                              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-                              child: Icon(Icons.person, size: 12, color: Theme.of(context).colorScheme.onSurface),
+                              backgroundColor:
+                                  Theme.of(context).scaffoldBackgroundColor,
+                              child: Icon(Icons.person,
+                                  size: 12,
+                                  color:
+                                      Theme.of(context).colorScheme.onSurface),
                             ),
                           ),
                         ),

@@ -97,7 +97,7 @@ class FirebaseStoryRepository implements StoryRepository {
   }
 
   @override
-  Future<void> toggleLike(String storyId, String userId) async {
+  Future<void> toggleReaction(String storyId, String userId, String reactionType) async {
     final docRef = _stories.doc(storyId);
     final userRef = _firestore.collection('users').doc(userId);
 
@@ -109,24 +109,73 @@ class FirebaseStoryRepository implements StoryRepository {
       if (!userDoc.exists) return;
 
       final data = doc.data() as Map<String, dynamic>;
+      
+      // Parse reactions map
+      final Map<String, dynamic> rawReactions = data['reactions'] ?? {};
+      final Map<String, List<String>> reactions = rawReactions.map(
+        (key, value) => MapEntry(key, List<String>.from(value)),
+      );
+      
+      // For backward compatibility
       final likesList = List<String>.from(data['likesList'] ?? []);
       int likesCount = data['likesCount'] ?? 0;
 
       final userData = userDoc.data() as Map<String, dynamic>;
       final likedStories = List<String>.from(userData['likedStories'] ?? []);
 
-      if (likesList.contains(userId)) {
+      // Check if user currently has ANY reaction
+      String? currentReactionType;
+      for (final entry in reactions.entries) {
+        if (entry.value.contains(userId)) {
+          currentReactionType = entry.key;
+          break;
+        }
+      }
+      
+      // Check legacy likesList
+      if (currentReactionType == null && likesList.contains(userId)) {
+        currentReactionType = 'heart';
+      }
+
+      if (currentReactionType == reactionType) {
+        // User tapped the same reaction they already had -> un-react
+        if (reactions.containsKey(reactionType)) {
+          reactions[reactionType]!.remove(userId);
+        }
         likesList.remove(userId);
-        likesCount--;
+        likesCount = (likesCount - 1).clamp(0, double.infinity).toInt();
         likedStories.remove(storyId);
       } else {
-        likesList.add(userId);
-        likesCount++;
-        likedStories.add(storyId);
+        // User changed reaction or added new reaction
+        
+        // Remove from old reaction if exists
+        if (currentReactionType != null) {
+          if (reactions.containsKey(currentReactionType)) {
+            reactions[currentReactionType]!.remove(userId);
+          }
+          if (currentReactionType == 'heart') {
+            likesList.remove(userId);
+          }
+        } else {
+          // It's a brand new reaction, increase count
+          likesCount++;
+          likedStories.add(storyId);
+        }
+        
+        // Add to new reaction
+        if (!reactions.containsKey(reactionType)) {
+          reactions[reactionType] = [];
+        }
+        reactions[reactionType]!.add(userId);
+        
+        if (reactionType == 'heart') {
+          likesList.add(userId);
+        }
       }
 
       transaction.update(docRef, {
-        'likesList': likesList,
+        'reactions': reactions,
+        'likesList': likesList, // maintain backward compatibility
         'likesCount': likesCount,
       });
 

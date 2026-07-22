@@ -109,12 +109,14 @@ class _GreyscaleFloatingOverlayState
     return Stack(
       children: [
         widget.child,
-        AnimatedOpacity(
-          opacity: _isDragging ? 1.0 : 0.0,
-          duration: const Duration(milliseconds: 200),
-          child: Align(
-            alignment: Alignment.bottomCenter,
-            child: Padding(
+        IgnorePointer(
+          ignoring: !_isDragging,
+          child: AnimatedOpacity(
+            opacity: _isDragging ? 1.0 : 0.0,
+            duration: const Duration(milliseconds: 200),
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: Padding(
               padding: EdgeInsets.only(bottom: safePadding.bottom + 20),
               child: ScaleTransition(
                 scale: _pulseAnimation,
@@ -149,6 +151,7 @@ class _GreyscaleFloatingOverlayState
               ),
             ),
           ),
+        ),
         ),
         AnimatedPositioned(
           duration:

@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 import '../../core/models/story_model.dart';
 import '../../core/presentation/widgets/user_badge.dart';
 import '../../core/presentation/widgets/verified_story_badge.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:healing_milestones/features/posts/data/story_providers.dart';
 import 'package:healing_milestones/features/auth/data/repository_providers.dart';
 import '../../features/auth/data/auth_provider.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:healing_milestones/shared/widgets/interaction_section.dart';
 
 class StoryCard extends ConsumerStatefulWidget {
   final StoryModel story;
@@ -366,123 +368,12 @@ class _StoryCardState extends ConsumerState<StoryCard>
                 ),
               ),
 
-              // Interaction Footer
-              Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Consumer(
-                  builder: (context, ref, child) {
-                    return Row(
-                      children: [
-                        InteractionButton(
-                          icon: widget.story.likesList.contains(
-                                  ref.watch(currentUserProvider)?.userId)
-                              ? Icons.favorite
-                              : Icons.favorite_border,
-                          label: widget.story.likesCount.toString(),
-                          color: widget.story.likesList.contains(
-                                  ref.watch(currentUserProvider)?.userId)
-                              ? theme.colorScheme.primary
-                              : theme.colorScheme.primary,
-                          onTap: () {
-                            final user = ref.read(currentUserProvider);
-                            if (user == null) {
-                              context.push(AppRoutes.login);
-                            } else {
-                              ref.read(storyRepositoryProvider).toggleLike(
-                                  widget.story.storyId, user.userId);
-                            }
-                          },
-                        ),
-                        const SizedBox(width: 16),
-                        InteractionButton(
-                          icon: Icons.chat_bubble_outline,
-                          label: widget.story.commentCount.toString(),
-                          color: theme.textTheme.bodySmall!.color!,
-                          onTap: () {
-                            // Can navigate to story detail for comments
-                            context.push(
-                                AppRoutes.storyDetail(widget.story.storyId));
-                          },
-                        ),
-                        const Spacer(),
-                        InkWell(
-                          onTap: () {
-                            final user = ref.read(currentUserProvider);
-                            if (user == null) {
-                              context.push(AppRoutes.login);
-                            } else {
-                              ref.read(userRepositoryProvider).toggleBookmark(
-                                  user.userId, widget.story.storyId);
-                            }
-                          },
-                          child: Icon(
-                            ref
-                                        .watch(currentUserProvider)
-                                        ?.bookmarkedStories
-                                        .contains(widget.story.storyId) ==
-                                    true
-                                ? Icons.bookmark
-                                : Icons.bookmark_border,
-                            color: ref
-                                        .watch(currentUserProvider)
-                                        ?.bookmarkedStories
-                                        .contains(widget.story.storyId) ==
-                                    true
-                                ? theme.colorScheme.primary
-                                : theme.textTheme.bodySmall!.color!,
-                            size: 22,
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
-              ),
+              // Interaction Section (LinkedIn style)
+              InteractionSection(story: widget.story, showLabels: false),
             ],
           ),
         ),
       ),
     );
-  }
 }
-
-class InteractionButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Color color;
-  final VoidCallback? onTap;
-
-  const InteractionButton({
-    Key? key,
-    required this.icon,
-    required this.label,
-    required this.color,
-    this.onTap,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: color, size: 22),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: TextStyle(
-                color: color,
-                fontWeight: FontWeight.w600,
-                fontSize: 15,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
