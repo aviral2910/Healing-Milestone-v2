@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:healing_milestones/features/posts/presentation/widgets/post_display_widget.dart';
 import 'package:healing_milestones/features/accessibility/data/accessibility_providers.dart';
+import 'package:healing_milestones/features/milestone/presentation/widgets/immersive_reading_edge_panel.dart';
 
 class ImmersiveReadingScreen extends StatefulWidget {
   final String content;
@@ -181,208 +182,37 @@ class _ImmersiveReadingScreenState extends State<ImmersiveReadingScreen> {
             ),
 
             // Edge Panel
-            Consumer(
-              builder: (context, ref, _) {
-                final isGreyscale =
-                    ref.watch(accessibilityProvider).isGreyscaleMode;
-                final theme = Theme.of(context);
-
-                // Styling based on requirements
-                final handleColor =
-                    isGreyscale ? Colors.grey[500]! : theme.colorScheme.primary;
-                final panelBgColor =
-                    isGreyscale ? Colors.grey[900]! : theme.colorScheme.surface;
-                final borderColor = isGreyscale
-                    ? Colors.grey[700]!
-                    : theme.colorScheme.primary.withOpacity(0.3);
-
-                final panelWidth = 120.0;
-                final panelHeight = 280.0;
-
-                return AnimatedPositioned(
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeOutCubic,
-                  right: _isEdgePanelOpen ? 0 : -panelWidth,
-                  top: (screenHeight - panelHeight) /
-                      2, // Center the panel vertically on screen
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment
-                        .center, // Center handle vertically relative to panel
-                    children: [
-                      // Handle Tab
-                      GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _isEdgePanelOpen = !_isEdgePanelOpen;
-                          });
-                        },
-                        onPanUpdate: (details) {
-                          if (details.delta.dx < -2) {
-                            setState(() => _isEdgePanelOpen = true);
-                          } else if (details.delta.dx > 2) {
-                            setState(() => _isEdgePanelOpen = false);
-                          }
-                        },
-                        child: Container(
-                          width: 16,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            color: panelBgColor,
-                            border: Border(
-                              left: BorderSide(color: borderColor, width: 1),
-                              top: BorderSide(color: borderColor, width: 1),
-                              bottom: BorderSide(color: borderColor, width: 1),
-                            ),
-                            borderRadius: const BorderRadius.horizontal(
-                                left: Radius.circular(8)),
-                            boxShadow: [
-                              if (!_isEdgePanelOpen)
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 4,
-                                  offset: const Offset(-2, 0),
-                                )
-                            ],
-                          ),
-                          child: Center(
-                            child: Container(
-                              width: 2,
-                              height: 20,
-                              decoration: BoxDecoration(
-                                color: handleColor.withValues(alpha: .6),
-                                borderRadius: BorderRadius.circular(2),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      // Expanded Panel Content
-                      Container(
-                        width: panelWidth,
-                        height: panelHeight,
-                        decoration: BoxDecoration(
-                          color: panelBgColor,
-                          border: Border(
-                            left: BorderSide(color: borderColor, width: 1),
-                            top: BorderSide(color: borderColor, width: 1),
-                            bottom: BorderSide(color: borderColor, width: 1),
-                          ),
-                          borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(16),
-                            bottomLeft: Radius.circular(16),
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.15),
-                              blurRadius: 10,
-                              offset: const Offset(-4, 0),
-                            )
-                          ],
-                        ),
-                        child: Column(
-                          children: [
-                            const SizedBox(height: 16),
-                            Expanded(
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  // Text Size Column
-                                  Column(
-                                    children: [
-                                      Icon(Icons.format_size_rounded,
-                                          color: handleColor, size: 20),
-                                      const SizedBox(height: 8),
-                                      Expanded(
-                                        child: RotatedBox(
-                                          quarterTurns: 3,
-                                          child: SliderTheme(
-                                            data: SliderThemeData(
-                                              trackHeight: 2,
-                                              activeTrackColor: handleColor,
-                                              inactiveTrackColor:
-                                                  handleColor.withOpacity(0.2),
-                                              thumbColor: handleColor,
-                                              overlayColor:
-                                                  handleColor.withOpacity(0.1),
-                                            ),
-                                            child: Slider(
-                                              value: _textSizeFactor,
-                                              min: 0.8,
-                                              max: 2.0,
-                                              onChanged: (val) {
-                                                setState(() {
-                                                  _textSizeFactor = val;
-                                                });
-                                              },
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  // Opacity Column
-                                  Column(
-                                    children: [
-                                      Icon(Icons.opacity_rounded,
-                                          color: handleColor, size: 20),
-                                      const SizedBox(height: 8),
-                                      Expanded(
-                                        child: RotatedBox(
-                                          quarterTurns: 3,
-                                          child: SliderTheme(
-                                            data: SliderThemeData(
-                                              trackHeight: 2,
-                                              activeTrackColor: handleColor,
-                                              inactiveTrackColor:
-                                                  handleColor.withOpacity(0.2),
-                                              thumbColor: handleColor,
-                                              overlayColor:
-                                                  handleColor.withOpacity(0.1),
-                                            ),
-                                            child: Slider(
-                                              value: _textOpacity,
-                                              min: 0.3,
-                                              max: 1.0,
-                                              onChanged: (val) {
-                                                setState(() {
-                                                  _textOpacity = val;
-                                                });
-                                              },
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            TextButton(
-                              onPressed: () {
-                                setState(() {
-                                  _textSizeFactor = 1.0;
-                                  _textOpacity = 1.0;
-                                });
-                              },
-                              style: TextButton.styleFrom(
-                                foregroundColor: handleColor,
-                                minimumSize: const Size(80, 36),
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              ),
-                              child: const Text('Reset',
-                                  style:
-                                      TextStyle(fontWeight: FontWeight.w600)),
-                            ),
-                            const SizedBox(height: 12),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                );
+            ImmersiveReadingEdgePanel(
+              isEdgePanelOpen: _isEdgePanelOpen,
+              onToggle: () {
+                setState(() {
+                  _isEdgePanelOpen = !_isEdgePanelOpen;
+                });
+              },
+              onPanUpdate: (details) {
+                if (details.delta.dx < -2) {
+                  setState(() => _isEdgePanelOpen = true);
+                } else if (details.delta.dx > 2) {
+                  setState(() => _isEdgePanelOpen = false);
+                }
+              },
+              textSizeFactor: _textSizeFactor,
+              textOpacity: _textOpacity,
+              onTextSizeChanged: (val) {
+                setState(() {
+                  _textSizeFactor = val;
+                });
+              },
+              onTextOpacityChanged: (val) {
+                setState(() {
+                  _textOpacity = val;
+                });
+              },
+              onReset: () {
+                setState(() {
+                  _textSizeFactor = 1.0;
+                  _textOpacity = 1.0;
+                });
               },
             ),
           ],
