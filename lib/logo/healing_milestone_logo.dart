@@ -122,6 +122,7 @@ class AscensionOverlayScreen extends StatefulWidget {
 class _AscensionOverlayScreenState extends State<AscensionOverlayScreen>
     with TickerProviderStateMixin {
   late AnimationController _controller;
+  late AnimationController _leafController;
 
   late Animation<double> _dot1Animation;
   late Animation<double> _dot2Animation;
@@ -145,6 +146,11 @@ class _AscensionOverlayScreenState extends State<AscensionOverlayScreen>
       vsync: this,
       duration: const Duration(milliseconds: 4000),
     );
+
+    _leafController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2500),
+    )..repeat(reverse: true);
 
     // 1. Bottom-right dot to square
     _dot1Animation = Tween<double>(begin: 0.0, end: 1.0).animate(
@@ -199,6 +205,7 @@ class _AscensionOverlayScreenState extends State<AscensionOverlayScreen>
   @override
   void dispose() {
     _controller.dispose();
+    _leafController.dispose();
     super.dispose();
   }
 
@@ -213,7 +220,7 @@ class _AscensionOverlayScreenState extends State<AscensionOverlayScreen>
         onTap: _closeScreen,
         child: Center(
           child: AnimatedBuilder(
-            animation: _controller,
+            animation: Listenable.merge([_controller, _leafController]),
             builder: (context, child) {
               return HealingMilestonesAnimatedLogoMark(
                 size: 120.0,
@@ -224,6 +231,7 @@ class _AscensionOverlayScreenState extends State<AscensionOverlayScreen>
                 sweepProgress: _sweepAnimation.value,
                 bottomLeavesProgress: _bottomLeavesAnimation.value,
                 topLeafProgress: _topLeafAnimation.value,
+                leafAnimationValue: _leafController.value,
               );
             },
           ),
@@ -245,6 +253,7 @@ class HealingMilestonesAnimatedLogoMark extends StatelessWidget {
   final double sweepProgress;
   final double bottomLeavesProgress;
   final double topLeafProgress;
+  final double leafAnimationValue;
 
   const HealingMilestonesAnimatedLogoMark({
     Key? key,
@@ -256,6 +265,7 @@ class HealingMilestonesAnimatedLogoMark extends StatelessWidget {
     required this.sweepProgress,
     required this.bottomLeavesProgress,
     required this.topLeafProgress,
+    this.leafAnimationValue = 0.0,
   }) : super(key: key);
 
   @override
@@ -275,6 +285,7 @@ class HealingMilestonesAnimatedLogoMark extends StatelessWidget {
               sweepProgress: sweepProgress,
               bottomLeavesProgress: bottomLeavesProgress,
               topLeafProgress: topLeafProgress,
+              leafAnimationValue: leafAnimationValue,
             ),
           ),
         ),
@@ -290,6 +301,7 @@ class _AscensionLogoPainter extends CustomPainter {
   final double sweepProgress;
   final double bottomLeavesProgress;
   final double topLeafProgress;
+  final double leafAnimationValue;
 
   _AscensionLogoPainter({
     required this.logoColor,
@@ -298,7 +310,22 @@ class _AscensionLogoPainter extends CustomPainter {
     required this.sweepProgress,
     required this.bottomLeavesProgress,
     required this.topLeafProgress,
+    required this.leafAnimationValue,
   });
+
+  Path _buildLeaf(Offset center, double size, double rotation, double scale) {
+    final Path path = Path();
+    path.moveTo(center.dx, center.dy - (size * 0.5 * scale));
+    path.quadraticBezierTo(center.dx + (size * 0.2 * scale), center.dy - (size * 0.1 * scale), center.dx, center.dy + (size * 0.5 * scale));
+    path.quadraticBezierTo(center.dx - (size * 0.2 * scale), center.dy - (size * 0.1 * scale), center.dx, center.dy - (size * 0.5 * scale));
+    path.close();
+    
+    final Matrix4 matrix = Matrix4.identity()
+      ..translate(center.dx, center.dy)
+      ..rotateZ(rotation)
+      ..translate(-center.dx, -center.dy);
+    return path.transform(matrix.storage);
+  }
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -338,44 +365,23 @@ class _AscensionLogoPainter extends CustomPainter {
     cutout.close();
 
     // Dynamically Add Animated Leaf Cutouts
+    final leafSize = 22.0; // Same size as static logo
+    final topLeafCenter = const Offset(48, 18);
+    final midLeafCenter = const Offset(41, 22.5);
+    final bottomLeafCenter = const Offset(55, 22.5);
+
+    final breathScale = 1.0 + (leafAnimationValue * 0.15);
+    final swayAngle = (leafAnimationValue - 0.5) * 0.15;
+
     if (bottomLeavesProgress > 0) {
-      final Path leaf1 = Path();
-      leaf1.moveTo(38, 18);
-      leaf1.quadraticBezierTo(43, 19, 44, 27);
-      leaf1.quadraticBezierTo(38, 24, 38, 18);
-      leaf1.close();
-
-      final Matrix4 leftM = Matrix4.identity()
-        ..translate(41.0, 22.5)
-        ..scale(bottomLeavesProgress, bottomLeavesProgress)
-        ..translate(-41.0, -22.5);
-      cutout.addPath(leaf1.transform(leftM.storage), Offset.zero);
-
-      final Path leaf3 = Path();
-      leaf3.moveTo(58, 18);
-      leaf3.quadraticBezierTo(53, 19, 52, 27);
-      leaf3.quadraticBezierTo(58, 24, 58, 18);
-      leaf3.close();
-
-      final Matrix4 rightM = Matrix4.identity()
-        ..translate(55.0, 22.5)
-        ..scale(bottomLeavesProgress, bottomLeavesProgress)
-        ..translate(-55.0, -22.5);
-      cutout.addPath(leaf3.transform(rightM.storage), Offset.zero);
+      final double currentScale = bottomLeavesProgress * breathScale;
+      cutout.addPath(_buildLeaf(midLeafCenter, leafSize, -0.392 - swayAngle, currentScale), Offset.zero);
+      cutout.addPath(_buildLeaf(bottomLeafCenter, leafSize, 0.392 + (swayAngle * 1.5), currentScale), Offset.zero);
     }
 
     if (topLeafProgress > 0) {
-      final Path leaf2 = Path();
-      leaf2.moveTo(48, 10);
-      leaf2.quadraticBezierTo(52, 17, 48, 27);
-      leaf2.quadraticBezierTo(44, 17, 48, 10);
-      leaf2.close();
-
-      final Matrix4 topM = Matrix4.identity()
-        ..translate(48.0, 18.5)
-        ..scale(topLeafProgress, topLeafProgress)
-        ..translate(-48.0, -18.5);
-      cutout.addPath(leaf2.transform(topM.storage), Offset.zero);
+      final double currentScale = topLeafProgress * breathScale;
+      cutout.addPath(_buildLeaf(topLeafCenter, leafSize, 0 + swayAngle, currentScale), Offset.zero);
     }
 
     final Path rawSolidShape =
@@ -497,6 +503,7 @@ class _AscensionLogoPainter extends CustomPainter {
       oldDelegate.sweepProgress != sweepProgress ||
       oldDelegate.bottomLeavesProgress != bottomLeavesProgress ||
       oldDelegate.topLeafProgress != topLeafProgress ||
+      oldDelegate.leafAnimationValue != leafAnimationValue ||
       oldDelegate.logoColor != logoColor;
 }
 
@@ -706,5 +713,6 @@ class _LogoMarkPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _LogoMarkPainter oldDelegate) =>
-      oldDelegate.logoColor != logoColor;
+      oldDelegate.logoColor != logoColor ||
+      oldDelegate.animationValue != animationValue;
 }
