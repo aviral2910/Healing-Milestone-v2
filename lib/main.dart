@@ -57,18 +57,32 @@ class HealingMilestonesApp extends ConsumerWidget {
 
     // Apply accessibility scaling to the base dark theme
     ThemeData baseTheme = AppTheme.getThemeData(activePalette);
+    TextTheme scaledTextTheme = baseTheme.textTheme.apply(
+      bodyColor: activePalette.textPrimary
+          .withValues(alpha: accessibilityState.textOpacity),
+      displayColor: activePalette.textPrimary
+          .withValues(alpha: accessibilityState.textOpacity),
+    );
+
     return DevicePreview(
       enabled: isDevicePreview,
       builder: (context) => MaterialApp.router(
         title: 'Healing Milestones',
-        theme: baseTheme,
+        theme: baseTheme.copyWith(textTheme: scaledTextTheme),
         routerConfig: router,
         debugShowCheckedModeBanner: false,
         useInheritedMediaQuery: true,
         locale: DevicePreview.locale(context),
         builder: (context, child) {
           final widget = DevicePreview.appBuilder(context, child);
-          Widget appContent = widget;
+          final data = MediaQuery.of(context);
+          Widget appContent = MediaQuery(
+            data: data.copyWith(
+              textScaler: TextScaler.linear(
+                  data.textScaler.scale(1) * accessibilityState.textSizeFactor),
+            ),
+            child: widget,
+          );
 
           if (accessibilityState.isGreyscaleMode) {
             const greyscaleMatrix = <double>[

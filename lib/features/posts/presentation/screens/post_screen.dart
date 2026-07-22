@@ -685,23 +685,15 @@ class __MiniStoryCardState extends ConsumerState<_MiniStoryCard>
                     horizontal: 16.0, vertical: 12.0),
                 child: Row(
                   children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.favorite_border, color: theme.colorScheme.primary, size: 22),
-                        const SizedBox(width: 8),
-                        Text('2.4k', style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.w600, fontSize: 15)),
-                      ],
-                    ),
+                    InteractionButton(
+                        icon: Icons.favorite_border,
+                        label: '2.4k',
+                        color: theme.colorScheme.primary), // Golden
                     const SizedBox(width: 16),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.chat_bubble_outline, color: Color(0xFFA1A1A6), size: 22),
-                        const SizedBox(width: 8),
-                        const Text('142', style: TextStyle(color: Color(0xFFA1A1A6), fontWeight: FontWeight.w600, fontSize: 15)),
-                      ],
-                    ),
+                    InteractionButton(
+                        icon: Icons.chat_bubble_outline,
+                        label: '142',
+                        color: const Color(0xFFA1A1A6)),
                     const Spacer(),
                     const Icon(Icons.bookmark_border,
                         color: Color(0xFFA1A1A6), size: 22),

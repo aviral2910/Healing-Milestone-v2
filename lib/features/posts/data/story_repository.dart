@@ -11,6 +11,6 @@ abstract class StoryRepository {
   Future<void> createStory(StoryModel story);
   Future<void> updateStory(StoryModel story);
   Future<void> deleteStory(String storyId);
-  Future<void> toggleReaction(String storyId, String userId, String reactionType);
+  Future<void> toggleLike(String storyId, String userId);
   Future<List<StoryModel>> getStoriesByIds(List<String> storyIds);
 }
