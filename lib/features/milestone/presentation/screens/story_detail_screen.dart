@@ -18,7 +18,9 @@ import '../../../auth/data/repository_providers.dart';
 import '../../../posts/data/story_providers.dart';
 
 import '../../../../core/data/dummy_data.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+import '../../../../shared/widgets/interaction_section.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
@@ -634,89 +636,7 @@ class StoryDetailScreen extends HookConsumerWidget {
                           ),
 
                           const SizedBox(height: 16),
-                          Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 24.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                Consumer(
-                                  builder: (context, ref, child) {
-                                    final currentUser =
-                                        ref.watch(currentUserProvider);
-                                    final isLiked = story.likesList
-                                        .contains(currentUser?.userId);
-
-                                    return Row(
-                                      children: [
-                                        Text(
-                                          story.likesCount.toString(),
-                                          style: TextStyle(
-                                            color: isLiked
-                                                ? theme.colorScheme.primary
-                                                : const Color(0xFFA1A1A6),
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                        IconButton(
-                                          icon: Icon(isLiked
-                                              ? Icons.favorite
-                                              : Icons.favorite_border),
-                                          onPressed: () {
-                                            if (currentUser == null) {
-                                              context.push(AppRoutes.login);
-                                            } else {
-                                              ref
-                                                  .read(storyRepositoryProvider)
-                                                  .toggleLike(story.storyId,
-                                                      currentUser.userId);
-                                            }
-                                          },
-                                          color: isLiked
-                                              ? theme.colorScheme.primary
-                                              : const Color(0xFFA1A1A6),
-                                        ),
-                                      ],
-                                    );
-                                  },
-                                ),
-                                const SizedBox(width: 8),
-                                Consumer(builder: (context, ref, child) {
-                                  final currentUser =
-                                      ref.watch(currentUserProvider);
-                                  final isBookmarked = currentUser
-                                          ?.bookmarkedStories
-                                          .contains(story.storyId) ??
-                                      false;
-
-                                  return IconButton(
-                                    icon: Icon(isBookmarked
-                                        ? Icons.bookmark
-                                        : Icons.bookmark_border),
-                                    onPressed: () {
-                                      if (currentUser == null) {
-                                        context.push(AppRoutes.login);
-                                      } else {
-                                        ref
-                                            .read(userRepositoryProvider)
-                                            .toggleBookmark(currentUser.userId,
-                                                story.storyId);
-                                      }
-                                    },
-                                    color: isBookmarked
-                                        ? theme.colorScheme.primary
-                                        : const Color(0xFFA1A1A6),
-                                  );
-                                }),
-                                const SizedBox(width: 8),
-                                IconButton(
-                                  icon: const Icon(Icons.ios_share_rounded),
-                                  onPressed: () {},
-                                  color: const Color(0xFFA1A1A6),
-                                ),
-                              ],
-                            ),
-                          ),
+                          InteractionSection(story: story, showLabels: false),
                           const SizedBox(height: 32),
 
                           Padding(

@@ -1,0 +1,1995 @@
+commit e5ba186e049440fecf4155700443d4c7a9c0970f
+Author: Aviral <aviral@prmsnls.xyz>
+Date:   Wed Jul 22 21:35:01 2026 +0530
+
+    Revert "immersive screen"
+    
+    This reverts commit b75986cb79135cb392239bf1e0a0d7acafc3254d.
+
+diff --git a/lib/core/models/story_model.dart b/lib/core/models/story_model.dart
+index 8f5b28a..cfad7c0 100644
+--- a/lib/core/models/story_model.dart
++++ b/lib/core/models/story_model.dart
+@@ -21,7 +21,6 @@ class StoryModel {
+   final List<String> likesList;
+   final int commentCount;
+   final List<String> comments;
+-  final Map<String, List<String>> reactions;
+   final String authorId;
+   final String qrId;
+   final int readingTime;
+@@ -47,7 +46,6 @@ class StoryModel {
+     this.likesList = const [],
+     this.commentCount = 0,
+     this.comments = const [],
+-    this.reactions = const {},
+     required this.authorId,
+     required this.qrId,
+     required this.readingTime,
+@@ -74,7 +72,6 @@ class StoryModel {
+     List<String>? likesList,
+     int? commentCount,
+     List<String>? comments,
+-    Map<String, List<String>>? reactions,
+     String? authorId,
+     String? qrId,
+     int? readingTime,
+@@ -100,7 +97,6 @@ class StoryModel {
+       likesList: likesList ?? this.likesList,
+       commentCount: commentCount ?? this.commentCount,
+       comments: comments ?? this.comments,
+-      reactions: reactions ?? this.reactions,
+       authorId: authorId ?? this.authorId,
+       qrId: qrId ?? this.qrId,
+       readingTime: readingTime ?? this.readingTime,
+@@ -128,7 +124,6 @@ class StoryModel {
+       'likesList': likesList,
+       'commentCount': commentCount,
+       'comments': comments,
+-      'reactions': reactions,
+       'authorId': authorId,
+       'qrId': qrId,
+       'readingTime': readingTime,
+@@ -157,11 +152,6 @@ class StoryModel {
+       likesList: List<String>.from(map['likesList'] ?? []),
+       commentCount: map['commentCount'] ?? 0,
+       comments: List<String>.from(map['comments'] ?? []),
+-      reactions: map['reactions'] != null 
+-          ? (map['reactions'] as Map<String, dynamic>).map(
+-              (key, value) => MapEntry(key, List<String>.from(value)),
+-            )
+-          : {},
+       authorId: map['authorId'] ?? '',
+       qrId: map['qrId'] ?? '',
+       readingTime: map['readingTime'] ?? 0,
+diff --git a/lib/features/accessibility/presentation/widgets/greyscale_floating_overlay.dart b/lib/features/accessibility/presentation/widgets/greyscale_floating_overlay.dart
+index 4950f91..60bf0c6 100644
+--- a/lib/features/accessibility/presentation/widgets/greyscale_floating_overlay.dart
++++ b/lib/features/accessibility/presentation/widgets/greyscale_floating_overlay.dart
+@@ -109,14 +109,12 @@ class _GreyscaleFloatingOverlayState
+     return Stack(
+       children: [
+         widget.child,
+-        IgnorePointer(
+-          ignoring: !_isDragging,
+-          child: AnimatedOpacity(
+-            opacity: _isDragging ? 1.0 : 0.0,
+-            duration: const Duration(milliseconds: 200),
+-            child: Align(
+-              alignment: Alignment.bottomCenter,
+-              child: Padding(
++        AnimatedOpacity(
++          opacity: _isDragging ? 1.0 : 0.0,
++          duration: const Duration(milliseconds: 200),
++          child: Align(
++            alignment: Alignment.bottomCenter,
++            child: Padding(
+               padding: EdgeInsets.only(bottom: safePadding.bottom + 20),
+               child: ScaleTransition(
+                 scale: _pulseAnimation,
+@@ -152,7 +150,6 @@ class _GreyscaleFloatingOverlayState
+             ),
+           ),
+         ),
+-        ),
+         AnimatedPositioned(
+           duration:
+               _isDragging ? Duration.zero : const Duration(milliseconds: 300),
+diff --git a/lib/features/milestone/presentation/screens/immersive_reading_screen.dart b/lib/features/milestone/presentation/screens/immersive_reading_screen.dart
+index a5b708d..fb8eb28 100644
+--- a/lib/features/milestone/presentation/screens/immersive_reading_screen.dart
++++ b/lib/features/milestone/presentation/screens/immersive_reading_screen.dart
+@@ -1,10 +1,7 @@
+ import 'package:flutter/material.dart';
+-import 'package:flutter/services.dart';
+-import 'package:flutter_riverpod/flutter_riverpod.dart';
+-import 'package:healing_milestones/features/accessibility/data/accessibility_providers.dart';
+ import 'package:healing_milestones/features/posts/presentation/widgets/post_display_widget.dart';
+ 
+-class ImmersiveReadingScreen extends ConsumerStatefulWidget {
++class ImmersiveReadingScreen extends StatefulWidget {
+   final String content;
+   final double initialDy;
+ 
+@@ -15,22 +12,17 @@ class ImmersiveReadingScreen extends ConsumerStatefulWidget {
+   }) : super(key: key);
+ 
+   @override
+-  ConsumerState<ImmersiveReadingScreen> createState() =>
+-      _ImmersiveReadingScreenState();
++  State<ImmersiveReadingScreen> createState() => _ImmersiveReadingScreenState();
+ }
+ 
+-class _ImmersiveReadingScreenState
+-    extends ConsumerState<ImmersiveReadingScreen> {
++class _ImmersiveReadingScreenState extends State<ImmersiveReadingScreen> {
+   late ScrollController _scrollController;
+   double _initialScrollOffset = 0.0;
+   final ValueNotifier<double> _progressNotifier = ValueNotifier<double>(0.0);
+-  bool _isEdgePanelOpen = false;
+ 
+   @override
+   void initState() {
+     super.initState();
+-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+-        overlays: [SystemUiOverlay.bottom]);
+     _scrollController = ScrollController();
+ 
+     _scrollController.addListener(() {
+@@ -83,8 +75,6 @@ class _ImmersiveReadingScreenState
+ 
+   @override
+   void dispose() {
+-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+-        overlays: SystemUiOverlay.values);
+     _progressNotifier.dispose();
+     _scrollController.dispose();
+     super.dispose();
+@@ -100,19 +90,6 @@ class _ImmersiveReadingScreenState
+     final topPadding =
+         widget.initialDy > safeAreaTop ? widget.initialDy : safeAreaTop;
+ 
+-    // When text size changes, we want to maintain our relative position within the text.
+-    ref.listen(accessibilityProvider, (previous, next) {
+-      if (previous != null && previous.textSizeFactor != next.textSizeFactor) {
+-        final ratio = next.textSizeFactor / previous.textSizeFactor;
+-        if (_scrollController.hasClients) {
+-          final currentTextOffset = _scrollController.offset - topPadding;
+-          final newTextOffset = currentTextOffset * ratio;
+-          // Jump to the new offset to keep the same text word roughly in view
+-          _scrollController.jumpTo(topPadding + newTextOffset);
+-        }
+-      }
+-    });
+-
+     final screenHeight = MediaQuery.of(context).size.height;
+     // We calculate the minimum scroll offset needed to match the screen position
+     final requiredScrollOffset = topPadding - widget.initialDy;
+@@ -121,10 +98,10 @@ class _ImmersiveReadingScreenState
+       canPop: false,
+       onPopInvoked: (didPop) {
+         if (didPop) return;
+-        final textOffset = _scrollController.hasClients
+-            ? _scrollController.offset - topPadding
++        final delta = _scrollController.hasClients
++            ? _scrollController.offset - _initialScrollOffset
+             : 0.0;
+-        Navigator.of(context).pop(textOffset);
++        Navigator.of(context).pop(delta);
+       },
+       child: Scaffold(
+         backgroundColor: theme.scaffoldBackgroundColor,
+@@ -132,14 +109,10 @@ class _ImmersiveReadingScreenState
+           children: [
+             GestureDetector(
+               onTap: () {
+-                if (_isEdgePanelOpen) {
+-                  setState(() => _isEdgePanelOpen = false);
+-                  return;
+-                }
+-                final textOffset = _scrollController.hasClients
+-                    ? _scrollController.offset - topPadding
++                final delta = _scrollController.hasClients
++                    ? _scrollController.offset - _initialScrollOffset
+                     : 0.0;
+-                Navigator.of(context).pop(textOffset);
++                Navigator.of(context).pop(delta);
+               },
+               behavior: HitTestBehavior.opaque,
+               child: SingleChildScrollView(
+@@ -157,25 +130,8 @@ class _ImmersiveReadingScreenState
+                       vertical: 20.0,
+                       horizontal: 8.0,
+                     ),
+-                    child: Consumer(
+-                      builder: (context, ref, child) {
+-                        final state = ref.watch(accessibilityProvider);
+-                        final data = MediaQuery.of(context);
+-                        return MediaQuery(
+-                          data: data.copyWith(
+-                            textScaler: TextScaler.linear(
+-                                data.textScaler.scale(1) *
+-                                    state.textSizeFactor),
+-                          ),
+-                          child: Opacity(
+-                            opacity: state.textOpacity,
+-                            child: child!,
+-                          ),
+-                        );
+-                      },
+-                      child: PostDisplayWidget(
+-                        content: widget.content,
+-                      ),
++                    child: PostDisplayWidget(
++                      content: widget.content,
+                     ),
+                   ),
+                 ),
+@@ -207,260 +163,6 @@ class _ImmersiveReadingScreenState
+                 },
+               ),
+             ),
+-
+-            // Edge Panel
+-            AnimatedPositioned(
+-              duration: const Duration(milliseconds: 300),
+-              curve: Curves.easeInOutBack,
+-              right: _isEdgePanelOpen ? 0 : -220,
+-              top: 0,
+-              bottom: 0,
+-              child: SafeArea(
+-                child: Center(
+-                  child: Row(
+-                    mainAxisSize: MainAxisSize.min,
+-                    children: [
+-                      // Handle
+-                      Consumer(builder: (context, ref, child) {
+-                        final accessibilityState =
+-                            ref.watch(accessibilityProvider);
+-                        return GestureDetector(
+-                          onTap: () {
+-                            setState(() {
+-                              _isEdgePanelOpen = !_isEdgePanelOpen;
+-                            });
+-                          },
+-                          onPanUpdate: (details) {
+-                            if (details.delta.dx < -2) {
+-                              setState(() => _isEdgePanelOpen = true);
+-                            } else if (details.delta.dx > 2) {
+-                              setState(() => _isEdgePanelOpen = false);
+-                            }
+-                          },
+-                          child: Container(
+-                            width: 18,
+-                            height: 90,
+-                            decoration: BoxDecoration(
+-                              color: accessibilityState.isGreyscaleMode
+-                                  ? Colors.grey[900]
+-                                  : Theme.of(context).cardColor,
+-                              borderRadius: const BorderRadius.only(
+-                                topLeft: Radius.circular(12),
+-                                bottomLeft: Radius.circular(12),
+-                              ),
+-                              border: Border(
+-                                top: BorderSide(
+-                                  color: accessibilityState.isGreyscaleMode
+-                                      ? Colors.grey.withValues(alpha: .2)
+-                                      : theme.colorScheme.primary
+-                                          .withValues(alpha: 0.2),
+-                                  width: 1,
+-                                ),
+-                                left: BorderSide(
+-                                  color: accessibilityState.isGreyscaleMode
+-                                      ? Colors.grey.withValues(alpha: .2)
+-                                      : theme.colorScheme.primary
+-                                          .withValues(alpha: 0.2),
+-                                  width: 1,
+-                                ),
+-                                bottom: BorderSide(
+-                                  color: accessibilityState.isGreyscaleMode
+-                                      ? Colors.grey.withValues(alpha: .2)
+-                                      : theme.colorScheme.primary
+-                                          .withValues(alpha: 0.2),
+-                                  width: 1,
+-                                ),
+-                              ),
+-                              boxShadow: [
+-                                BoxShadow(
+-                                  color: Colors.black.withValues(alpha: 0.1),
+-                                  blurRadius: 2,
+-                                  offset: const Offset(-2, 0),
+-                                ),
+-                              ],
+-                            ),
+-                            child: Icon(
+-                              _isEdgePanelOpen
+-                                  ? Icons.chevron_right
+-                                  : Icons.chevron_left,
+-                              color: accessibilityState.isGreyscaleMode
+-                                  ? Colors.white
+-                                  : Theme.of(context).iconTheme.color,
+-                              size: 20,
+-                            ),
+-                          ),
+-                        );
+-                      }),
+-
+-                      // Panel Content
+-                      Consumer(
+-                        builder: (context, ref, child) {
+-                          final accessibilityState =
+-                              ref.watch(accessibilityProvider);
+-                          return Container(
+-                            width: 220,
+-                            padding: const EdgeInsets.symmetric(
+-                                vertical: 24, horizontal: 16),
+-                            decoration: BoxDecoration(
+-                              borderRadius: BorderRadius.only(
+-                                topLeft: Radius.circular(12),
+-                                bottomLeft: Radius.circular(12),
+-                              ),
+-                              color: accessibilityState.isGreyscaleMode
+-                                  ? Colors.grey[900]
+-                                  : theme.colorScheme.surface
+-                                      .withValues(alpha: 0.95),
+-                              border: Border(
+-                                top: BorderSide(
+-                                  color: accessibilityState.isGreyscaleMode
+-                                      ? Colors.grey.withValues(alpha: .2)
+-                                      : theme.colorScheme.primary
+-                                          .withValues(alpha: 0.2),
+-                                  width: 1,
+-                                ),
+-                                left: BorderSide(
+-                                  color: accessibilityState.isGreyscaleMode
+-                                      ? Colors.grey.withValues(alpha: .2)
+-                                      : theme.colorScheme.primary
+-                                          .withValues(alpha: 0.2),
+-                                  width: 1,
+-                                ),
+-                                bottom: BorderSide(
+-                                  color: accessibilityState.isGreyscaleMode
+-                                      ? Colors.grey.withValues(alpha: .2)
+-                                      : theme.colorScheme.primary
+-                                          .withValues(alpha: 0.2),
+-                                  width: 1,
+-                                ),
+-                              ),
+-                              boxShadow: [
+-                                BoxShadow(
+-                                  color: Colors.black.withValues(alpha: 0.1),
+-                                  blurRadius: 10,
+-                                  offset: const Offset(-5, 0),
+-                                ),
+-                              ],
+-                            ),
+-                            child: child,
+-                          );
+-                        },
+-                        child: Column(
+-                          mainAxisSize: MainAxisSize.min,
+-                          crossAxisAlignment: CrossAxisAlignment.start,
+-                          children: [
+-                            Text(
+-                              'Display Settings',
+-                              style: theme.textTheme.titleMedium?.copyWith(
+-                                fontWeight: FontWeight.bold,
+-                              ),
+-                            ),
+-                            const SizedBox(height: 24),
+-                            Row(
+-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+-                              children: [
+-                                // Text Size Slider
+-                                Column(
+-                                  children: [
+-                                    const Icon(Icons.format_size,
+-                                        size: 20, color: Colors.grey),
+-                                    const SizedBox(height: 8),
+-                                    SizedBox(
+-                                      height: 150,
+-                                      child: RotatedBox(
+-                                        quarterTurns: 3,
+-                                        child: Consumer(
+-                                          builder: (context, ref, _) {
+-                                            final state = ref
+-                                                .watch(accessibilityProvider);
+-                                            return Slider(
+-                                              value: state.textSizeFactor,
+-                                              min: 0.8,
+-                                              max: 2.0,
+-                                              activeColor:
+-                                                  theme.colorScheme.primary,
+-                                              onChanged: (val) => ref
+-                                                  .read(accessibilityProvider
+-                                                      .notifier)
+-                                                  .updateTextSizeFactor(val),
+-                                            );
+-                                          },
+-                                        ),
+-                                      ),
+-                                    ),
+-                                    const SizedBox(height: 8),
+-                                    Text('Size',
+-                                        style: theme.textTheme.labelSmall),
+-                                  ],
+-                                ),
+-                                // Opacity Slider
+-                                Column(
+-                                  children: [
+-                                    const Icon(Icons.opacity,
+-                                        size: 20, color: Colors.grey),
+-                                    const SizedBox(height: 8),
+-                                    SizedBox(
+-                                      height: 150,
+-                                      child: RotatedBox(
+-                                        quarterTurns: 3,
+-                                        child: Consumer(
+-                                          builder: (context, ref, _) {
+-                                            final state = ref
+-                                                .watch(accessibilityProvider);
+-                                            return Slider(
+-                                              value: state.textOpacity,
+-                                              min: 0.3,
+-                                              max: 1.0,
+-                                              activeColor:
+-                                                  theme.colorScheme.primary,
+-                                              onChanged: (val) => ref
+-                                                  .read(accessibilityProvider
+-                                                      .notifier)
+-                                                  .updateTextOpacity(val),
+-                                            );
+-                                          },
+-                                        ),
+-                                      ),
+-                                    ),
+-                                    const SizedBox(height: 8),
+-                                    Text('Opacity',
+-                                        style: theme.textTheme.labelSmall),
+-                                  ],
+-                                ),
+-                              ],
+-                            ),
+-                            const SizedBox(height: 24),
+-                            SizedBox(
+-                              width: double.infinity,
+-                              child: Consumer(builder: (context, ref, _) {
+-                                return OutlinedButton.icon(
+-                                  onPressed: () {
+-                                    ref
+-                                        .read(accessibilityProvider.notifier)
+-                                        .updateTextSizeFactor(1.0);
+-                                    ref
+-                                        .read(accessibilityProvider.notifier)
+-                                        .updateTextOpacity(1.0);
+-                                  },
+-                                  icon: const Icon(Icons.refresh, size: 18),
+-                                  label: const Text('Reset'),
+-                                  style: OutlinedButton.styleFrom(
+-                                    foregroundColor:
+-                                        theme.colorScheme.onSurface,
+-                                    side: BorderSide(
+-                                        color: theme.colorScheme.onSurface
+-                                            .withValues(alpha: 0.2)),
+-                                  ),
+-                                );
+-                              }),
+-                            ),
+-                          ],
+-                        ),
+-                      ),
+-                    ],
+-                  ),
+-                ),
+-              ),
+-            ),
+           ],
+         ),
+       ),
+diff --git a/lib/features/milestone/presentation/screens/story_detail_screen.dart b/lib/features/milestone/presentation/screens/story_detail_screen.dart
+index 4e39eeb..813a0bd 100644
+--- a/lib/features/milestone/presentation/screens/story_detail_screen.dart
++++ b/lib/features/milestone/presentation/screens/story_detail_screen.dart
+@@ -1,7 +1,6 @@
+ import 'package:healing_milestones/core/router/app_routes.dart';
+ import 'dart:ui';
+ import 'package:flutter/material.dart';
+-import 'package:flutter/rendering.dart';
+ import 'package:hooks_riverpod/hooks_riverpod.dart';
+ import 'package:shimmer/shimmer.dart';
+ import 'immersive_reading_screen.dart';
+@@ -19,8 +18,6 @@ import '../../../auth/data/repository_providers.dart';
+ import '../../../posts/data/story_providers.dart';
+ 
+ import '../../../../core/data/dummy_data.dart';
+-import '../../../../shared/widgets/story_card.dart';
+-import '../../../../shared/widgets/interaction_section.dart';
+ import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+ import 'package:go_router/go_router.dart';
+ import 'package:flutter_hooks/flutter_hooks.dart';
+@@ -39,6 +36,103 @@ class StoryDetailScreen extends HookConsumerWidget {
+     return 'just now';
+   }
+ 
++  void _showAccessibilityBottomSheet(BuildContext context, WidgetRef ref) {
++    showModalBottomSheet(
++      context: context,
++      backgroundColor: Colors.transparent,
++      builder: (context) {
++        return BackdropFilter(
++          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
++          child: Container(
++            padding: const EdgeInsets.all(24),
++            decoration: BoxDecoration(
++              color:
++                  Theme.of(context).colorScheme.surface.withValues(alpha: 0.9),
++              borderRadius:
++                  const BorderRadius.vertical(top: Radius.circular(32)),
++              border: Border.all(color: Theme.of(context).dividerColor),
++            ),
++            child: Column(
++              mainAxisSize: MainAxisSize.min,
++              crossAxisAlignment: CrossAxisAlignment.start,
++              children: [
++                Center(
++                  child: Container(
++                    width: 40,
++                    height: 5,
++                    decoration: BoxDecoration(
++                      color: Theme.of(context).dividerColor,
++                      borderRadius: BorderRadius.circular(2.5),
++                    ),
++                  ),
++                ),
++                const SizedBox(height: 32),
++                Row(
++                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
++                  children: [
++                    Text('Reading Settings',
++                        style: Theme.of(context).textTheme.titleLarge),
++                    Consumer(builder: (context, ref, child) {
++                      return TextButton(
++                        onPressed: () {
++                          ref
++                              .read(accessibilityProvider.notifier)
++                              .updateTextSizeFactor(1.0);
++                          ref
++                              .read(accessibilityProvider.notifier)
++                              .updateTextOpacity(1.0);
++                        },
++                        child: const Text('Reset',
++                            style: TextStyle(fontWeight: FontWeight.bold)),
++                      );
++                    }),
++                  ],
++                ),
++                const SizedBox(height: 24),
++                const Text('Text Size',
++                    style: TextStyle(
++                        color: Colors.grey, fontWeight: FontWeight.w600)),
++                Consumer(
++                  builder: (context, ref, child) {
++                    final state = ref.watch(accessibilityProvider);
++                    return Slider(
++                      value: state.textSizeFactor,
++                      min: 0.8,
++                      max: 2.0,
++                      activeColor: Theme.of(context).primaryColor,
++                      onChanged: (val) => ref
++                          .read(accessibilityProvider.notifier)
++                          .updateTextSizeFactor(val),
++                    );
++                  },
++                ),
++                const SizedBox(height: 16),
++                const Text('Contrast/Opacity',
++                    style: TextStyle(
++                        color: Colors.grey, fontWeight: FontWeight.w600)),
++                Consumer(
++                  builder: (context, ref, child) {
++                    final state = ref.watch(accessibilityProvider);
++                    return Slider(
++                      value: state.textOpacity,
++                      min: 0.5,
++                      max: 1.0,
++                      activeColor: Theme.of(context).colorScheme.secondary,
++                      onChanged: (val) => ref
++                          .read(accessibilityProvider.notifier)
++                          .updateTextOpacity(val),
++                    );
++                  },
++                ),
++                const SizedBox(height: 32),
++              ],
++            ),
++          ),
++        );
++      },
++    );
++  }
++
+   @override
+   Widget build(BuildContext context, WidgetRef ref) {
+     final storyAsync = ref.watch(storyByIdProvider(milestoneId));
+@@ -103,35 +197,27 @@ class StoryDetailScreen extends HookConsumerWidget {
+                       actions: [
+                         Consumer(
+                           builder: (context, ref, child) {
+-                            final accessibilityState =
+-                                ref.watch(accessibilityProvider);
+-                            final isGreyscale =
+-                                accessibilityState.isGreyscaleMode;
+-
++                            final accessibilityState = ref.watch(accessibilityProvider);
++                            final isGreyscale = accessibilityState.isGreyscaleMode;
++                            
+                             // Only show in AppBar if the floating icon is disabled
+                             if (accessibilityState.showGreyscaleFloatingIcon) {
+                               return const SizedBox.shrink();
+                             }
+-
++                            
+                             return IconButton(
+                               icon: Icon(
+-                                isGreyscale
+-                                    ? Icons.auto_stories_rounded
+-                                    : Icons.auto_stories_outlined,
+-                                color: isGreyscale
+-                                    ? theme.colorScheme.primary
+-                                    : theme.iconTheme.color,
++                                isGreyscale ? Icons.auto_stories_rounded : Icons.auto_stories_outlined,
++                                color: isGreyscale ? theme.colorScheme.primary : theme.iconTheme.color,
+                               ),
+                               tooltip: 'Toggle Reading Mode (Greyscale)',
+                               onPressed: () {
+-                                ref
+-                                    .read(accessibilityProvider.notifier)
+-                                    .toggleGreyscaleMode();
++                                ref.read(accessibilityProvider.notifier).toggleGreyscaleMode();
+                                 ScaffoldMessenger.of(context).showSnackBar(
+                                   SnackBar(
+-                                    content: Text(isGreyscale
+-                                        ? 'Reading Mode Off'
+-                                        : 'Reading Mode On (Eye-friendly Greyscale)'),
++                                    content: Text(isGreyscale 
++                                      ? 'Reading Mode Off' 
++                                      : 'Reading Mode On (Eye-friendly Greyscale)'),
+                                     duration: const Duration(seconds: 2),
+                                   ),
+                                 );
+@@ -242,6 +328,11 @@ class StoryDetailScreen extends HookConsumerWidget {
+                               ),
+                             ],
+                           ),
++                        IconButton(
++                          icon: const Icon(Icons.settings_display_outlined),
++                          onPressed: () =>
++                              _showAccessibilityBottomSheet(context, ref),
++                        )
+                       ],
+                     ),
+                     SliverToBoxAdapter(
+@@ -305,23 +396,16 @@ class StoryDetailScreen extends HookConsumerWidget {
+                                         ),
+                                         child: ClipOval(
+                                           child: Image.network(
+-                                            userAsync.valueOrNull
+-                                                    ?.profilePicture ??
++                                            userAsync.valueOrNull?.profilePicture ??
+                                                 'https://api.dicebear.com/7.x/avataaars/png?seed=${story.authorId}',
+                                             width: 44,
+                                             height: 44,
+                                             fit: BoxFit.cover,
+-                                            frameBuilder: (context, child,
+-                                                frame, wasSynchronouslyLoaded) {
+-                                              if (wasSynchronouslyLoaded ||
+-                                                  frame != null) return child;
++                                            frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
++                                              if (wasSynchronouslyLoaded || frame != null) return child;
+                                               return Shimmer.fromColors(
+-                                                baseColor: theme
+-                                                    .colorScheme.primary
+-                                                    .withValues(alpha: 0.1),
+-                                                highlightColor: theme
+-                                                    .colorScheme.primary
+-                                                    .withValues(alpha: 0.25),
++                                                baseColor: theme.colorScheme.primary.withValues(alpha: 0.1),
++                                                highlightColor: theme.colorScheme.primary.withValues(alpha: 0.25),
+                                                 child: Container(
+                                                   width: 44,
+                                                   height: 44,
+@@ -329,15 +413,10 @@ class StoryDetailScreen extends HookConsumerWidget {
+                                                 ),
+                                               );
+                                             },
+-                                            errorBuilder:
+-                                                (context, error, stackTrace) =>
+-                                                    CircleAvatar(
++                                            errorBuilder: (context, error, stackTrace) => CircleAvatar(
+                                               radius: 22,
+-                                              backgroundColor:
+-                                                  theme.scaffoldBackgroundColor,
+-                                              child: Icon(Icons.person,
+-                                                  color: theme
+-                                                      .colorScheme.onSurface),
++                                              backgroundColor: theme.scaffoldBackgroundColor,
++                                              child: Icon(Icons.person, color: theme.colorScheme.onSurface),
+                                             ),
+                                           ),
+                                         ),
+@@ -512,82 +591,132 @@ class StoryDetailScreen extends HookConsumerWidget {
+ 
+                           // The Immutable Post Widget Template - NO DIVIDERS
+                           // Encased in a beautiful midnight matte if it's minimal
+-                          Builder(builder: (context) {
+-                            return GestureDetector(
+-                              onTap: () async {
+-                                final renderBox =
+-                                    context.findRenderObject() as RenderBox?;
+-                                if (renderBox != null) {
+-                                  final position =
+-                                      renderBox.localToGlobal(Offset.zero);
+-
+-                                  final textOffset =
+-                                      await Navigator.of(context).push<double>(
+-                                    PageRouteBuilder(
+-                                      opaque: false,
+-                                      pageBuilder: (context, animation,
+-                                              secondaryAnimation) =>
+-                                          FadeTransition(
+-                                        opacity: animation,
+-                                        child: ImmersiveReadingScreen(
+-                                          content: story.description,
+-                                          initialDy: position.dy,
++                          Builder(
++                            builder: (context) {
++                              return GestureDetector(
++                                onTap: () async {
++                                  final renderBox = context.findRenderObject() as RenderBox?;
++                                  if (renderBox != null) {
++                                    final position = renderBox.localToGlobal(Offset.zero);
++                                    
++                                    final delta = await Navigator.of(context).push<double>(
++                                      PageRouteBuilder(
++                                        opaque: false,
++                                        pageBuilder: (context, animation, secondaryAnimation) =>
++                                            FadeTransition(
++                                          opacity: animation,
++                                          child: ImmersiveReadingScreen(
++                                            content: story.description,
++                                            initialDy: position.dy,
++                                          ),
+                                         ),
+                                       ),
+-                                    ),
+-                                  );
+-
+-                                  if (textOffset != null) {
+-                                    WidgetsBinding.instance
+-                                        .addPostFrameCallback((_) {
+-                                      if (context.mounted) {
+-                                        final currentRenderBox = context
+-                                            .findRenderObject() as RenderBox?;
+-                                        if (currentRenderBox != null) {
+-                                          final viewport =
+-                                              RenderAbstractViewport.of(
+-                                                  currentRenderBox);
+-                                          final offsetToRevealTop = viewport
+-                                              .getOffsetToReveal(
+-                                                  currentRenderBox, 0.0)
+-                                              .offset;
+-
+-                                          // The textOffset is the amount of pixels into the text the user scrolled.
+-                                          // offsetToRevealTop puts the start of the text at the top of the viewport.
+-                                          // By adding textOffset, we perfectly align the exact word they were reading!
+-                                          mainScrollController.jumpTo(
+-                                              offsetToRevealTop + textOffset);
+-                                        }
+-                                      }
+-                                    });
++                                    );
++                                    
++                                    if (delta != null && delta != 0) {
++                                      mainScrollController.jumpTo(mainScrollController.offset + delta);
++                                    }
+                                   }
+-                                }
+-                              },
+-                              child: Container(
+-                                color: theme.colorScheme.surface,
+-                                width: double.infinity,
+-                                child: Padding(
+-                                  padding: const EdgeInsets.symmetric(
+-                                      vertical: 20.0, horizontal: 8.0),
+-                                  child: PostDisplayWidget(
+-                                    content: story.description,
++                                },
++                                child: Container(
++                                  color: theme.colorScheme.surface,
++                                  width: double.infinity,
++                                  child: Padding(
++                                    padding: const EdgeInsets.symmetric(
++                                        vertical: 20.0, horizontal: 8.0),
++                                    child: PostDisplayWidget(
++                                      content: story.description,
++                                    ),
+                                   ),
+                                 ),
+-                              ),
+-                            );
+-                          }),
++                              );
++                            }
++                          ),
+ 
+-                          if (actualMedia.isNotEmpty) ...[
+-                            const SizedBox(height: 8),
+-                            Padding(
+-                              padding:
+-                                  const EdgeInsets.symmetric(horizontal: 24.0),
+-                              child: MilestoneMediaGallery(media: actualMedia),
++                          const SizedBox(height: 16),
++                          Padding(
++                            padding:
++                                const EdgeInsets.symmetric(horizontal: 24.0),
++                            child: Row(
++                              mainAxisAlignment: MainAxisAlignment.end,
++                              children: [
++                                Consumer(
++                                  builder: (context, ref, child) {
++                                    final currentUser =
++                                        ref.watch(currentUserProvider);
++                                    final isLiked = story.likesList
++                                        .contains(currentUser?.userId);
++
++                                    return Row(
++                                      children: [
++                                        Text(
++                                          story.likesCount.toString(),
++                                          style: TextStyle(
++                                            color: isLiked
++                                                ? theme.colorScheme.primary
++                                                : const Color(0xFFA1A1A6),
++                                            fontWeight: FontWeight.w600,
++                                          ),
++                                        ),
++                                        IconButton(
++                                          icon: Icon(isLiked
++                                              ? Icons.favorite
++                                              : Icons.favorite_border),
++                                          onPressed: () {
++                                            if (currentUser == null) {
++                                              context.push(AppRoutes.login);
++                                            } else {
++                                              ref
++                                                  .read(storyRepositoryProvider)
++                                                  .toggleLike(story.storyId,
++                                                      currentUser.userId);
++                                            }
++                                          },
++                                          color: isLiked
++                                              ? theme.colorScheme.primary
++                                              : const Color(0xFFA1A1A6),
++                                        ),
++                                      ],
++                                    );
++                                  },
++                                ),
++                                const SizedBox(width: 8),
++                                Consumer(builder: (context, ref, child) {
++                                  final currentUser =
++                                      ref.watch(currentUserProvider);
++                                  final isBookmarked = currentUser
++                                          ?.bookmarkedStories
++                                          .contains(story.storyId) ??
++                                      false;
++
++                                  return IconButton(
++                                    icon: Icon(isBookmarked
++                                        ? Icons.bookmark
++                                        : Icons.bookmark_border),
++                                    onPressed: () {
++                                      if (currentUser == null) {
++                                        context.push(AppRoutes.login);
++                                      } else {
++                                        ref
++                                            .read(userRepositoryProvider)
++                                            .toggleBookmark(currentUser.userId,
++                                                story.storyId);
++                                      }
++                                    },
++                                    color: isBookmarked
++                                        ? theme.colorScheme.primary
++                                        : const Color(0xFFA1A1A6),
++                                  );
++                                }),
++                                const SizedBox(width: 8),
++                                IconButton(
++                                  icon: const Icon(Icons.ios_share_rounded),
++                                  onPressed: () {},
++                                  color: const Color(0xFFA1A1A6),
++                                ),
++                              ],
+                             ),
+-                            const SizedBox(height: 16),
+-                          ],
+-
+-                          InteractionSection(story: story, showLabels: false),
++                          ),
+                           const SizedBox(height: 32),
+ 
+                           Padding(
+@@ -596,15 +725,24 @@ class StoryDetailScreen extends HookConsumerWidget {
+                             child: Column(
+                               crossAxisAlignment: CrossAxisAlignment.start,
+                               children: [
++                                if (actualMedia.isNotEmpty) ...[
++                                  Text(
++                                    'Journey Media',
++                                    style: theme.textTheme.headlineLarge
++                                        ?.copyWith(fontSize: 28),
++                                  ),
++                                  const SizedBox(height: 24),
++                                  MilestoneMediaGallery(media: actualMedia),
++                                  const SizedBox(height: 64),
++                                ],
+                                 Text(
+                                   'Comments',
+-                                  style: theme.textTheme.titleLarge?.copyWith(
+-                                    fontWeight: FontWeight.bold,
+-                                  ),
++                                  style: theme.textTheme.headlineLarge
++                                      ?.copyWith(fontSize: 28),
+                                 ),
+-                                const SizedBox(height: 16),
++                                const SizedBox(height: 24),
+                                 CommentsThread(milestone: story),
+-                                const SizedBox(height: 40),
++                                const SizedBox(height: 40), // Normal padding
+                               ],
+                             ),
+                           ),
+@@ -765,19 +903,11 @@ class _TaggedPeopleList extends ConsumerWidget {
+                             width: 20,
+                             height: 20,
+                             fit: BoxFit.cover,
+-                            frameBuilder: (context, child, frame,
+-                                wasSynchronouslyLoaded) {
+-                              if (wasSynchronouslyLoaded || frame != null)
+-                                return child;
++                            frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
++                              if (wasSynchronouslyLoaded || frame != null) return child;
+                               return Shimmer.fromColors(
+-                                baseColor: Theme.of(context)
+-                                    .colorScheme
+-                                    .primary
+-                                    .withValues(alpha: 0.1),
+-                                highlightColor: Theme.of(context)
+-                                    .colorScheme
+-                                    .primary
+-                                    .withValues(alpha: 0.25),
++                                baseColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
++                                highlightColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.25),
+                                 child: Container(
+                                   width: 20,
+                                   height: 20,
+@@ -785,15 +915,10 @@ class _TaggedPeopleList extends ConsumerWidget {
+                                 ),
+                               );
+                             },
+-                            errorBuilder: (context, error, stackTrace) =>
+-                                CircleAvatar(
++                            errorBuilder: (context, error, stackTrace) => CircleAvatar(
+                               radius: 10,
+-                              backgroundColor:
+-                                  Theme.of(context).scaffoldBackgroundColor,
+-                              child: Icon(Icons.person,
+-                                  size: 12,
+-                                  color:
+-                                      Theme.of(context).colorScheme.onSurface),
++                              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
++                              child: Icon(Icons.person, size: 12, color: Theme.of(context).colorScheme.onSurface),
+                             ),
+                           ),
+                         ),
+diff --git a/lib/features/posts/data/firebase_story_repository.dart b/lib/features/posts/data/firebase_story_repository.dart
+index d9fd9f6..6ac3f3f 100644
+--- a/lib/features/posts/data/firebase_story_repository.dart
++++ b/lib/features/posts/data/firebase_story_repository.dart
+@@ -97,7 +97,7 @@ class FirebaseStoryRepository implements StoryRepository {
+   }
+ 
+   @override
+-  Future<void> toggleReaction(String storyId, String userId, String reactionType) async {
++  Future<void> toggleLike(String storyId, String userId) async {
+     final docRef = _stories.doc(storyId);
+     final userRef = _firestore.collection('users').doc(userId);
+ 
+@@ -109,73 +109,24 @@ class FirebaseStoryRepository implements StoryRepository {
+       if (!userDoc.exists) return;
+ 
+       final data = doc.data() as Map<String, dynamic>;
+-      
+-      // Parse reactions map
+-      final Map<String, dynamic> rawReactions = data['reactions'] ?? {};
+-      final Map<String, List<String>> reactions = rawReactions.map(
+-        (key, value) => MapEntry(key, List<String>.from(value)),
+-      );
+-      
+-      // For backward compatibility
+       final likesList = List<String>.from(data['likesList'] ?? []);
+       int likesCount = data['likesCount'] ?? 0;
+ 
+       final userData = userDoc.data() as Map<String, dynamic>;
+       final likedStories = List<String>.from(userData['likedStories'] ?? []);
+ 
+-      // Check if user currently has ANY reaction
+-      String? currentReactionType;
+-      for (final entry in reactions.entries) {
+-        if (entry.value.contains(userId)) {
+-          currentReactionType = entry.key;
+-          break;
+-        }
+-      }
+-      
+-      // Check legacy likesList
+-      if (currentReactionType == null && likesList.contains(userId)) {
+-        currentReactionType = 'heart';
+-      }
+-
+-      if (currentReactionType == reactionType) {
+-        // User tapped the same reaction they already had -> un-react
+-        if (reactions.containsKey(reactionType)) {
+-          reactions[reactionType]!.remove(userId);
+-        }
++      if (likesList.contains(userId)) {
+         likesList.remove(userId);
+-        likesCount = (likesCount - 1).clamp(0, double.infinity).toInt();
++        likesCount--;
+         likedStories.remove(storyId);
+       } else {
+-        // User changed reaction or added new reaction
+-        
+-        // Remove from old reaction if exists
+-        if (currentReactionType != null) {
+-          if (reactions.containsKey(currentReactionType)) {
+-            reactions[currentReactionType]!.remove(userId);
+-          }
+-          if (currentReactionType == 'heart') {
+-            likesList.remove(userId);
+-          }
+-        } else {
+-          // It's a brand new reaction, increase count
+-          likesCount++;
+-          likedStories.add(storyId);
+-        }
+-        
+-        // Add to new reaction
+-        if (!reactions.containsKey(reactionType)) {
+-          reactions[reactionType] = [];
+-        }
+-        reactions[reactionType]!.add(userId);
+-        
+-        if (reactionType == 'heart') {
+-          likesList.add(userId);
+-        }
++        likesList.add(userId);
++        likesCount++;
++        likedStories.add(storyId);
+       }
+ 
+       transaction.update(docRef, {
+-        'reactions': reactions,
+-        'likesList': likesList, // maintain backward compatibility
++        'likesList': likesList,
+         'likesCount': likesCount,
+       });
+ 
+diff --git a/lib/features/posts/data/story_repository.dart b/lib/features/posts/data/story_repository.dart
+index a99ad99..b18dc45 100644
+--- a/lib/features/posts/data/story_repository.dart
++++ b/lib/features/posts/data/story_repository.dart
+@@ -11,6 +11,6 @@ abstract class StoryRepository {
+   Future<void> createStory(StoryModel story);
+   Future<void> updateStory(StoryModel story);
+   Future<void> deleteStory(String storyId);
+-  Future<void> toggleReaction(String storyId, String userId, String reactionType);
++  Future<void> toggleLike(String storyId, String userId);
+   Future<List<StoryModel>> getStoriesByIds(List<String> storyIds);
+ }
+diff --git a/lib/features/posts/presentation/screens/post_screen.dart b/lib/features/posts/presentation/screens/post_screen.dart
+index 651504f..ee25466 100644
+--- a/lib/features/posts/presentation/screens/post_screen.dart
++++ b/lib/features/posts/presentation/screens/post_screen.dart
+@@ -685,23 +685,15 @@ class __MiniStoryCardState extends ConsumerState<_MiniStoryCard>
+                     horizontal: 16.0, vertical: 12.0),
+                 child: Row(
+                   children: [
+-                    Row(
+-                      mainAxisSize: MainAxisSize.min,
+-                      children: [
+-                        Icon(Icons.favorite_border, color: theme.colorScheme.primary, size: 22),
+-                        const SizedBox(width: 8),
+-                        Text('2.4k', style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.w600, fontSize: 15)),
+-                      ],
+-                    ),
++                    InteractionButton(
++                        icon: Icons.favorite_border,
++                        label: '2.4k',
++                        color: theme.colorScheme.primary), // Golden
+                     const SizedBox(width: 16),
+-                    Row(
+-                      mainAxisSize: MainAxisSize.min,
+-                      children: [
+-                        const Icon(Icons.chat_bubble_outline, color: Color(0xFFA1A1A6), size: 22),
+-                        const SizedBox(width: 8),
+-                        const Text('142', style: TextStyle(color: Color(0xFFA1A1A6), fontWeight: FontWeight.w600, fontSize: 15)),
+-                      ],
+-                    ),
++                    InteractionButton(
++                        icon: Icons.chat_bubble_outline,
++                        label: '142',
++                        color: const Color(0xFFA1A1A6)),
+                     const Spacer(),
+                     const Icon(Icons.bookmark_border,
+                         color: Color(0xFFA1A1A6), size: 22),
+diff --git a/lib/features/settings/presentation/screens/accessibility_settings_screen.dart b/lib/features/settings/presentation/screens/accessibility_settings_screen.dart
+index f4d9910..7df84ec 100644
+--- a/lib/features/settings/presentation/screens/accessibility_settings_screen.dart
++++ b/lib/features/settings/presentation/screens/accessibility_settings_screen.dart
+@@ -25,10 +25,61 @@ class AccessibilitySettingsScreen extends ConsumerWidget {
+           icon: const Icon(Icons.arrow_back_ios_new_rounded),
+           onPressed: () => Navigator.pop(context),
+         ),
++        actions: [
++          TextButton(
++            onPressed: () {
++              ref
++                  .read(accessibilityProvider.notifier)
++                  .updateTextSizeFactor(1.0);
++              ref.read(accessibilityProvider.notifier).updateTextOpacity(1.0);
++            },
++            child: Text('Reset',
++                style: TextStyle(
++                    fontWeight: FontWeight.bold,
++                    color: theme.colorScheme.primary)),
++          ),
++          const SizedBox(width: 8),
++        ],
+       ),
+       body: ListView(
+         padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),
+         children: [
++          const Text('Text Size',
++              style:
++                  TextStyle(color: Colors.grey, fontWeight: FontWeight.w600)),
++          Consumer(
++            builder: (context, ref, child) {
++              final state = ref.watch(accessibilityProvider);
++              return Slider(
++                value: state.textSizeFactor,
++                min: 0.8,
++                max: 2.0,
++                activeColor: Theme.of(context).primaryColor,
++                onChanged: (val) => ref
++                    .read(accessibilityProvider.notifier)
++                    .updateTextSizeFactor(val),
++              );
++            },
++          ),
++          const SizedBox(height: 16),
++          const Text('Contrast/Opacity',
++              style:
++                  TextStyle(color: Colors.grey, fontWeight: FontWeight.w600)),
++          Consumer(
++            builder: (context, ref, child) {
++              final state = ref.watch(accessibilityProvider);
++              return Slider(
++                value: state.textOpacity,
++                min: 0.5,
++                max: 1.0,
++                activeColor: Theme.of(context).colorScheme.secondary,
++                onChanged: (val) => ref
++                    .read(accessibilityProvider.notifier)
++                    .updateTextOpacity(val),
++              );
++            },
++          ),
++          const SizedBox(height: 32),
+             Container(
+               decoration: BoxDecoration(
+                 color: theme.cardColor,
+@@ -53,6 +104,30 @@ class AccessibilitySettingsScreen extends ConsumerWidget {
+                 },
+               ),
+             ),
++            const SizedBox(height: 32),
++            Container(
++              padding: const EdgeInsets.all(16),
++              decoration: BoxDecoration(
++                color: theme.cardColor,
++                borderRadius: BorderRadius.circular(12),
++                border: Border.all(color: theme.dividerColor),
++              ),
++              child: Column(
++                crossAxisAlignment: CrossAxisAlignment.start,
++                children: [
++                  Text(
++                    'Preview',
++                    style:
++                        theme.textTheme.titleSmall?.copyWith(color: Colors.grey),
++                  ),
++                  const SizedBox(height: 12),
++                  Text(
++                    'This is how your text will look throughout the app. Adjust the sliders above to find a comfortable reading size and contrast level.',
++                    style: theme.textTheme.bodyMedium,
++                  ),
++                ],
++              ),
++            )
+         ],
+       ),
+     );
+diff --git a/lib/main.dart b/lib/main.dart
+index 12c3f13..51f83cf 100644
+--- a/lib/main.dart
++++ b/lib/main.dart
+@@ -57,18 +57,32 @@ class HealingMilestonesApp extends ConsumerWidget {
+ 
+     // Apply accessibility scaling to the base dark theme
+     ThemeData baseTheme = AppTheme.getThemeData(activePalette);
++    TextTheme scaledTextTheme = baseTheme.textTheme.apply(
++      bodyColor: activePalette.textPrimary
++          .withValues(alpha: accessibilityState.textOpacity),
++      displayColor: activePalette.textPrimary
++          .withValues(alpha: accessibilityState.textOpacity),
++    );
++
+     return DevicePreview(
+       enabled: isDevicePreview,
+       builder: (context) => MaterialApp.router(
+         title: 'Healing Milestones',
+-        theme: baseTheme,
++        theme: baseTheme.copyWith(textTheme: scaledTextTheme),
+         routerConfig: router,
+         debugShowCheckedModeBanner: false,
+         useInheritedMediaQuery: true,
+         locale: DevicePreview.locale(context),
+         builder: (context, child) {
+           final widget = DevicePreview.appBuilder(context, child);
+-          Widget appContent = widget;
++          final data = MediaQuery.of(context);
++          Widget appContent = MediaQuery(
++            data: data.copyWith(
++              textScaler: TextScaler.linear(
++                  data.textScaler.scale(1) * accessibilityState.textSizeFactor),
++            ),
++            child: widget,
++          );
+ 
+           if (accessibilityState.isGreyscaleMode) {
+             const greyscaleMatrix = <double>[
+diff --git a/lib/shared/widgets/interaction_section.dart b/lib/shared/widgets/interaction_section.dart
+deleted file mode 100644
+index aa3020a..0000000
+--- a/lib/shared/widgets/interaction_section.dart
++++ /dev/null
+@@ -1,355 +0,0 @@
+-import 'package:flutter/material.dart';
+-import 'package:flutter_hooks/flutter_hooks.dart';
+-import 'package:hooks_riverpod/hooks_riverpod.dart';
+-import 'package:go_router/go_router.dart';
+-import 'package:healing_milestones/core/models/story_model.dart';
+-import 'package:healing_milestones/core/router/app_routes.dart';
+-import 'package:healing_milestones/features/auth/data/auth_provider.dart';
+-import 'package:healing_milestones/features/auth/data/repository_providers.dart';
+-import 'package:healing_milestones/features/posts/data/story_providers.dart';
+-
+-import 'package:healing_milestones/shared/widgets/reaction_picker.dart';
+-
+-class InteractionSection extends HookConsumerWidget {
+-  final StoryModel story;
+-  final bool showLabels;
+-
+-  const InteractionSection({
+-    Key? key,
+-    required this.story,
+-    this.showLabels = true,
+-  }) : super(key: key);
+-
+-  @override
+-  Widget build(BuildContext context, WidgetRef ref) {
+-    final theme = Theme.of(context);
+-    final user = ref.watch(currentUserProvider);
+-
+-    // 1. Calculate initial accurate state from story object
+-    final uniqueUsers = <String>{};
+-    final reactionCounts = <ReactionType, int>{};
+-    ReactionType? initialUserReaction;
+-
+-    for (final entry in story.reactions.entries) {
+-      final type = ReactionType.values.firstWhere(
+-        (e) => e.name == entry.key,
+-        orElse: () => ReactionType.heart,
+-      );
+-      reactionCounts[type] = (reactionCounts[type] ?? 0) + entry.value.length;
+-      uniqueUsers.addAll(entry.value);
+-
+-      if (user != null && entry.value.contains(user.userId)) {
+-        initialUserReaction = type;
+-      }
+-    }
+-
+-    if (story.likesList.isNotEmpty) {
+-      final newLegacyUsers =
+-          story.likesList.where((id) => !uniqueUsers.contains(id)).toList();
+-      if (newLegacyUsers.isNotEmpty) {
+-        reactionCounts[ReactionType.heart] =
+-            (reactionCounts[ReactionType.heart] ?? 0) + newLegacyUsers.length;
+-        uniqueUsers.addAll(newLegacyUsers);
+-      }
+-      if (user != null &&
+-          initialUserReaction == null &&
+-          story.likesList.contains(user.userId)) {
+-        initialUserReaction = ReactionType.heart;
+-      }
+-    }
+-
+-    // 2. Set up optimistic state
+-    final initialTotalReactions = uniqueUsers.length;
+-    final optimisticUserReaction = useState<ReactionType?>(initialUserReaction);
+-    final optimisticTotalReactions = useState<int>(initialTotalReactions);
+-    final optimisticReactionCounts =
+-        useState<Map<ReactionType, int>>(reactionCounts);
+-
+-    // Sync state if story object changes from stream/refresh
+-    useEffect(() {
+-      optimisticUserReaction.value = initialUserReaction;
+-      optimisticTotalReactions.value = initialTotalReactions;
+-      optimisticReactionCounts.value = Map.from(reactionCounts);
+-      return null;
+-    }, [story.reactions, story.likesList, initialUserReaction]);
+-
+-    final isBookmarked =
+-        user?.bookmarkedStories.contains(story.storyId) ?? false;
+-
+-    return Column(
+-      crossAxisAlignment: CrossAxisAlignment.stretch,
+-      children: [
+-        // SUMMARY ROW (LinkedIn style)
+-        if (optimisticTotalReactions.value > 0 || story.commentCount > 0)
+-          Padding(
+-            padding:
+-                const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
+-            child: Row(
+-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+-              children: [
+-                if (optimisticReactionCounts.value.values
+-                    .any((count) => count > 0))
+-                  Wrap(
+-                    spacing: 6,
+-                    children: optimisticReactionCounts.value.entries
+-                        .where((entry) => entry.value > 0)
+-                        .map((entry) {
+-                      final hasReactedThis =
+-                          optimisticUserReaction.value == entry.key;
+-                      return GestureDetector(
+-                        onTap: () {
+-                          FocusManager.instance.primaryFocus?.unfocus();
+-                          if (user == null) {
+-                            context.push(AppRoutes.login);
+-                            return;
+-                          }
+-                          final targetReaction = entry.key;
+-                          
+-                          if (hasReactedThis) {
+-                            optimisticUserReaction.value = null;
+-                            optimisticTotalReactions.value = (optimisticTotalReactions.value - 1).clamp(0, 999999);
+-                            
+-                            final newCounts = Map<ReactionType, int>.from(optimisticReactionCounts.value);
+-                            newCounts[targetReaction] = (newCounts[targetReaction] ?? 1) - 1;
+-                            if (newCounts[targetReaction]! <= 0) newCounts.remove(targetReaction);
+-                            optimisticReactionCounts.value = newCounts;
+-                          } else {
+-                            final newCounts = Map<ReactionType, int>.from(optimisticReactionCounts.value);
+-                            
+-                            if (optimisticUserReaction.value == null) {
+-                              optimisticTotalReactions.value++;
+-                            } else {
+-                              final oldReaction = optimisticUserReaction.value!;
+-                              newCounts[oldReaction] = (newCounts[oldReaction] ?? 1) - 1;
+-                              if (newCounts[oldReaction]! <= 0) newCounts.remove(oldReaction);
+-                            }
+-                            
+-                            optimisticUserReaction.value = targetReaction;
+-                            newCounts[targetReaction] = (newCounts[targetReaction] ?? 0) + 1;
+-                            optimisticReactionCounts.value = newCounts;
+-                          }
+-                          ref.read(storyRepositoryProvider).toggleReaction(story.storyId, user.userId, targetReaction.name);
+-                        },
+-                        behavior: HitTestBehavior.opaque,
+-                        child: Container(
+-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+-                          decoration: BoxDecoration(
+-                            color: hasReactedThis ? theme.colorScheme.primary.withValues(alpha: 0.1) : theme.colorScheme.surfaceContainerHighest,
+-                            borderRadius: BorderRadius.circular(12),
+-                            border: Border.all(
+-                              color: hasReactedThis ? theme.colorScheme.primary.withValues(alpha: 0.5) : Colors.transparent,
+-                              width: 1,
+-                            ),
+-                          ),
+-                          child: Row(
+-                            mainAxisSize: MainAxisSize.min,
+-                            children: [
+-                              Text(entry.key.emoji, style: const TextStyle(fontSize: 14)),
+-                              const SizedBox(width: 4),
+-                              Text(
+-                                '${entry.value}',
+-                                style: TextStyle(
+-                                  fontSize: 12,
+-                                  fontWeight: FontWeight.bold,
+-                                  color: hasReactedThis ? theme.colorScheme.primary : theme.textTheme.bodySmall?.color,
+-                                ),
+-                              ),
+-                            ],
+-                          ),
+-                        ),
+-                      );
+-                    }).toList(),
+-                  )
+-                else
+-                  const SizedBox.shrink(),
+-              ],
+-            ),
+-          )
+-        else
+-          const SizedBox(height: 12),
+-
+-        // DIVIDER
+-        Divider(
+-            height: 1,
+-            thickness: 1,
+-            color: theme.dividerColor.withValues(alpha: 0.1)),
+-
+-        // ACTIONS ROW
+-        Padding(
+-          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+-          child: Row(
+-            mainAxisAlignment: MainAxisAlignment.end,
+-            children: [
+-              // REACT BUTTON
+-              _ActionButton(
+-                icon: optimisticUserReaction.value != null
+-                    ? Text(optimisticUserReaction.value!.emoji,
+-                        style: const TextStyle(fontSize: 20))
+-                    : Icon(Icons.favorite_border,
+-                        color: theme.textTheme.bodySmall?.color, size: 20),
+-                label: optimisticUserReaction.value != null
+-                    ? optimisticUserReaction.value!.label
+-                    : 'React',
+-                labelColor: optimisticUserReaction.value != null
+-                    ? theme.colorScheme.primary
+-                    : theme.textTheme.bodySmall?.color,
+-                showLabel: showLabels,
+-                onTap: () {
+-                  FocusManager.instance.primaryFocus?.unfocus();
+-                  if (user == null) {
+-                    context.push(AppRoutes.login);
+-                    return;
+-                  }
+-                  final targetReaction = optimisticUserReaction.value?.name ??
+-                      ReactionType.heart.name;
+-
+-                  if (optimisticUserReaction.value != null) {
+-                    final oldReaction = optimisticUserReaction.value!;
+-                    optimisticUserReaction.value = null;
+-                    optimisticTotalReactions.value =
+-                        (optimisticTotalReactions.value - 1).clamp(0, 999999);
+-
+-                    final newCounts = Map<ReactionType, int>.from(
+-                        optimisticReactionCounts.value);
+-                    newCounts[oldReaction] = (newCounts[oldReaction] ?? 1) - 1;
+-                    if (newCounts[oldReaction]! <= 0)
+-                      newCounts.remove(oldReaction);
+-                    optimisticReactionCounts.value = newCounts;
+-                  } else {
+-                    optimisticUserReaction.value = ReactionType.heart;
+-                    optimisticTotalReactions.value++;
+-
+-                    final newCounts = Map<ReactionType, int>.from(
+-                        optimisticReactionCounts.value);
+-                    newCounts[ReactionType.heart] =
+-                        (newCounts[ReactionType.heart] ?? 0) + 1;
+-                    optimisticReactionCounts.value = newCounts;
+-                  }
+-                  ref.read(storyRepositoryProvider).toggleReaction(
+-                      story.storyId, user.userId, targetReaction);
+-                },
+-                onLongPressStart: (details) {
+-                  FocusManager.instance.primaryFocus?.unfocus();
+-                  if (user == null) {
+-                    context.push(AppRoutes.login);
+-                    return;
+-                  }
+-                  
+-                  // Delay showing the dialog slightly so that the unfocus has time to propagate
+-                  // and the dialog doesn't capture the text field as the "previously focused" node.
+-                  Future.delayed(const Duration(milliseconds: 50), () {
+-                    if (!context.mounted) return;
+-                    showReactionPicker(context, details.globalPosition, (reaction) {
+-                      final newCounts = Map<ReactionType, int>.from(optimisticReactionCounts.value);
+-
+-                      if (optimisticUserReaction.value == null) {
+-                        optimisticTotalReactions.value++;
+-                      } else {
+-                        final oldReaction = optimisticUserReaction.value!;
+-                        newCounts[oldReaction] = (newCounts[oldReaction] ?? 1) - 1;
+-                        if (newCounts[oldReaction]! <= 0) newCounts.remove(oldReaction);
+-                      }
+-
+-                      optimisticUserReaction.value = reaction;
+-                      newCounts[reaction] = (newCounts[reaction] ?? 0) + 1;
+-                      optimisticReactionCounts.value = newCounts;
+-
+-                      ref.read(storyRepositoryProvider).toggleReaction(
+-                          story.storyId, user.userId, reaction.name);
+-                    });
+-                  });
+-                },
+-              ),
+-
+-              // COMMENT BUTTON
+-              _ActionButton(
+-                icon: Icon(Icons.chat_bubble_outline, color: theme.textTheme.bodySmall?.color, size: 20),
+-                label: 'Comment',
+-                labelColor: theme.textTheme.bodySmall?.color,
+-                showLabel: showLabels,
+-                onTap: () {
+-                  FocusManager.instance.primaryFocus?.unfocus();
+-                  context.push(AppRoutes.storyDetail(story.storyId));
+-                },
+-              ),
+-
+-              // SAVE BUTTON
+-              _ActionButton(
+-                icon: Icon(
+-                  isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+-                  color: isBookmarked
+-                      ? theme.colorScheme.primary
+-                      : theme.textTheme.bodySmall?.color,
+-                  size: 20,
+-                ),
+-                label: 'Save',
+-                labelColor: isBookmarked
+-                    ? theme.colorScheme.primary
+-                    : theme.textTheme.bodySmall?.color,
+-                showLabel: showLabels,
+-                onTap: () {
+-                  FocusManager.instance.primaryFocus?.unfocus();
+-                  if (user == null) {
+-                    context.push(AppRoutes.login);
+-                    return;
+-                  }
+-                  ref
+-                      .read(userRepositoryProvider)
+-                      .toggleBookmark(user.userId, story.storyId);
+-                },
+-              ),
+-            ],
+-          ),
+-        ),
+-      ],
+-    );
+-  }
+-}
+-
+-class _ActionButton extends StatelessWidget {
+-  final Widget icon;
+-  final String label;
+-  final Color? labelColor;
+-  final VoidCallback onTap;
+-  final void Function(LongPressStartDetails)? onLongPressStart;
+-  final bool showLabel;
+-
+-  const _ActionButton({
+-    Key? key,
+-    required this.icon,
+-    required this.label,
+-    required this.labelColor,
+-    required this.onTap,
+-    this.onLongPressStart,
+-    this.showLabel = true,
+-  }) : super(key: key);
+-
+-  @override
+-  Widget build(BuildContext context) {
+-    return GestureDetector(
+-      onTap: onTap,
+-      onLongPressStart: onLongPressStart,
+-      behavior: HitTestBehavior.opaque,
+-      child: Container(
+-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+-        child: Row(
+-          mainAxisSize: MainAxisSize.min,
+-          children: [
+-            icon,
+-            if (showLabel) ...[
+-              const SizedBox(width: 8),
+-              Text(
+-                label,
+-                style: TextStyle(
+-                  color: labelColor,
+-                  fontWeight: FontWeight.w600,
+-                  fontSize: 14,
+-                ),
+-              ),
+-            ],
+-          ],
+-        ),
+-      ),
+-    );
+-  }
+-}
+diff --git a/lib/shared/widgets/reaction_cluster.dart b/lib/shared/widgets/reaction_cluster.dart
+deleted file mode 100644
+index ad66d8b..0000000
+--- a/lib/shared/widgets/reaction_cluster.dart
++++ /dev/null
+@@ -1,69 +0,0 @@
+-import 'package:flutter/material.dart';
+-import 'package:healing_milestones/shared/widgets/reaction_picker.dart';
+-
+-class ReactionCluster extends StatelessWidget {
+-  final List<ReactionType> topReactions;
+-  final int totalCount;
+-
+-  const ReactionCluster({
+-    Key? key,
+-    required this.topReactions,
+-    required this.totalCount,
+-  }) : super(key: key);
+-
+-  @override
+-  Widget build(BuildContext context) {
+-    if (topReactions.isEmpty && totalCount == 0) return const SizedBox.shrink();
+-    
+-    final theme = Theme.of(context);
+-    
+-    return Row(
+-      mainAxisSize: MainAxisSize.min,
+-      children: [
+-        if (topReactions.isNotEmpty)
+-          SizedBox(
+-            width: (topReactions.length * 14.0) + 4.0,
+-            height: 20,
+-            child: Stack(
+-              children: List.generate(topReactions.length, (index) {
+-                return Positioned(
+-                  left: index * 12.0,
+-                  top: 0,
+-                  bottom: 0,
+-                  child: Container(
+-                    padding: const EdgeInsets.all(1.5),
+-                    decoration: BoxDecoration(
+-                      shape: BoxShape.circle,
+-                      color: theme.scaffoldBackgroundColor,
+-                      boxShadow: [
+-                        BoxShadow(
+-                          color: Colors.black.withValues(alpha: 0.1),
+-                          blurRadius: 2,
+-                          offset: const Offset(0, 1),
+-                        ),
+-                      ],
+-                    ),
+-                    child: Center(
+-                      child: Text(
+-                        topReactions[index].emoji,
+-                        style: const TextStyle(fontSize: 10),
+-                      ),
+-                    ),
+-                  ),
+-                );
+-              }).reversed.toList(), // Reverse so first is on top
+-            ),
+-          ),
+-        if (topReactions.isNotEmpty) const SizedBox(width: 4),
+-        Text(
+-          totalCount.toString(),
+-          style: TextStyle(
+-            color: theme.colorScheme.primary,
+-            fontWeight: FontWeight.w600,
+-            fontSize: 13,
+-          ),
+-        ),
+-      ],
+-    );
+-  }
+-}
+diff --git a/lib/shared/widgets/reaction_picker.dart b/lib/shared/widgets/reaction_picker.dart
+deleted file mode 100644
+index 9d00401..0000000
+--- a/lib/shared/widgets/reaction_picker.dart
++++ /dev/null
+@@ -1,136 +0,0 @@
+-import 'package:flutter/material.dart';
+-
+-enum ReactionType {
+-  heart,
+-  hugs,
+-  inspired,
+-  hearYou,
+-  proud,
+-}
+-
+-extension ReactionTypeExtension on ReactionType {
+-  String get id => name;
+-
+-  String get emoji {
+-    switch (this) {
+-      case ReactionType.heart:
+-        return '❤️';
+-      case ReactionType.hugs:
+-        return '🤗';
+-      case ReactionType.inspired:
+-        return '✨';
+-      case ReactionType.hearYou:
+-        return '🫶';
+-      case ReactionType.proud:
+-        return '🤍';
+-    }
+-  }
+-
+-  String get label {
+-    switch (this) {
+-      case ReactionType.heart:
+-        return 'Like';
+-      case ReactionType.hugs:
+-        return 'Hugs';
+-      case ReactionType.inspired:
+-        return 'Inspired';
+-      case ReactionType.hearYou:
+-        return 'Support';
+-      case ReactionType.proud:
+-        return 'Proud';
+-    }
+-  }
+-}
+-
+-class ReactionPicker extends StatelessWidget {
+-  final Function(ReactionType) onReactionSelected;
+-
+-  const ReactionPicker({Key? key, required this.onReactionSelected}) : super(key: key);
+-
+-  @override
+-  Widget build(BuildContext context) {
+-    return Container(
+-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+-      decoration: BoxDecoration(
+-        color: Theme.of(context).cardColor,
+-        borderRadius: BorderRadius.circular(30),
+-        boxShadow: [
+-          BoxShadow(
+-            color: Colors.black.withValues(alpha: 0.1),
+-            blurRadius: 10,
+-            offset: const Offset(0, 4),
+-          ),
+-        ],
+-      ),
+-      child: Row(
+-        mainAxisSize: MainAxisSize.min,
+-        children: ReactionType.values.map((reaction) {
+-          return Padding(
+-            padding: const EdgeInsets.symmetric(horizontal: 6.0),
+-            child: GestureDetector(
+-              onTap: () {
+-                Navigator.of(context).pop();
+-                onReactionSelected(reaction);
+-              },
+-              child: Column(
+-                mainAxisSize: MainAxisSize.min,
+-                children: [
+-                  Text(
+-                    reaction.emoji,
+-                    style: const TextStyle(fontSize: 28),
+-                  ),
+-                  const SizedBox(height: 4),
+-                  Text(
+-                    reaction.label,
+-                    style: TextStyle(
+-                      fontSize: 10,
+-                      fontWeight: FontWeight.w600,
+-                      color: Theme.of(context).textTheme.bodySmall?.color,
+-                    ),
+-                  ),
+-                ],
+-              ),
+-            ),
+-          );
+-        }).toList(),
+-      ),
+-    );
+-  }
+-}
+-
+-void showReactionPicker(BuildContext context, Offset position, Function(ReactionType) onReactionSelected) {
+-  // Try to constrain the popup to the screen horizontally
+-  final screenWidth = MediaQuery.of(context).size.width;
+-  double left = position.dx;
+-  if (left > screenWidth - 250) {
+-    left = screenWidth - 250;
+-  }
+-  
+-  showGeneralDialog(
+-    context: context,
+-    barrierDismissible: true,
+-    barrierLabel: 'Dismiss',
+-    barrierColor: Colors.transparent,
+-    pageBuilder: (context, animation, secondaryAnimation) {
+-      return Stack(
+-        children: [
+-          Positioned(
+-            left: left,
+-            top: position.dy - 85, // Display above the button
+-            child: Material(
+-              color: Colors.transparent,
+-              child: FadeTransition(
+-                opacity: animation,
+-                child: ScaleTransition(
+-                  scale: animation,
+-                  alignment: Alignment.bottomLeft,
+-                  child: ReactionPicker(onReactionSelected: onReactionSelected),
+-                ),
+-              ),
+-            ),
+-          ),
+-        ],
+-      );
+-    },
+-  );
+-}
+diff --git a/lib/shared/widgets/story_card.dart b/lib/shared/widgets/story_card.dart
+index 4f471f4..9b8f2dc 100644
+--- a/lib/shared/widgets/story_card.dart
++++ b/lib/shared/widgets/story_card.dart
+@@ -3,14 +3,12 @@ import 'package:flutter/material.dart';
+ import '../../core/models/story_model.dart';
+ import '../../core/presentation/widgets/user_badge.dart';
+ import '../../core/presentation/widgets/verified_story_badge.dart';
+-import 'package:hooks_riverpod/hooks_riverpod.dart';
++import 'package:flutter_riverpod/flutter_riverpod.dart';
+ import 'package:go_router/go_router.dart';
+ import 'package:healing_milestones/features/posts/data/story_providers.dart';
+ import 'package:healing_milestones/features/auth/data/repository_providers.dart';
+ import '../../features/auth/data/auth_provider.dart';
+ import 'package:shimmer/shimmer.dart';
+-import 'package:flutter_hooks/flutter_hooks.dart';
+-import 'package:healing_milestones/shared/widgets/interaction_section.dart';
+ 
+ class StoryCard extends ConsumerStatefulWidget {
+   final StoryModel story;
+@@ -368,12 +366,123 @@ class _StoryCardState extends ConsumerState<StoryCard>
+                 ),
+               ),
+ 
+-              // Interaction Section (LinkedIn style)
+-              InteractionSection(story: widget.story, showLabels: false),
++              // Interaction Footer
++              Padding(
++                padding: const EdgeInsets.all(20.0),
++                child: Consumer(
++                  builder: (context, ref, child) {
++                    return Row(
++                      children: [
++                        InteractionButton(
++                          icon: widget.story.likesList.contains(
++                                  ref.watch(currentUserProvider)?.userId)
++                              ? Icons.favorite
++                              : Icons.favorite_border,
++                          label: widget.story.likesCount.toString(),
++                          color: widget.story.likesList.contains(
++                                  ref.watch(currentUserProvider)?.userId)
++                              ? theme.colorScheme.primary
++                              : theme.colorScheme.primary,
++                          onTap: () {
++                            final user = ref.read(currentUserProvider);
++                            if (user == null) {
++                              context.push(AppRoutes.login);
++                            } else {
++                              ref.read(storyRepositoryProvider).toggleLike(
++                                  widget.story.storyId, user.userId);
++                            }
++                          },
++                        ),
++                        const SizedBox(width: 16),
++                        InteractionButton(
++                          icon: Icons.chat_bubble_outline,
++                          label: widget.story.commentCount.toString(),
++                          color: theme.textTheme.bodySmall!.color!,
++                          onTap: () {
++                            // Can navigate to story detail for comments
++                            context.push(
++                                AppRoutes.storyDetail(widget.story.storyId));
++                          },
++                        ),
++                        const Spacer(),
++                        InkWell(
++                          onTap: () {
++                            final user = ref.read(currentUserProvider);
++                            if (user == null) {
++                              context.push(AppRoutes.login);
++                            } else {
++                              ref.read(userRepositoryProvider).toggleBookmark(
++                                  user.userId, widget.story.storyId);
++                            }
++                          },
++                          child: Icon(
++                            ref
++                                        .watch(currentUserProvider)
++                                        ?.bookmarkedStories
++                                        .contains(widget.story.storyId) ==
++                                    true
++                                ? Icons.bookmark
++                                : Icons.bookmark_border,
++                            color: ref
++                                        .watch(currentUserProvider)
++                                        ?.bookmarkedStories
++                                        .contains(widget.story.storyId) ==
++                                    true
++                                ? theme.colorScheme.primary
++                                : theme.textTheme.bodySmall!.color!,
++                            size: 22,
++                          ),
++                        ),
++                      ],
++                    );
++                  },
++                ),
++              ),
+             ],
+           ),
+         ),
+       ),
+     );
++  }
+ }
++
++class InteractionButton extends StatelessWidget {
++  final IconData icon;
++  final String label;
++  final Color color;
++  final VoidCallback? onTap;
++
++  const InteractionButton({
++    Key? key,
++    required this.icon,
++    required this.label,
++    required this.color,
++    this.onTap,
++  }) : super(key: key);
++
++  @override
++  Widget build(BuildContext context) {
++    return InkWell(
++      onTap: onTap,
++      borderRadius: BorderRadius.circular(8),
++      child: Padding(
++        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
++        child: Row(
++          mainAxisSize: MainAxisSize.min,
++          children: [
++            Icon(icon, color: color, size: 22),
++            const SizedBox(width: 8),
++            Text(
++              label,
++              style: TextStyle(
++                color: color,
++                fontWeight: FontWeight.w600,
++                fontSize: 15,
++              ),
++            ),
++          ],
++        ),
++      ),
++    );
++  }
+ }
