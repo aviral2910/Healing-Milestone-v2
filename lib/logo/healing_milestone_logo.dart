@@ -195,7 +195,7 @@ class _AscensionOverlayScreenState extends State<AscensionOverlayScreen>
 
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
-        Future.delayed(const Duration(milliseconds: 2000), () {
+        Future.delayed(const Duration(milliseconds: 8000), () {
           _closeScreen();
         });
       }
