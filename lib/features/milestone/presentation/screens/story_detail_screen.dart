@@ -38,102 +38,7 @@ class StoryDetailScreen extends HookConsumerWidget {
     return 'just now';
   }
 
-  void _showAccessibilityBottomSheet(BuildContext context, WidgetRef ref) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color:
-                  Theme.of(context).colorScheme.surface.withValues(alpha: 0.9),
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(32)),
-              border: Border.all(color: Theme.of(context).dividerColor),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 5,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).dividerColor,
-                      borderRadius: BorderRadius.circular(2.5),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 32),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('Reading Settings',
-                        style: Theme.of(context).textTheme.titleLarge),
-                    Consumer(builder: (context, ref, child) {
-                      return TextButton(
-                        onPressed: () {
-                          ref
-                              .read(accessibilityProvider.notifier)
-                              .updateTextSizeFactor(1.0);
-                          ref
-                              .read(accessibilityProvider.notifier)
-                              .updateTextOpacity(1.0);
-                        },
-                        child: const Text('Reset',
-                            style: TextStyle(fontWeight: FontWeight.bold)),
-                      );
-                    }),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                const Text('Text Size',
-                    style: TextStyle(
-                        color: Colors.grey, fontWeight: FontWeight.w600)),
-                Consumer(
-                  builder: (context, ref, child) {
-                    final state = ref.watch(accessibilityProvider);
-                    return Slider(
-                      value: state.textSizeFactor,
-                      min: 0.8,
-                      max: 2.0,
-                      activeColor: Theme.of(context).primaryColor,
-                      onChanged: (val) => ref
-                          .read(accessibilityProvider.notifier)
-                          .updateTextSizeFactor(val),
-                    );
-                  },
-                ),
-                const SizedBox(height: 16),
-                const Text('Contrast/Opacity',
-                    style: TextStyle(
-                        color: Colors.grey, fontWeight: FontWeight.w600)),
-                Consumer(
-                  builder: (context, ref, child) {
-                    final state = ref.watch(accessibilityProvider);
-                    return Slider(
-                      value: state.textOpacity,
-                      min: 0.5,
-                      max: 1.0,
-                      activeColor: Theme.of(context).colorScheme.secondary,
-                      onChanged: (val) => ref
-                          .read(accessibilityProvider.notifier)
-                          .updateTextOpacity(val),
-                    );
-                  },
-                ),
-                const SizedBox(height: 32),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
+
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -330,11 +235,7 @@ class StoryDetailScreen extends HookConsumerWidget {
                               ),
                             ],
                           ),
-                        IconButton(
-                          icon: const Icon(Icons.settings_display_outlined),
-                          onPressed: () =>
-                              _showAccessibilityBottomSheet(context, ref),
-                        )
+
                       ],
                     ),
                     SliverToBoxAdapter(

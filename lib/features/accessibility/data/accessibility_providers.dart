@@ -4,16 +4,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 // To access sharedPreferencesProvider
 
 class AccessibilityState {
-  final double textSizeFactor;
-  final double textOpacity;
   final bool isGreyscaleMode;
   final bool showGreyscaleFloatingIcon;
   final double floatingIconDx;
   final double floatingIconDy;
 
   AccessibilityState({
-    this.textSizeFactor = 1.0,
-    this.textOpacity = 1.0,
     this.isGreyscaleMode = false,
     this.showGreyscaleFloatingIcon = false, // Disabled for FTUX
     this.floatingIconDx = -1.0, // Indicates not set
@@ -21,16 +17,12 @@ class AccessibilityState {
   });
 
   AccessibilityState copyWith({
-    double? textSizeFactor,
-    double? textOpacity,
     bool? isGreyscaleMode,
     bool? showGreyscaleFloatingIcon,
     double? floatingIconDx,
     double? floatingIconDy,
   }) {
     return AccessibilityState(
-      textSizeFactor: textSizeFactor ?? this.textSizeFactor,
-      textOpacity: textOpacity ?? this.textOpacity,
       isGreyscaleMode: isGreyscaleMode ?? this.isGreyscaleMode,
       showGreyscaleFloatingIcon: showGreyscaleFloatingIcon ?? this.showGreyscaleFloatingIcon,
       floatingIconDx: floatingIconDx ?? this.floatingIconDx,
@@ -62,14 +54,6 @@ class AccessibilityNotifier extends StateNotifier<AccessibilityState> {
       floatingIconDx: dx,
       floatingIconDy: dy,
     );
-  }
-
-  void updateTextSizeFactor(double factor) {
-    state = state.copyWith(textSizeFactor: factor);
-  }
-
-  void updateTextOpacity(double opacity) {
-    state = state.copyWith(textOpacity: opacity);
   }
 
   void toggleGreyscaleMode() {
