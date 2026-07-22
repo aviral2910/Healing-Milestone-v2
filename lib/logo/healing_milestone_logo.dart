@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+
 // ==========================================
 // 1. Interactive Wrapper / Trigger Widget
 // ==========================================
@@ -354,7 +355,10 @@ class _AscensionLogoPainter extends CustomPainter {
 
     // --- Define the Exact Solid Shape ---
     final RRect hullRRect = RRect.fromLTRBAndCorners(
-      0, 0, 95, 100,
+      0,
+      0,
+      95,
+      100,
       topLeft: const Radius.circular(50),
       bottomLeft: const Radius.circular(50),
       topRight: const Radius.circular(40),
@@ -365,13 +369,16 @@ class _AscensionLogoPainter extends CustomPainter {
     final Path cutout = Path();
     cutout.moveTo(42, 100);
     cutout.lineTo(42, 32);
-    cutout.arcToPoint(const Offset(54, 32), radius: const Radius.circular(6), clockwise: true);
+    cutout.arcToPoint(const Offset(54, 32),
+        radius: const Radius.circular(6), clockwise: true);
     cutout.lineTo(54, 45);
-    cutout.arcToPoint(const Offset(64, 55), radius: const Radius.circular(10), clockwise: false);
+    cutout.arcToPoint(const Offset(64, 55),
+        radius: const Radius.circular(10), clockwise: false);
     cutout.lineTo(100, 55);
     cutout.lineTo(100, 68);
     cutout.lineTo(64, 68);
-    cutout.arcToPoint(const Offset(54, 78), radius: const Radius.circular(10), clockwise: false);
+    cutout.arcToPoint(const Offset(54, 78),
+        radius: const Radius.circular(10), clockwise: false);
     cutout.lineTo(54, 100);
     cutout.close();
 
@@ -382,7 +389,7 @@ class _AscensionLogoPainter extends CustomPainter {
       leaf1.quadraticBezierTo(43, 19, 44, 27);
       leaf1.quadraticBezierTo(38, 24, 38, 18);
       leaf1.close();
-      
+
       final Matrix4 leftM = Matrix4.identity()
         ..translate(41.0, 22.5)
         ..scale(bottomLeavesProgress, bottomLeavesProgress)
@@ -394,7 +401,7 @@ class _AscensionLogoPainter extends CustomPainter {
       leaf3.quadraticBezierTo(53, 19, 52, 27);
       leaf3.quadraticBezierTo(58, 24, 58, 18);
       leaf3.close();
-      
+
       final Matrix4 rightM = Matrix4.identity()
         ..translate(55.0, 22.5)
         ..scale(bottomLeavesProgress, bottomLeavesProgress)
@@ -408,7 +415,7 @@ class _AscensionLogoPainter extends CustomPainter {
       leaf2.quadraticBezierTo(52, 17, 48, 27);
       leaf2.quadraticBezierTo(44, 17, 48, 10);
       leaf2.close();
-      
+
       final Matrix4 topM = Matrix4.identity()
         ..translate(48.0, 18.5)
         ..scale(topLeafProgress, topLeafProgress)
@@ -416,7 +423,19 @@ class _AscensionLogoPainter extends CustomPainter {
       cutout.addPath(leaf2.transform(topM.storage), Offset.zero);
     }
 
-    final Path solidShape = Path.combine(PathOperation.difference, hull, cutout);
+    final Path rawSolidShape =
+        Path.combine(PathOperation.difference, hull, cutout);
+
+    final Path oldBottomRight = Path()..addRect(const Rect.fromLTRB(54, 68, 100, 100));
+    final Path topPieceOnly = Path.combine(PathOperation.difference, rawSolidShape, oldBottomRight);
+    
+    final Path newBottomRight = Path()..addRRect(RRect.fromLTRBAndCorners(
+      54, 68, 95, 100,
+      topLeft: const Radius.circular(10),
+      topRight: const Radius.circular(10),
+    ));
+    
+    final Path solidShape = Path.combine(PathOperation.union, topPieceOnly, newBottomRight);
 
     final Paint fillPaint = Paint()
       ..color = logoColor
@@ -424,14 +443,23 @@ class _AscensionLogoPainter extends CustomPainter {
 
     // 1. Stage 1 & 2: Dot to Square (Bottom Right)
     if (dot1Progress > 0) {
-      final RRect startDot = RRect.fromRectAndRadius(
-        Rect.fromCenter(center: const Offset(74.5, 84), width: 20, height: 20),
-        const Radius.circular(10),
+      final RRect startDot = RRect.fromLTRBAndCorners(
+        64.5,
+        74,
+        84.5,
+        94,
+        topLeft: const Radius.circular(10),
+        topRight: const Radius.circular(10),
+        bottomLeft: const Radius.circular(4),
+        bottomRight: const Radius.circular(4),
       );
       final RRect targetRect = RRect.fromLTRBAndCorners(
-        54, 68, 95, 100,
+        54,
+        68,
+        95,
+        100,
         topLeft: const Radius.circular(10),
-        bottomRight: const Radius.circular(10),
+        topRight: const Radius.circular(10),
       );
       final RRect? currentDot1 = RRect.lerp(startDot, targetRect, dot1Progress);
       if (currentDot1 != null) {
@@ -450,30 +478,36 @@ class _AscensionLogoPainter extends CustomPainter {
     if (sweepProgress > 0) {
       // Create a layer for piece1
       canvas.saveLayer(Rect.fromLTWH(-20, -20, 140, 140), Paint());
-      
+
       final Paint srcInPaint = Paint()
         ..color = logoColor
         ..style = PaintingStyle.fill;
 
       // Extract piece1 by subtracting piece2 (the bottom right square) from solidShape
-      final Path piece2Path = Path()..addRRect(RRect.fromLTRBAndCorners(
-        54, 68, 95, 100,
-        topLeft: const Radius.circular(10),
-        bottomRight: const Radius.circular(10),
-      ));
-      final Path piece1 = Path.combine(PathOperation.difference, solidShape, piece2Path);
+      final Path piece2Path = Path()
+        ..addRRect(RRect.fromLTRBAndCorners(
+          54,
+          68,
+          95,
+          100,
+          topLeft: const Radius.circular(10),
+          topRight: const Radius.circular(10),
+        ));
+      final Path piece1 =
+          Path.combine(PathOperation.difference, solidShape, piece2Path);
 
       // Draw piece1 in gold
       canvas.drawPath(piece1, srcInPaint);
 
       // Now apply the sweeping mask using dstIn!
-      canvas.saveLayer(Rect.fromLTWH(-20, -20, 140, 140), Paint()..blendMode = BlendMode.dstIn);
+      canvas.saveLayer(Rect.fromLTWH(-20, -20, 140, 140),
+          Paint()..blendMode = BlendMode.dstIn);
 
       final Path sweepPath = Path();
       sweepPath.moveTo(74.5, 55); // Start at bottom of upper-right leg
       sweepPath.lineTo(74.5, 16); // Up
-      sweepPath.lineTo(21, 16);   // Left
-      sweepPath.lineTo(21, 110);  // Down
+      sweepPath.lineTo(21, 16); // Left
+      sweepPath.lineTo(21, 110); // Down
 
       final Paint sweepMaskPaint = Paint()
         ..color = Colors.black // Color doesn't matter for dstIn, only alpha
@@ -483,12 +517,14 @@ class _AscensionLogoPainter extends CustomPainter {
         ..strokeCap = StrokeCap.round;
 
       for (final PathMetric metric in sweepPath.computeMetrics()) {
-        final Path extractPath = metric.extractPath(0.0, metric.length * sweepProgress);
+        final Path extractPath =
+            metric.extractPath(0.0, metric.length * sweepProgress);
         canvas.drawPath(extractPath, sweepMaskPaint);
       }
 
       // Keep the starting dot visible in the mask so it seamlessly connects
-      canvas.drawCircle(const Offset(74.5, 45), 20.5, Paint()..color = Colors.black);
+      canvas.drawCircle(
+          const Offset(74.5, 45), 20.5, Paint()..color = Colors.black);
 
       canvas.restore(); // Applies the mask to piece1
       canvas.restore(); // Applies masked piece1 to the main canvas
@@ -652,11 +688,22 @@ class _LogoMarkPainter extends CustomPainter {
     cutout.quadraticBezierTo(58, 24, 58, 18);
     cutout.close();
 
-    final Path finalLogoPath = Path.combine(
+    final Path rawSolidShape = Path.combine(
       PathOperation.difference,
       hull,
       cutout,
     );
+
+    final Path oldBottomRight = Path()..addRect(const Rect.fromLTRB(54, 68, 100, 100));
+    final Path topPieceOnly = Path.combine(PathOperation.difference, rawSolidShape, oldBottomRight);
+    
+    final Path newBottomRight = Path()..addRRect(RRect.fromLTRBAndCorners(
+      54, 68, 95, 100,
+      topLeft: const Radius.circular(10),
+      topRight: const Radius.circular(10),
+    ));
+    
+    final Path finalLogoPath = Path.combine(PathOperation.union, topPieceOnly, newBottomRight);
 
     canvas.drawPath(finalLogoPath, paint);
     canvas.restore();
