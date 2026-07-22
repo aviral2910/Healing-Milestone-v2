@@ -189,22 +189,25 @@ class _ImmersiveReadingScreenState extends State<ImmersiveReadingScreen> {
 
                 // Styling based on requirements
                 final handleColor =
-                    isGreyscale ? Colors.grey[300]! : theme.colorScheme.primary;
+                    isGreyscale ? Colors.grey[500]! : theme.colorScheme.primary;
                 final panelBgColor =
                     isGreyscale ? Colors.grey[900]! : theme.colorScheme.surface;
                 final borderColor = isGreyscale
                     ? Colors.grey[700]!
                     : theme.colorScheme.primary.withOpacity(0.3);
 
-                final panelWidth = 80.0;
+                final panelWidth = 120.0;
+                final panelHeight = 280.0;
 
                 return AnimatedPositioned(
                   duration: const Duration(milliseconds: 300),
                   curve: Curves.easeOutCubic,
                   right: _isEdgePanelOpen ? 0 : -panelWidth,
-                  top: screenHeight * 0.2,
+                  top: (screenHeight - panelHeight) /
+                      2, // Center the panel vertically on screen
                   child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment
+                        .center, // Center handle vertically relative to panel
                     children: [
                       // Handle Tab
                       GestureDetector(
@@ -221,15 +224,14 @@ class _ImmersiveReadingScreenState extends State<ImmersiveReadingScreen> {
                           }
                         },
                         child: Container(
-                          width: 12,
+                          width: 16,
                           height: 48,
-                          margin: const EdgeInsets.only(top: 16),
                           decoration: BoxDecoration(
                             color: panelBgColor,
                             border: Border(
-                              left: BorderSide(color: borderColor, width: 2),
-                              top: BorderSide(color: borderColor, width: 2),
-                              bottom: BorderSide(color: borderColor, width: 2),
+                              left: BorderSide(color: borderColor, width: 1),
+                              top: BorderSide(color: borderColor, width: 1),
+                              bottom: BorderSide(color: borderColor, width: 1),
                             ),
                             borderRadius: const BorderRadius.horizontal(
                                 left: Radius.circular(8)),
@@ -244,10 +246,10 @@ class _ImmersiveReadingScreenState extends State<ImmersiveReadingScreen> {
                           ),
                           child: Center(
                             child: Container(
-                              width: 4,
+                              width: 2,
                               height: 20,
                               decoration: BoxDecoration(
-                                color: handleColor,
+                                color: handleColor.withValues(alpha: .6),
                                 borderRadius: BorderRadius.circular(2),
                               ),
                             ),
@@ -258,7 +260,7 @@ class _ImmersiveReadingScreenState extends State<ImmersiveReadingScreen> {
                       // Expanded Panel Content
                       Container(
                         width: panelWidth,
-                        height: 380,
+                        height: panelHeight,
                         decoration: BoxDecoration(
                           color: panelBgColor,
                           border: Border(
@@ -281,77 +283,100 @@ class _ImmersiveReadingScreenState extends State<ImmersiveReadingScreen> {
                         child: Column(
                           children: [
                             const SizedBox(height: 16),
-                            Icon(Icons.format_size_rounded,
-                                color: handleColor, size: 20),
-                            const SizedBox(height: 8),
                             Expanded(
-                              child: RotatedBox(
-                                quarterTurns: 3,
-                                child: SliderTheme(
-                                  data: SliderThemeData(
-                                    trackHeight: 2,
-                                    activeTrackColor: handleColor,
-                                    inactiveTrackColor:
-                                        handleColor.withOpacity(0.2),
-                                    thumbColor: handleColor,
-                                    overlayColor: handleColor.withOpacity(0.1),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  // Text Size Column
+                                  Column(
+                                    children: [
+                                      Icon(Icons.format_size_rounded,
+                                          color: handleColor, size: 20),
+                                      const SizedBox(height: 8),
+                                      Expanded(
+                                        child: RotatedBox(
+                                          quarterTurns: 3,
+                                          child: SliderTheme(
+                                            data: SliderThemeData(
+                                              trackHeight: 2,
+                                              activeTrackColor: handleColor,
+                                              inactiveTrackColor:
+                                                  handleColor.withOpacity(0.2),
+                                              thumbColor: handleColor,
+                                              overlayColor:
+                                                  handleColor.withOpacity(0.1),
+                                            ),
+                                            child: Slider(
+                                              value: _textSizeFactor,
+                                              min: 0.8,
+                                              max: 2.0,
+                                              onChanged: (val) {
+                                                setState(() {
+                                                  _textSizeFactor = val;
+                                                });
+                                              },
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  child: Slider(
-                                    value: _textSizeFactor,
-                                    min: 0.8,
-                                    max: 2.0,
-                                    onChanged: (val) {
-                                      setState(() {
-                                        _textSizeFactor = val;
-                                      });
-                                    },
+                                  // Opacity Column
+                                  Column(
+                                    children: [
+                                      Icon(Icons.opacity_rounded,
+                                          color: handleColor, size: 20),
+                                      const SizedBox(height: 8),
+                                      Expanded(
+                                        child: RotatedBox(
+                                          quarterTurns: 3,
+                                          child: SliderTheme(
+                                            data: SliderThemeData(
+                                              trackHeight: 2,
+                                              activeTrackColor: handleColor,
+                                              inactiveTrackColor:
+                                                  handleColor.withOpacity(0.2),
+                                              thumbColor: handleColor,
+                                              overlayColor:
+                                                  handleColor.withOpacity(0.1),
+                                            ),
+                                            child: Slider(
+                                              value: _textOpacity,
+                                              min: 0.3,
+                                              max: 1.0,
+                                              onChanged: (val) {
+                                                setState(() {
+                                                  _textOpacity = val;
+                                                });
+                                              },
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            Icon(Icons.opacity_rounded,
-                                color: handleColor, size: 20),
-                            const SizedBox(height: 8),
-                            Expanded(
-                              child: RotatedBox(
-                                quarterTurns: 3,
-                                child: SliderTheme(
-                                  data: SliderThemeData(
-                                    trackHeight: 2,
-                                    activeTrackColor: handleColor,
-                                    inactiveTrackColor:
-                                        handleColor.withOpacity(0.2),
-                                    thumbColor: handleColor,
-                                    overlayColor: handleColor.withOpacity(0.1),
-                                  ),
-                                  child: Slider(
-                                    value: _textOpacity,
-                                    min: 0.3,
-                                    max: 1.0,
-                                    onChanged: (val) {
-                                      setState(() {
-                                        _textOpacity = val;
-                                      });
-                                    },
-                                  ),
-                                ),
+                                ],
                               ),
                             ),
                             const SizedBox(height: 12),
-                            IconButton(
-                              icon: Icon(Icons.refresh_rounded,
-                                  color: handleColor),
-                              iconSize: 20,
+                            TextButton(
                               onPressed: () {
                                 setState(() {
                                   _textSizeFactor = 1.0;
                                   _textOpacity = 1.0;
                                 });
                               },
-                              tooltip: 'Reset Styling',
+                              style: TextButton.styleFrom(
+                                foregroundColor: handleColor,
+                                minimumSize: const Size(80, 36),
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
+                              child: const Text('Reset',
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.w600)),
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 12),
                           ],
                         ),
                       ),
