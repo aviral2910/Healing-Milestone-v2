@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:healing_milestones/features/posts/presentation/widgets/post_display_widget.dart';
+import 'package:healing_milestones/features/accessibility/data/accessibility_providers.dart';
 
 class ImmersiveReadingScreen extends StatefulWidget {
   final String content;
@@ -20,6 +22,11 @@ class _ImmersiveReadingScreenState extends State<ImmersiveReadingScreen> {
   late ScrollController _scrollController;
   double _initialScrollOffset = 0.0;
   final ValueNotifier<double> _progressNotifier = ValueNotifier<double>(0.0);
+
+  // Local state for immersive reading mode styling
+  double _textSizeFactor = 1.0;
+  double _textOpacity = 1.0;
+  bool _isEdgePanelOpen = false;
 
   @override
   void initState() {
@@ -110,10 +117,16 @@ class _ImmersiveReadingScreenState extends State<ImmersiveReadingScreen> {
           children: [
             GestureDetector(
               onTap: () {
-                final delta = _scrollController.hasClients
-                    ? _scrollController.offset - _initialScrollOffset
-                    : 0.0;
-                Navigator.of(context).pop(delta);
+                if (_isEdgePanelOpen) {
+                  setState(() {
+                    _isEdgePanelOpen = false;
+                  });
+                } else {
+                  final delta = _scrollController.hasClients
+                      ? _scrollController.offset - _initialScrollOffset
+                      : 0.0;
+                  Navigator.of(context).pop(delta);
+                }
               },
               behavior: HitTestBehavior.opaque,
               child: SingleChildScrollView(
@@ -133,6 +146,8 @@ class _ImmersiveReadingScreenState extends State<ImmersiveReadingScreen> {
                     ),
                     child: PostDisplayWidget(
                       content: widget.content,
+                      textScaleFactor: _textSizeFactor,
+                      textOpacity: _textOpacity,
                     ),
                   ),
                 ),
@@ -163,6 +178,187 @@ class _ImmersiveReadingScreenState extends State<ImmersiveReadingScreen> {
                   );
                 },
               ),
+            ),
+
+            // Edge Panel
+            Consumer(
+              builder: (context, ref, _) {
+                final isGreyscale =
+                    ref.watch(accessibilityProvider).isGreyscaleMode;
+                final theme = Theme.of(context);
+
+                // Styling based on requirements
+                final handleColor =
+                    isGreyscale ? Colors.grey[300]! : theme.colorScheme.primary;
+                final panelBgColor =
+                    isGreyscale ? Colors.grey[900]! : theme.colorScheme.surface;
+                final borderColor = isGreyscale
+                    ? Colors.grey[700]!
+                    : theme.colorScheme.primary.withOpacity(0.3);
+
+                final panelWidth = 80.0;
+
+                return AnimatedPositioned(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeOutCubic,
+                  right: _isEdgePanelOpen ? 0 : -panelWidth,
+                  top: screenHeight * 0.2,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Handle Tab
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _isEdgePanelOpen = !_isEdgePanelOpen;
+                          });
+                        },
+                        onPanUpdate: (details) {
+                          if (details.delta.dx < -2) {
+                            setState(() => _isEdgePanelOpen = true);
+                          } else if (details.delta.dx > 2) {
+                            setState(() => _isEdgePanelOpen = false);
+                          }
+                        },
+                        child: Container(
+                          width: 12,
+                          height: 48,
+                          margin: const EdgeInsets.only(top: 16),
+                          decoration: BoxDecoration(
+                            color: panelBgColor,
+                            border: Border(
+                              left: BorderSide(color: borderColor, width: 2),
+                              top: BorderSide(color: borderColor, width: 2),
+                              bottom: BorderSide(color: borderColor, width: 2),
+                            ),
+                            borderRadius: const BorderRadius.horizontal(
+                                left: Radius.circular(8)),
+                            boxShadow: [
+                              if (!_isEdgePanelOpen)
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 4,
+                                  offset: const Offset(-2, 0),
+                                )
+                            ],
+                          ),
+                          child: Center(
+                            child: Container(
+                              width: 4,
+                              height: 20,
+                              decoration: BoxDecoration(
+                                color: handleColor,
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      // Expanded Panel Content
+                      Container(
+                        width: panelWidth,
+                        height: 380,
+                        decoration: BoxDecoration(
+                          color: panelBgColor,
+                          border: Border(
+                            left: BorderSide(color: borderColor, width: 1),
+                            top: BorderSide(color: borderColor, width: 1),
+                            bottom: BorderSide(color: borderColor, width: 1),
+                          ),
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(16),
+                            bottomLeft: Radius.circular(16),
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.15),
+                              blurRadius: 10,
+                              offset: const Offset(-4, 0),
+                            )
+                          ],
+                        ),
+                        child: Column(
+                          children: [
+                            const SizedBox(height: 16),
+                            Icon(Icons.format_size_rounded,
+                                color: handleColor, size: 20),
+                            const SizedBox(height: 8),
+                            Expanded(
+                              child: RotatedBox(
+                                quarterTurns: 3,
+                                child: SliderTheme(
+                                  data: SliderThemeData(
+                                    trackHeight: 2,
+                                    activeTrackColor: handleColor,
+                                    inactiveTrackColor:
+                                        handleColor.withOpacity(0.2),
+                                    thumbColor: handleColor,
+                                    overlayColor: handleColor.withOpacity(0.1),
+                                  ),
+                                  child: Slider(
+                                    value: _textSizeFactor,
+                                    min: 0.8,
+                                    max: 2.0,
+                                    onChanged: (val) {
+                                      setState(() {
+                                        _textSizeFactor = val;
+                                      });
+                                    },
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Icon(Icons.opacity_rounded,
+                                color: handleColor, size: 20),
+                            const SizedBox(height: 8),
+                            Expanded(
+                              child: RotatedBox(
+                                quarterTurns: 3,
+                                child: SliderTheme(
+                                  data: SliderThemeData(
+                                    trackHeight: 2,
+                                    activeTrackColor: handleColor,
+                                    inactiveTrackColor:
+                                        handleColor.withOpacity(0.2),
+                                    thumbColor: handleColor,
+                                    overlayColor: handleColor.withOpacity(0.1),
+                                  ),
+                                  child: Slider(
+                                    value: _textOpacity,
+                                    min: 0.3,
+                                    max: 1.0,
+                                    onChanged: (val) {
+                                      setState(() {
+                                        _textOpacity = val;
+                                      });
+                                    },
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            IconButton(
+                              icon: Icon(Icons.refresh_rounded,
+                                  color: handleColor),
+                              iconSize: 20,
+                              onPressed: () {
+                                setState(() {
+                                  _textSizeFactor = 1.0;
+                                  _textOpacity = 1.0;
+                                });
+                              },
+                              tooltip: 'Reset Styling',
+                            ),
+                            const SizedBox(height: 8),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
           ],
         ),
