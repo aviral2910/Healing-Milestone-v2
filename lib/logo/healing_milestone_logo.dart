@@ -260,9 +260,6 @@ class HealingMilestonesAnimatedLogoMark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double baseFontSize = (size * 30) / 80;
-    final double lateralGap = (size * 24) / 80;
-
     return Row(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.end,
@@ -506,7 +503,7 @@ class _AscensionLogoPainter extends CustomPainter {
 // ==========================================
 // 4. Original Static Logo Widget Reference
 // ==========================================
-class HealingMilestonesStaticLogoWidget extends StatelessWidget {
+class HealingMilestonesStaticLogoWidget extends StatefulWidget {
   final double logoSize;
   final Color? logoColor;
   final Color? textColor;
@@ -521,27 +518,54 @@ class HealingMilestonesStaticLogoWidget extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<HealingMilestonesStaticLogoWidget> createState() => _HealingMilestonesStaticLogoWidgetState();
+}
+
+class _HealingMilestonesStaticLogoWidgetState extends State<HealingMilestonesStaticLogoWidget> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2500),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final double baseFontSize = (logoSize * 30) / 80;
-    final double lateralGap = (logoSize * 24) / 80;
+    final double baseFontSize = (widget.logoSize * 30) / 80;
+    final double lateralGap = (widget.logoSize * 24) / 80;
 
     final Color effectiveLogoColor =
-        logoColor ?? Theme.of(context).primaryColor;
+        widget.logoColor ?? Theme.of(context).primaryColor;
     final Color effectiveTextColor =
-        textColor ?? Theme.of(context).colorScheme.onSurface;
+        widget.textColor ?? Theme.of(context).colorScheme.onSurface;
 
     return Row(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         SizedBox(
-          width: logoSize,
-          height: logoSize,
-          child: CustomPaint(
-            painter: _LogoMarkPainter(effectiveLogoColor),
+          width: widget.logoSize,
+          height: widget.logoSize,
+          child: AnimatedBuilder(
+            animation: _controller,
+            builder: (context, child) {
+              return CustomPaint(
+                painter: _LogoMarkPainter(effectiveLogoColor, _controller.value),
+              );
+            },
           ),
         ),
-        if (showText) ...[
+        if (widget.showText) ...[
           SizedBox(width: lateralGap),
           Column(
             mainAxisSize: MainAxisSize.min,
@@ -579,8 +603,23 @@ class HealingMilestonesStaticLogoWidget extends StatelessWidget {
 
 class _LogoMarkPainter extends CustomPainter {
   final Color logoColor;
+  final double animationValue;
 
-  _LogoMarkPainter(this.logoColor);
+  _LogoMarkPainter(this.logoColor, this.animationValue);
+
+  Path _buildLeaf(Offset center, double size, double rotation, double scale) {
+    final Path path = Path();
+    path.moveTo(center.dx, center.dy - (size * 0.5 * scale));
+    path.quadraticBezierTo(center.dx + (size * 0.2 * scale), center.dy - (size * 0.1 * scale), center.dx, center.dy + (size * 0.5 * scale));
+    path.quadraticBezierTo(center.dx - (size * 0.2 * scale), center.dy - (size * 0.1 * scale), center.dx, center.dy - (size * 0.5 * scale));
+    path.close();
+    
+    final Matrix4 matrix = Matrix4.identity()
+      ..translate(center.dx, center.dy)
+      ..rotateZ(rotation)
+      ..translate(-center.dx, -center.dy);
+    return path.transform(matrix.storage);
+  }
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -631,20 +670,18 @@ class _LogoMarkPainter extends CustomPainter {
     cutout.lineTo(54, 100);
     cutout.close();
 
-    cutout.moveTo(48, 10);
-    cutout.quadraticBezierTo(52, 17, 48, 27);
-    cutout.quadraticBezierTo(44, 17, 48, 10);
-    cutout.close();
+    final leafSize = 22.0; // Larger leaves for static logo
+    final topLeafCenter = const Offset(48, 18);
+    final midLeafCenter = const Offset(41, 22.5);
+    final bottomLeafCenter = const Offset(55, 22.5);
 
-    cutout.moveTo(38, 18);
-    cutout.quadraticBezierTo(43, 19, 44, 27);
-    cutout.quadraticBezierTo(38, 24, 38, 18);
-    cutout.close();
+    // Calculate breathing and swaying animations for leaves
+    final breathScale = 1.0 + (animationValue * 0.15); // Pulse up to 15% larger
+    final swayAngle = (animationValue - 0.5) * 0.15; // Rotate back and forth
 
-    cutout.moveTo(58, 18);
-    cutout.quadraticBezierTo(53, 19, 52, 27);
-    cutout.quadraticBezierTo(58, 24, 58, 18);
-    cutout.close();
+    cutout.addPath(_buildLeaf(topLeafCenter, leafSize, 0 + swayAngle, breathScale), Offset.zero);
+    cutout.addPath(_buildLeaf(midLeafCenter, leafSize, -0.392 - swayAngle, breathScale), Offset.zero); // -pi/8 approx -0.392
+    cutout.addPath(_buildLeaf(bottomLeafCenter, leafSize, 0.392 + (swayAngle * 1.5), breathScale), Offset.zero);
 
     final Path rawSolidShape = Path.combine(
       PathOperation.difference,
