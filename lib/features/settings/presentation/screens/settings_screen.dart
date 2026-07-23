@@ -7,6 +7,7 @@ import 'package:healing_milestones/core/presentation/widgets/logout_button.dart'
 import 'package:healing_milestones/core/router/app_routes.dart';
 
 import 'package:healing_milestones/features/accessibility/data/accessibility_providers.dart';
+import 'package:healing_milestones/features/milestone/presentation/providers/draft_settings_provider.dart';
 
 enum MenuContext { home, profile }
 
@@ -77,12 +78,28 @@ class SettingsScreen extends ConsumerWidget {
         ),
         _buildOptionCard(
           context,
-          icon: Icons.settings_outlined,
-          title: 'App Settings',
-          subtitle: 'Manage your preferences',
+          icon: Icons.drafts_outlined,
+          title: 'My Drafts',
+          subtitle: 'Manage your saved story drafts',
           onTap: () {
-            // TODO: Settings
+            context.push(AppRoutes.drafts);
           },
+        ),
+        _buildOptionCard(
+          context,
+          icon: Icons.save_outlined,
+          title: 'Auto-Save Drafts',
+          subtitle: 'Automatically save while writing posts',
+          onTap: () {
+            final currentValue = ref.read(draftAutoSaveProvider);
+            ref.read(draftAutoSaveProvider.notifier).toggleAutoSave(!currentValue);
+          },
+          trailing: Switch(
+            value: ref.watch(draftAutoSaveProvider),
+            onChanged: (val) {
+              ref.read(draftAutoSaveProvider.notifier).toggleAutoSave(val);
+            },
+          ),
         ),
         _buildOptionCard(
           context,
@@ -128,8 +145,9 @@ class SettingsScreen extends ConsumerWidget {
     required IconData icon,
     required String title,
     required String subtitle,
-    required VoidCallback onTap,
+    VoidCallback? onTap,
     bool isDestructive = false,
+    Widget? trailing,
   }) {
     final theme = Theme.of(context);
     final color = isDestructive
@@ -184,8 +202,9 @@ class SettingsScreen extends ConsumerWidget {
                     ],
                   ),
                 ),
-                Icon(Icons.chevron_right_rounded,
-                    color: Theme.of(context).iconTheme.color?.withOpacity(0.4)),
+                trailing ??
+                    Icon(Icons.chevron_right_rounded,
+                        color: Theme.of(context).iconTheme.color?.withOpacity(0.4)),
               ],
             ),
           ),

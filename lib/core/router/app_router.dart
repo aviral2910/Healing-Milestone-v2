@@ -12,6 +12,7 @@ import '../../features/settings/presentation/screens/accessibility_settings_scre
 import '../../features/uat/presentation/screens/uat_screen.dart';
 import '../../features/milestone/presentation/screens/post_creation_screen.dart';
 import '../../features/milestone/presentation/screens/story_detail_screen.dart';
+import '../../features/profile/presentation/screens/drafts_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/role_selection_screen.dart';
 import '../../features/auth/presentation/screens/professional_onboarding_screen.dart';
@@ -22,6 +23,7 @@ import '../../features/splash/presentation/screens/splash_screen.dart';
 import '../../logo/healing_milestone_logo.dart';
 import '../../core/models/user_model.dart';
 import '../../core/models/story_model.dart';
+import '../../core/models/draft_model.dart';
 import 'app_routes.dart';
 
 class RouterNotifier extends ChangeNotifier {
@@ -110,8 +112,17 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.create,
         builder: (context, state) {
-          final existingStory = state.extra as StoryModel?;
-          return PostCreationScreen(existingStory: existingStory);
+          StoryModel? existingStory;
+          DraftModel? draft;
+          if (state.extra is StoryModel) {
+            existingStory = state.extra as StoryModel;
+          } else if (state.extra is Map<String, dynamic>) {
+            final extra = state.extra as Map<String, dynamic>;
+            if (extra.containsKey('draft')) {
+              draft = extra['draft'] as DraftModel;
+            }
+          }
+          return PostCreationScreen(existingStory: existingStory, draft: draft);
         },
       ),
       GoRoute(
@@ -155,6 +166,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.editProfile,
         builder: (context, state) => const EditProfileScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.drafts,
+        builder: (context, state) => const DraftsScreen(),
       ),
       GoRoute(
         path: AppRoutes.publicProfilePath,

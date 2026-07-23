@@ -15,10 +15,15 @@ import '../../../../features/posts/data/hashtag_repository.dart';
 import '../../../../features/auth/data/repository_providers.dart';
 import '../../../../main.dart';
 
+import '../../../../core/models/draft_model.dart';
+import '../providers/drafts_provider.dart';
+import '../providers/draft_settings_provider.dart';
+
 class PostCreationScreen extends StatefulHookConsumerWidget {
   final StoryModel? existingStory;
+  final DraftModel? draft;
 
-  const PostCreationScreen({Key? key, this.existingStory}) : super(key: key);
+  const PostCreationScreen({Key? key, this.existingStory, this.draft}) : super(key: key);
 
   @override
   ConsumerState<PostCreationScreen> createState() => _PostCreationScreenState();
@@ -46,6 +51,8 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
   Timer? _userDebounce;
   bool _isSearchingUsers = false;
   bool _removeExistingImage = false;
+  String? _draftId;
+  Timer? _autoSaveTimer;
 
   @override
   void initState() {
@@ -57,21 +64,65 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
       _selectedTags = List.from(story.hashtagsList);
       _selectedType = story.type;
       _isAnonymous = !story.displayAuthorName;
-      // We can't synchronously load the users for taggedPeople here easily without an async fetch,
-      // but we could just pre-populate the UI with the existing IDs or leave it for later.
-      // For now, we will leave tagged users as is or fetch them if needed.
-      // To properly handle tagged users, we should ideally fetch them from the repo.
+    } else if (widget.draft != null) {
+      final draft = widget.draft!;
+      _draftId = draft.id;
+      _titleController.text = draft.title;
+      _contentController.text = draft.content;
+      _selectedTags = List.from(draft.tags);
+      _selectedType = draft.type;
+      _isAnonymous = draft.isAnonymous;
+      _selectedUsers = List.from(draft.selectedUsers);
+      if (draft.imagePath != null && draft.imagePath!.isNotEmpty) {
+        _selectedImage = XFile(draft.imagePath!);
+      }
     }
+
+    _titleController.addListener(_onContentChanged);
+    _contentController.addListener(_onContentChanged);
+  }
+
+  void _onContentChanged() {
+    final autoSaveEnabled = ref.read(draftAutoSaveProvider);
+    if (!autoSaveEnabled) return;
+
+    _autoSaveTimer?.cancel();
+    _autoSaveTimer = Timer(const Duration(seconds: 2), _saveDraft);
+  }
+
+  Future<void> _saveDraft() async {
+    final title = _titleController.text.trim();
+    final content = _contentController.text.trim();
+    if (title.isEmpty && content.isEmpty) return;
+
+    _draftId ??= const Uuid().v4();
+
+    final draft = DraftModel(
+      id: _draftId!,
+      title: title,
+      content: content,
+      tags: _selectedTags,
+      type: _selectedType,
+      isAnonymous: _isAnonymous,
+      imagePath: _selectedImage?.path,
+      selectedUsers: _selectedUsers,
+      lastSaved: DateTime.now(),
+    );
+
+    await ref.read(draftsProvider.notifier).saveDraft(draft);
   }
 
   @override
   void dispose() {
+    _titleController.removeListener(_onContentChanged);
+    _contentController.removeListener(_onContentChanged);
     _titleController.dispose();
     _contentController.dispose();
     _tagController.dispose();
     _userSearchController.dispose();
     _debounce?.cancel();
     _userDebounce?.cancel();
+    _autoSaveTimer?.cancel();
     super.dispose();
   }
 
@@ -183,6 +234,9 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
           ownStories: [...user.ownStories, story.storyId],
         );
         await ref.read(authProvider.notifier).updateProfile(updatedUser);
+      }
+      if (_draftId != null) {
+        await ref.read(draftsProvider.notifier).deleteDraft(_draftId!);
       }
 
       if (mounted) {
@@ -399,6 +453,22 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
           onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.save_outlined),
+            tooltip: 'Save Draft',
+            onPressed: () async {
+              await _saveDraft();
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Text('Draft saved manually.'),
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                );
+              }
+            },
+          ),
           if (ref.watch(uatModeProvider))
             Container(
               margin: const EdgeInsets.only(right: 8),
