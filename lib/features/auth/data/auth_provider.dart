@@ -97,10 +97,22 @@ class AuthNotifier extends StateNotifier<AsyncValue<AuthState>> {
   }
 
   Future<void> signOut() async {
+    final currentState = state.valueOrNull;
     try {
+      // Show loading state while signing out
+      state = const AsyncValue.loading();
       await _authRepository.signOut();
+      // Note: We don't manually set the state to unauthenticated here.
+      // The _authRepository.authStateChanges listener will automatically
+      // detect the sign-out and update the state safely.
     } catch (e, st) {
-      state = AsyncError(e, st);
+      // Revert to the previous authenticated state if sign-out fails
+      if (currentState != null) {
+        state = AsyncData(currentState);
+      } else {
+        state = AsyncError(e, st);
+      }
+      rethrow; // Rethrow so the UI can catch it (e.g., to show a Snackbar)
     }
   }
 

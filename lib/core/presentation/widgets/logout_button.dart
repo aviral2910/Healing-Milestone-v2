@@ -112,10 +112,27 @@ class LogoutButton extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       ElevatedButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                          ref.read(authProvider.notifier).signOut();
-                          context.go(AppRoutes.home);
+                        onPressed: () async {
+                          final navContext = Navigator.of(context);
+                          final scaffoldMessenger =
+                              ScaffoldMessenger.of(context);
+
+                          navContext.pop(); // dismiss dialog
+
+                          try {
+                            context.go(AppRoutes.home);
+                            await ref.read(authProvider.notifier).signOut();
+                            // GoRouter redirect automatically handles routing
+                          } catch (e) {
+                            scaffoldMessenger.showSnackBar(
+                              SnackBar(
+                                content: const Text(
+                                    'Failed to logout. Please try again.'),
+                                backgroundColor:
+                                    Theme.of(context).colorScheme.error,
+                              ),
+                            );
+                          }
                         },
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 18),
