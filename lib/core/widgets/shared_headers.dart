@@ -8,10 +8,14 @@ import '../../features/auth/data/auth_provider.dart';
 import 'package:healing_milestones/features/settings/presentation/screens/settings_screen.dart';
 import 'package:healing_milestones/features/accessibility/data/accessibility_providers.dart';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:healing_milestones/features/posts/data/feed_view_provider.dart';
+
 class CommonSliverAppBar extends ConsumerWidget {
   final bool isHeroEnabled;
+  final bool showSwipeToggle;
 
-  const CommonSliverAppBar({Key? key, this.isHeroEnabled = true})
+  const CommonSliverAppBar({Key? key, this.isHeroEnabled = true, this.showSwipeToggle = false})
       : super(key: key);
 
   @override
@@ -87,6 +91,22 @@ class CommonSliverAppBar extends ConsumerWidget {
       ),
       title: HealingMilestonesLogoWidget(),
       actions: [
+        if (showSwipeToggle)
+          Consumer(
+            builder: (context, ref, child) {
+              final isSwipeMode = ref.watch(isSwipeModeProvider);
+              return Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: IconButton(
+                  icon: Icon(isSwipeMode ? Icons.view_list_rounded : Icons.swipe_rounded),
+                  color: theme.colorScheme.primary,
+                  onPressed: () {
+                    ref.read(isSwipeModeProvider.notifier).state = !isSwipeMode;
+                  },
+                ),
+              );
+            },
+          ),
         Padding(
           padding: const EdgeInsets.only(right: 8.0),
           child: TextButton(

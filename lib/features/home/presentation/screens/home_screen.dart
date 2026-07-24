@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:healing_milestones/features/posts/data/feed_view_provider.dart';
+import 'package:healing_milestones/features/posts/presentation/screens/post_swipe_screen.dart';
 import 'package:healing_milestones/logo/healing_milestone_logo.dart';
-import '../../../../core/data/dummy_data.dart';
+
 import '../../../../features/posts/presentation/screens/post_screen.dart';
 import '../../../../features/search/presentation/screens/search_screen.dart';
 import '../../../../features/awareness/presentation/screens/health_awareness_screen.dart';
@@ -80,6 +82,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
+    final isSwipeMode = ref.watch(isSwipeModeProvider);
+
     return PopScope(
       canPop: _currentIndex == 0,
       onPopInvokedWithResult: (didPop, result) {
@@ -93,11 +97,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         body: IndexedStack(
           index: _currentIndex,
           children: [
-            PostScreen(
-              scrollController: _postsScrollController,
-              isActiveTab: _currentIndex == 0,
-              onSearchTapped: () => _onBottomNavTapped(1),
-            ),
+            isSwipeMode
+                ? PostSwipeScreen(
+                    scrollController: _postsScrollController,
+                    isActiveTab: _currentIndex == 0,
+                    onSearchTapped: () => _onBottomNavTapped(1),
+                  )
+                : PostScreen(
+                    scrollController: _postsScrollController,
+                    isActiveTab: _currentIndex == 0,
+                    onSearchTapped: () => _onBottomNavTapped(1),
+                  ),
             SearchScreen(
               scrollController: _searchScrollController,
               isActiveTab: _currentIndex == 1,

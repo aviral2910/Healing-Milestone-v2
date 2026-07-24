@@ -611,34 +611,36 @@ class _HealingMilestonesStaticLogoWidgetState
         ),
         if (widget.showText) ...[
           SizedBox(width: lateralGap),
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'HEALING',
-                style: TextStyle(
-                  fontSize: baseFontSize,
-                  fontWeight: FontWeight.w500,
-                  height: 1.0,
-                  letterSpacing: baseFontSize * 0.05,
-                  color: effectiveTextColor,
-                  fontFamily: 'Oswald',
+          Flexible(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'HEALING',
+                  style: TextStyle(
+                    color: effectiveTextColor,
+                    fontFamily: 'Oswald',
+                    fontSize: baseFontSize,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 0.7,
+                    height: 1.0,
+                  ),
                 ),
-              ),
-              Text(
-                'MILESTONES',
-                style: TextStyle(
-                  fontSize: baseFontSize,
-                  fontWeight: FontWeight.w500,
-                  height: 1.0,
-                  letterSpacing: baseFontSize * 0.013,
-                  color: effectiveTextColor,
-                  fontFamily: 'Oswald',
+                Text(
+                  'MILESTONES',
+                  style: TextStyle(
+                    color: effectiveTextColor,
+                    fontFamily: 'Oswald',
+                    fontSize: baseFontSize,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 0.2,
+                    height: 1.0,
+                  ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
+          )
         ],
       ],
     );

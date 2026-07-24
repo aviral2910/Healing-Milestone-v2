@@ -161,7 +161,7 @@ class PostScreen extends HookConsumerWidget {
           child: CustomScrollView(
           controller: scrollController,
           slivers: [
-            CommonSliverAppBar(isHeroEnabled: isActiveTab),
+            CommonSliverAppBar(isHeroEnabled: isActiveTab, showSwipeToggle: true),
             CommonSearchBarSliver(
               includeWelcomeText: true,
               displayName: user?.displayName ?? 'Guest',
