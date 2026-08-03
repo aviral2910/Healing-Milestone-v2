@@ -107,7 +107,7 @@ class CommonSliverAppBar extends ConsumerWidget {
                 icon: Icon(isSwipeMode
                     ? Icons.view_agenda_rounded
                     : Icons.amp_stories_rounded),
-                // color: theme.colorScheme.primary,
+                color: theme.colorScheme.primary,
                 onPressed: () {
                   ref.read(isSwipeModeProvider.notifier).state = !isSwipeMode;
                 },
@@ -116,6 +116,7 @@ class CommonSliverAppBar extends ConsumerWidget {
           ),
         IconButton(
           icon: const Icon(Icons.more_vert),
+          color: theme.colorScheme.primary,
           onPressed: () {
             context.push(AppRoutes.settings, extra: MenuContext.home);
           },
