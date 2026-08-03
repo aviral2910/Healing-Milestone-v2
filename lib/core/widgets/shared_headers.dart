@@ -92,6 +92,13 @@ class CommonSliverAppBar extends ConsumerWidget {
       ),
       title: HealingMilestonesLogoWidget(),
       actions: [
+        IconButton(
+          icon: const Icon(Icons.bug_report_outlined),
+          color: theme.colorScheme.primary,
+          onPressed: () {
+            context.push(AppRoutes.uat);
+          },
+        ),
         if (showSwipeToggle)
           Consumer(
             builder: (context, ref, child) {
