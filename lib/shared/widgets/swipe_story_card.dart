@@ -392,18 +392,53 @@ class _SwipeStoryCardState extends ConsumerState<SwipeStoryCard>
                 ),
               ),
 
+              if (widget.story.hashtagsList.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                SizedBox(
+                  height: 28,
+                  child: ListView.separated(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    scrollDirection: Axis.horizontal,
+                    itemCount: widget.story.hashtagsList.length,
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(width: 8),
+                    itemBuilder: (context, index) {
+                      final tag = widget.story.hashtagsList[index];
+                      return Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10.0, vertical: 4.0),
+                        decoration: BoxDecoration(
+                          color:
+                              theme.colorScheme.primary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          '#$tag',
+                          style: TextStyle(
+                            color: theme.colorScheme.primary,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+
               // Interaction Section
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.0),
                 child: Divider(
                   height: 24,
                   color: theme.colorScheme.primary.withValues(alpha: .25),
-                  thickness: .2,
+                  thickness: .4,
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.only(
-                    left: 16.0, right: 16.0, bottom: 16.0),
+                padding:
+                    const EdgeInsets.only(left: 0.0, right: 0.0, bottom: 0.0),
                 child: InteractionSection(
                   story: widget.story,
                   showLabels: true,
