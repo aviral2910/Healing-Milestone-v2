@@ -216,21 +216,13 @@ class _PostSwipeScreenState extends ConsumerState<PostSwipeScreen> {
                       );
                     },
                     child: Padding(
-                      padding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 4.0, bottom: 24.0),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(24),
-                          child: SwipeStoryCard(
-                            story: story,
-                            content: _truncateContent(story.description, 200),
-                            onTap: () {
-                              context.push(AppRoutes.storyDetail(story.storyId));
-                            },
-                          ),
-                        ),
+                      padding: const EdgeInsets.only(left: 4.0, right: 4.0, top: 4.0, bottom: 24.0),
+                      child: SwipeStoryCard(
+                        story: story,
+                        content: _truncateContent(story.description, 200),
+                        onTap: () {
+                          context.push(AppRoutes.storyDetail(story.storyId));
+                        },
                       ),
                     ),
                   );

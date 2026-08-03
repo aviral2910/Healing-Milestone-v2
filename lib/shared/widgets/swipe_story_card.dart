@@ -85,7 +85,7 @@ class _SwipeStoryCardState extends ConsumerState<SwipeStoryCard>
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
             color: theme.colorScheme.surface,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(24),
             border: Border.all(color: theme.dividerColor, width: 1),
             boxShadow: [
               BoxShadow(
