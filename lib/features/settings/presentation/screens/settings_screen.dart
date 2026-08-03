@@ -43,6 +43,15 @@ class SettingsScreen extends ConsumerWidget {
             context.push(AppRoutes.accessibilitySettings);
           },
         ),
+        _buildOptionCard(
+          context,
+          icon: Icons.bug_report_outlined,
+          title: 'UAT Mode',
+          subtitle: 'Enable testing features and dummy data',
+          onTap: () {
+            context.push(AppRoutes.uat);
+          },
+        ),
         if (user != null)
           _buildOptionCard(
             context,

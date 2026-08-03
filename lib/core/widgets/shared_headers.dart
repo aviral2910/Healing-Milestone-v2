@@ -15,7 +15,8 @@ class CommonSliverAppBar extends ConsumerWidget {
   final bool isHeroEnabled;
   final bool showSwipeToggle;
 
-  const CommonSliverAppBar({Key? key, this.isHeroEnabled = true, this.showSwipeToggle = false})
+  const CommonSliverAppBar(
+      {Key? key, this.isHeroEnabled = true, this.showSwipeToggle = false})
       : super(key: key);
 
   @override
@@ -95,39 +96,17 @@ class CommonSliverAppBar extends ConsumerWidget {
           Consumer(
             builder: (context, ref, child) {
               final isSwipeMode = ref.watch(isSwipeModeProvider);
-              return Padding(
-                padding: const EdgeInsets.only(right: 8.0),
-                child: IconButton(
-                  icon: Icon(isSwipeMode ? Icons.view_list_rounded : Icons.swipe_rounded),
-                  color: theme.colorScheme.primary,
-                  onPressed: () {
-                    ref.read(isSwipeModeProvider.notifier).state = !isSwipeMode;
-                  },
-                ),
+              return IconButton(
+                icon: Icon(isSwipeMode
+                    ? Icons.view_agenda_rounded
+                    : Icons.amp_stories_rounded),
+                // color: theme.colorScheme.primary,
+                onPressed: () {
+                  ref.read(isSwipeModeProvider.notifier).state = !isSwipeMode;
+                },
               );
             },
           ),
-        Padding(
-          padding: const EdgeInsets.only(right: 8.0),
-          child: TextButton(
-            style: TextButton.styleFrom(
-              backgroundColor: theme.colorScheme.primary,
-              foregroundColor:
-                  theme.colorScheme.primary.computeLuminance() > 0.25
-                      ? Colors.black
-                      : Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(6),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            ),
-            onPressed: () {
-              context.push(AppRoutes.uat);
-            },
-            child: const Text('UAT',
-                style: TextStyle(fontWeight: FontWeight.bold)),
-          ),
-        ),
         IconButton(
           icon: const Icon(Icons.more_vert),
           onPressed: () {
@@ -190,22 +169,26 @@ class CommonSearchBarSliver extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Consumer(
                 builder: (context, ref, child) {
-                  final isGreyscale = ref.watch(accessibilityProvider).isGreyscaleMode;
+                  final isGreyscale =
+                      ref.watch(accessibilityProvider).isGreyscaleMode;
                   return GestureDetector(
                     onTap: () {
-                      ref.read(accessibilityProvider.notifier).toggleGreyscaleMode();
+                      ref
+                          .read(accessibilityProvider.notifier)
+                          .toggleGreyscaleMode();
                     },
                     behavior: HitTestBehavior.opaque,
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
                       decoration: BoxDecoration(
-                        color: isGreyscale 
+                        color: isGreyscale
                             ? theme.colorScheme.primary.withOpacity(0.12)
                             : theme.dividerColor.withOpacity(0.3),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: isGreyscale 
+                          color: isGreyscale
                               ? theme.colorScheme.primary.withOpacity(0.3)
                               : Colors.transparent,
                           width: 1,
@@ -216,17 +199,20 @@ class CommonSearchBarSliver extends StatelessWidget {
                           Icon(
                             Icons.auto_stories_rounded,
                             size: 18,
-                            color: isGreyscale ? theme.colorScheme.primary : theme.iconTheme.color?.withOpacity(0.7),
+                            color: isGreyscale
+                                ? theme.colorScheme.primary
+                                : theme.iconTheme.color?.withOpacity(0.7),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: RichText(
                               text: TextSpan(
-                                text: isGreyscale 
-                                    ? 'Want to turn off reading mode? ' 
+                                text: isGreyscale
+                                    ? 'Want to turn off reading mode? '
                                     : 'Want to turn on reading mode? ',
                                 style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: theme.colorScheme.onSurface.withOpacity(0.9),
+                                  color: theme.colorScheme.onSurface
+                                      .withOpacity(0.9),
                                   fontWeight: FontWeight.w500,
                                 ),
                                 children: [
