@@ -196,7 +196,7 @@ class InteractionSection extends HookConsumerWidget {
 
         // ACTIONS ROW
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 4.0),
+          padding: EdgeInsets.symmetric(horizontal: 6.0, vertical: 4),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
@@ -204,7 +204,7 @@ class InteractionSection extends HookConsumerWidget {
               _ActionButton(
                 icon: optimisticUserReaction.value != null
                     ? Text(optimisticUserReaction.value!.emoji,
-                        style: const TextStyle(fontSize: 20))
+                        style: TextStyle(fontSize: showLabels ? 14 : 12))
                     : Icon(Icons.favorite_border,
                         color: theme.textTheme.bodySmall?.color, size: 20),
                 label: optimisticUserReaction.value != null
@@ -356,6 +356,7 @@ class _ActionButton extends StatelessWidget {
                   color: labelColor,
                   fontWeight: FontWeight.w600,
                   fontSize: 14,
+                  height: 1.0, // consistent line height
                 ),
               ),
             ],

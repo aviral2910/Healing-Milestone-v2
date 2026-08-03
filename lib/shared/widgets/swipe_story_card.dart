@@ -429,7 +429,7 @@ class _SwipeStoryCardState extends ConsumerState<SwipeStoryCard>
 
               InteractionSection(
                 story: widget.story,
-                showLabels: true,
+                showLabels: false,
               ),
             ],
           ),

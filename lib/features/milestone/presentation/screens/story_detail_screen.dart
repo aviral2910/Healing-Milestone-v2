@@ -585,7 +585,7 @@ class StoryDetailScreen extends HookConsumerWidget {
                           }),
 
                           const SizedBox(height: 16),
-                          InteractionSection(story: story, showLabels: false),
+                          InteractionSection(story: story, showLabels: true),
                           const SizedBox(height: 32),
 
                           Padding(
