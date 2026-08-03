@@ -66,50 +66,49 @@ class _PostSwipeScreenState extends ConsumerState<PostSwipeScreen> {
         onRefresh: () async {
           await ref.read(paginatedStoriesProvider.notifier).refresh();
         },
-        child: AnimationLimiter(
-          child: CustomScrollView(
-            controller: widget.scrollController,
-            slivers: [
-              CommonSliverAppBar(
-                isHeroEnabled: widget.isActiveTab,
-                showSwipeToggle: true,
-              ),
-              if (storiesAsync.isLoading)
-                const SliverFillRemaining(
-                  child: Center(
-                      child: CircularProgressIndicator(color: Color(0xFFD4AF37))),
-                )
-              else if (storiesAsync.hasError)
-                SliverFillRemaining(
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.error_outline,
-                            size: 48, color: Theme.of(context).dividerColor),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Unable to load stories',
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            color: const Color(0xFFA1A1A6),
-                          ),
+        child: CustomScrollView(
+          physics: const NeverScrollableScrollPhysics(),
+          controller: widget.scrollController,
+          slivers: [
+            CommonSliverAppBar(
+              isHeroEnabled: widget.isActiveTab,
+              showSwipeToggle: true,
+            ),
+            if (storiesAsync.isLoading)
+              const SliverFillRemaining(
+                child: Center(
+                    child: CircularProgressIndicator(color: Color(0xFFD4AF37))),
+              )
+            else if (storiesAsync.hasError)
+              SliverFillRemaining(
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.error_outline,
+                          size: 48, color: Theme.of(context).dividerColor),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Unable to load stories',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: const Color(0xFFA1A1A6),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                )
-              else if (storiesAsync.hasValue)
-                ..._buildSuccessSlivers(
-                  context,
-                  ref,
-                  storiesAsync.value!,
-                  theme,
-                  selectedTag,
-                  isPaginating,
-                  hasMore,
                 ),
-            ],
-          ),
+              )
+            else if (storiesAsync.hasValue)
+              ..._buildSuccessSlivers(
+                context,
+                ref,
+                storiesAsync.value!,
+                theme,
+                selectedTag,
+                isPaginating,
+                hasMore,
+              ),
+          ],
         ),
       ),
     );
@@ -151,8 +150,10 @@ class _PostSwipeScreenState extends ConsumerState<PostSwipeScreen> {
               final pageViewWidth = MediaQuery.sizeOf(context).width;
 
               return PageView.builder(
+                key: const PageStorageKey('swipe_page_view'),
                 controller: _pageController,
                 scrollDirection: Axis.horizontal,
+                physics: const PageScrollPhysics(parent: BouncingScrollPhysics()),
                 itemCount: filteredStories.length + (hasMore ? 1 : 0),
                 onPageChanged: (index) {
                   if (index >= filteredStories.length - 2 && hasMore && !isPaginating) {
@@ -183,12 +184,20 @@ class _PostSwipeScreenState extends ConsumerState<PostSwipeScreen> {
                       double rotation = 0.0;
 
                       if (value > 0) {
-                        dx = -value * pageViewWidth;
-                        scale = (1 - value * 0.06).clamp(0.8, 1.0);
-                        dy = value * 40;
-                        opacity = (1 - value * 0.4).clamp(0.0, 1.0);
+                        // Card sliding out to the left
+                        // Native PageView moves it left. Let's just rotate it and fade it for a Tinder feel
+                        dx = 0.0;
+                        scale = 1.0;
+                        dy = 0.0;
+                        rotation = -value * 0.1;
+                        opacity = (1 - value * 0.8).clamp(0.0, 1.0);
                       } else {
-                        rotation = value * 0.1;
+                        // Card sliding in from the right
+                        // Parallax effect: moves slower than native
+                        dx = value * pageViewWidth * 0.5;
+                        scale = (1 + value * 0.1).clamp(0.9, 1.0);
+                        dy = 0.0;
+                        rotation = 0.0;
                         opacity = (1 + value).clamp(0.0, 1.0);
                       }
 

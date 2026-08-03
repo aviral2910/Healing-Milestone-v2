@@ -87,7 +87,7 @@ class ThemePalette {
     surfaceLight: Color(0xFFE5E5EA), // Light grey for elements
     textPrimary: Color(0xFF1C1C1E), // Near black text
     textSecondary: Color(0xFF8E8E93), // Mid grey
-    accentPrimary: Color(0xFFD4AF37), // Premium Gold
+    accentPrimary: Color.fromARGB(255, 212, 154, 55), // Premium Gold
     accentSecondary: Color(0xFFA1A1A6),
   );
 

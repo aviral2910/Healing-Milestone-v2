@@ -83,7 +83,7 @@ class InteractionSection extends HookConsumerWidget {
         if (optimisticTotalReactions.value > 0 || story.commentCount > 0)
           Padding(
             padding:
-                const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [

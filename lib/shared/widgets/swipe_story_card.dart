@@ -60,10 +60,13 @@ class _SwipeStoryCardState extends ConsumerState<SwipeStoryCard>
     final theme = Theme.of(context);
     final userAsync = ref.watch(userByIdProvider(widget.story.authorId));
 
-    final hasImage = widget.story.mainImage.isNotEmpty || widget.story.imageAssets.isNotEmpty;
+    final hasImage = widget.story.mainImage.isNotEmpty ||
+        widget.story.imageAssets.isNotEmpty;
     final String? backgroundImageUrl = widget.story.mainImage.isNotEmpty
         ? widget.story.mainImage
-        : (widget.story.imageAssets.isNotEmpty ? widget.story.imageAssets.first : null);
+        : (widget.story.imageAssets.isNotEmpty
+            ? widget.story.imageAssets.first
+            : null);
 
     return GestureDetector(
       onTapDown: (_) => _controller.forward(),
@@ -97,14 +100,16 @@ class _SwipeStoryCardState extends ConsumerState<SwipeStoryCard>
             children: [
               // Editorial Header (Same as StoryCard)
               Padding(
-                padding: const EdgeInsets.only(left: 20.0, right: 20.0, top: 20.0, bottom: 12.0),
+                padding: const EdgeInsets.only(
+                    left: 16.0, right: 16.0, top: 16.0, bottom: 12.0),
                 child: Row(
                   children: [
                     !widget.story.displayAuthorName
                         ? CircleAvatar(
                             radius: 24,
                             backgroundColor: theme.colorScheme.surface,
-                            child: Icon(Icons.person, color: theme.colorScheme.onSurface),
+                            child: Icon(Icons.person,
+                                color: theme.colorScheme.onSurface),
                           )
                         : ClipOval(
                             child: Image.network(
@@ -113,10 +118,12 @@ class _SwipeStoryCardState extends ConsumerState<SwipeStoryCard>
                               width: 48,
                               height: 48,
                               fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) => CircleAvatar(
+                              errorBuilder: (context, error, stackTrace) =>
+                                  CircleAvatar(
                                 radius: 24,
                                 backgroundColor: theme.scaffoldBackgroundColor,
-                                child: Icon(Icons.person, color: theme.colorScheme.onSurface),
+                                child: Icon(Icons.person,
+                                    color: theme.colorScheme.onSurface),
                               ),
                             ),
                           ),
@@ -132,19 +139,23 @@ class _SwipeStoryCardState extends ConsumerState<SwipeStoryCard>
                                   final displayName = user?.displayName;
                                   final username = user?.username;
 
-                                  String authorText = 'Author ${widget.story.authorId}';
+                                  String authorText =
+                                      'Author ${widget.story.authorId}';
                                   if (!widget.story.displayAuthorName) {
                                     authorText = 'Anonymous';
-                                  } else if (displayName != null && displayName.isNotEmpty) {
+                                  } else if (displayName != null &&
+                                      displayName.isNotEmpty) {
                                     authorText = displayName;
-                                  } else if (username != null && username.isNotEmpty) {
+                                  } else if (username != null &&
+                                      username.isNotEmpty) {
                                     authorText = '@$username';
                                   }
 
                                   return Flexible(
                                     child: Text(
                                       authorText,
-                                      style: theme.textTheme.titleMedium?.copyWith(
+                                      style:
+                                          theme.textTheme.titleMedium?.copyWith(
                                         fontWeight: FontWeight.w600,
                                       ),
                                       overflow: TextOverflow.ellipsis,
@@ -152,18 +163,26 @@ class _SwipeStoryCardState extends ConsumerState<SwipeStoryCard>
                                   );
                                 },
                                 loading: () => Text(
-                                  !widget.story.displayAuthorName ? 'Anonymous' : 'Loading...',
-                                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                                  !widget.story.displayAuthorName
+                                      ? 'Anonymous'
+                                      : 'Loading...',
+                                  style: theme.textTheme.titleMedium
+                                      ?.copyWith(fontWeight: FontWeight.w600),
                                 ),
                                 error: (_, __) => Text(
-                                  !widget.story.displayAuthorName ? 'Anonymous' : 'Author',
-                                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                                  !widget.story.displayAuthorName
+                                      ? 'Anonymous'
+                                      : 'Author',
+                                  style: theme.textTheme.titleMedium
+                                      ?.copyWith(fontWeight: FontWeight.w600),
                                 ),
                               ),
                               const SizedBox(width: 4),
                               UserBadge(
-                                role: userAsync.valueOrNull?.role ?? widget.story.authorRole,
-                                isVerified: userAsync.valueOrNull?.isVerified ?? widget.story.isAuthorVerified,
+                                role: userAsync.valueOrNull?.role ??
+                                    widget.story.authorRole,
+                                isVerified: userAsync.valueOrNull?.isVerified ??
+                                    widget.story.isAuthorVerified,
                               ),
                             ],
                           ),
@@ -176,10 +195,12 @@ class _SwipeStoryCardState extends ConsumerState<SwipeStoryCard>
                                       (user.username?.isNotEmpty ?? false) &&
                                       (user.displayName?.isNotEmpty ?? false)) {
                                     return Padding(
-                                      padding: const EdgeInsets.only(top: 2.0, bottom: 2.0, right: 5.0),
+                                      padding: const EdgeInsets.only(
+                                          top: 2.0, bottom: 2.0, right: 5.0),
                                       child: Text(
                                         '@${user.username}',
-                                        style: theme.textTheme.bodySmall?.copyWith(
+                                        style:
+                                            theme.textTheme.bodySmall?.copyWith(
                                           color: theme.colorScheme.primary,
                                           fontWeight: FontWeight.w500,
                                         ),
@@ -193,7 +214,8 @@ class _SwipeStoryCardState extends ConsumerState<SwipeStoryCard>
                               Text(
                                 _formatDate(widget.story.publishedAt),
                                 style: theme.textTheme.bodySmall?.copyWith(
-                                  color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.7),
+                                  color: theme.textTheme.bodySmall?.color
+                                      ?.withValues(alpha: 0.7),
                                 ),
                               ),
                             ],
@@ -208,10 +230,12 @@ class _SwipeStoryCardState extends ConsumerState<SwipeStoryCard>
               // Title
               if (widget.story.heading.isNotEmpty)
                 Padding(
-                  padding: const EdgeInsets.only(left: 20.0, right: 20.0, bottom: 12.0),
+                  padding: const EdgeInsets.only(
+                      left: 16.0, right: 16.0, bottom: 16.0),
                   child: Text(
                     widget.story.heading,
-                    style: theme.textTheme.headlineLarge?.copyWith(fontSize: 20, letterSpacing: 1.1),
+                    style: theme.textTheme.headlineLarge
+                        ?.copyWith(fontSize: 20, letterSpacing: 1.1),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -222,7 +246,8 @@ class _SwipeStoryCardState extends ConsumerState<SwipeStoryCard>
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     const Padding(
-                      padding: EdgeInsets.only(right: 20.0, left: 20.0, bottom: 12),
+                      padding:
+                          EdgeInsets.only(right: 16.0, left: 16.0, bottom: 16),
                       child: VerifiedStoryBadge(),
                     ),
                   ],
@@ -230,109 +255,155 @@ class _SwipeStoryCardState extends ConsumerState<SwipeStoryCard>
 
               // Dynamic Content Area (Expanded to fill space)
               Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      if (hasImage && backgroundImageUrl != null) ...[
-                        Expanded(
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(16),
-                            child: Image.network(
-                              backgroundImageUrl,
-                              fit: BoxFit.cover,
-                              frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-                                if (wasSynchronouslyLoaded || frame != null) return child;
-                                return Shimmer.fromColors(
-                                  baseColor: theme.colorScheme.primary.withValues(alpha: 0.1),
-                                  highlightColor: theme.colorScheme.primary.withValues(alpha: 0.25),
-                                  child: Container(color: Colors.white),
-                                );
-                              },
-                              errorBuilder: (context, error, stackTrace) {
-                                return Container(
-                                  color: const Color(0xFF1E1E1E),
-                                  child: Center(
-                                    child: Icon(
-                                      Icons.image_not_supported_outlined,
-                                      size: 48,
-                                      color: Colors.grey.withValues(alpha: 0.5),
-                                    ),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        if (hasImage && backgroundImageUrl != null) ...[
+                          SizedBox(
+                            height: constraints.maxWidth >
+                                    (constraints.maxHeight - 120)
+                                ? (constraints.maxHeight - 120)
+                                    .clamp(0.0, double.infinity)
+                                : constraints.maxWidth,
+                            child: Align(
+                              alignment: Alignment.center,
+                              child: AspectRatio(
+                                aspectRatio: 1.0,
+                                child: Image.network(
+                                  backgroundImageUrl,
+                                  fit: BoxFit.cover,
+                                  frameBuilder: (context, child, frame,
+                                      wasSynchronouslyLoaded) {
+                                    if (wasSynchronouslyLoaded || frame != null)
+                                      return child;
+                                    return Shimmer.fromColors(
+                                      baseColor: theme.colorScheme.primary
+                                          .withValues(alpha: 0.1),
+                                      highlightColor: theme.colorScheme.primary
+                                          .withValues(alpha: 0.25),
+                                      child: Container(color: Colors.white),
+                                    );
+                                  },
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      color: const Color(0xFF1E1E1E),
+                                      child: Center(
+                                        child: Icon(
+                                          Icons.image_not_supported_outlined,
+                                          size: 48,
+                                          color: Colors.grey
+                                              .withValues(alpha: 0.5),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 16.0),
+                            child: Text(
+                              widget.content,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: theme.textTheme.bodyMedium?.color
+                                    ?.withValues(alpha: 0.9),
+                              ),
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ] else ...[
+                          // Text-only treatment (Expanded)
+                          Expanded(
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16.0),
+                              child: Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(16.0),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(16),
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      theme.colorScheme.primary
+                                          .withValues(alpha: 0.10),
+                                      theme.colorScheme.primary
+                                          .withValues(alpha: 0.02),
+                                    ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
                                   ),
-                                );
-                              },
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          widget.content,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.9),
-                          ),
-                          maxLines: 3,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ] else ...[
-                        // Text-only treatment (Expanded)
-                        Expanded(
-                          child: Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(20.0),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(16),
-                              gradient: LinearGradient(
-                                colors: [
-                                  theme.colorScheme.primary.withValues(alpha: 0.15),
-                                  theme.colorScheme.primary.withValues(alpha: 0.05),
-                                ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                              border: Border.all(
-                                color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                                  border: Border.all(
+                                    color: theme.colorScheme.primary
+                                        .withValues(alpha: 0.2),
+                                  ),
+                                ),
+                                child: LayoutBuilder(
+                                  builder: (context, innerConstraints) {
+                                    // Use a safe line height estimation for Lora 16pt with 1.7 height multiplier
+                                    // According to theme, bodyLarge has height 1.7 * 16 = 27.2
+                                    final int maxLines =
+                                        (innerConstraints.maxHeight / 28.0)
+                                            .floor();
+                                    return Text(
+                                      widget.story.description,
+                                      style:
+                                          theme.textTheme.bodyLarge?.copyWith(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500,
+                                        height:
+                                            1.7, // Matches the theme definition
+                                      ),
+                                      maxLines: maxLines > 0 ? maxLines : 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    );
+                                  },
+                                ),
                               ),
                             ),
-                            child: SingleChildScrollView(
+                          ),
+                        ],
+                        const SizedBox(height: 6),
+                        GestureDetector(
+                          onTap: widget.onTap,
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16.0),
                               child: Text(
-                                widget.content,
-                                style: theme.textTheme.bodyLarge?.copyWith(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
+                                'Read more',
+                                style: TextStyle(
+                                  color: theme.colorScheme.primary,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ),
                           ),
                         ),
                       ],
-
-                      const SizedBox(height: 6),
-                      GestureDetector(
-                        onTap: widget.onTap,
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            'Read more',
-                            style: TextStyle(
-                              color: theme.colorScheme.primary,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                    );
+                  },
                 ),
               ),
 
               // Interaction Section
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.0),
-                child: Divider(height: 32),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.0),
+                child: Divider(
+                  height: 24,
+                  color: theme.colorScheme.primary.withValues(alpha: .25),
+                  thickness: .2,
+                ),
               ),
               Padding(
-                padding: const EdgeInsets.only(left: 20.0, right: 20.0, bottom: 20.0),
+                padding: const EdgeInsets.only(
+                    left: 16.0, right: 16.0, bottom: 16.0),
                 child: InteractionSection(
                   story: widget.story,
                   showLabels: true,
