@@ -393,7 +393,7 @@ class _SwipeStoryCardState extends ConsumerState<SwipeStoryCard>
               ),
 
               if (widget.story.hashtagsList.isNotEmpty) ...[
-                const SizedBox(height: 12),
+                const SizedBox(height: 6),
                 SizedBox(
                   height: 28,
                   child: ListView.separated(
@@ -427,22 +427,9 @@ class _SwipeStoryCardState extends ConsumerState<SwipeStoryCard>
                 ),
               ],
 
-              // Interaction Section
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.0),
-                child: Divider(
-                  height: 24,
-                  color: theme.colorScheme.primary.withValues(alpha: .25),
-                  thickness: .4,
-                ),
-              ),
-              Padding(
-                padding:
-                    const EdgeInsets.only(left: 0.0, right: 0.0, bottom: 0.0),
-                child: InteractionSection(
-                  story: widget.story,
-                  showLabels: true,
-                ),
+              InteractionSection(
+                story: widget.story,
+                showLabels: true,
               ),
             ],
           ),

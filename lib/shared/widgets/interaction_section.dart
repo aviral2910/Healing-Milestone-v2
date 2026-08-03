@@ -143,7 +143,7 @@ class InteractionSection extends HookConsumerWidget {
                         behavior: HitTestBehavior.opaque,
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 2),
+                              horizontal: 6, vertical: 0),
                           decoration: BoxDecoration(
                             color: hasReactedThis
                                 ? theme.colorScheme.primary
@@ -186,17 +186,17 @@ class InteractionSection extends HookConsumerWidget {
             ),
           )
         else
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
 
         // DIVIDER
         Divider(
             height: 1,
-            thickness: 1,
-            color: theme.dividerColor.withValues(alpha: 0.1)),
+            thickness: .4,
+            color: theme.colorScheme.primary.withValues(alpha: 0.4)),
 
         // ACTIONS ROW
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+          padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 4.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
