@@ -11,6 +11,8 @@ import '../../features/settings/presentation/screens/theme_selection_screen.dart
 import '../../features/settings/presentation/screens/accessibility_settings_screen.dart';
 import '../../features/uat/presentation/screens/uat_screen.dart';
 import '../../features/milestone/presentation/screens/post_content_screen.dart';
+import '../../features/milestone/presentation/screens/post_guided_screen.dart';
+import '../../features/milestone/presentation/screens/post_manual_screen.dart';
 import '../../features/milestone/presentation/screens/post_settings_screen.dart';
 import '../../features/milestone/presentation/screens/story_detail_screen.dart';
 import '../../features/profile/presentation/screens/drafts_screen.dart';
@@ -63,6 +65,8 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // Protected routes
       final isProtectedRoute = state.matchedLocation == AppRoutes.create ||
+          state.matchedLocation == AppRoutes.createPostGuided ||
+          state.matchedLocation == AppRoutes.createPostManual ||
           state.matchedLocation == AppRoutes.createPostSettings ||
           state.matchedLocation == AppRoutes.profile ||
           state.matchedLocation == AppRoutes.editProfile;
@@ -114,6 +118,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.create,
         builder: (context, state) => const PostContentScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.createPostGuided,
+        builder: (context, state) => const PostGuidedScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.createPostManual,
+        builder: (context, state) => const PostManualScreen(),
       ),
       GoRoute(
         path: AppRoutes.createPostSettings,
