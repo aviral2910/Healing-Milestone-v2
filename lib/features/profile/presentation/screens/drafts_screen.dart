@@ -1,3 +1,4 @@
+import '../../../../features/milestone/presentation/providers/post_creation_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -151,7 +152,8 @@ class _DraftsScreenState extends ConsumerState<DraftsScreen> {
                           if (_isSelectionMode) {
                             _toggleSelection(draft.id);
                           } else {
-                            context.push(AppRoutes.create, extra: {'draft': draft});
+                            ref.read(postCreationControllerProvider.notifier).initializeWithDraft(draft);
+                            context.push(AppRoutes.create);
                           }
                         },
                         child: Container(

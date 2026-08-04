@@ -1,3 +1,4 @@
+import '../../../../features/milestone/presentation/providers/post_creation_state.dart';
 import 'package:healing_milestones/core/router/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -84,6 +85,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                             horizontal: 12, vertical: 4),
                       ),
                       onPressed: () {
+                        ref.read(postCreationControllerProvider.notifier).reset();
                         context.push(AppRoutes.create);
                       },
                       child: const Row(

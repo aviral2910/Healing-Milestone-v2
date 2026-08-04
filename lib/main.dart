@@ -4,6 +4,7 @@ import 'package:device_preview/device_preview.dart';
 import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'firebase_options.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'core/theme/theme_provider.dart';
@@ -23,6 +24,12 @@ void main() async {
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  // Initialize App Check with Debug provider
+  await FirebaseAppCheck.instance.activate(
+    androidProvider: AndroidProvider.debug,
+    appleProvider: AppleProvider.debug,
   );
 
   final prefs = await SharedPreferences.getInstance();

@@ -1,3 +1,4 @@
+import '../providers/post_creation_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -19,19 +20,14 @@ import '../../../../core/models/draft_model.dart';
 import '../providers/drafts_provider.dart';
 import '../providers/draft_settings_provider.dart';
 
-class PostCreationScreen extends StatefulHookConsumerWidget {
-  final StoryModel? existingStory;
-  final DraftModel? draft;
-
-  const PostCreationScreen({Key? key, this.existingStory, this.draft}) : super(key: key);
+class PostSettingsScreen extends StatefulHookConsumerWidget {
+  const PostSettingsScreen({Key? key}) : super(key: key);
 
   @override
-  ConsumerState<PostCreationScreen> createState() => _PostCreationScreenState();
+  ConsumerState<PostSettingsScreen> createState() => _PostSettingsScreenState();
 }
 
-class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
-  final TextEditingController _titleController = TextEditingController();
-  final TextEditingController _contentController = TextEditingController();
+class _PostSettingsScreenState extends ConsumerState<PostSettingsScreen> {
   bool _isAnonymous = false;
   String _selectedTemplate = 'minimalist';
   StoryType _selectedType = StoryType.story;
@@ -51,83 +47,36 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
   Timer? _userDebounce;
   bool _isSearchingUsers = false;
   bool _removeExistingImage = false;
-  String? _draftId;
-  Timer? _autoSaveTimer;
 
   @override
   void initState() {
     super.initState();
-    if (widget.existingStory != null) {
-      final story = widget.existingStory!;
-      _titleController.text = story.heading;
-      _contentController.text = story.description;
-      _selectedTags = List.from(story.hashtagsList);
-      _selectedType = story.type;
-      _isAnonymous = !story.displayAuthorName;
-    } else if (widget.draft != null) {
-      final draft = widget.draft!;
-      _draftId = draft.id;
-      _titleController.text = draft.title;
-      _contentController.text = draft.content;
-      _selectedTags = List.from(draft.tags);
-      _selectedType = draft.type;
-      _isAnonymous = draft.isAnonymous;
-      _selectedUsers = List.from(draft.selectedUsers);
-      if (draft.imagePath != null && draft.imagePath!.isNotEmpty) {
-        _selectedImage = XFile(draft.imagePath!);
-      }
-    }
-
-    _titleController.addListener(_onContentChanged);
-    _contentController.addListener(_onContentChanged);
-  }
-
-  void _onContentChanged() {
-    final autoSaveEnabled = ref.read(draftAutoSaveProvider);
-    if (!autoSaveEnabled) return;
-
-    _autoSaveTimer?.cancel();
-    _autoSaveTimer = Timer(const Duration(seconds: 2), _saveDraft);
-  }
-
-  Future<void> _saveDraft() async {
-    final title = _titleController.text.trim();
-    final content = _contentController.text.trim();
-    if (title.isEmpty && content.isEmpty) return;
-
-    _draftId ??= const Uuid().v4();
-
-    final draft = DraftModel(
-      id: _draftId!,
-      title: title,
-      content: content,
-      tags: _selectedTags,
-      type: _selectedType,
-      isAnonymous: _isAnonymous,
-      imagePath: _selectedImage?.path,
-      selectedUsers: _selectedUsers,
-      lastSaved: DateTime.now(),
-    );
-
-    await ref.read(draftsProvider.notifier).saveDraft(draft);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final state = ref.read(postCreationControllerProvider);
+      setState(() {
+        _selectedTags = List.from(state.tags);
+        _selectedUsers = List.from(state.selectedUsers);
+        _isAnonymous = state.isAnonymous;
+        _selectedType = state.type;
+        if (state.imagePath != null && state.imagePath!.isNotEmpty) {
+           // We might not have a local XFile, but we can rely on state.imagePath for network URLs
+        }
+      });
+    });
   }
 
   @override
   void dispose() {
-    _titleController.removeListener(_onContentChanged);
-    _contentController.removeListener(_onContentChanged);
-    _titleController.dispose();
-    _contentController.dispose();
     _tagController.dispose();
     _userSearchController.dispose();
     _debounce?.cancel();
     _userDebounce?.cancel();
-    _autoSaveTimer?.cancel();
     super.dispose();
   }
 
   Future<void> _submitPost() async {
-    if (_titleController.text.trim().isEmpty) {
+    final postState = ref.read(postCreationControllerProvider);
+    if (ref.read(postCreationControllerProvider).title.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('A title is mandatory for your story.',
@@ -154,27 +103,27 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
       String? imageUrl;
       if (_selectedImage != null) {
         final storage = ref.read(storageRepositoryProvider);
-        if (widget.existingStory != null &&
-            widget.existingStory!.mainImage.isNotEmpty) {
-          await storage.deleteImageFromUrl(widget.existingStory!.mainImage);
+        if (ref.read(postCreationControllerProvider).isEditing &&
+            (ref.read(postCreationControllerProvider).imagePath ?? "").isNotEmpty) {
+          await storage.deleteImageFromUrl((ref.read(postCreationControllerProvider).imagePath ?? ""));
         }
         final file = File(_selectedImage!.path);
         final ext = file.path.split('.').last;
         final imagePath = 'stories/${user.userId}/${const Uuid().v4()}.$ext';
         imageUrl = await storage.uploadImage(imagePath, file);
       } else if (_removeExistingImage) {
-        if (widget.existingStory != null &&
-            widget.existingStory!.mainImage.isNotEmpty) {
+        if (ref.read(postCreationControllerProvider).isEditing &&
+            (ref.read(postCreationControllerProvider).imagePath ?? "").isNotEmpty) {
           await ref
               .read(storageRepositoryProvider)
-              .deleteImageFromUrl(widget.existingStory!.mainImage);
+              .deleteImageFromUrl((ref.read(postCreationControllerProvider).imagePath ?? ""));
         }
         imageUrl = '';
       } else {
-        imageUrl = widget.existingStory?.mainImage ?? '';
+        imageUrl = ref.read(postCreationControllerProvider).imagePath ?? '';
       }
 
-      final contentText = _contentController.text.trim();
+      final contentText = ref.read(postCreationControllerProvider).content;
       final tagText = _tagController.text.trim();
 
       final Set<String> finalTags = Set.from(_selectedTags);
@@ -207,18 +156,18 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
       if (calculatedReadingTime < 1) calculatedReadingTime = 1;
 
       final story = StoryModel(
-        storyId: widget.existingStory?.storyId ?? const Uuid().v4(),
-        heading: _titleController.text.trim(),
+        storyId: ref.read(postCreationControllerProvider).originalStoryId ?? const Uuid().v4(),
+        heading: ref.read(postCreationControllerProvider).title,
         description: contentText,
-        publishedAt: widget.existingStory?.publishedAt ?? DateTime.now(),
+        publishedAt: DateTime.now() /* TODO existing publish date */,
         shortDescription: contentText.length > 50
             ? contentText.substring(0, 50)
             : contentText,
         mainImage: imageUrl,
         authorId: user.userId,
-        qrId: widget.existingStory?.qrId ?? '',
+        qrId: '',
         readingTime: calculatedReadingTime,
-        verifierId: widget.existingStory?.verifierId ?? '',
+        verifierId: '',
         displayAuthorName: !_isAnonymous,
         authorRole: user.role,
         type: _selectedType,
@@ -226,7 +175,7 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
         taggedPeople: _selectedUsers.map((u) => u.userId).toList(),
       );
 
-      if (widget.existingStory != null) {
+      if (ref.read(postCreationControllerProvider).isEditing) {
         await ref.read(storyRepositoryProvider).updateStory(story);
       } else {
         await ref.read(storyRepositoryProvider).createStory(story);
@@ -235,15 +184,15 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
         );
         await ref.read(authProvider.notifier).updateProfile(updatedUser);
       }
-      if (_draftId != null) {
-        await ref.read(draftsProvider.notifier).deleteDraft(_draftId!);
+      if (ref.read(postCreationControllerProvider).draftId != null) {
+        await ref.read(draftsProvider.notifier).deleteDraft(ref.read(postCreationControllerProvider).draftId!);
       }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-                widget.existingStory != null
+                ref.read(postCreationControllerProvider).isEditing
                     ? 'Post updated successfully!'
                     : 'Post published successfully!',
                 style: TextStyle(
@@ -444,7 +393,7 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(
-          widget.existingStory != null ? 'Edit Story' : 'Create a Post',
+          ref.read(postCreationControllerProvider).isEditing ? 'Edit Story' : 'Create a Post',
         ),
         centerTitle: true,
         leading: IconButton(
@@ -457,7 +406,6 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
             icon: const Icon(Icons.save_outlined),
             tooltip: 'Save Draft',
             onPressed: () async {
-              await _saveDraft();
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
@@ -484,8 +432,6 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                 tooltip: 'Populate Dummy Post',
                 onSelected: (selected) {
                   setState(() {
-                    _titleController.text = selected['title'] as String;
-                    _contentController.text = selected['content'] as String;
                     _selectedTags = List<String>.from(selected['tags'] as List);
                   });
                 },
@@ -577,7 +523,7 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                         child: CircularProgressIndicator(
                             color: Colors.black, strokeWidth: 2))
                     : Text(
-                        widget.existingStory != null
+                        ref.read(postCreationControllerProvider).isEditing
                             ? 'Save Changes'
                             : 'Publish',
                         style: const TextStyle(
@@ -597,7 +543,7 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
               child: Container(
                 width: double.infinity,
                 height: (_selectedImage == null &&
-                        (widget.existingStory?.mainImage.isEmpty ??
+                        ((ref.read(postCreationControllerProvider).imagePath?.isEmpty ?? true) ??
                             true || _removeExistingImage))
                     ? 180
                     : 250,
@@ -616,12 +562,12 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                                   .withValues(alpha: 0.3),
                               BlendMode.darken),
                         )
-                      : (widget.existingStory != null &&
-                              widget.existingStory!.mainImage.isNotEmpty &&
+                      : (ref.read(postCreationControllerProvider).isEditing &&
+                              (ref.read(postCreationControllerProvider).imagePath ?? "").isNotEmpty &&
                               !_removeExistingImage)
                           ? DecorationImage(
                               image:
-                                  NetworkImage(widget.existingStory!.mainImage),
+                                  NetworkImage((ref.read(postCreationControllerProvider).imagePath ?? "")),
                               fit: BoxFit.cover,
                               colorFilter: ColorFilter.mode(
                                   Theme.of(context)
@@ -632,14 +578,14 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
                             )
                           : null,
                   border: (_selectedImage == null &&
-                          (widget.existingStory?.mainImage.isEmpty ??
+                          ((ref.read(postCreationControllerProvider).imagePath?.isEmpty ?? true) ??
                               true || _removeExistingImage))
                       ? Border.all(
                           color: Theme.of(context).dividerColor, width: 1.5)
                       : null,
                 ),
                 child: (_selectedImage == null &&
-                        (widget.existingStory?.mainImage.isEmpty ??
+                        ((ref.read(postCreationControllerProvider).imagePath?.isEmpty ?? true) ??
                             true || _removeExistingImage))
                     ? Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -718,63 +664,7 @@ class _PostCreationScreenState extends ConsumerState<PostCreationScreen> {
               ),
             ),
 
-            // Text Inputs
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  TextField(
-                    controller: _titleController,
-                    style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.onSurface,
-                        fontFamily: 'Outfit'),
-                    maxLines: null,
-                    decoration: InputDecoration(
-                      hintText: 'Title your post',
-                      hintStyle: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Outfit',
-                        color: Theme.of(context)
-                            .colorScheme
-                            .onSurface
-                            .withValues(alpha: 0.2),
-                      ),
-                      border: InputBorder.none,
-                    ),
-                    textCapitalization: TextCapitalization.words,
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: _contentController,
-                    style: TextStyle(
-                        fontSize: 18,
-                        height: 1.6,
-                        color: Theme.of(context).colorScheme.onSurface),
-                    maxLines: null,
-                    minLines: 5,
-                    decoration: InputDecoration(
-                      hintText:
-                          'Share your experience, feelings, and milestones...',
-                      hintStyle: TextStyle(
-                        fontSize: 18,
-                        color: Theme.of(context)
-                            .colorScheme
-                            .onSurface
-                            .withValues(alpha: 0.3),
-                      ),
-                      border: InputBorder.none,
-                    ),
-                  ),
-                ],
-              ),
-            ),
 
-            const SizedBox(height: 16),
 
             // Hashtags Section
             Padding(

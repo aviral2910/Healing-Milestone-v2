@@ -5,6 +5,7 @@ class AppRoutes {
   static const String phoneAuth = '/phone-auth';
   static const String verifyOtp = '/verify-otp';
   static const String create = '/create';
+  static const String createPostSettings = '/create/settings';
   static const String login = '/login';
   static const String roleSelection = '/role-selection';
   static const String professionalOnboarding = '/professional-onboarding';

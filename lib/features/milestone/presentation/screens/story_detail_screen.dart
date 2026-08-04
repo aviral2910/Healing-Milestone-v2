@@ -1,3 +1,4 @@
+import '../providers/post_creation_state.dart';
 import 'package:healing_milestones/core/router/app_routes.dart';
 import 'dart:ui';
 import 'package:flutter/services.dart';
@@ -144,7 +145,8 @@ class StoryDetailScreen extends HookConsumerWidget {
                             icon: const Icon(Icons.more_vert),
                             onSelected: (value) async {
                               if (value == 'edit') {
-                                context.push(AppRoutes.create, extra: story);
+                                ref.read(postCreationControllerProvider.notifier).initializeWithStory(story);
+                                context.push(AppRoutes.create);
                               } else if (value == 'delete') {
                                 final confirm = await showDialog<bool>(
                                   context: context,

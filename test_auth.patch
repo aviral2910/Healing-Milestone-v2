@@ -1,0 +1,17 @@
+--- lib/features/posts/data/ai_story_service.dart
++++ lib/features/posts/data/ai_story_service.dart
+@@ -1,4 +1,5 @@
+ import 'package:firebase_vertexai/firebase_vertexai.dart';
++import 'package:firebase_auth/firebase_auth.dart';
+ import 'package:riverpod_annotation/riverpod_annotation.dart';
+ 
+ part 'ai_story_service.g.dart';
+@@ -28,6 +29,9 @@
+     required String turningPoint,
+     required String hope,
+   }) async {
++    final user = FirebaseAuth.instance.currentUser;
++    print('DEBUG: Current Firebase User ID: ${user?.uid}');
++    
+     final prompt = '''
+ You are an empathetic ghostwriter for a platform where people share stories about their healing journeys and major life milestones. Your job is to take the user's rough notes and turn them into a cohesive, engaging, and emotionally authentic story.

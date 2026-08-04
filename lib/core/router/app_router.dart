@@ -10,7 +10,8 @@ import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../features/settings/presentation/screens/theme_selection_screen.dart';
 import '../../features/settings/presentation/screens/accessibility_settings_screen.dart';
 import '../../features/uat/presentation/screens/uat_screen.dart';
-import '../../features/milestone/presentation/screens/post_creation_screen.dart';
+import '../../features/milestone/presentation/screens/post_content_screen.dart';
+import '../../features/milestone/presentation/screens/post_settings_screen.dart';
 import '../../features/milestone/presentation/screens/story_detail_screen.dart';
 import '../../features/profile/presentation/screens/drafts_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
@@ -62,6 +63,7 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // Protected routes
       final isProtectedRoute = state.matchedLocation == AppRoutes.create ||
+          state.matchedLocation == AppRoutes.createPostSettings ||
           state.matchedLocation == AppRoutes.profile ||
           state.matchedLocation == AppRoutes.editProfile;
 
@@ -111,19 +113,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppRoutes.create,
-        builder: (context, state) {
-          StoryModel? existingStory;
-          DraftModel? draft;
-          if (state.extra is StoryModel) {
-            existingStory = state.extra as StoryModel;
-          } else if (state.extra is Map<String, dynamic>) {
-            final extra = state.extra as Map<String, dynamic>;
-            if (extra.containsKey('draft')) {
-              draft = extra['draft'] as DraftModel;
-            }
-          }
-          return PostCreationScreen(existingStory: existingStory, draft: draft);
-        },
+        builder: (context, state) => const PostContentScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.createPostSettings,
+        builder: (context, state) => const PostSettingsScreen(),
       ),
       GoRoute(
         path: AppRoutes.login,
