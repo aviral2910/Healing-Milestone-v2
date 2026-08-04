@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:firebase_ai/firebase_ai.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'ai_story_service.g.dart';
@@ -35,7 +36,10 @@ class AiStoryService {
     final user = FirebaseAuth.instance.currentUser;
     print('DEBUG User ID: ${user?.uid}');
     
-    final prompt = '''
+    // Remote Config Setup
+    final remoteConfig = FirebaseRemoteConfig.instance;
+    
+    const String defaultPrompt = '''
 You are an empathetic ghostwriter for a platform where people share stories about their healing journeys, traumas, and major life milestones. Your job is to take the user's rough notes and turn them into a cohesive, engaging, and emotionally authentic story.
 
 CRITICAL INSTRUCTIONS:
@@ -52,17 +56,37 @@ The story should flow naturally through:
 2. The turning point or the work it took.
 3. The milestone achieved and a message of hope.
 
-User's notes:
-- Background context: $contextInfo
-- The hardest part: $struggle
-- Turning point or start of healing: $turningPoint
-- Message of hope: $hope
-
 You must return your response as a valid JSON object matching exactly this structure:
 {
   "title": "A captivating and deeply moving title for the story",
   "content": "The full, rich, detailed, and expansive story body..."
 }
+''';
+
+    await remoteConfig.setDefaults({
+      'ai_story_system_prompt': defaultPrompt,
+    });
+    
+    try {
+      await remoteConfig.setConfigSettings(RemoteConfigSettings(
+        fetchTimeout: const Duration(seconds: 10),
+        minimumFetchInterval: const Duration(hours: 1),
+      ));
+      await remoteConfig.fetchAndActivate();
+    } catch (e) {
+      print('DEBUG: Failed to fetch remote config: $e');
+    }
+
+    final systemPrompt = remoteConfig.getString('ai_story_system_prompt');
+
+    final prompt = '''
+$systemPrompt
+
+User's notes:
+- Background context: $contextInfo
+- The hardest part: $struggle
+- Turning point or start of healing: $turningPoint
+- Message of hope: $hope
 ''';
 
     try {
