@@ -21,10 +21,15 @@ class _PostManualScreenState extends ConsumerState<PostManualScreen> {
     final state = ref.read(postCreationControllerProvider);
     _titleController.text = state.title;
     _contentController.text = state.content;
+
+    _titleController.addListener(_saveToState);
+    _contentController.addListener(_saveToState);
   }
 
   @override
   void dispose() {
+    _titleController.removeListener(_saveToState);
+    _contentController.removeListener(_saveToState);
     _titleController.dispose();
     _contentController.dispose();
     super.dispose();
