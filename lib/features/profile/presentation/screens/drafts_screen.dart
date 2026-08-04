@@ -153,7 +153,7 @@ class _DraftsScreenState extends ConsumerState<DraftsScreen> {
                             _toggleSelection(draft.id);
                           } else {
                             ref.read(postCreationControllerProvider.notifier).initializeWithDraft(draft);
-                            context.push(AppRoutes.create);
+                            context.push(AppRoutes.createPostManual);
                           }
                         },
                         child: Container(

@@ -146,7 +146,7 @@ class StoryDetailScreen extends HookConsumerWidget {
                             onSelected: (value) async {
                               if (value == 'edit') {
                                 ref.read(postCreationControllerProvider.notifier).initializeWithStory(story);
-                                context.push(AppRoutes.create);
+                                context.push(AppRoutes.createPostManual);
                               } else if (value == 'delete') {
                                 final confirm = await showDialog<bool>(
                                   context: context,

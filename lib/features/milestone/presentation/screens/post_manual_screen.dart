@@ -18,13 +18,9 @@ class _PostManualScreenState extends ConsumerState<PostManualScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final state = ref.read(postCreationControllerProvider);
-      if (state.title.isNotEmpty || state.content.isNotEmpty) {
-        _titleController.text = state.title;
-        _contentController.text = state.content;
-      }
-    });
+    final state = ref.read(postCreationControllerProvider);
+    _titleController.text = state.title;
+    _contentController.text = state.content;
   }
 
   @override
@@ -46,6 +42,8 @@ class _PostManualScreenState extends ConsumerState<PostManualScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final state = ref.watch(postCreationControllerProvider);
+    final isEditing = state.isEditing || state.draftId != null;
     final isReadyToProceed = _contentController.text.trim().isNotEmpty;
 
     return Scaffold(
@@ -62,7 +60,7 @@ class _PostManualScreenState extends ConsumerState<PostManualScreen> {
           },
         ),
         title: Text(
-          'New Post',
+          isEditing ? 'Edit Post' : 'New Post',
           style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600, fontFamily: 'Outfit'),
         ),
         actions: [
