@@ -7,6 +7,7 @@ import 'package:healing_milestones/core/router/app_routes.dart';
 import 'package:healing_milestones/features/auth/data/auth_provider.dart';
 import 'package:healing_milestones/features/auth/data/repository_providers.dart';
 import 'package:healing_milestones/features/posts/data/story_providers.dart';
+import 'package:healing_milestones/shared/widgets/qr_share_preview.dart';
 
 import 'package:healing_milestones/shared/widgets/reaction_picker.dart';
 import 'package:share_plus/share_plus.dart';
@@ -210,8 +211,7 @@ class InteractionSection extends HookConsumerWidget {
                 showLabel: showLabels,
                 onTap: () {
                   FocusManager.instance.primaryFocus?.unfocus();
-                  Share.share(
-                      'Check out this story on Healing Milestones: https://healingmilestones.in/story/${story.storyId}');
+                  showShareOptions(context, story.storyId);
                 },
               ),
               // REACT BUTTON
