@@ -9,6 +9,7 @@ import 'package:healing_milestones/features/auth/data/repository_providers.dart'
 import 'package:healing_milestones/features/posts/data/story_providers.dart';
 
 import 'package:healing_milestones/shared/widgets/reaction_picker.dart';
+import 'package:share_plus/share_plus.dart';
 
 class InteractionSection extends HookConsumerWidget {
   final StoryModel story;
@@ -200,6 +201,19 @@ class InteractionSection extends HookConsumerWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
+              // SHARE BUTTON
+              _ActionButton(
+                icon: Icon(Icons.share_outlined,
+                    color: theme.textTheme.bodySmall?.color, size: 20),
+                label: 'Share',
+                labelColor: theme.textTheme.bodySmall?.color,
+                showLabel: showLabels,
+                onTap: () {
+                  FocusManager.instance.primaryFocus?.unfocus();
+                  Share.share(
+                      'Check out this story on Healing Milestones: https://healingmilestones.in/story/${story.storyId}');
+                },
+              ),
               // REACT BUTTON
               _ActionButton(
                 icon: optimisticUserReaction.value != null
