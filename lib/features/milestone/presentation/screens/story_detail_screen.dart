@@ -140,7 +140,7 @@ class StoryDetailScreen extends HookConsumerWidget {
                             );
                           },
                         ),
-                        if (currentUser?.userId == story.authorId)
+                        if (currentUser != null)
                           PopupMenuButton<String>(
                             icon: const Icon(Icons.more_vert),
                             onSelected: (value) async {
@@ -192,7 +192,7 @@ class StoryDetailScreen extends HookConsumerWidget {
                                     await ref
                                         .read(storyRepositoryProvider)
                                         .deleteStory(story.storyId);
-                                    final updatedUser = currentUser!.copyWith(
+                                    final updatedUser = currentUser.copyWith(
                                       ownStories: currentUser.ownStories
                                           .where((id) => id != story.storyId)
                                           .toList(),
@@ -220,32 +220,81 @@ class StoryDetailScreen extends HookConsumerWidget {
                                     }
                                   }
                                 }
+                              } else if (value == 'request_verification') {
+                                try {
+                                  final updatedStory = story.copyWith(
+                                    verificationStatus: 'pending',
+                                  );
+                                  await ref
+                                      .read(storyRepositoryProvider)
+                                      .updateStory(updatedStory);
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('Verification request submitted')),
+                                    );
+                                  }
+                                } catch (e) {
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('Failed to request verification: $e')),
+                                    );
+                                  }
+                                }
+                              } else if (value == 'report') {
+                                context.push(AppRoutes.reportStory(story.storyId));
                               }
                             },
-                            itemBuilder: (context) => [
-                              const PopupMenuItem(
-                                value: 'edit',
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.edit_outlined, size: 20),
-                                    SizedBox(width: 8),
-                                    Text('Edit Story'),
-                                  ],
-                                ),
-                              ),
-                              const PopupMenuItem(
-                                value: 'delete',
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.delete_outline,
-                                        size: 20, color: Colors.red),
-                                    SizedBox(width: 8),
-                                    Text('Delete Story',
-                                        style: TextStyle(color: Colors.red)),
-                                  ],
-                                ),
-                              ),
-                            ],
+                            itemBuilder: (context) {
+                              final isAuthor = currentUser.userId == story.authorId;
+                              return [
+                                if (isAuthor) ...[
+                                  const PopupMenuItem(
+                                    value: 'edit',
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.edit_outlined, size: 20),
+                                        SizedBox(width: 8),
+                                        Text('Edit Story'),
+                                      ],
+                                    ),
+                                  ),
+                                  const PopupMenuItem(
+                                    value: 'delete',
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.delete_outline,
+                                            size: 20, color: Colors.red),
+                                        SizedBox(width: 8),
+                                        Text('Delete Story',
+                                            style: TextStyle(color: Colors.red)),
+                                      ],
+                                    ),
+                                  ),
+                                  if (story.verificationStatus == 'none' || story.verificationStatus == 'rejected')
+                                    const PopupMenuItem(
+                                      value: 'request_verification',
+                                      child: Row(
+                                        children: [
+                                          Icon(Icons.verified_outlined, size: 20),
+                                          SizedBox(width: 8),
+                                          Text('Request Verification'),
+                                        ],
+                                      ),
+                                    ),
+                                ] else ...[
+                                  const PopupMenuItem(
+                                    value: 'report',
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.flag_outlined, size: 20, color: Colors.orange),
+                                        SizedBox(width: 8),
+                                        Text('Report Content', style: TextStyle(color: Colors.orange)),
+                                      ],
+                                    ),
+                                  ),
+                                ]
+                              ];
+                            },
                           ),
                       ],
                     ),
@@ -253,6 +302,16 @@ class StoryDetailScreen extends HookConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          if (story.isHidden)
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                              color: Colors.orange.withValues(alpha: 0.9),
+                              child: const Text(
+                                '⚠️ Hidden by admin. Visible only to you. Contact support@healingmilestones.in to unhide.',
+                                style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                              ),
+                            ),
                           // Massive Editorial Typography Header
                           Padding(
                             padding: const EdgeInsets.symmetric(

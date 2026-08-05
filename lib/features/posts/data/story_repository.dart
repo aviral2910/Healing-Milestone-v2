@@ -13,4 +13,5 @@ abstract class StoryRepository {
   Future<void> deleteStory(String storyId);
   Future<void> toggleReaction(String storyId, String userId, String reactionType);
   Future<List<StoryModel>> getStoriesByIds(List<String> storyIds);
+  Future<void> reportStory({required String storyId, required String reporterId, required String reason});
 }

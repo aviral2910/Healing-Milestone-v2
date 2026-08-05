@@ -47,3 +47,4 @@ app.*.map.json
 # Firebase Functions
 functions/node_modules/
 functions/lib/
+admin_script/node_modules/

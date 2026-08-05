@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:healing_milestones/core/models/story_model.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'story_repository.dart';
 
 class FirebaseStoryRepository implements StoryRepository {
@@ -12,19 +13,27 @@ class FirebaseStoryRepository implements StoryRepository {
   @override
   Stream<List<StoryModel>> getStories() {
     return _stories.orderBy('publishedAt', descending: true).snapshots().map((snapshot) {
-      return snapshot.docs.map((doc) => StoryModel.fromMap(doc.data() as Map<String, dynamic>, doc.id)).toList();
+      final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+      return snapshot.docs
+          .map((doc) => StoryModel.fromMap(doc.data() as Map<String, dynamic>, doc.id))
+          .where((story) => !story.isHidden || story.authorId == currentUserId)
+          .toList();
     });
   }
 
   @override
   Future<({List<StoryModel> stories, dynamic lastDoc})> getPaginatedStories({dynamic startAfter, int limit = 5}) async {
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
     Query query = _stories.orderBy('publishedAt', descending: true).limit(limit);
     if (startAfter != null) {
       query = query.startAfterDocument(startAfter as DocumentSnapshot);
     }
     
     final snapshot = await query.get();
-    final stories = snapshot.docs.map((doc) => StoryModel.fromMap(doc.data() as Map<String, dynamic>, doc.id)).toList();
+    final stories = snapshot.docs
+        .map((doc) => StoryModel.fromMap(doc.data() as Map<String, dynamic>, doc.id))
+        .where((story) => !story.isHidden || story.authorId == currentUserId)
+        .toList();
     final lastDoc = snapshot.docs.isNotEmpty ? snapshot.docs.last : null;
     
     return (stories: stories, lastDoc: lastDoc);
@@ -33,7 +42,11 @@ class FirebaseStoryRepository implements StoryRepository {
   @override
   Stream<List<StoryModel>> getUserStories(String userId) {
     return _stories.where('authorId', isEqualTo: userId).snapshots().map((snapshot) {
-      final stories = snapshot.docs.map((doc) => StoryModel.fromMap(doc.data() as Map<String, dynamic>, doc.id)).toList();
+      final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+      final stories = snapshot.docs
+          .map((doc) => StoryModel.fromMap(doc.data() as Map<String, dynamic>, doc.id))
+          .where((story) => !story.isHidden || story.authorId == currentUserId)
+          .toList();
       stories.sort((a, b) => b.publishedAt.compareTo(a.publishedAt));
       return stories;
     });
@@ -42,7 +55,11 @@ class FirebaseStoryRepository implements StoryRepository {
   @override
   Stream<List<StoryModel>> getStoriesTaggedWithUser(String userId) {
     return _stories.where('taggedPeople', arrayContains: userId).snapshots().map((snapshot) {
-      final stories = snapshot.docs.map((doc) => StoryModel.fromMap(doc.data() as Map<String, dynamic>, doc.id)).toList();
+      final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+      final stories = snapshot.docs
+          .map((doc) => StoryModel.fromMap(doc.data() as Map<String, dynamic>, doc.id))
+          .where((story) => !story.isHidden || story.authorId == currentUserId)
+          .toList();
       stories.sort((a, b) => b.publishedAt.compareTo(a.publishedAt));
       return stories;
     });
@@ -50,6 +67,7 @@ class FirebaseStoryRepository implements StoryRepository {
 
   @override
   Future<List<StoryModel>> getStoriesByHashtag(String hashtag, {int limit = 20}) async {
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
     final querySnapshot = await _stories
         .where('hashtagsList', arrayContains: hashtag)
         .orderBy('publishedAt', descending: true)
@@ -58,6 +76,7 @@ class FirebaseStoryRepository implements StoryRepository {
 
     return querySnapshot.docs
         .map((doc) => StoryModel.fromMap(doc.data() as Map<String, dynamic>, doc.id))
+        .where((story) => !story.isHidden || story.authorId == currentUserId)
         .toList();
   }
 
@@ -68,16 +87,23 @@ class FirebaseStoryRepository implements StoryRepository {
         .orderBy('publishedAt', descending: true)
         .limit(limit)
         .snapshots()
-        .map((snapshot) => snapshot.docs
+        .map((snapshot) {
+          final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+          return snapshot.docs
             .map((doc) => StoryModel.fromMap(doc.data() as Map<String, dynamic>, doc.id))
-            .toList());
+            .where((story) => !story.isHidden || story.authorId == currentUserId)
+            .toList();
+        });
   }
 
   @override
   Stream<StoryModel?> getStoryById(String storyId) {
     return _stories.doc(storyId).snapshots().map((snapshot) {
+      final currentUserId = FirebaseAuth.instance.currentUser?.uid;
       if (!snapshot.exists) return null;
-      return StoryModel.fromMap(snapshot.data() as Map<String, dynamic>, snapshot.id);
+      final story = StoryModel.fromMap(snapshot.data() as Map<String, dynamic>, snapshot.id);
+      if (story.isHidden && story.authorId != currentUserId) return null;
+      return story;
     });
   }
 
@@ -206,5 +232,16 @@ class FirebaseStoryRepository implements StoryRepository {
     // Maintain the order of the original storyIds list (e.g. most recently bookmarked first)
     final storyMap = {for (var story in allStories) story.storyId: story};
     return storyIds.map((id) => storyMap[id]).whereType<StoryModel>().toList();
+  }
+
+  @override
+  Future<void> reportStory({required String storyId, required String reporterId, required String reason}) async {
+    await _firestore.collection('reports').add({
+      'storyId': storyId,
+      'reporterId': reporterId,
+      'reason': reason,
+      'createdAt': FieldValue.serverTimestamp(),
+      'status': 'pending', // 'pending', 'dismissed', 'resolved'
+    });
   }
 }

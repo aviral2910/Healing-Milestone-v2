@@ -368,6 +368,7 @@ class _StoryList extends StatelessWidget {
 
     return AnimationLimiter(
       child: ListView.builder(
+        physics: const ClampingScrollPhysics(),
         padding: const EdgeInsets.all(16.0),
         itemCount: stories.length,
         itemBuilder: (context, index) {

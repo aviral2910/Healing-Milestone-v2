@@ -82,6 +82,21 @@ class _StoryCardState extends ConsumerState<StoryCard>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              if (widget.story.isHidden)
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withValues(alpha: 0.9),
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(15),
+                      topRight: Radius.circular(15),
+                    ),
+                  ),
+                  child: const Text(
+                    '⚠️ Hidden by admin. Visible only to you. Contact support@healingmilestones.in to unhide.',
+                    style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                  ),
+                ),
               // Editorial Header
               Padding(
                 padding: const EdgeInsets.only(

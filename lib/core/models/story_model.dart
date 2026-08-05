@@ -32,6 +32,8 @@ class StoryModel {
   final UserRole authorRole;
   final bool isAuthorVerified;
   final StoryType type;
+  final String verificationStatus; // 'none', 'pending', 'verified', 'rejected'
+  final bool isHidden;
 
   StoryModel({
     required this.storyId,
@@ -58,6 +60,8 @@ class StoryModel {
     this.authorRole = UserRole.member,
     this.isAuthorVerified = false,
     this.type = StoryType.story,
+    this.verificationStatus = 'none',
+    this.isHidden = false,
   });
 
   StoryModel copyWith({
@@ -85,6 +89,8 @@ class StoryModel {
     UserRole? authorRole,
     bool? isAuthorVerified,
     StoryType? type,
+    String? verificationStatus,
+    bool? isHidden,
   }) {
     return StoryModel(
       storyId: storyId ?? this.storyId,
@@ -111,6 +117,8 @@ class StoryModel {
       authorRole: authorRole ?? this.authorRole,
       isAuthorVerified: isAuthorVerified ?? this.isAuthorVerified,
       type: type ?? this.type,
+      verificationStatus: verificationStatus ?? this.verificationStatus,
+      isHidden: isHidden ?? this.isHidden,
     );
   }
   Map<String, dynamic> toMap() {
@@ -139,6 +147,8 @@ class StoryModel {
       'authorRole': authorRole.name,
       'isAuthorVerified': isAuthorVerified,
       'type': type.name,
+      'verificationStatus': verificationStatus,
+      'isHidden': isHidden,
     };
   }
 
@@ -178,6 +188,8 @@ class StoryModel {
         (e) => e.name == map['type'],
         orElse: () => StoryType.story,
       ),
+      verificationStatus: map['verificationStatus'] ?? 'none',
+      isHidden: map['isHidden'] ?? false,
     );
   }
 }

@@ -33,6 +33,7 @@ class UserModel {
   final String? registrationNumber;
   
   final bool appliedForVerification;
+  final String status; // 'active', 'suspended', 'banned'
 
   UserModel({
     required this.userId,
@@ -58,6 +59,7 @@ class UserModel {
     this.services,
     this.registrationNumber,
     this.appliedForVerification = false,
+    this.status = 'active',
   });
 
   UserModel copyWith({
@@ -84,6 +86,7 @@ class UserModel {
     String? services,
     String? registrationNumber,
     bool? appliedForVerification,
+    String? status,
   }) {
     return UserModel(
       userId: userId ?? this.userId,
@@ -109,6 +112,7 @@ class UserModel {
       services: services ?? this.services,
       registrationNumber: registrationNumber ?? this.registrationNumber,
       appliedForVerification: appliedForVerification ?? this.appliedForVerification,
+      status: status ?? this.status,
     );
   }
 
@@ -137,6 +141,7 @@ class UserModel {
       'services': services,
       'registrationNumber': registrationNumber,
       'appliedForVerification': appliedForVerification,
+      'status': status,
     };
   }
 
@@ -168,6 +173,7 @@ class UserModel {
       services: map['services'],
       registrationNumber: map['registrationNumber'],
       appliedForVerification: map['appliedForVerification'] ?? false,
+      status: map['status'] ?? 'active',
     );
   }
 }

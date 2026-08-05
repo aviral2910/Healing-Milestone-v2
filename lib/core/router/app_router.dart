@@ -16,12 +16,14 @@ import '../../features/milestone/presentation/screens/post_guided_screen.dart';
 import '../../features/milestone/presentation/screens/post_manual_screen.dart';
 import '../../features/milestone/presentation/screens/post_settings_screen.dart';
 import '../../features/milestone/presentation/screens/story_detail_screen.dart';
+import '../../features/milestone/presentation/screens/report_screen.dart';
 import '../../features/profile/presentation/screens/drafts_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/role_selection_screen.dart';
 import '../../features/auth/presentation/screens/professional_onboarding_screen.dart';
 import '../../features/auth/presentation/screens/phone_auth_screen.dart';
 import '../../features/auth/presentation/screens/otp_verification_screen.dart';
+import '../../features/auth/presentation/screens/suspended_screen.dart';
 import '../../features/auth/data/auth_provider.dart';
 import '../../features/splash/presentation/screens/splash_screen.dart';
 import '../../logo/healing_milestone_logo.dart';
@@ -64,6 +66,17 @@ final routerProvider = Provider<GoRouter>((ref) {
           state.matchedLocation == AppRoutes.roleSelection ||
               state.matchedLocation == AppRoutes.professionalOnboarding;
 
+      final userStatus = authState?.userModel?.status;
+      final isBanned = userStatus == 'banned' || userStatus == 'suspended';
+
+      if (isBanned && state.matchedLocation != AppRoutes.suspended) {
+        return AppRoutes.suspended;
+      }
+      
+      if (!isBanned && state.matchedLocation == AppRoutes.suspended) {
+        return AppRoutes.splash;
+      }
+
       // Protected routes
       final isProtectedRoute = state.matchedLocation == AppRoutes.create ||
           state.matchedLocation == AppRoutes.createPostGuided ||
@@ -99,6 +112,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.splash,
         builder: (context, state) => const SplashScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.suspended,
+        builder: (context, state) => const SuspendedScreen(),
       ),
       GoRoute(
         path: AppRoutes.ascensionTransition,
@@ -191,6 +208,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.drafts,
         builder: (context, state) => const DraftsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.reportStoryPath,
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return ReportScreen(storyId: id);
+        },
       ),
       GoRoute(
         path: AppRoutes.publicProfilePath,

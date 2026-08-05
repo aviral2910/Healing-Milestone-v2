@@ -1,6 +1,7 @@
 class AppRoutes {
   static const String splash = '/splash';
   static const String ascensionTransition = '/ascension-transition';
+  static const String suspended = '/suspended';
   static const String home = '/';
   static const String phoneAuth = '/phone-auth';
   static const String verifyOtp = '/verify-otp';
@@ -28,4 +29,7 @@ class AppRoutes {
 
   static const String storyDetailPath = '/story/:id';
   static String storyDetail(String id) => '/story/$id';
+
+  static const String reportStoryPath = '/report/:id';
+  static String reportStory(String id) => '/report/$id';
 }
