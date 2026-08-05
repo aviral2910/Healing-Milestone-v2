@@ -7,6 +7,7 @@ import '../../features/profile/presentation/screens/public_profile_screen.dart';
 import '../../features/profile/presentation/screens/edit_profile_screen.dart';
 import '../../features/profile/presentation/screens/user_list_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
+import '../../features/settings/presentation/screens/legal_webview_screen.dart';
 import '../../features/settings/presentation/screens/theme_selection_screen.dart';
 import '../../features/settings/presentation/screens/accessibility_settings_screen.dart';
 import '../../features/uat/presentation/screens/uat_screen.dart';
@@ -160,6 +161,20 @@ final routerProvider = Provider<GoRouter>((ref) {
           final contextType = state.extra as MenuContext? ?? MenuContext.home;
           return SettingsScreen(menuContext: contextType);
         },
+      ),
+      GoRoute(
+        path: AppRoutes.privacy,
+        builder: (context, state) => const LegalWebViewScreen(
+          title: 'Privacy Policy',
+          url: 'https://healingmilestones.in/privacy',
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.terms,
+        builder: (context, state) => const LegalWebViewScreen(
+          title: 'Terms of Service',
+          url: 'https://healingmilestones.in/terms',
+        ),
       ),
       GoRoute(
         path: AppRoutes.themeSelection,

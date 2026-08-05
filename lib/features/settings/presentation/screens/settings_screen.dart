@@ -58,11 +58,8 @@ class SettingsScreen extends ConsumerWidget {
           icon: Icons.privacy_tip_outlined,
           title: 'Privacy Policy',
           subtitle: 'Read how we protect your data',
-          onTap: () async {
-            final url = Uri.parse('https://healingmilestones.in/privacy');
-            if (await canLaunchUrl(url)) {
-              await launchUrl(url, mode: LaunchMode.inAppBrowserView);
-            }
+          onTap: () {
+            context.push(AppRoutes.privacy);
           },
         ),
         _buildOptionCard(
@@ -70,11 +67,8 @@ class SettingsScreen extends ConsumerWidget {
           icon: Icons.gavel_rounded,
           title: 'Terms of Service',
           subtitle: 'Read our platform rules and terms',
-          onTap: () async {
-            final url = Uri.parse('https://healingmilestones.in/terms');
-            if (await canLaunchUrl(url)) {
-              await launchUrl(url, mode: LaunchMode.inAppBrowserView);
-            }
+          onTap: () {
+            context.push(AppRoutes.terms);
           },
         ),
         if (user != null)

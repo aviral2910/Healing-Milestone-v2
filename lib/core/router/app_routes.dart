@@ -15,6 +15,8 @@ class AppRoutes {
   static const String editProfile = '/edit-profile';
   static const String userList = '/user-list';
   static const String settings = '/settings';
+  static const String privacy = '/privacy';
+  static const String terms = '/terms';
   static const String themeSelection = '/theme-selection';
   static const String accessibilitySettings = '/accessibility-settings';
   static const String drafts = '/drafts';
