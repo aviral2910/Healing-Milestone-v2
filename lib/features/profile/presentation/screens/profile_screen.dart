@@ -86,7 +86,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                             horizontal: 12, vertical: 4),
                       ),
                       onPressed: () {
-                        ref.read(postCreationControllerProvider.notifier).reset();
+                        ref
+                            .read(postCreationControllerProvider.notifier)
+                            .reset();
                         context.push(AppRoutes.create);
                       },
                       child: const Row(
@@ -260,7 +262,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                 child: const Text(
                                   'Edit Profile',
                                   style: TextStyle(
-                                      fontWeight: FontWeight.bold, fontSize: 16),
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16),
                                 ),
                               ),
                             ),
