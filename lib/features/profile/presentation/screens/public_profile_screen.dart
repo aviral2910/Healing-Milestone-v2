@@ -12,6 +12,7 @@ import '../../../../shared/widgets/story_card.dart';
 import '../../../auth/data/auth_provider.dart';
 import '../../../auth/data/repository_providers.dart';
 import '../../../posts/data/story_providers.dart';
+import '../../../../shared/widgets/qr_share_preview.dart';
 
 class PublicProfileScreen extends ConsumerStatefulWidget {
   final String userId;
@@ -79,6 +80,14 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen>
                     centerTitle: true,
                     backgroundColor: theme.scaffoldBackgroundColor,
                     elevation: 0,
+                    actions: [
+                      IconButton(
+                        icon: const Icon(Icons.share),
+                        onPressed: () {
+                          showProfileShareOptions(context, user.userId);
+                        },
+                      ),
+                    ],
                   ),
                   SliverToBoxAdapter(
                     child: Padding(

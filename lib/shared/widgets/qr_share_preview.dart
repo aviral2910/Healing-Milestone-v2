@@ -8,13 +8,17 @@ import 'package:healing_milestones/logo/healing_milestone_logo.dart';
 import 'package:gal/gal.dart';
 
 class QrSharePreview extends StatefulWidget {
-  final String storyId;
+  final String id;
   final String shareUrl;
+  final String shareText;
+  final String qrBottomText;
 
   const QrSharePreview({
     Key? key,
-    required this.storyId,
+    required this.id,
     required this.shareUrl,
+    required this.shareText,
+    required this.qrBottomText,
   }) : super(key: key);
 
   @override
@@ -39,13 +43,13 @@ class _QrSharePreviewState extends State<QrSharePreview> {
       if (imageBytes != null) {
         final tempDir = await getTemporaryDirectory();
         final file = await File(
-                '${tempDir.path}/healing_milestones_qr_${widget.storyId}.png')
+                '${tempDir.path}/healing_milestones_qr_${widget.id}.png')
             .create();
         await file.writeAsBytes(imageBytes);
 
         await Share.shareXFiles(
           [XFile(file.path)],
-          text: 'Check out this story on Healing Milestones!',
+          text: widget.shareText,
         );
       }
     } catch (e) {
@@ -78,7 +82,7 @@ class _QrSharePreviewState extends State<QrSharePreview> {
       if (imageBytes != null) {
         final tempDir = await getTemporaryDirectory();
         final filePath =
-            '${tempDir.path}/healing_milestones_qr_${widget.storyId}.png';
+            '${tempDir.path}/healing_milestones_qr_${widget.id}.png';
         final file = await File(filePath).create();
         await file.writeAsBytes(imageBytes);
 
@@ -167,7 +171,7 @@ class _QrSharePreviewState extends State<QrSharePreview> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Scan to read the Healing Story',
+                      widget.qrBottomText,
                       style: theme.textTheme.bodyMedium,
                     ),
                   ],
@@ -246,7 +250,8 @@ void showShareOptions(BuildContext context, String storyId) {
               onTap: () {
                 Navigator.of(context).pop();
                 Share.share(
-                    'Check out this story on Healing Milestones: $shareUrl');
+                    'Check out this story on Healing Milestones:\n\n$shareUrl',
+                    subject: 'Healing Milestones Story');
               },
             ),
             ListTile(
@@ -257,8 +262,67 @@ void showShareOptions(BuildContext context, String storyId) {
                 showDialog(
                   context: context,
                   builder: (context) => QrSharePreview(
-                    storyId: storyId,
+                    id: storyId,
                     shareUrl: shareUrl,
+                    shareText: 'Check out this story on Healing Milestones!',
+                    qrBottomText: 'Scan to read the Healing Story',
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+void showProfileShareOptions(BuildContext context, String userId) {
+  final shareUrl = 'https://healingmilestones.in/user/$userId';
+
+  showModalBottomSheet(
+    context: context,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (context) {
+      return SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 12),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 16),
+            ListTile(
+              leading: const Icon(Icons.link),
+              title: const Text('Share Link'),
+              onTap: () {
+                Navigator.of(context).pop();
+                Share.share(
+                    'Check out this profile on Healing Milestones:\n\n$shareUrl',
+                    subject: 'Healing Milestones Profile');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.qr_code_2),
+              title: const Text('Share QR Code'),
+              onTap: () {
+                Navigator.of(context).pop();
+                showDialog(
+                  context: context,
+                  builder: (context) => QrSharePreview(
+                    id: userId,
+                    shareUrl: shareUrl,
+                    shareText: 'Check out this profile on Healing Milestones!',
+                    qrBottomText: 'Scan to view Profile',
                   ),
                 );
               },

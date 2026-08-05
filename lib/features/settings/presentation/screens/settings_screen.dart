@@ -8,6 +8,7 @@ import 'package:healing_milestones/core/router/app_routes.dart';
 
 import 'package:healing_milestones/features/accessibility/data/accessibility_providers.dart';
 import 'package:healing_milestones/features/milestone/presentation/providers/draft_settings_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 enum MenuContext { home, profile }
 
@@ -50,6 +51,30 @@ class SettingsScreen extends ConsumerWidget {
           subtitle: 'Enable testing features and dummy data',
           onTap: () {
             context.push(AppRoutes.uat);
+          },
+        ),
+        _buildOptionCard(
+          context,
+          icon: Icons.privacy_tip_outlined,
+          title: 'Privacy Policy',
+          subtitle: 'Read how we protect your data',
+          onTap: () async {
+            final url = Uri.parse('https://healingmilestones.in/privacy');
+            if (await canLaunchUrl(url)) {
+              await launchUrl(url, mode: LaunchMode.externalApplication);
+            }
+          },
+        ),
+        _buildOptionCard(
+          context,
+          icon: Icons.gavel_rounded,
+          title: 'Terms of Service',
+          subtitle: 'Read our platform rules and terms',
+          onTap: () async {
+            final url = Uri.parse('https://healingmilestones.in/terms');
+            if (await canLaunchUrl(url)) {
+              await launchUrl(url, mode: LaunchMode.externalApplication);
+            }
           },
         ),
         if (user != null)

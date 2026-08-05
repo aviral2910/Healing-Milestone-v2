@@ -12,6 +12,7 @@ import '../../../../shared/widgets/story_card.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../features/settings/presentation/screens/settings_screen.dart';
 import '../../../../core/presentation/widgets/user_badge.dart';
+import '../../../../shared/widgets/qr_share_preview.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -237,26 +238,51 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       const SizedBox(height: 24),
                       // Action Buttons
                       SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            context.push(AppRoutes.editProfile);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: theme.colorScheme.primary
-                                .withValues(alpha: 0.15),
-                            foregroundColor: theme.colorScheme.primary,
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                        height: 52,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  context.push(AppRoutes.editProfile);
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: theme.colorScheme.primary
+                                      .withValues(alpha: 0.15),
+                                  foregroundColor: theme.colorScheme.primary,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  padding: EdgeInsets.zero,
+                                ),
+                                child: const Text(
+                                  'Edit Profile',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold, fontSize: 16),
+                                ),
+                              ),
                             ),
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                          ),
-                          child: const Text(
-                            'Edit Profile',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 16),
-                          ),
+                            const SizedBox(width: 12),
+                            AspectRatio(
+                              aspectRatio: 1,
+                              child: IconButton(
+                                onPressed: () {
+                                  showProfileShareOptions(context, user.userId);
+                                },
+                                style: IconButton.styleFrom(
+                                  backgroundColor: theme.colorScheme.primary
+                                      .withValues(alpha: 0.15),
+                                  foregroundColor: theme.colorScheme.primary,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                icon: const Icon(Icons.share),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       const SizedBox(height: 16),
