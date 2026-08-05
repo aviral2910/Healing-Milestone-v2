@@ -2,6 +2,7 @@ import '../providers/post_creation_state.dart';
 import 'package:healing_milestones/core/router/app_routes.dart';
 import 'dart:ui';
 import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shimmer/shimmer.dart';
@@ -303,13 +304,21 @@ class StoryDetailScreen extends HookConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           if (story.isHidden)
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                              color: Colors.orange.withValues(alpha: 0.9),
-                              child: const Text(
-                                '⚠️ Hidden by admin. Visible only to you. Contact support@healingmilestones.in to unhide.',
-                                style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                            GestureDetector(
+                              onTap: () async {
+                                final url = Uri.parse('mailto:support@healingmilestones.in?subject=Hidden%20Story%20Appeal');
+                                if (await canLaunchUrl(url)) {
+                                  await launchUrl(url);
+                                }
+                              },
+                              child: Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                                color: Colors.orange.withValues(alpha: 0.9),
+                                child: const Text(
+                                  '⚠️ Hidden by admin. Visible only to you. Tap here to email support@healingmilestones.in to unhide.',
+                                  style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                                ),
                               ),
                             ),
                           // Massive Editorial Typography Header
