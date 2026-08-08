@@ -31,24 +31,26 @@ class AccessibilityState {
   }
 }
 
-class AccessibilityNotifier extends StateNotifier<AccessibilityState> {
-  final SharedPreferences _prefs;
+class AccessibilityNotifier extends Notifier<AccessibilityState> {
+  late SharedPreferences _prefs;
   static const String _greyscaleKey = 'isGreyscaleMode';
   static const String _floatingIconKey = 'showGreyscaleFloatingIcon';
   static const String _floatingIconDxKey = 'floatingIconDx';
   static const String _floatingIconDyKey = 'floatingIconDy';
 
-  AccessibilityNotifier(this._prefs) : super(AccessibilityState()) {
-    _loadState();
+  @override
+  AccessibilityState build() {
+    _prefs = ref.watch(sharedPreferencesProvider);
+    return _loadState();
   }
 
-  void _loadState() {
+  AccessibilityState _loadState() {
     final isGreyscale = _prefs.getBool(_greyscaleKey) ?? false;
     final showFloatingIcon = _prefs.getBool(_floatingIconKey) ?? false;
     final dx = _prefs.getDouble(_floatingIconDxKey) ?? -1.0;
     final dy = _prefs.getDouble(_floatingIconDyKey) ?? -1.0;
     
-    state = state.copyWith(
+    return AccessibilityState(
       isGreyscaleMode: isGreyscale,
       showGreyscaleFloatingIcon: showFloatingIcon,
       floatingIconDx: dx,
@@ -83,7 +85,6 @@ class AccessibilityNotifier extends StateNotifier<AccessibilityState> {
 }
 
 final accessibilityProvider =
-    StateNotifierProvider<AccessibilityNotifier, AccessibilityState>((ref) {
-  final prefs = ref.watch(sharedPreferencesProvider);
-  return AccessibilityNotifier(prefs);
+    NotifierProvider<AccessibilityNotifier, AccessibilityState>(() {
+  return AccessibilityNotifier();
 });

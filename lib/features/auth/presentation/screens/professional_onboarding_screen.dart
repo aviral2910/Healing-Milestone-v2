@@ -90,7 +90,7 @@ class _ProfessionalOnboardingScreenState
       return;
     }
 
-    final authState = ref.read(authProvider).valueOrNull;
+    final authState = ref.read(authProvider).value;
     final user = authState?.authUser;
 
     if (user != null) {
@@ -121,7 +121,7 @@ class _ProfessionalOnboardingScreenState
         return;
       }
 
-      final authState = ref.read(authProvider).valueOrNull;
+      final authState = ref.read(authProvider).value;
       final user = authState?.authUser;
 
       if (user != null) {

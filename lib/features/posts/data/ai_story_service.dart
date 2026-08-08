@@ -114,6 +114,6 @@ User's notes:
 }
 
 @riverpod
-AiStoryService aiStoryService(AiStoryServiceRef ref) {
+AiStoryService aiStoryService(Ref ref) {
   return AiStoryService();
 }

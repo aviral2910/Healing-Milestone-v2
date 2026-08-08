@@ -12,7 +12,7 @@ part 'post_creation_state.freezed.dart';
 part 'post_creation_state.g.dart';
 
 @freezed
-class PostCreationState with _$PostCreationState {
+abstract class PostCreationState with _$PostCreationState {
   const factory PostCreationState({
     @Default('') String title,
     @Default('') String content,

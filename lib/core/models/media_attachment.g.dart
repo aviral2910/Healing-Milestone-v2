@@ -6,9 +6,8 @@ part of 'media_attachment.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$MediaAttachmentImpl _$$MediaAttachmentImplFromJson(
-        Map<String, dynamic> json) =>
-    _$MediaAttachmentImpl(
+_MediaAttachment _$MediaAttachmentFromJson(Map<String, dynamic> json) =>
+    _MediaAttachment(
       mediaId: json['mediaId'] as String,
       url: json['url'] as String,
       title: json['title'] as String,
@@ -18,8 +17,7 @@ _$MediaAttachmentImpl _$$MediaAttachmentImplFromJson(
           const TimestampConverter().fromJson(json['uploadedAt'] as Timestamp),
     );
 
-Map<String, dynamic> _$$MediaAttachmentImplToJson(
-        _$MediaAttachmentImpl instance) =>
+Map<String, dynamic> _$MediaAttachmentToJson(_MediaAttachment instance) =>
     <String, dynamic>{
       'mediaId': instance.mediaId,
       'url': instance.url,

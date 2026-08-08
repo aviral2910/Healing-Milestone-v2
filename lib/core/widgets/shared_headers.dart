@@ -26,7 +26,7 @@ class CommonSliverAppBar extends ConsumerWidget {
     final authState = ref.watch(authProvider);
     final isAuthLoading = authState.isLoading;
     final isAuthenticated =
-        authState.valueOrNull?.status == AuthStatus.authenticated;
+        authState.value?.status == AuthStatus.authenticated;
     final isProfileLoading = isAuthLoading || (isAuthenticated && user == null);
 
     return SliverAppBar(

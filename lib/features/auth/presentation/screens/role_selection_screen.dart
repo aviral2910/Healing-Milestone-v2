@@ -12,7 +12,7 @@ class RoleSelectionScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final authState = ref.watch(authProvider).valueOrNull;
+    final authState = ref.watch(authProvider).value;
 
     if (authState == null || authState.authUser == null) {
       return const Scaffold(

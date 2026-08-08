@@ -38,8 +38,8 @@ class RouterNotifier extends ChangeNotifier {
   final Ref _ref;
   RouterNotifier(this._ref) {
     _ref.listen<AsyncValue<AuthState>>(authProvider, (previous, next) {
-      final prevStatus = previous?.valueOrNull?.status;
-      final nextStatus = next.valueOrNull?.status;
+      final prevStatus = previous?.value?.status;
+      final nextStatus = next.value?.status;
       if (prevStatus != nextStatus) {
         notifyListeners();
       }
@@ -60,7 +60,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         return null;
       }
 
-      final authState = ref.read(authProvider).valueOrNull;
+      final authState = ref.read(authProvider).value;
       final isAuth = authState?.status == AuthStatus.authenticated;
       final needsOnboarding = authState?.status == AuthStatus.needsOnboarding;
 

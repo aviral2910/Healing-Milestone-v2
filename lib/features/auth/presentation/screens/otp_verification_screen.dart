@@ -39,7 +39,7 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
       // Are we authenticating or linking?
       // Since the user can be logged in via Google and adding a phone number,
       // we check if they are already authenticated.
-      final authState = ref.read(authProvider).valueOrNull;
+      final authState = ref.read(authProvider).value;
       final isAlreadyLoggedIn = authState?.authUser != null;
 
       if (isAlreadyLoggedIn) {
@@ -52,7 +52,7 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
         await ref.read(authProvider.notifier).verifyOtp(otp);
         if (mounted) {
           // Check if they need onboarding, router might catch it first, but just in case:
-          final newState = ref.read(authProvider).valueOrNull;
+          final newState = ref.read(authProvider).value;
           if (newState?.status == AuthStatus.needsOnboarding) {
             context.go(AppRoutes.roleSelection);
           } else {

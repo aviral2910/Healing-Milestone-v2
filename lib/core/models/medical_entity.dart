@@ -4,7 +4,7 @@ part 'medical_entity.freezed.dart';
 part 'medical_entity.g.dart';
 
 @freezed
-class MedicalEntity with _$MedicalEntity {
+abstract class MedicalEntity with _$MedicalEntity {
   const factory MedicalEntity({
     required String entityId,
     required String name,

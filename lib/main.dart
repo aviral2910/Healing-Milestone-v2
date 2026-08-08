@@ -13,11 +13,23 @@ import 'features/accessibility/data/accessibility_providers.dart';
 import 'features/accessibility/presentation/widgets/greyscale_floating_overlay.dart';
 
 // UAT Mode providers
-final uatModeProvider = StateProvider<bool>((ref) => false);
-final devicePreviewProvider = StateProvider<bool>((ref) => false);
+class UatMode extends Notifier<bool> {
+  @override
+  bool build() => false;
+}
+final uatModeProvider = NotifierProvider<UatMode, bool>(UatMode.new);
+class DevicePreviewNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+}
+final devicePreviewProvider = NotifierProvider<DevicePreviewNotifier, bool>(DevicePreviewNotifier.new);
 
 // Selected Tag Provider for Post Screen
-final selectedTagProvider = StateProvider<String>((ref) => 'All');
+class SelectedTag extends Notifier<String> {
+  @override
+  String build() => 'All';
+}
+final selectedTagProvider = NotifierProvider<SelectedTag, String>(SelectedTag.new);
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

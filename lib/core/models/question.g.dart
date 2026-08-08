@@ -6,8 +6,7 @@ part of 'question.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$QuestionImpl _$$QuestionImplFromJson(Map<String, dynamic> json) =>
-    _$QuestionImpl(
+_Question _$QuestionFromJson(Map<String, dynamic> json) => _Question(
       questionId: json['questionId'] as String,
       milestoneId: json['milestoneId'] as String,
       askerId: json['askerId'] as String,
@@ -18,8 +17,7 @@ _$QuestionImpl _$$QuestionImplFromJson(Map<String, dynamic> json) =>
           const TimestampConverter().fromJson(json['createdAt'] as Timestamp),
     );
 
-Map<String, dynamic> _$$QuestionImplToJson(_$QuestionImpl instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$QuestionToJson(_Question instance) => <String, dynamic>{
       'questionId': instance.questionId,
       'milestoneId': instance.milestoneId,
       'askerId': instance.askerId,

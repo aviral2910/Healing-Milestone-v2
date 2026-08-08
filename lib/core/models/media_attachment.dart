@@ -6,7 +6,7 @@ part 'media_attachment.freezed.dart';
 part 'media_attachment.g.dart';
 
 @freezed
-class MediaAttachment with _$MediaAttachment {
+abstract class MediaAttachment with _$MediaAttachment {
   const factory MediaAttachment({
     required String mediaId,
     required String url,

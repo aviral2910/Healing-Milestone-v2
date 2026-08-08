@@ -338,7 +338,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(currentUserProvider);
-    final authState = ref.watch(authProvider).valueOrNull;
+    final authState = ref.watch(authProvider).value;
     final authUser = authState?.authUser;
 
     if (user == null) {

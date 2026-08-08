@@ -43,12 +43,18 @@ class AuthState {
   }
 }
 
-class AuthNotifier extends StateNotifier<AsyncValue<AuthState>> {
-  final AuthRepository _authRepository;
-  final UserRepository _userRepository;
+class AuthNotifier extends Notifier<AsyncValue<AuthState>> {
+  late AuthRepository _authRepository;
+  late UserRepository _userRepository;
 
-  AuthNotifier(this._authRepository, this._userRepository) : super(const AsyncValue.loading()) {
+  @override
+  AsyncValue<AuthState> build() {
+    _authRepository = ref.watch(authRepositoryProvider);
+    _userRepository = ref.watch(userRepositoryProvider);
+    // Use Future.microtask or similar if _init modifies state synchronously? 
+    // Actually, _init just sets up a listener, which is fine to call in build.
     _init();
+    return const AsyncValue.loading();
   }
 
   void _init() {
@@ -97,7 +103,7 @@ class AuthNotifier extends StateNotifier<AsyncValue<AuthState>> {
   }
 
   Future<void> signOut() async {
-    final currentState = state.valueOrNull;
+    final currentState = state.value;
     try {
       // Show loading state while signing out
       state = const AsyncValue.loading();
@@ -136,7 +142,7 @@ class AuthNotifier extends StateNotifier<AsyncValue<AuthState>> {
       await _authRepository.verifyPhoneNumber(
         phoneNumber: phoneNumber,
         codeSent: (String verificationId, int? resendToken) {
-          final currentState = state.valueOrNull;
+          final currentState = state.value;
           if (currentState != null) {
             state = AsyncData(currentState.copyWith(
               verificationId: verificationId,
@@ -149,7 +155,7 @@ class AuthNotifier extends StateNotifier<AsyncValue<AuthState>> {
           state = AsyncError(e, StackTrace.current);
         },
         codeAutoRetrievalTimeout: (String verificationId) {
-          final currentState = state.valueOrNull;
+          final currentState = state.value;
           if (currentState != null) {
             state = AsyncData(currentState.copyWith(
               verificationId: verificationId,
@@ -164,7 +170,7 @@ class AuthNotifier extends StateNotifier<AsyncValue<AuthState>> {
   }
 
   Future<void> verifyOtp(String smsCode) async {
-    final verificationId = state.valueOrNull?.verificationId;
+    final verificationId = state.value?.verificationId;
     if (verificationId == null) {
       state = AsyncError(Exception("Verification ID not found. Please try sending OTP again."), StackTrace.current);
       return;
@@ -180,7 +186,7 @@ class AuthNotifier extends StateNotifier<AsyncValue<AuthState>> {
   }
 
   Future<void> linkPhoneNumber(String smsCode) async {
-    final currentState = state.valueOrNull;
+    final currentState = state.value;
     final verificationId = currentState?.verificationId;
     if (verificationId == null) {
       state = AsyncError(Exception("Verification ID not found. Please try sending OTP again."), StackTrace.current);
@@ -214,7 +220,7 @@ class AuthNotifier extends StateNotifier<AsyncValue<AuthState>> {
   }
 
   Future<void> linkGoogleAccount() async {
-    final currentState = state.valueOrNull;
+    final currentState = state.value;
     try {
       final user = await _authRepository.linkGoogleCredential();
       if (user != null && currentState != null) {
@@ -235,7 +241,7 @@ class AuthNotifier extends StateNotifier<AsyncValue<AuthState>> {
   }
 
   Future<void> updateProfile(UserModel updatedUser) async {
-    final currentState = state.valueOrNull;
+    final currentState = state.value;
     try {
       await _userRepository.updateUserData(updatedUser);
       if (currentState != null) {
@@ -247,7 +253,7 @@ class AuthNotifier extends StateNotifier<AsyncValue<AuthState>> {
   }
 
   Future<void> applyForVerification() async {
-    final currentUser = state.valueOrNull?.userModel;
+    final currentUser = state.value?.userModel;
     if (currentUser == null) return;
     
     final updatedUser = currentUser.copyWith(appliedForVerification: true);
@@ -264,10 +270,8 @@ class AuthNotifier extends StateNotifier<AsyncValue<AuthState>> {
   }
 }
 
-final authProvider = StateNotifierProvider<AuthNotifier, AsyncValue<AuthState>>((ref) {
-  final authRepository = ref.watch(authRepositoryProvider);
-  final userRepository = ref.watch(userRepositoryProvider);
-  return AuthNotifier(authRepository, userRepository);
+final authProvider = NotifierProvider<AuthNotifier, AsyncValue<AuthState>>(() {
+  return AuthNotifier();
 });
 
 final userStreamProvider = StreamProvider.family<UserModel?, String>((ref, userId) {
@@ -277,11 +281,11 @@ final userStreamProvider = StreamProvider.family<UserModel?, String>((ref, userI
 
 // A convenient provider just to get the authenticated UserModel
 final currentUserProvider = Provider<UserModel?>((ref) {
-  final authState = ref.watch(authProvider).valueOrNull;
+  final authState = ref.watch(authProvider).value;
   if (authState?.status == AuthStatus.authenticated && authState?.authUser != null) {
     // Watch the real-time stream of the user's data
     final userStream = ref.watch(userStreamProvider(authState!.authUser!.uid));
-    return userStream.valueOrNull ?? authState!.userModel;
+    return userStream.value ?? authState!.userModel;
   }
   return null;
 });

@@ -2,22 +2,24 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:healing_milestones/features/auth/data/auth_provider.dart';
 
-final draftAutoSaveProvider = StateNotifierProvider<DraftAutoSaveNotifier, bool>((ref) {
-  final user = ref.watch(currentUserProvider);
-  return DraftAutoSaveNotifier(userId: user?.userId);
+final draftAutoSaveProvider = NotifierProvider<DraftAutoSaveNotifier, bool>(() {
+  return DraftAutoSaveNotifier();
 });
 
-class DraftAutoSaveNotifier extends StateNotifier<bool> {
-  final String? userId;
+class DraftAutoSaveNotifier extends Notifier<bool> {
+  String? _userId;
 
-  String get _autoSaveKey => userId != null ? 'draft_auto_save_enabled_$userId' : 'draft_auto_save_enabled';
+  String get _autoSaveKey => _userId != null ? 'draft_auto_save_enabled_$_userId' : 'draft_auto_save_enabled';
 
-  DraftAutoSaveNotifier({this.userId}) : super(false) {
+  @override
+  bool build() {
+    _userId = ref.watch(currentUserProvider)?.userId;
     _loadPreference();
+    return false;
   }
 
   Future<void> _loadPreference() async {
-    if (userId == null) {
+    if (_userId == null) {
       state = false;
       return;
     }
@@ -26,7 +28,7 @@ class DraftAutoSaveNotifier extends StateNotifier<bool> {
   }
 
   Future<void> toggleAutoSave(bool isEnabled) async {
-    if (userId == null) return;
+    if (_userId == null) return;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_autoSaveKey, isEnabled);
     state = isEnabled;

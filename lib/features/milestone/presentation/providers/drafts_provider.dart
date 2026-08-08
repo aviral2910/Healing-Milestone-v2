@@ -5,22 +5,24 @@ import 'package:healing_milestones/core/models/draft_model.dart';
 
 import 'package:healing_milestones/features/auth/data/auth_provider.dart';
 
-final draftsProvider = StateNotifierProvider<DraftsNotifier, List<DraftModel>>((ref) {
-  final user = ref.watch(currentUserProvider);
-  return DraftsNotifier(userId: user?.userId);
+final draftsProvider = NotifierProvider<DraftsNotifier, List<DraftModel>>(() {
+  return DraftsNotifier();
 });
 
-class DraftsNotifier extends StateNotifier<List<DraftModel>> {
-  final String? userId;
+class DraftsNotifier extends Notifier<List<DraftModel>> {
+  String? _userId;
   
-  String get _draftsKey => userId != null ? 'saved_drafts_$userId' : 'saved_drafts';
+  String get _draftsKey => _userId != null ? 'saved_drafts_$_userId' : 'saved_drafts';
 
-  DraftsNotifier({this.userId}) : super([]) {
+  @override
+  List<DraftModel> build() {
+    _userId = ref.watch(currentUserProvider)?.userId;
     _loadDrafts();
+    return [];
   }
 
   Future<void> _loadDrafts() async {
-    if (userId == null) {
+    if (_userId == null) {
       state = [];
       return;
     }
@@ -38,7 +40,7 @@ class DraftsNotifier extends StateNotifier<List<DraftModel>> {
   }
 
   Future<void> saveDraft(DraftModel draft) async {
-    if (userId == null) return;
+    if (_userId == null) return;
     final prefs = await SharedPreferences.getInstance();
     
     final updatedDrafts = List<DraftModel>.from(state);
@@ -61,7 +63,7 @@ class DraftsNotifier extends StateNotifier<List<DraftModel>> {
   }
 
   Future<void> deleteDraft(String id) async {
-    if (userId == null) return;
+    if (_userId == null) return;
     final prefs = await SharedPreferences.getInstance();
     
     final updatedDrafts = List<DraftModel>.from(state)..removeWhere((d) => d.id == id);
@@ -75,7 +77,7 @@ class DraftsNotifier extends StateNotifier<List<DraftModel>> {
   }
 
   Future<void> deleteDrafts(Set<String> ids) async {
-    if (userId == null || ids.isEmpty) return;
+    if (_userId == null || ids.isEmpty) return;
     final prefs = await SharedPreferences.getInstance();
     
     final updatedDrafts = List<DraftModel>.from(state)..removeWhere((d) => ids.contains(d.id));

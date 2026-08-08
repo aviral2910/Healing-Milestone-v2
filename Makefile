@@ -1,40 +1,35 @@
-.PHONY: all clean pub run build-apk build-ios build-runner analyze test
+.PHONY: all help get clean runner watch splash icons apk build-runner
 
-# Default target
-all: pub build-runner run
+all: get runner
 
-# Clean the project
+help:
+	@echo "Available commands:"
+	@echo "  make get       - Fetch dependencies (flutter pub get)"
+	@echo "  make clean     - Clean project (flutter clean)"
+	@echo "  make runner    - Run build_runner"
+	@echo "  make watch     - Run build_runner in watch mode"
+	@echo "  make splash    - Generate native splash screen"
+	@echo "  make icons     - Generate launcher icons"
+	@echo "  make apk       - Build Android APK"
+
+get:
+	flutter pub get
+
 clean:
 	flutter clean
 
-# Get dependencies
-pub:
-	flutter pub get
-
-# Run the app
-run:
-	flutter run
-
-# Build APK
-build-apk:
-	flutter build apk
-
-# Build iOS
-build-ios:
-	flutter build ios
-
-# Run build_runner (Generates Freezed, Riverpod, and JSON Serializable files)
+runner: build-runner
 build-runner:
-	dart run build_runner build --delete-conflicting-outputs
+	dart run build_runner build -d
 
-# Watch build_runner (Auto-generates files on save)
-build-runner-watch:
-	dart run build_runner watch --delete-conflicting-outputs
+watch:
+	dart run build_runner watch -d
 
-# Run Flutter Analyze
-analyze:
-	flutter analyze
+splash:
+	dart run flutter_native_splash:create
 
-# Run tests
-test:
-	flutter test
+icons:
+	dart run flutter_launcher_icons
+
+apk:
+	flutter build apk

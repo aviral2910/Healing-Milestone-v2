@@ -121,7 +121,7 @@ class _StoryCardState extends ConsumerState<StoryCard>
                           )
                         : ClipOval(
                             child: Image.network(
-                              userAsync.valueOrNull?.profilePicture ??
+                              userAsync.value?.profilePicture ??
                                   'https://api.dicebear.com/7.x/avataaars/png?seed=${widget.story.authorId}',
                               width: 48,
                               height: 48,
@@ -202,9 +202,9 @@ class _StoryCardState extends ConsumerState<StoryCard>
                               ),
                               const SizedBox(width: 4),
                               UserBadge(
-                                role: userAsync.valueOrNull?.role ??
+                                role: userAsync.value?.role ??
                                     widget.story.authorRole,
-                                isVerified: userAsync.valueOrNull?.isVerified ??
+                                isVerified: userAsync.value?.isVerified ??
                                     widget.story.isAuthorVerified,
                               ),
                             ],

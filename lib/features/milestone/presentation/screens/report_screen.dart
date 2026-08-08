@@ -66,7 +66,7 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
     }
 
     try {
-      final authState = ref.read(authProvider).valueOrNull;
+      final authState = ref.read(authProvider).value;
       final currentUser = authState?.userModel;
       
       if (currentUser == null) {

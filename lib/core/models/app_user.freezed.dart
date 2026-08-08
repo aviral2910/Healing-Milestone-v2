@@ -1,6 +1,6 @@
-// coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
-// ignore_for_file: type=lint
+// coverage:ignore-file
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'app_user.dart';
@@ -9,186 +9,34 @@ part of 'app_user.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
-
-AppUser _$AppUserFromJson(Map<String, dynamic> json) {
-  return _AppUser.fromJson(json);
-}
 
 /// @nodoc
 mixin _$AppUser {
-  String get uid => throw _privateConstructorUsedError;
-  String get displayName => throw _privateConstructorUsedError;
-  String get email => throw _privateConstructorUsedError;
-  String get role => throw _privateConstructorUsedError;
+  String get uid;
+  String get displayName;
+  String get email;
+  String get role;
   @TimestampConverter()
-  DateTime get createdAt => throw _privateConstructorUsedError;
-
-  /// Serializes this AppUser to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  DateTime get createdAt;
 
   /// Create a copy of AppUser
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $AppUserCopyWith<AppUser> get copyWith => throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $AppUserCopyWith<$Res> {
-  factory $AppUserCopyWith(AppUser value, $Res Function(AppUser) then) =
-      _$AppUserCopyWithImpl<$Res, AppUser>;
-  @useResult
-  $Res call(
-      {String uid,
-      String displayName,
-      String email,
-      String role,
-      @TimestampConverter() DateTime createdAt});
-}
-
-/// @nodoc
-class _$AppUserCopyWithImpl<$Res, $Val extends AppUser>
-    implements $AppUserCopyWith<$Res> {
-  _$AppUserCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of AppUser
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? uid = null,
-    Object? displayName = null,
-    Object? email = null,
-    Object? role = null,
-    Object? createdAt = null,
-  }) {
-    return _then(_value.copyWith(
-      uid: null == uid
-          ? _value.uid
-          : uid // ignore: cast_nullable_to_non_nullable
-              as String,
-      displayName: null == displayName
-          ? _value.displayName
-          : displayName // ignore: cast_nullable_to_non_nullable
-              as String,
-      email: null == email
-          ? _value.email
-          : email // ignore: cast_nullable_to_non_nullable
-              as String,
-      role: null == role
-          ? _value.role
-          : role // ignore: cast_nullable_to_non_nullable
-              as String,
-      createdAt: null == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-    ) as $Val);
-  }
-}
+  $AppUserCopyWith<AppUser> get copyWith =>
+      _$AppUserCopyWithImpl<AppUser>(this as AppUser, _$identity);
 
-/// @nodoc
-abstract class _$$AppUserImplCopyWith<$Res> implements $AppUserCopyWith<$Res> {
-  factory _$$AppUserImplCopyWith(
-          _$AppUserImpl value, $Res Function(_$AppUserImpl) then) =
-      __$$AppUserImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call(
-      {String uid,
-      String displayName,
-      String email,
-      String role,
-      @TimestampConverter() DateTime createdAt});
-}
-
-/// @nodoc
-class __$$AppUserImplCopyWithImpl<$Res>
-    extends _$AppUserCopyWithImpl<$Res, _$AppUserImpl>
-    implements _$$AppUserImplCopyWith<$Res> {
-  __$$AppUserImplCopyWithImpl(
-      _$AppUserImpl _value, $Res Function(_$AppUserImpl) _then)
-      : super(_value, _then);
-
-  /// Create a copy of AppUser
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? uid = null,
-    Object? displayName = null,
-    Object? email = null,
-    Object? role = null,
-    Object? createdAt = null,
-  }) {
-    return _then(_$AppUserImpl(
-      uid: null == uid
-          ? _value.uid
-          : uid // ignore: cast_nullable_to_non_nullable
-              as String,
-      displayName: null == displayName
-          ? _value.displayName
-          : displayName // ignore: cast_nullable_to_non_nullable
-              as String,
-      email: null == email
-          ? _value.email
-          : email // ignore: cast_nullable_to_non_nullable
-              as String,
-      role: null == role
-          ? _value.role
-          : role // ignore: cast_nullable_to_non_nullable
-              as String,
-      createdAt: null == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-    ));
-  }
-}
-
-/// @nodoc
-@JsonSerializable()
-class _$AppUserImpl implements _AppUser {
-  const _$AppUserImpl(
-      {required this.uid,
-      required this.displayName,
-      required this.email,
-      required this.role,
-      @TimestampConverter() required this.createdAt});
-
-  factory _$AppUserImpl.fromJson(Map<String, dynamic> json) =>
-      _$$AppUserImplFromJson(json);
-
-  @override
-  final String uid;
-  @override
-  final String displayName;
-  @override
-  final String email;
-  @override
-  final String role;
-  @override
-  @TimestampConverter()
-  final DateTime createdAt;
-
-  @override
-  String toString() {
-    return 'AppUser(uid: $uid, displayName: $displayName, email: $email, role: $role, createdAt: $createdAt)';
-  }
+  /// Serializes this AppUser to a JSON map.
+  Map<String, dynamic> toJson();
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$AppUserImpl &&
+            other is AppUser &&
             (identical(other.uid, uid) || other.uid == uid) &&
             (identical(other.displayName, displayName) ||
                 other.displayName == displayName) &&
@@ -203,48 +51,353 @@ class _$AppUserImpl implements _AppUser {
   int get hashCode =>
       Object.hash(runtimeType, uid, displayName, email, role, createdAt);
 
-  /// Create a copy of AppUser
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  @pragma('vm:prefer-inline')
-  _$$AppUserImplCopyWith<_$AppUserImpl> get copyWith =>
-      __$$AppUserImplCopyWithImpl<_$AppUserImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$AppUserImplToJson(
-      this,
-    );
+  String toString() {
+    return 'AppUser(uid: $uid, displayName: $displayName, email: $email, role: $role, createdAt: $createdAt)';
   }
 }
 
-abstract class _AppUser implements AppUser {
-  const factory _AppUser(
-      {required final String uid,
-      required final String displayName,
-      required final String email,
-      required final String role,
-      @TimestampConverter() required final DateTime createdAt}) = _$AppUserImpl;
+/// @nodoc
+abstract mixin class $AppUserCopyWith<$Res> {
+  factory $AppUserCopyWith(AppUser value, $Res Function(AppUser) _then) =
+      _$AppUserCopyWithImpl;
+  @useResult
+  $Res call(
+      {String uid,
+      String displayName,
+      String email,
+      String role,
+      @TimestampConverter() DateTime createdAt});
+}
 
-  factory _AppUser.fromJson(Map<String, dynamic> json) = _$AppUserImpl.fromJson;
+/// @nodoc
+class _$AppUserCopyWithImpl<$Res> implements $AppUserCopyWith<$Res> {
+  _$AppUserCopyWithImpl(this._self, this._then);
+
+  final AppUser _self;
+  final $Res Function(AppUser) _then;
+
+  /// Create a copy of AppUser
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? uid = null,
+    Object? displayName = null,
+    Object? email = null,
+    Object? role = null,
+    Object? createdAt = null,
+  }) {
+    return _then(AppUser(
+      uid: null == uid
+          ? _self.uid
+          : uid // ignore: cast_nullable_to_non_nullable
+              as String,
+      displayName: null == displayName
+          ? _self.displayName
+          : displayName // ignore: cast_nullable_to_non_nullable
+              as String,
+      email: null == email
+          ? _self.email
+          : email // ignore: cast_nullable_to_non_nullable
+              as String,
+      role: null == role
+          ? _self.role
+          : role // ignore: cast_nullable_to_non_nullable
+              as String,
+      createdAt: null == createdAt
+          ? _self.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
+    ));
+  }
+}
+
+/// Adds pattern-matching-related methods to [AppUser].
+extension AppUserPatterns on AppUser {
+  /// A variant of `map` that fallback to returning `orElse`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>(
+    TResult Function(_AppUser value)? $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _AppUser() when $default != null:
+        return $default(_that);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// Callbacks receives the raw object, upcasted.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case final Subclass2 value:
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>(
+    TResult Function(_AppUser value) $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _AppUser():
+        return $default(_that);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `map` that fallback to returning `null`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>(
+    TResult? Function(_AppUser value)? $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _AppUser() when $default != null:
+        return $default(_that);
+      case _:
+        return null;
+    }
+  }
+
+  /// A variant of `when` that fallback to an `orElse` callback.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>(
+    TResult Function(String uid, String displayName, String email, String role,
+            @TimestampConverter() DateTime createdAt)?
+        $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _AppUser() when $default != null:
+        return $default(_that.uid, _that.displayName, _that.email, _that.role,
+            _that.createdAt);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// As opposed to `map`, this offers destructuring.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case Subclass2(:final field2):
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>(
+    TResult Function(String uid, String displayName, String email, String role,
+            @TimestampConverter() DateTime createdAt)
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _AppUser():
+        return $default(_that.uid, _that.displayName, _that.email, _that.role,
+            _that.createdAt);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `when` that fallback to returning `null`
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>(
+    TResult? Function(String uid, String displayName, String email, String role,
+            @TimestampConverter() DateTime createdAt)?
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _AppUser() when $default != null:
+        return $default(_that.uid, _that.displayName, _that.email, _that.role,
+            _that.createdAt);
+      case _:
+        return null;
+    }
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _AppUser implements AppUser {
+  const _AppUser(
+      {required this.uid,
+      required this.displayName,
+      required this.email,
+      required this.role,
+      @TimestampConverter() required this.createdAt});
+  factory _AppUser.fromJson(Map<String, dynamic> json) =>
+      _$AppUserFromJson(json);
 
   @override
-  String get uid;
+  final String uid;
   @override
-  String get displayName;
+  final String displayName;
   @override
-  String get email;
+  final String email;
   @override
-  String get role;
+  final String role;
   @override
   @TimestampConverter()
-  DateTime get createdAt;
+  final DateTime createdAt;
 
   /// Create a copy of AppUser
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$AppUserImplCopyWith<_$AppUserImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+  @pragma('vm:prefer-inline')
+  _$AppUserCopyWith<_AppUser> get copyWith =>
+      __$AppUserCopyWithImpl<_AppUser>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$AppUserToJson(
+      this,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _AppUser &&
+            (identical(other.uid, uid) || other.uid == uid) &&
+            (identical(other.displayName, displayName) ||
+                other.displayName == displayName) &&
+            (identical(other.email, email) || other.email == email) &&
+            (identical(other.role, role) || other.role == role) &&
+            (identical(other.createdAt, createdAt) ||
+                other.createdAt == createdAt));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, uid, displayName, email, role, createdAt);
+
+  @override
+  String toString() {
+    return 'AppUser(uid: $uid, displayName: $displayName, email: $email, role: $role, createdAt: $createdAt)';
+  }
 }
+
+/// @nodoc
+abstract mixin class _$AppUserCopyWith<$Res> implements $AppUserCopyWith<$Res> {
+  factory _$AppUserCopyWith(_AppUser value, $Res Function(_AppUser) _then) =
+      __$AppUserCopyWithImpl;
+  @override
+  @useResult
+  $Res call(
+      {String uid,
+      String displayName,
+      String email,
+      String role,
+      @TimestampConverter() DateTime createdAt});
+}
+
+/// @nodoc
+class __$AppUserCopyWithImpl<$Res> implements _$AppUserCopyWith<$Res> {
+  __$AppUserCopyWithImpl(this._self, this._then);
+
+  final _AppUser _self;
+  final $Res Function(_AppUser) _then;
+
+  /// Create a copy of AppUser
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? uid = null,
+    Object? displayName = null,
+    Object? email = null,
+    Object? role = null,
+    Object? createdAt = null,
+  }) {
+    return _then(_AppUser(
+      uid: null == uid
+          ? _self.uid
+          : uid // ignore: cast_nullable_to_non_nullable
+              as String,
+      displayName: null == displayName
+          ? _self.displayName
+          : displayName // ignore: cast_nullable_to_non_nullable
+              as String,
+      email: null == email
+          ? _self.email
+          : email // ignore: cast_nullable_to_non_nullable
+              as String,
+      role: null == role
+          ? _self.role
+          : role // ignore: cast_nullable_to_non_nullable
+              as String,
+      createdAt: null == createdAt
+          ? _self.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
+    ));
+  }
+}
+
+// dart format on

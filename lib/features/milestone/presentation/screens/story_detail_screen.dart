@@ -387,7 +387,7 @@ class StoryDetailScreen extends HookConsumerWidget {
                                               )
                                             : ClipOval(
                                                 child: Image.network(
-                                                  userAsync.valueOrNull
+                                                  userAsync.value
                                                           ?.profilePicture ??
                                                       'https://api.dicebear.com/7.x/avataaars/png?seed=${story.authorId}',
                                                   width: 44,
@@ -505,10 +505,10 @@ class StoryDetailScreen extends HookConsumerWidget {
                                                 const SizedBox(width: 4),
                                                 UserBadge(
                                                   role: userAsync
-                                                          .valueOrNull?.role ??
+                                                          .value?.role ??
                                                       story.authorRole,
                                                   isVerified: userAsync
-                                                          .valueOrNull
+                                                          .value
                                                           ?.isVerified ??
                                                       story.isAuthorVerified,
                                                   iconSize: 16,
