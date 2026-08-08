@@ -48,3 +48,7 @@ app.*.map.json
 functions/node_modules/
 functions/lib/
 admin_script/node_modules/
+
+# Generated files
+*.g.dart
+*.freezed.dart
