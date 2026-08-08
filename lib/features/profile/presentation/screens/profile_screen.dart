@@ -147,7 +147,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                               children: [
                                 Text(
                                   user.displayName,
-                                  style: const TextStyle(
+                                  style: theme.textTheme.titleLarge?.copyWith(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 22),
                                 ),
@@ -239,6 +239,29 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       ),
                       const SizedBox(height: 24),
                       // Action Buttons
+                      if (user.username?.toLowerCase() == 'healingmilestones') ...[
+                        SizedBox(
+                          height: 52,
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              context.push(AppRoutes.adminSubmissions);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.amber.shade700,
+                              foregroundColor: Colors.black,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: const Text(
+                              'Admin: Review Web Submissions',
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                      ],
                       SizedBox(
                         height: 52,
                         child: Row(

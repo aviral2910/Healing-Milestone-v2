@@ -678,7 +678,7 @@ class _PostSettingsScreenState extends ConsumerState<PostSettingsScreen> {
                           color: Theme.of(context).colorScheme.onSurface,
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          fontFamily: 'Outfit')),
+                          )),
                   const SizedBox(height: 12),
                   // Selected Tags Chips
                   if (_selectedTags.isNotEmpty) ...[
@@ -801,7 +801,7 @@ class _PostSettingsScreenState extends ConsumerState<PostSettingsScreen> {
                           color: Theme.of(context).colorScheme.onSurface,
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          fontFamily: 'Outfit')),
+                          )),
                   const SizedBox(height: 12),
                   // Selected Users Chips
                   if (_selectedUsers.isNotEmpty) ...[
@@ -943,7 +943,7 @@ class _PostSettingsScreenState extends ConsumerState<PostSettingsScreen> {
                           color: Theme.of(context).colorScheme.onSurface,
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          fontFamily: 'Outfit')),
+                          )),
                   const SizedBox(height: 20),
                   Text('POST TYPE',
                       style: TextStyle(

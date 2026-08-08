@@ -66,7 +66,7 @@ class _PostManualScreenState extends ConsumerState<PostManualScreen> {
         ),
         title: Text(
           isEditing ? 'Edit Post' : 'New Post',
-          style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600, fontFamily: 'Outfit'),
+          style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
         ),
         actions: [
           Padding(
@@ -102,7 +102,7 @@ class _PostManualScreenState extends ConsumerState<PostManualScreen> {
             controller: _titleController,
             style: theme.textTheme.headlineMedium?.copyWith(
               fontWeight: FontWeight.bold,
-              fontFamily: 'Outfit',
+              
               color: theme.colorScheme.onSurface,
             ),
             decoration: InputDecoration(
@@ -110,7 +110,7 @@ class _PostManualScreenState extends ConsumerState<PostManualScreen> {
               hintStyle: theme.textTheme.headlineMedium?.copyWith(
                 color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
                 fontWeight: FontWeight.bold,
-                fontFamily: 'Outfit',
+                
               ),
               border: InputBorder.none,
             ),

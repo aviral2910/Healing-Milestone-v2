@@ -173,14 +173,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                         labelColor: theme.colorScheme.primary,
                         labelStyle: const TextStyle(
                             fontWeight: FontWeight.bold,
-                            fontFamily: 'Outfit',
+                            
                             fontSize: 16),
                         unselectedLabelColor:
                             Theme.of(context).textTheme.bodySmall?.color ??
                                 Colors.grey,
                         unselectedLabelStyle: const TextStyle(
                             fontWeight: FontWeight.w500,
-                            fontFamily: 'Outfit',
+                            
                             fontSize: 16),
                         splashBorderRadius: BorderRadius.circular(8),
                         tabs: const [
@@ -235,7 +235,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                       color: Theme.of(context).colorScheme.onSurface,
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      fontFamily: 'Outfit'),
+                      ),
                 ),
               ],
             ),
@@ -361,7 +361,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                           color: Theme.of(context).colorScheme.onSurface,
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          fontFamily: 'Outfit')),
+                          )),
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),

@@ -209,9 +209,9 @@ class SettingsScreen extends ConsumerWidget {
                     children: [
                       Text(
                         title,
-                        style: theme.textTheme.bodyLarge?.copyWith(
+                        style: theme.textTheme.titleMedium?.copyWith(
                           color: Theme.of(context).textTheme.bodyMedium?.color,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w600,
                           fontSize: 18,
                         ),
                       ),

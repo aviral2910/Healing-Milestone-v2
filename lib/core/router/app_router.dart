@@ -18,6 +18,8 @@ import '../../features/milestone/presentation/screens/post_settings_screen.dart'
 import '../../features/milestone/presentation/screens/story_detail_screen.dart';
 import '../../features/milestone/presentation/screens/report_screen.dart';
 import '../../features/profile/presentation/screens/drafts_screen.dart';
+import '../../features/profile/presentation/screens/admin_submissions_screen.dart';
+import '../../features/profile/presentation/screens/admin_submission_detail_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/role_selection_screen.dart';
 import '../../features/auth/presentation/screens/professional_onboarding_screen.dart';
@@ -139,7 +141,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppRoutes.createPostGuided,
-        builder: (context, state) => const PostGuidedScreen(),
+        builder: (context, state) {
+          final data = state.extra as Map<String, dynamic>?;
+          return PostGuidedScreen(prefillData: data);
+        },
       ),
       GoRoute(
         path: AppRoutes.createPostManual,
@@ -254,6 +259,21 @@ final routerProvider = Provider<GoRouter>((ref) {
                 child: child,
               );
             },
+          );
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.adminSubmissions,
+        builder: (context, state) => const AdminSubmissionsScreen(),
+      ),
+      GoRoute(
+        path: '/admin-submissions/:id',
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          final data = state.extra as Map<String, dynamic>? ?? {};
+          return AdminSubmissionDetailScreen(
+            submissionId: id,
+            data: data,
           );
         },
       ),

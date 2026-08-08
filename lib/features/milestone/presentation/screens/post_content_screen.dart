@@ -31,7 +31,7 @@ class _PostContentScreenState extends ConsumerState<PostContentScreen> {
         ),
         title: Text(
           'New Post',
-          style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600, fontFamily: 'Outfit'),
+          style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
         ),
       ),
       body: SafeArea(
@@ -62,7 +62,7 @@ class _PostContentScreenState extends ConsumerState<PostContentScreen> {
               'How would you like to start?',
               style: theme.textTheme.headlineMedium?.copyWith(
                 fontWeight: FontWeight.bold,
-                fontFamily: 'Outfit',
+                
                 color: theme.colorScheme.onSurface,
               ),
               textAlign: TextAlign.center,
@@ -160,7 +160,7 @@ class _PostContentScreenState extends ConsumerState<PostContentScreen> {
                     title,
                     style: theme.textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
-                      fontFamily: 'Outfit',
+                      
                       color: isHighlighted
                           ? theme.colorScheme.primary
                           : theme.colorScheme.onSurface,

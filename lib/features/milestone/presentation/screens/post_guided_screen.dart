@@ -7,7 +7,8 @@ import '../../../../core/router/app_routes.dart';
 import '../providers/post_creation_state.dart';
 
 class PostGuidedScreen extends StatefulHookConsumerWidget {
-  const PostGuidedScreen({Key? key}) : super(key: key);
+  final Map<String, dynamic>? prefillData;
+  const PostGuidedScreen({Key? key, this.prefillData}) : super(key: key);
 
   @override
   ConsumerState<PostGuidedScreen> createState() => _PostGuidedScreenState();
@@ -21,6 +22,24 @@ class _PostGuidedScreenState extends ConsumerState<PostGuidedScreen> {
 
   final ScrollController _scrollController = ScrollController();
   bool _isGenerating = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.prefillData != null) {
+      final data = widget.prefillData!;
+      // Map web submission fields to guided flow
+      final mainStory = data['mainStory'] as String? ?? '';
+      final struggle = data['theStruggle'] as String? ?? '';
+      final turningPoint = data['theTurningPoint'] as String? ?? '';
+      final lesson = data['theLesson'] as String? ?? '';
+      
+      _contextController.text = mainStory;
+      _struggleController.text = struggle;
+      _turningPointController.text = turningPoint;
+      _hopeController.text = lesson;
+    }
+  }
 
   @override
   void dispose() {
@@ -105,7 +124,7 @@ class _PostGuidedScreenState extends ConsumerState<PostGuidedScreen> {
         ),
         title: Text(
           'Guided Story',
-          style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600, fontFamily: 'Outfit'),
+          style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
         ),
       ),
       body: SafeArea(
@@ -148,7 +167,7 @@ class _PostGuidedScreenState extends ConsumerState<PostGuidedScreen> {
           const SizedBox(height: 40),
           Text(
             'Weaving your journey...',
-            style: theme.textTheme.headlineSmall?.copyWith(fontFamily: 'Outfit', fontWeight: FontWeight.bold),
+            style: theme.textTheme.headlineSmall?.copyWith( fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
           Text(
@@ -188,7 +207,7 @@ class _PostGuidedScreenState extends ConsumerState<PostGuidedScreen> {
               'Deepen the Narrative',
               style: theme.textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
-                fontFamily: 'Outfit',
+                
                 color: theme.colorScheme.onSurface,
               ),
             ),
@@ -274,7 +293,7 @@ class _PostGuidedScreenState extends ConsumerState<PostGuidedScreen> {
                     style: theme.textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: theme.colorScheme.primary,
-                      fontFamily: 'Outfit',
+                      
                     ),
                   ),
                 ),
@@ -337,7 +356,7 @@ class _PostGuidedScreenState extends ConsumerState<PostGuidedScreen> {
           'Tell us about it',
           style: theme.textTheme.headlineMedium?.copyWith(
             fontWeight: FontWeight.bold,
-            fontFamily: 'Outfit',
+            
             color: theme.colorScheme.onSurface,
           ),
         ),
@@ -410,7 +429,7 @@ class _PostGuidedScreenState extends ConsumerState<PostGuidedScreen> {
                     style: TextStyle(
                       color: theme.colorScheme.primary,
                       fontWeight: FontWeight.bold,
-                      fontFamily: 'Outfit',
+                      
                     ),
                   ),
                 ),
@@ -421,7 +440,7 @@ class _PostGuidedScreenState extends ConsumerState<PostGuidedScreen> {
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: theme.colorScheme.primary,
-                      fontFamily: 'Outfit',
+                      
                       letterSpacing: 1.2,
                     ),
                   ),
@@ -499,7 +518,7 @@ class _PostGuidedScreenState extends ConsumerState<PostGuidedScreen> {
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            fontFamily: 'Outfit',
+            
             color: theme.colorScheme.onPrimary,
             letterSpacing: 1.1,
           ),

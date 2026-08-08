@@ -125,7 +125,7 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen>
                                   children: [
                                     Text(
                                       user.displayName,
-                                      style: const TextStyle(
+                                      style: theme.textTheme.titleLarge?.copyWith(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 22),
                                     ),

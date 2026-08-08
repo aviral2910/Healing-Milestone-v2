@@ -287,8 +287,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     children: [
                       Text(
                         title,
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w600,
                             fontSize: 16,
                             color: (Theme.of(context).textTheme.bodyLarge?.color ?? Colors.white)),
                       ),
@@ -364,7 +364,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text('Edit Profile',
-            style: TextStyle(
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w600, color: (Theme.of(context).textTheme.bodyLarge?.color ?? Colors.white))),
         centerTitle: true,
         elevation: 0,
@@ -462,9 +462,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
               // Basic Info Section
               Text('Basic Information',
-                  style: TextStyle(
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w600,
                       color: Theme.of(context).colorScheme.primary)),
               const SizedBox(height: 16),
 
@@ -516,9 +516,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               // Role Specific Section
               if (!isMember) ...[
                 Text('Professional Details',
-                    style: TextStyle(
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w600,
                         color: Theme.of(context).colorScheme.primary)),
                 const SizedBox(height: 16),
                 if (isPro) ...[
@@ -560,9 +560,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
               // Account Linking Section
               Text('Account Security',
-                  style: TextStyle(
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w600,
                       color: Theme.of(context).colorScheme.primary)),
               const SizedBox(height: 16),
 
@@ -645,8 +645,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                               children: [
                                 Text(
                                   'Verification Badge',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
+                                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                      fontWeight: FontWeight.w600,
                                       fontSize: 16,
                                       color: (Theme.of(context).textTheme.bodyLarge?.color ?? Colors.white)),
                                 ),
