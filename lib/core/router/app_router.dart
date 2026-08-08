@@ -20,6 +20,7 @@ import '../../features/milestone/presentation/screens/report_screen.dart';
 import '../../features/profile/presentation/screens/drafts_screen.dart';
 import '../../features/profile/presentation/screens/admin_submissions_screen.dart';
 import '../../features/profile/presentation/screens/admin_submission_detail_screen.dart';
+import '../../features/support_chat/presentation/screens/chat_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/role_selection_screen.dart';
 import '../../features/auth/presentation/screens/professional_onboarding_screen.dart';
@@ -265,6 +266,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.adminSubmissions,
         builder: (context, state) => const AdminSubmissionsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.supportChat,
+        builder: (context, state) => const ChatScreen(),
       ),
       GoRoute(
         path: '/admin-submissions/:id',

@@ -8,6 +8,8 @@ import 'package:healing_milestones/logo/healing_milestone_logo.dart';
 import '../../../../features/posts/presentation/screens/post_screen.dart';
 import '../../../../features/search/presentation/screens/search_screen.dart';
 import '../../../../features/awareness/presentation/screens/health_awareness_screen.dart';
+import '../../../../features/auth/data/auth_provider.dart';
+import '../../../../features/support_chat/presentation/providers/chat_providers.dart';
 import '../../../../main.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -83,6 +85,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     final theme = Theme.of(context);
 
     final isSwipeMode = ref.watch(isSwipeModeProvider);
+    final authState = ref.watch(authProvider).value;
+    final isAuthenticated = authState?.status == AuthStatus.authenticated;
+
+    int unreadCount = 0;
+    if (isAuthenticated) {
+      final chatIdAsync = ref.watch(supportChatIdProvider);
+      final chatId = chatIdAsync.value;
+      if (chatId != null) {
+        final chatAsync = ref.watch(supportChatStreamProvider(chatId));
+        if (chatAsync.value != null) {
+          final currentUser = ref.watch(currentUserProvider);
+          if (currentUser != null) {
+            unreadCount = chatAsync.value!.unreadCount[currentUser.userId] ?? 0;
+          }
+        }
+      }
+    }
 
     return PopScope(
       canPop: _currentIndex == 0,
@@ -94,6 +113,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       child: Scaffold(
         resizeToAvoidBottomInset: false,
         extendBody: false, // Solid background
+        floatingActionButton: isAuthenticated
+            ? FloatingActionButton(
+                onPressed: () {
+                  context.push('/support-chat');
+                },
+                child: Badge(
+                  isLabelVisible: unreadCount > 0,
+                  child: const Icon(Icons.support_agent),
+                ),
+              )
+            : null,
         body: IndexedStack(
           index: _currentIndex,
           children: [

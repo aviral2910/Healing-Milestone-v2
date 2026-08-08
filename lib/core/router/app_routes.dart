@@ -22,6 +22,7 @@ class AppRoutes {
   static const String accessibilitySettings = '/accessibility-settings';
   static const String drafts = '/drafts';
   static const String adminSubmissions = '/admin-submissions';
+  static const String supportChat = '/support-chat';
   static const uat = '/uat';
 
   // Dynamic routes
