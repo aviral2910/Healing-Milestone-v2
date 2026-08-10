@@ -55,7 +55,6 @@ class ApiStoryRepository implements StoryRepository {
       reactions: {}, 
       likesList: [], 
       likesCount: 0,
-      tags: [],
       taggedPeople: [],
       hashtagsList: [],
       readingTime: json['reading_time'] ?? 0,
@@ -64,6 +63,7 @@ class ApiStoryRepository implements StoryRepository {
       qrId: json['qr_id'] ?? '',
       displayAuthorName: json['display_author_name'] ?? true,
       isHidden: json['is_hidden'] ?? false,
+      verifierId: json['verifier_id'] ?? '',
     );
   }
 

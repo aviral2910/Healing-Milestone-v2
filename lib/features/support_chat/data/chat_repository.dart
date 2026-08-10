@@ -2,8 +2,8 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uuid/uuid.dart';
 import 'package:healing_milestones/features/support_chat/data/api_chat_repository.dart';
+import 'package:uuid/uuid.dart';
 
 import 'models/chat_model.dart';
 import 'models/message_model.dart';
@@ -68,19 +68,20 @@ class ChatRepository {
     });
   }
 
-  Future<void> sendMessage(String chatId, MessageModel message, {String? recipientId}) async {
+  Future<void> sendMessage(String chatId, MessageModel message,
+      {String? recipientId}) async {
     final batch = _firestore.batch();
-    
+
     final messageRef = _firestore
         .collection('chats')
         .doc(chatId)
         .collection('messages')
         .doc(message.id);
-        
+
     final chatRef = _firestore.collection('chats').doc(chatId);
 
     batch.set(messageRef, message.toMap());
-    
+
     // Determine last message text
     String lastMessageText = message.text;
     if (message.messageType == 'image' && lastMessageText.isEmpty) {
@@ -107,7 +108,8 @@ class ChatRepository {
     });
   }
 
-  Future<void> updateTypingStatus(String chatId, String userId, bool isTyping) async {
+  Future<void> updateTypingStatus(
+      String chatId, String userId, bool isTyping) async {
     await _firestore.collection('chats').doc(chatId).update({
       'typingStatus.$userId': isTyping,
     });
@@ -116,7 +118,7 @@ class ChatRepository {
   Future<String> uploadImage(String chatId, File imageFile) async {
     final fileName = const Uuid().v4();
     final ref = _storage.ref().child('chats/$chatId/$fileName');
-    
+
     final uploadTask = await ref.putFile(imageFile);
     return await uploadTask.ref.getDownloadURL();
   }

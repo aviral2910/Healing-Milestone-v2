@@ -3,12 +3,12 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:healing_milestones/features/support_chat/data/models/chat_model.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../auth/data/auth_provider.dart';
 import '../../data/chat_repository.dart';
-import '../../data/models/chat_model.dart';
 import '../../data/models/message_model.dart';
 import '../providers/chat_providers.dart';
 
@@ -23,7 +23,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final ImagePicker _picker = ImagePicker();
-  
+
   File? _selectedImage;
   Timer? _typingTimer;
   bool _isTyping = false;
@@ -42,12 +42,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       setState(() => _isTyping = true);
       ref.read(chatRepositoryProvider).updateTypingStatus(chatId, userId, true);
     }
-    
+
     _typingTimer?.cancel();
     _typingTimer = Timer(const Duration(seconds: 2), () {
       if (_isTyping) {
         setState(() => _isTyping = false);
-        ref.read(chatRepositoryProvider).updateTypingStatus(chatId, userId, false);
+        ref
+            .read(chatRepositoryProvider)
+            .updateTypingStatus(chatId, userId, false);
       }
     });
   }
@@ -64,17 +66,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   Future<void> _sendMessage(String chatId, String userId) async {
     final text = _textController.text.trim();
     if (text.isEmpty && _selectedImage == null) return;
-    
+
     setState(() => _isSending = true);
-    
+
     try {
       final repo = ref.read(chatRepositoryProvider);
       String? imageUrl;
-      
+
       if (_selectedImage != null) {
         imageUrl = await repo.uploadImage(chatId, _selectedImage!);
       }
-      
+
       final message = MessageModel(
         id: const Uuid().v4(),
         text: text,
@@ -83,9 +85,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         messageType: _selectedImage != null ? 'image' : 'text',
         fileUrl: imageUrl,
       );
-      
+
       await repo.sendMessage(chatId, message, recipientId: 'admin');
-      
+
       _textController.clear();
       setState(() {
         _selectedImage = null;
@@ -95,7 +97,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       repo.updateTypingStatus(chatId, userId, false);
     } catch (e) {
       setState(() => _isSending = false);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to send message: $e')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Failed to send message: $e')));
     }
   }
 
@@ -111,12 +114,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       body: chatIdAsync.when(
         data: (chatId) {
           if (user == null) return const Center(child: Text('Not logged in'));
-          
+
           // Clear unread count when chat is opened and stream updates
-          ref.listen<AsyncValue<ChatModel?>>(supportChatStreamProvider(chatId), (previous, next) {
+          ref.listen<AsyncValue<ChatModel?>>(supportChatStreamProvider(chatId),
+              (previous, next) {
             final chat = next.value;
             if (chat != null && (chat.unreadCount[user.userId] ?? 0) > 0) {
-              ref.read(chatRepositoryProvider).clearUnreadCount(chatId, user.userId);
+              ref
+                  .read(chatRepositoryProvider)
+                  .clearUnreadCount(chatId, user.userId);
             }
           });
 
@@ -142,7 +148,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     return messagesAsync.when(
       data: (messages) {
         if (messages.isEmpty) {
-          return const Center(child: Text('No messages yet. Send one to start.'));
+          return const Center(
+              child: Text('No messages yet. Send one to start.'));
         }
         return ListView.builder(
           reverse: true,
@@ -151,17 +158,23 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           itemBuilder: (context, index) {
             final msg = messages[index];
             final isMe = msg.senderId == currentUserId;
-            
+
             return Align(
               alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
               child: Container(
                 margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: isMe ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.surfaceContainerHighest,
+                  color: isMe
+                      ? Theme.of(context).colorScheme.primary
+                      : Theme.of(context).colorScheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(16).copyWith(
-                    bottomRight: isMe ? const Radius.circular(0) : const Radius.circular(16),
-                    bottomLeft: isMe ? const Radius.circular(16) : const Radius.circular(0),
+                    bottomRight: isMe
+                        ? const Radius.circular(0)
+                        : const Radius.circular(16),
+                    bottomLeft: isMe
+                        ? const Radius.circular(16)
+                        : const Radius.circular(0),
                   ),
                 ),
                 child: Column(
@@ -183,7 +196,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       Text(
                         msg.text,
                         style: TextStyle(
-                          color: isMe ? Theme.of(context).colorScheme.onPrimary : Theme.of(context).colorScheme.onSurface,
+                          color: isMe
+                              ? Theme.of(context).colorScheme.onPrimary
+                              : Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                   ],
@@ -200,7 +215,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   Widget _buildTypingIndicator(String chatId) {
     final chatAsync = ref.watch(supportChatStreamProvider(chatId));
-    
+
     return chatAsync.when(
       data: (chat) {
         if (chat != null && chat.typingStatus['admin'] == true) {

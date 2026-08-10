@@ -31,7 +31,7 @@ class ApiCommentRepository implements CommentRepository {
   Future<void> addComment(CommentModel comment) async {
     try {
       await _dio.post('/api/stories/${comment.storyId}/comments', data: {
-        'content': comment.content,
+        'content': comment.commentText,
       });
     } catch (e) {
       print('Error adding comment: $e');
