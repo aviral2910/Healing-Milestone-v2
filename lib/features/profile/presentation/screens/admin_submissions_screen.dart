@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+import 'package:healing_milestones/core/network/api_client.dart';
+
+final adminSubmissionsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
+  final client = ref.watch(apiClientProvider);
+  final response = await client.dio.get('/api/admin/submissions');
+  return List<Map<String, dynamic>>.from(response.data['items'] ?? []);
+});
 
 class AdminSubmissionsScreen extends ConsumerWidget {
   const AdminSubmissionsScreen({Key? key}) : super(key: key);
@@ -10,6 +16,7 @@ class AdminSubmissionsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final submissionsAsync = ref.watch(adminSubmissionsProvider);
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -18,37 +25,32 @@ class AdminSubmissionsScreen extends ConsumerWidget {
           'Web Submissions',
           style: theme.textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.w600,
-            
           ),
         ),
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () => ref.refresh(adminSubmissionsProvider),
+          )
+        ],
       ),
       body: SafeArea(
-        child: StreamBuilder<QuerySnapshot>(
-          stream: FirebaseFirestore.instance
-              .collection('story_submissions')
-              .orderBy('createdAt', descending: true)
-              .snapshots(),
-          builder: (context, snapshot) {
-            if (snapshot.hasError) {
-              return Center(
-                child: Text(
-                  'Error loading submissions.\n${snapshot.error}',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: theme.colorScheme.error),
-                ),
-              );
-            }
-
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-
-            final docs = snapshot.data?.docs ?? [];
-
+        child: submissionsAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, stack) {
+            return Center(
+              child: Text(
+                'Error loading submissions.\n$error',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: theme.colorScheme.error),
+              ),
+            );
+          },
+          data: (docs) {
             if (docs.isEmpty) {
               return Center(
                 child: Column(
@@ -73,8 +75,8 @@ class AdminSubmissionsScreen extends ConsumerWidget {
                 itemCount: docs.length,
                 separatorBuilder: (context, index) => const SizedBox(height: 16),
                 itemBuilder: (context, index) {
-                  final data = docs[index].data() as Map<String, dynamic>;
-                  final docId = docs[index].id;
+                  final data = docs[index];
+                  final docId = data['id'];
                   
                   final name = data['name'] ?? 'Anonymous';
                   final isAnonymous = data['isAnonymous'] == true;
@@ -82,9 +84,9 @@ class AdminSubmissionsScreen extends ConsumerWidget {
                   
                   final category = data['theme'] ?? 'General';
                   
-                  final timestamp = data['createdAt'] as Timestamp?;
-                  final dateStr = timestamp != null 
-                      ? _formatDate(timestamp.toDate()) 
+                  final createdAtStr = data['createdAt'] as String?;
+                  final dateStr = createdAtStr != null 
+                      ? _formatDate(DateTime.parse(createdAtStr)) 
                       : 'Unknown Date';
 
                   return AnimationConfiguration.staggeredList(
@@ -178,7 +180,6 @@ class AdminSubmissionsScreen extends ConsumerWidget {
                             overflow: TextOverflow.ellipsis,
                             style: theme.textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.w800,
-                              
                               letterSpacing: 0.5,
                             ),
                           ),

@@ -5,8 +5,10 @@ import 'package:healing_milestones/core/models/story_model.dart';
 import 'package:healing_milestones/core/repositories/firebase_storage_repository.dart';
 import 'package:healing_milestones/core/repositories/storage_repository.dart';
 import 'package:healing_milestones/features/posts/data/firebase_story_repository.dart';
+import 'package:healing_milestones/features/posts/data/api_story_repository.dart';
 import 'package:healing_milestones/features/posts/data/story_repository.dart';
 import 'package:healing_milestones/features/posts/data/comment_repository.dart';
+import 'package:healing_milestones/features/posts/data/api_comment_repository.dart';
 import 'package:healing_milestones/features/posts/data/firebase_comment_repository.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:healing_milestones/core/models/comment_model.dart';
@@ -19,7 +21,7 @@ final storageRepositoryProvider = Provider<StorageRepository>((ref) {
 });
 
 final storyRepositoryProvider = Provider<StoryRepository>((ref) {
-  return FirebaseStoryRepository(ref.watch(firebaseFirestoreProvider));
+  return ref.watch(apiStoryRepositoryProvider);
 });
 
 final storiesStreamProvider = StreamProvider<List<StoryModel>>((ref) {
@@ -44,7 +46,7 @@ final bookmarkedStoriesProvider = FutureProvider.family<List<StoryModel>, List<S
 });
 
 final commentRepositoryProvider = Provider<CommentRepository>((ref) {
-  return FirebaseCommentRepository(ref.watch(firebaseFirestoreProvider));
+  return ref.watch(apiCommentRepositoryProvider);
 });
 
 final storyCommentsProvider = StreamProvider.family<List<CommentModel>, String>((ref, storyId) {

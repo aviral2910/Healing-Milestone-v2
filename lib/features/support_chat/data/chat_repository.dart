@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
+import 'package:healing_milestones/features/support_chat/data/api_chat_repository.dart';
 
 import 'models/chat_model.dart';
 import 'models/message_model.dart';
@@ -121,6 +122,6 @@ class ChatRepository {
   }
 }
 
-final chatRepositoryProvider = Provider<ChatRepository>((ref) {
-  return ChatRepository(FirebaseFirestore.instance, FirebaseStorage.instance);
+final chatRepositoryProvider = Provider<ApiChatRepository>((ref) {
+  return ref.watch(apiChatRepositoryProvider);
 });

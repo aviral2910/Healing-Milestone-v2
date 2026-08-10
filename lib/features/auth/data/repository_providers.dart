@@ -6,6 +6,7 @@ import '../../../core/repositories/auth_repository.dart';
 import '../../../core/repositories/user_repository.dart';
 import 'firebase_auth_repository.dart';
 import 'firebase_user_repository.dart';
+import 'api_user_repository.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return FirebaseAuthRepository(
@@ -14,7 +15,5 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
 });
 
 final userRepositoryProvider = Provider<UserRepository>((ref) {
-  return FirebaseUserRepository(
-    firestore: FirebaseFirestore.instance,
-  );
+  return ref.watch(apiUserRepositoryProvider);
 });
