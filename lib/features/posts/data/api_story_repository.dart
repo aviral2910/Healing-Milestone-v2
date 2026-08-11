@@ -67,14 +67,14 @@ class ApiStoryRepository implements StoryRepository {
       likesList: const <String>[], 
       likesCount: 0,
       commentCount: json['commentCount'] ?? json['comment_count'] ?? 0,
-      taggedUsers: (json['taggedUsers'] ?? json['tagged_users'] as List?)?.map((x) {
+      taggedUsers: ((json['taggedUsers'] as List?) ?? (json['tagged_users'] as List?))?.map((x) {
         if (x is String) {
           return UserModel(userId: x, email: '', displayName: 'User');
         } else if (x is Map) {
           return UserModel.fromMap(Map<String, dynamic>.from(x));
         }
         return UserModel(userId: '', email: '', displayName: 'User');
-      }).toList() ?? [],
+      }).toList().cast<UserModel>() ?? <UserModel>[],
       hashtagsList: List<String>.from(json['tags'] ?? []),
       readingTime: json['readingTime'] ?? json['reading_time'] ?? 0,
       isVerifiedStory: json['isVerifiedStory'] ?? json['is_verified_story'] ?? false,
