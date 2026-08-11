@@ -33,6 +33,10 @@ final userStoriesProvider = StreamProvider.family<List<StoryModel>, String>((ref
   return ref.watch(storyRepositoryProvider).getUserStories(userId);
 });
 
+final recommendedStoriesProvider = FutureProvider<List<StoryModel>>((ref) {
+  return ref.watch(storyRepositoryProvider).getRecommendedStories();
+});
+
 final storyByIdProvider = StreamProvider.family<StoryModel?, String>((ref, storyId) {
   return ref.watch(storyRepositoryProvider).getStoryById(storyId);
 });

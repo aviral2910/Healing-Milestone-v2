@@ -198,5 +198,17 @@ class ApiStoryRepository implements StoryRepository {
   }
 
   @override
+  Future<List<StoryModel>> getRecommendedStories({int limit = 10}) async {
+    try {
+      final response = await _dio.get('/api/stories/recommended?limit=$limit');
+      final items = response.data['items'] as List;
+      return items.map((json) => _mapApiToStoryModel(json)).toList();
+    } catch (e) {
+      print('Error getting recommended stories: $e');
+      return [];
+    }
+  }
+
+  @override
   Future<void> reportStory({required String storyId, required String reporterId, required String reason}) async {}
 }

@@ -133,6 +133,7 @@ class PostScreen extends HookConsumerWidget {
     final storiesAsync = ref.watch(paginatedStoriesProvider);
     final isPaginating = ref.watch(paginatedStoriesProvider.notifier).isLoadingMore;
     final hasMore = ref.watch(paginatedStoriesProvider.notifier).hasMore;
+    final recommendedStoriesAsync = ref.watch(recommendedStoriesProvider);
 
     useEffect(() {
       if (scrollController == null) return null;
@@ -157,6 +158,8 @@ class PostScreen extends HookConsumerWidget {
         color: const Color(0xFFD4AF37),
         onRefresh: () async {
           await ref.read(paginatedStoriesProvider.notifier).refresh();
+          // ignore: unused_result
+          ref.refresh(recommendedStoriesProvider);
         },
         child: AnimationLimiter(
           child: CustomScrollView(
@@ -256,6 +259,28 @@ class PostScreen extends HookConsumerWidget {
                           onTagSelected: (tag) => ref
                               .read(selectedTagProvider.notifier)
                               .state = tag,
+                        ),
+                      ),
+
+                    // Recommended For You
+                    if (selectedTag == 'All')
+                      SliverToBoxAdapter(
+                        child: recommendedStoriesAsync.when(
+                          data: (recommendedStories) {
+                            if (recommendedStories.isEmpty) return const SizedBox.shrink();
+                            return _HorizontalCategorySection(
+                              title: 'Recommended For You',
+                              stories: recommendedStories,
+                              truncateContent: _truncateContent,
+                            );
+                          },
+                          loading: () => const Padding(
+                            padding: EdgeInsets.all(32.0),
+                            child: Center(
+                              child: CircularProgressIndicator(color: Color(0xFFD4AF37)),
+                            ),
+                          ),
+                          error: (e, s) => const SizedBox.shrink(),
                         ),
                       ),
 
