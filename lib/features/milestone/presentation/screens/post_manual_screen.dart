@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/router/app_routes.dart';
+import '../../../../core/utils/uat_dummy_data.dart';
+import '../../../../main.dart';
 import '../providers/post_creation_state.dart';
 
 class PostManualScreen extends StatefulHookConsumerWidget {
@@ -69,6 +71,68 @@ class _PostManualScreenState extends ConsumerState<PostManualScreen> {
           style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
         ),
         actions: [
+          // Dummy data button in UAT mode
+          if (ref.watch(uatModeProvider))
+            Container(
+              margin: const EdgeInsets.only(right: 8),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary,
+                shape: BoxShape.circle,
+              ),
+              child: PopupMenuButton<Map<String, dynamic>>(
+                icon: Icon(Icons.auto_fix_high,
+                    color: theme.colorScheme.primary.computeLuminance() > 0.25
+                        ? Colors.black
+                        : Colors.white),
+                tooltip: 'Populate Dummy Post',
+                onSelected: (selected) {
+                  _titleController.text = selected['title'] as String;
+                  _contentController.text = selected['content'] as String;
+                  _saveToState();
+                },
+                itemBuilder: (BuildContext context) {
+                  return UatDummyData.getAllPosts().map((post) {
+                    final content = post['content'] as String;
+                    final wordCount = content.isEmpty
+                        ? 0
+                        : content.split(RegExp(r'\s+')).length;
+                    var time = (wordCount / 200).ceil();
+                    if (time < 1) time = 1;
+
+                    return PopupMenuItem<Map<String, dynamic>>(
+                      value: post,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            post['title'] as String,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 13),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 2),
+                          Row(
+                            children: [
+                              Icon(Icons.timer_outlined,
+                                  size: 12,
+                                  color: theme.colorScheme.onSurfaceVariant),
+                              const SizedBox(width: 4),
+                              Text('$time min read',
+                                  style: TextStyle(
+                                      fontSize: 11,
+                                      color:
+                                          theme.colorScheme.onSurfaceVariant)),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList();
+                },
+              ),
+            ),
           Padding(
             padding: const EdgeInsets.only(right: 8.0),
             child: FilledButton(

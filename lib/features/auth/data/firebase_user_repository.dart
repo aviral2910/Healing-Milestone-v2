@@ -171,4 +171,9 @@ class FirebaseUserRepository implements UserRepository {
       });
     });
   }
+
+  @override
+  Future<void> deleteUserData() async {
+    throw UnimplementedError('Not implemented for Firebase backend (using API backend).');
+  }
 }

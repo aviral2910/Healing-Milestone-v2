@@ -29,6 +29,7 @@ class StoryModel {
   final String verifierId;
   final bool displayAuthorName;
   final List<String> taggedPeople;
+  final UserModel? author;
   final UserRole authorRole;
   final bool isAuthorVerified;
   final StoryType type;
@@ -57,6 +58,7 @@ class StoryModel {
     required this.verifierId,
     this.displayAuthorName = true,
     this.taggedPeople = const [],
+    this.author,
     this.authorRole = UserRole.member,
     this.isAuthorVerified = false,
     this.type = StoryType.story,
@@ -86,6 +88,7 @@ class StoryModel {
     String? verifierId,
     bool? displayAuthorName,
     List<String>? taggedPeople,
+    UserModel? author,
     UserRole? authorRole,
     bool? isAuthorVerified,
     StoryType? type,
@@ -114,6 +117,7 @@ class StoryModel {
       verifierId: verifierId ?? this.verifierId,
       displayAuthorName: displayAuthorName ?? this.displayAuthorName,
       taggedPeople: taggedPeople ?? this.taggedPeople,
+      author: author ?? this.author,
       authorRole: authorRole ?? this.authorRole,
       isAuthorVerified: isAuthorVerified ?? this.isAuthorVerified,
       type: type ?? this.type,
@@ -144,6 +148,7 @@ class StoryModel {
       'verifierId': verifierId,
       'displayAuthorName': displayAuthorName,
       'taggedPeople': taggedPeople,
+      'author': author?.toMap(),
       'authorRole': authorRole.name,
       'isAuthorVerified': isAuthorVerified,
       'type': type.name,
@@ -157,39 +162,40 @@ class StoryModel {
       storyId: documentId,
       heading: map['heading'] ?? '',
       description: map['description'] ?? '',
-      isVerifiedStory: map['isVerifiedStory'] ?? false,
-      publishedAt: (map['publishedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      verifiedAt: (map['verifiedAt'] as Timestamp?)?.toDate(),
-      shortDescription: map['shortDescription'] ?? '',
-      imageAssets: List<String>.from(map['imageAssets'] ?? []),
-      mainImage: map['mainImage'] ?? '',
-      likesCount: map['likesCount'] ?? 0,
-      likesList: List<String>.from(map['likesList'] ?? []),
-      commentCount: map['commentCount'] ?? 0,
+      isVerifiedStory: map['isVerifiedStory'] ?? map['is_verified_story'] ?? false,
+      publishedAt: (map['publishedAt'] ?? map['published_at'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      verifiedAt: (map['verifiedAt'] ?? map['verified_at'] as Timestamp?)?.toDate(),
+      shortDescription: map['shortDescription'] ?? map['short_description'] ?? '',
+      imageAssets: List<String>.from(map['imageAssets'] ?? map['image_assets'] ?? []),
+      mainImage: map['mainImage'] ?? map['main_image'] ?? '',
+      likesCount: map['likesCount'] ?? map['likes_count'] ?? 0,
+      likesList: List<String>.from(map['likesList'] ?? map['likes_list'] ?? []),
+      commentCount: map['commentCount'] ?? map['comment_count'] ?? 0,
       comments: List<String>.from(map['comments'] ?? []),
-      reactions: map['reactions'] != null 
+      reactions: (map['reactions'] != null)
           ? (map['reactions'] as Map<String, dynamic>).map(
               (key, value) => MapEntry(key, List<String>.from(value)),
             )
           : {},
-      authorId: map['authorId'] ?? '',
-      qrId: map['qrId'] ?? '',
-      readingTime: map['readingTime'] ?? 0,
-      hashtagsList: List<String>.from(map['hashtagsList'] ?? []),
-      verifierId: map['verifierId'] ?? '',
-      displayAuthorName: map['displayAuthorName'] ?? true,
-      taggedPeople: List<String>.from(map['taggedPeople'] ?? []),
+      authorId: map['authorId'] ?? map['author_id'] ?? '',
+      qrId: map['qrId'] ?? map['qr_id'] ?? '',
+      readingTime: map['readingTime'] ?? map['reading_time'] ?? 0,
+      hashtagsList: List<String>.from(map['hashtagsList'] ?? map['tags'] ?? []),
+      verifierId: map['verifierId'] ?? map['verifier_id'] ?? '',
+      displayAuthorName: map['displayAuthorName'] ?? map['display_author_name'] ?? true,
+      taggedPeople: List<String>.from(map['taggedPeople'] ?? map['tagged_user_ids'] ?? []),
+      author: map['author'] != null ? UserModel.fromMap(map['author'] as Map<String, dynamic>) : null,
       authorRole: UserRole.values.firstWhere(
-        (e) => e.name == map['authorRole'],
+        (e) => e.name == (map['authorRole'] ?? map['author_role']),
         orElse: () => UserRole.member,
       ),
-      isAuthorVerified: map['isAuthorVerified'] ?? false,
+      isAuthorVerified: map['isAuthorVerified'] ?? map['is_author_verified'] ?? false,
       type: StoryType.values.firstWhere(
         (e) => e.name == map['type'],
         orElse: () => StoryType.story,
       ),
-      verificationStatus: map['verificationStatus'] ?? 'none',
-      isHidden: map['isHidden'] ?? false,
+      verificationStatus: map['verificationStatus'] ?? map['verification_status'] ?? 'none',
+      isHidden: map['isHidden'] ?? map['is_hidden'] ?? false,
     );
   }
 }

@@ -5,6 +5,10 @@ import '../../core/models/story_model.dart';
 import '../../core/presentation/widgets/user_badge.dart';
 import '../../core/presentation/widgets/verified_story_badge.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter/services.dart';
+import 'package:healing_milestones/core/models/story_model.dart';
+import 'package:healing_milestones/core/models/user_model.dart';
+import 'package:healing_milestones/features/auth/data/auth_provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:healing_milestones/features/posts/data/story_providers.dart';
 import 'package:healing_milestones/features/auth/data/repository_providers.dart';
@@ -63,7 +67,9 @@ class _StoryCardState extends ConsumerState<StoryCard>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final userAsync = ref.watch(userByIdProvider(widget.story.authorId));
+    final userAsync = widget.story.author != null 
+        ? AsyncData<UserModel?>(widget.story.author)
+        : ref.watch(userByIdProvider(widget.story.authorId));
 
     return GestureDetector(
       onTapDown: (_) => _controller.forward(),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:healing_milestones/core/models/story_model.dart';
+import 'package:healing_milestones/core/models/user_model.dart';
 import 'package:healing_milestones/core/presentation/widgets/user_badge.dart';
 import 'package:healing_milestones/core/presentation/widgets/verified_story_badge.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -58,7 +59,9 @@ class _SwipeStoryCardState extends ConsumerState<SwipeStoryCard>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final userAsync = ref.watch(userByIdProvider(widget.story.authorId));
+    final userAsync = widget.story.author != null 
+        ? AsyncData<UserModel?>(widget.story.author)
+        : ref.watch(userByIdProvider(widget.story.authorId));
 
     final hasImage = widget.story.mainImage.isNotEmpty ||
         widget.story.imageAssets.isNotEmpty;

@@ -227,14 +227,30 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen>
                             return SizedBox(
                               width: double.infinity,
                               child: ElevatedButton(
-                                onPressed: () {
+                                onPressed: () async {
                                   if (currentUser == null) {
                                     context.push(AppRoutes.login);
                                   } else {
-                                    ref
-                                        .read(userRepositoryProvider)
-                                        .toggleFollow(
-                                            currentUser.userId, user.userId);
+                                    // Update local authProvider for optimistic UI
+                                    final updatedFollowingList = List<String>.from(currentUser.followingList);
+                                    if (isFollowing) {
+                                      updatedFollowingList.remove(user.userId);
+                                    } else {
+                                      updatedFollowingList.add(user.userId);
+                                    }
+                                    
+                                    final updatedUser = currentUser.copyWith(
+                                      followingList: updatedFollowingList,
+                                      followingCount: updatedFollowingList.length,
+                                    );
+                                    
+                                    await ref.read(authProvider.notifier).updateProfile(updatedUser);
+                                    
+                                    await ref.read(authProvider.notifier).toggleFollow(user.userId);
+                                    
+                                    // Invalidate providers to refetch the fresh follow counts
+                                    ref.invalidate(userStreamProvider(currentUser.userId));
+                                    ref.invalidate(userByIdProvider(user.userId));
                                   }
                                 },
                                 style: ElevatedButton.styleFrom(

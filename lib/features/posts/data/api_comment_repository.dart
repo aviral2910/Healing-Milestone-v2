@@ -21,8 +21,17 @@ class ApiCommentRepository implements CommentRepository {
     try {
       final response = await _dio.get('/api/stories/$storyId/comments');
       final items = response.data['items'] as List;
-      yield items.map((json) => CommentModel.fromMap(json, json['id'])).toList();
+      yield items.map((json) {
+        return CommentModel(
+          commentId: json['id'] ?? '',
+          storyId: storyId,
+          commentText: json['text'] ?? '',
+          userId: json['user']?['displayName'] ?? 'Anonymous', // We just need something to display for now
+          createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']) : DateTime.now(),
+        );
+      }).toList();
     } catch (e) {
+      print('Error parsing comments: $e');
       yield [];
     }
   }

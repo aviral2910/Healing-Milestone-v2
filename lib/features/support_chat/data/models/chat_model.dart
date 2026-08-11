@@ -25,7 +25,11 @@ class ChatModel {
       participants: List<String>.from(map['participants'] ?? []),
       type: map['type'] ?? 'support',
       lastMessage: map['lastMessage'] ?? '',
-      lastUpdated: (map['lastUpdated'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      lastUpdated: map['lastUpdated'] is Timestamp
+          ? (map['lastUpdated'] as Timestamp).toDate()
+          : map['lastUpdated'] is String
+              ? DateTime.tryParse(map['lastUpdated']) ?? DateTime.now()
+              : DateTime.now(),
       unreadCount: Map<String, int>.from(map['unreadCount'] ?? {}),
       typingStatus: Map<String, bool>.from(map['typingStatus'] ?? {}),
     );
@@ -36,7 +40,7 @@ class ChatModel {
       'participants': participants,
       'type': type,
       'lastMessage': lastMessage,
-      'lastUpdated': Timestamp.fromDate(lastUpdated),
+      'lastUpdated': lastUpdated.toIso8601String(),
       'unreadCount': unreadCount,
       'typingStatus': typingStatus,
     };

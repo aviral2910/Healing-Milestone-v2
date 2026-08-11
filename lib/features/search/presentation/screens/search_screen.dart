@@ -71,9 +71,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     _debounce = Timer(const Duration(milliseconds: 300), () {
       if (!mounted) return;
       if (_tabController.index == 0) {
-        ref.read(hashtagSearchQueryProvider.notifier).state = query;
+        ref.read(hashtagSearchQueryProvider.notifier).updateQuery(query);
       } else {
-        ref.read(peopleSearchQueryProvider.notifier).state = query;
+        ref.read(peopleSearchQueryProvider.notifier).updateQuery(query);
       }
 
       // If user types, we leave the selected hashtag view
@@ -389,7 +389,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                                       ref
                                           .read(hashtagSearchQueryProvider
                                               .notifier)
-                                          .state = '';
+                                          .updateQuery('');
                                     });
                                   },
                                   child: Container(

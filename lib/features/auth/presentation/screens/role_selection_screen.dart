@@ -21,7 +21,7 @@ class RoleSelectionScreen extends ConsumerWidget {
     }
 
     void handleRoleSelection(UserRole role) {
-      context.push(AppRoutes.professionalOnboarding, extra: role);
+      context.push('${AppRoutes.professionalOnboarding}?role=${role.name}', extra: role);
     }
 
     return Scaffold(

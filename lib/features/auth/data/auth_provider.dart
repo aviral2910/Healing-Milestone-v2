@@ -247,8 +247,64 @@ class AuthNotifier extends Notifier<AsyncValue<AuthState>> {
       if (currentState != null) {
         state = AsyncData(currentState.copyWith(userModel: updatedUser));
       }
+      // Force UI components listening to these streams to fetch the latest data from the API
+      ref.invalidate(userStreamProvider(updatedUser.userId));
+      ref.invalidate(userByIdProvider(updatedUser.userId));
     } catch (e, st) {
       state = AsyncError(e, st);
+    }
+  }
+
+  Future<void> refreshUser() async {
+    final currentState = state.value;
+    final currentUser = currentState?.authUser;
+    if (currentUser == null) return;
+
+    try {
+      final userModel = await _userRepository.getUserData(currentUser.uid);
+      if (userModel != null && currentState != null) {
+        state = AsyncData(currentState.copyWith(userModel: userModel));
+      }
+    } catch (e) {
+      print('Error refreshing user: $e');
+    }
+  }
+
+  Future<void> toggleFollow(String targetUserId) async {
+    final currentState = state.value;
+    final userModel = currentState?.userModel;
+    if (userModel == null) return;
+
+    try {
+      final isFollowing = userModel.followingList.contains(targetUserId);
+      final updatedFollowingList = List<String>.from(userModel.followingList);
+      
+      if (isFollowing) {
+        updatedFollowingList.remove(targetUserId);
+      } else {
+        updatedFollowingList.add(targetUserId);
+      }
+
+      final updatedUserModel = userModel.copyWith(
+        followingList: updatedFollowingList,
+        followingCount: updatedFollowingList.length,
+      );
+
+      // Optimistically update the UI state
+      state = AsyncData(currentState!.copyWith(userModel: updatedUserModel));
+
+      // Actually perform the network request
+      await _userRepository.toggleFollow(userModel.userId, targetUserId);
+
+      // Invalidate to refresh target user's data
+      ref.invalidate(userStreamProvider(targetUserId));
+      ref.invalidate(userByIdProvider(targetUserId));
+    } catch (e) {
+      // Revert on error
+      if (currentState != null) {
+        state = AsyncData(currentState);
+      }
+      print('Error toggling follow: $e');
     }
   }
 
@@ -266,6 +322,28 @@ class AuthNotifier extends Notifier<AsyncValue<AuthState>> {
     } catch (e) {
       print('Check username available error: $e');
       return false; // Assume unavailable on error
+    }
+  }
+
+  Future<void> deleteAccount() async {
+    final currentState = state.value;
+    try {
+      state = const AsyncValue.loading();
+      
+      // 1. Delete user from the backend database (PostgreSQL)
+      await _userRepository.deleteUserData();
+      
+      // 2. Delete user from Firebase Authentication
+      await _authRepository.deleteAccount();
+      
+      // The authStateChanges listener will handle transition to unauthenticated automatically.
+    } catch (e, st) {
+      if (currentState != null) {
+        state = AsyncData(currentState);
+      } else {
+        state = AsyncError(e, st);
+      }
+      rethrow;
     }
   }
 }
@@ -291,10 +369,7 @@ final currentUserProvider = Provider<UserModel?>((ref) {
 });
 
 // A provider to fetch any user's profile by ID
-final userByIdProvider = StreamProvider.family<UserModel?, String>((ref, userId) {
-  final userRepository = ref.watch(userRepositoryProvider);
-  return userRepository.getUserStream(userId);
-});
+final userByIdProvider = userStreamProvider;
 
 // A provider to fetch a list of users by their IDs
 final getUsersByIdsProvider = FutureProvider.family<List<UserModel>, List<String>>((ref, userIds) {

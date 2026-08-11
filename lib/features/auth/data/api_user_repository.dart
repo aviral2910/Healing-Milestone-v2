@@ -16,8 +16,29 @@ class ApiUserRepository implements UserRepository {
 
   Dio get _dio => _apiClient.dio;
 
+  final Map<String, Future<UserModel?>> _inFlightUserRequests = {};
+
   @override
-  Future<UserModel?> getUserData(String uid) async {
+  Future<UserModel?> getUserData(String uid) {
+    if (_inFlightUserRequests.containsKey(uid)) {
+      return _inFlightUserRequests[uid]!;
+    }
+
+    final future = _fetchUserData(uid);
+    _inFlightUserRequests[uid] = future;
+
+    // Clear the cache shortly after completion to allow fresh fetches later, 
+    // but catch immediate back-to-back duplicate requests.
+    future.whenComplete(() {
+      Future.delayed(const Duration(milliseconds: 500), () {
+        _inFlightUserRequests.remove(uid);
+      });
+    });
+
+    return future;
+  }
+
+  Future<UserModel?> _fetchUserData(String uid) async {
     try {
       final response = await _dio.get('/api/users/$uid');
       return UserModel.fromMap(response.data);
@@ -35,6 +56,9 @@ class ApiUserRepository implements UserRepository {
   Future<void> createUserData(UserModel user) async {
     // In our new architecture, the backend automatically creates the user 
     // the first time they make an authenticated request.
+    // However, the profile setup screen sets initial data like username, 
+    // so we need to PATCH that data to the backend.
+    await updateUserData(user);
   }
 
   @override
@@ -71,8 +95,15 @@ class ApiUserRepository implements UserRepository {
 
   @override
   Future<List<UserModel>> getUsersByIds(List<String> uids) async {
-    // Can be optimized into a single batch endpoint later
-    return []; 
+    if (uids.isEmpty) return [];
+    
+    // For now, fetch users individually in parallel. 
+    // Can be optimized into a single batch endpoint later if needed.
+    final futures = uids.map((uid) => getUserData(uid));
+    final users = await Future.wait(futures);
+    
+    // Filter out any nulls if a user wasn't found
+    return users.whereType<UserModel>().toList();
   }
 
   @override
@@ -87,9 +118,19 @@ class ApiUserRepository implements UserRepository {
   @override
   Future<void> toggleBookmark(String userId, String storyId) async {
     try {
-      await _dio.post('/api/stories/$storyId/bookmark');
+      await _dio.post('/api/stories/$storyId/bookmarks');
     } catch (e) {
       print('Error bookmarking story: $e');
+    }
+  }
+
+  @override
+  Future<void> deleteUserData() async {
+    try {
+      await _dio.delete('/api/auth/me');
+    } catch (e) {
+      print('Error deleting user data: $e');
+      rethrow;
     }
   }
 }

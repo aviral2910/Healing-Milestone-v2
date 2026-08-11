@@ -201,6 +201,12 @@ class StoryDetailScreen extends HookConsumerWidget {
                                     await ref
                                         .read(authProvider.notifier)
                                         .updateProfile(updatedUser);
+
+                                    // Invalidate providers to refresh UI
+                                    ref.invalidate(paginatedStoriesProvider);
+                                    ref.invalidate(userStoriesProvider(
+                                        currentUser.userId));
+
                                     if (context.mounted) {
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(
@@ -231,22 +237,28 @@ class StoryDetailScreen extends HookConsumerWidget {
                                       .updateStory(updatedStory);
                                   if (context.mounted) {
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('Verification request submitted')),
+                                      const SnackBar(
+                                          content: Text(
+                                              'Verification request submitted')),
                                     );
                                   }
                                 } catch (e) {
                                   if (context.mounted) {
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text('Failed to request verification: $e')),
+                                      SnackBar(
+                                          content: Text(
+                                              'Failed to request verification: $e')),
                                     );
                                   }
                                 }
                               } else if (value == 'report') {
-                                context.push(AppRoutes.reportStory(story.storyId));
+                                context
+                                    .push(AppRoutes.reportStory(story.storyId));
                               }
                             },
                             itemBuilder: (context) {
-                              final isAuthor = currentUser.userId == story.authorId;
+                              final isAuthor =
+                                  currentUser.userId == story.authorId;
                               return [
                                 if (isAuthor) ...[
                                   const PopupMenuItem(
@@ -267,16 +279,19 @@ class StoryDetailScreen extends HookConsumerWidget {
                                             size: 20, color: Colors.red),
                                         SizedBox(width: 8),
                                         Text('Delete Story',
-                                            style: TextStyle(color: Colors.red)),
+                                            style:
+                                                TextStyle(color: Colors.red)),
                                       ],
                                     ),
                                   ),
-                                  if (story.verificationStatus == 'none' || story.verificationStatus == 'rejected')
+                                  if (story.verificationStatus == 'none' ||
+                                      story.verificationStatus == 'rejected')
                                     const PopupMenuItem(
                                       value: 'request_verification',
                                       child: Row(
                                         children: [
-                                          Icon(Icons.verified_outlined, size: 20),
+                                          Icon(Icons.verified_outlined,
+                                              size: 20),
                                           SizedBox(width: 8),
                                           Text('Request Verification'),
                                         ],
@@ -287,9 +302,12 @@ class StoryDetailScreen extends HookConsumerWidget {
                                     value: 'report',
                                     child: Row(
                                       children: [
-                                        Icon(Icons.flag_outlined, size: 20, color: Colors.orange),
+                                        Icon(Icons.flag_outlined,
+                                            size: 20, color: Colors.orange),
                                         SizedBox(width: 8),
-                                        Text('Report Content', style: TextStyle(color: Colors.orange)),
+                                        Text('Report Content',
+                                            style: TextStyle(
+                                                color: Colors.orange)),
                                       ],
                                     ),
                                   ),
@@ -306,18 +324,23 @@ class StoryDetailScreen extends HookConsumerWidget {
                           if (story.isHidden)
                             GestureDetector(
                               onTap: () async {
-                                final url = Uri.parse('mailto:support@healingmilestones.in?subject=Hidden%20Story%20Appeal');
+                                final url = Uri.parse(
+                                    'mailto:support@healingmilestones.in?subject=Hidden%20Story%20Appeal');
                                 if (await canLaunchUrl(url)) {
                                   await launchUrl(url);
                                 }
                               },
                               child: Container(
                                 width: double.infinity,
-                                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 12, horizontal: 24),
                                 color: Colors.orange.withValues(alpha: 0.9),
                                 child: const Text(
                                   '⚠️ Hidden by admin. Visible only to you. Tap here to email support@healingmilestones.in to unhide.',
-                                  style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold),
                                 ),
                               ),
                             ),
@@ -504,12 +527,10 @@ class StoryDetailScreen extends HookConsumerWidget {
                                                 ),
                                                 const SizedBox(width: 4),
                                                 UserBadge(
-                                                  role: userAsync
-                                                          .value?.role ??
+                                                  role: userAsync.value?.role ??
                                                       story.authorRole,
                                                   isVerified: userAsync
-                                                          .value
-                                                          ?.isVerified ??
+                                                          .value?.isVerified ??
                                                       story.isAuthorVerified,
                                                   iconSize: 16,
                                                 ),

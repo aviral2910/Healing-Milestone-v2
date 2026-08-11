@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:healing_milestones/core/models/story_model.dart';
+import 'package:healing_milestones/core/models/user_model.dart';
 import 'package:healing_milestones/core/network/api_client.dart';
 import 'package:healing_milestones/features/posts/data/story_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -44,43 +45,79 @@ class ApiStoryRepository implements StoryRepository {
   StoryModel _mapApiToStoryModel(Map<String, dynamic> json) {
     return StoryModel(
       storyId: json['id'] ?? '',
-      authorId: json['author_id'] ?? '',
-      type: json['type'] ?? 'StoryType.milestone', // Ensure it maps to your enum if needed
+      authorId: json['authorId'] ?? json['author_id'] ?? '',
+      author: json['author'] != null ? UserModel.fromMap(json['author'] as Map<String, dynamic>) : null,
+      type: StoryType.values.firstWhere(
+        (e) => e.name == json['type'],
+        orElse: () => StoryType.story,
+      ),
       heading: json['heading'] ?? '',
       description: json['description'] ?? '',
-      shortDescription: json['short_description'] ?? '',
-      mainImage: json['main_image'] ?? '',
-      imageAssets: List<String>.from(json['image_assets'] ?? []),
-      publishedAt: json['published_at'] != null ? DateTime.parse(json['published_at']) : DateTime.now(),
-      reactions: {}, 
-      likesList: [], 
+      shortDescription: json['shortDescription'] ?? json['short_description'] ?? '',
+      mainImage: json['mainImage'] ?? json['main_image'] ?? '',
+      imageAssets: List<String>.from(json['imageAssets'] ?? json['image_assets'] ?? []),
+      publishedAt: (json['publishedAt'] ?? json['published_at']) != null 
+          ? DateTime.parse(json['publishedAt'] ?? json['published_at']) 
+          : DateTime.now(),
+      reactions: json['reactions'] != null 
+          ? (json['reactions'] as Map<String, dynamic>).map(
+              (key, value) => MapEntry(key, List<String>.from(value)),
+            )
+          : const <String, List<String>>{},
+      likesList: const <String>[], 
       likesCount: 0,
-      taggedPeople: [],
-      hashtagsList: [],
-      readingTime: json['reading_time'] ?? 0,
-      isVerifiedStory: json['is_verified_story'] ?? false,
-      verificationStatus: json['verification_status'] ?? 'pending',
-      qrId: json['qr_id'] ?? '',
-      displayAuthorName: json['display_author_name'] ?? true,
-      isHidden: json['is_hidden'] ?? false,
-      verifierId: json['verifier_id'] ?? '',
+      commentCount: json['commentCount'] ?? json['comment_count'] ?? 0,
+      taggedPeople: const <String>[],
+      hashtagsList: List<String>.from(json['tags'] ?? []),
+      readingTime: json['readingTime'] ?? json['reading_time'] ?? 0,
+      isVerifiedStory: json['isVerifiedStory'] ?? json['is_verified_story'] ?? false,
+      verificationStatus: json['verificationStatus'] ?? json['verification_status'] ?? 'pending',
+      qrId: json['qrId'] ?? json['qr_id'] ?? '',
+      displayAuthorName: json['displayAuthorName'] ?? json['display_author_name'] ?? true,
+      isHidden: json['isHidden'] ?? json['is_hidden'] ?? false,
+      verifierId: json['verifierId'] ?? json['verifier_id'] ?? '',
     );
   }
 
   @override
-  Stream<List<StoryModel>> getUserStories(String userId) async* { yield []; }
+  Stream<List<StoryModel>> getUserStories(String userId) async* {
+    try {
+      final response = await _dio.get('/api/stories/?author_id=$userId&limit=50');
+      final items = response.data['items'] as List;
+      yield items.map((json) => _mapApiToStoryModel(json)).toList();
+    } catch (e) {
+      yield [];
+    }
+  }
 
   @override
   Stream<List<StoryModel>> getStoriesTaggedWithUser(String userId) async* { yield []; }
 
   @override
-  Future<List<StoryModel>> getStoriesByHashtag(String hashtag, {int limit = 20}) async { return []; }
+  Future<List<StoryModel>> getStoriesByHashtag(String hashtag, {int limit = 20}) async {
+    try {
+      final response = await _dio.get('/api/stories/?tag=$hashtag&limit=$limit');
+      final items = response.data['items'] as List;
+      return items.map((json) => _mapApiToStoryModel(json)).toList();
+    } catch (e) {
+      return [];
+    }
+  }
 
   @override
-  Stream<List<StoryModel>> watchStoriesByHashtag(String hashtag, {int limit = 20}) async* { yield []; }
+  Stream<List<StoryModel>> watchStoriesByHashtag(String hashtag, {int limit = 20}) async* {
+    yield await getStoriesByHashtag(hashtag, limit: limit);
+  }
 
   @override
-  Stream<StoryModel?> getStoryById(String storyId) async* { yield null; }
+  Stream<StoryModel?> getStoryById(String storyId) async* {
+    try {
+      final response = await _dio.get('/api/stories/$storyId');
+      yield _mapApiToStoryModel(response.data);
+    } catch (e) {
+      yield null;
+    }
+  }
 
   @override
   Future<void> createStory(StoryModel story) async {
@@ -91,13 +128,13 @@ class ApiStoryRepository implements StoryRepository {
         'description': story.description,
         'short_description': story.shortDescription,
         'main_image': story.mainImage,
-        'image_assets': story.imageAssets,
-        'reading_time': story.readingTime,
-        'qr_id': story.qrId,
-        'display_author_name': story.displayAuthorName,
-        'is_hidden': story.isHidden,
-        'tags': story.hashtagsList,
-        'tagged_user_ids': story.taggedPeople,
+        'image_assets': story.imageAssets ?? [],
+        'reading_time': story.readingTime ?? 0,
+        'qr_id': story.qrId ?? '',
+        'display_author_name': story.displayAuthorName ?? true,
+        'is_hidden': story.isHidden ?? false,
+        'tags': story.hashtagsList ?? [],
+        'tagged_user_ids': story.taggedPeople ?? [],
       });
     } catch (e) {
       print('Error creating story in API: $e');
@@ -109,13 +146,39 @@ class ApiStoryRepository implements StoryRepository {
   Future<void> updateStory(StoryModel story) async {}
 
   @override
-  Future<void> deleteStory(String storyId) async {}
+  Future<void> deleteStory(String storyId) async {
+    try {
+      await _dio.delete('/api/stories/$storyId');
+    } catch (e) {
+      print('Error deleting story: $e');
+      rethrow;
+    }
+  }
 
   @override
-  Future<void> toggleReaction(String storyId, String userId, String reactionType) async {}
+  Future<void> toggleReaction(String storyId, String userId, String reactionType) async {
+    try {
+      await _dio.post('/api/stories/$storyId/reactions?reaction_type=$reactionType');
+    } catch (e) {
+      print('Error toggling reaction: $e');
+      rethrow;
+    }
+  }
 
   @override
-  Future<List<StoryModel>> getStoriesByIds(List<String> storyIds) async { return []; }
+  Future<List<StoryModel>> getStoriesByIds(List<String> storyIds) async {
+    if (storyIds.isEmpty) return [];
+    try {
+      final response = await _dio.post('/api/stories/batch', data: {
+        'ids': storyIds,
+      });
+      final items = response.data['items'] as List;
+      return items.map((json) => _mapApiToStoryModel(json)).toList();
+    } catch (e) {
+      print('Error getting stories by ids: $e');
+      return [];
+    }
+  }
 
   @override
   Future<void> reportStory({required String storyId, required String reporterId, required String reason}) async {}

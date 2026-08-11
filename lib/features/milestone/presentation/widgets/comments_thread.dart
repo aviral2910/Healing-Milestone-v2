@@ -26,7 +26,7 @@ class _CommentsThreadState extends ConsumerState<CommentsThread> {
     super.dispose();
   }
 
-  void _submitComment() {
+  Future<void> _submitComment() async {
     final text = _commentController.text.trim();
     if (text.isEmpty) return;
 
@@ -44,8 +44,13 @@ class _CommentsThreadState extends ConsumerState<CommentsThread> {
       createdAt: DateTime.now(),
     );
 
-    ref.read(commentRepositoryProvider).addComment(comment);
     _commentController.clear();
+    
+    // Add comment to backend
+    await ref.read(commentRepositoryProvider).addComment(comment);
+    
+    // Refresh the comments list instantly
+    ref.invalidate(storyCommentsProvider(widget.milestone.storyId));
   }
 
   @override
@@ -238,10 +243,15 @@ class _CommentBubble extends ConsumerWidget {
                                         Colors.grey))),
                           ),
                           TextButton(
-                            onPressed: () {
-                              ref.read(commentRepositoryProvider).deleteComment(
-                                  comment.storyId, comment.commentId);
-                              Navigator.pop(context);
+                            onPressed: () async {
+                              final storyId = comment.storyId;
+                              Navigator.pop(context); // Close dialog first
+                              
+                              await ref.read(commentRepositoryProvider).deleteComment(
+                                  storyId, comment.commentId);
+                              
+                              // Refresh the comments list instantly
+                              ref.invalidate(storyCommentsProvider(storyId));
                             },
                             child: const Text('Delete',
                                 style: TextStyle(color: Colors.red)),

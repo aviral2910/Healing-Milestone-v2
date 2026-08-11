@@ -198,4 +198,12 @@ class FirebaseAuthRepository implements AuthRepository {
       rethrow;
     }
   }
+
+  @override
+  Future<void> deleteAccount() async {
+    final user = _firebaseAuth.currentUser;
+    if (user != null) {
+      await user.delete();
+    }
+  }
 }

@@ -166,7 +166,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.professionalOnboarding,
         builder: (context, state) {
-          final role = state.extra as UserRole;
+          final roleStr = state.uri.queryParameters['role'];
+          final role = UserRole.values.firstWhere(
+            (e) => e.name == roleStr,
+            orElse: () => state.extra as UserRole? ?? UserRole.member,
+          );
           return ProfessionalOnboardingScreen(role: role);
         },
       ),

@@ -72,7 +72,7 @@ class _ProfessionalOnboardingScreenState
     });
   }
 
-  void _skip() {
+  Future<void> _skip() async {
     if (_usernameController.text.trim().length < 3 ||
         _isUsernameAvailable != true) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -107,12 +107,12 @@ class _ProfessionalOnboardingScreenState
         isVerified: false,
       );
 
-      ref.read(authProvider.notifier).completeOnboarding(newUserModel);
-      context.go(AppRoutes.ascensionTransition);
+      await ref.read(authProvider.notifier).completeOnboarding(newUserModel);
+      if (mounted) context.go(AppRoutes.ascensionTransition);
     }
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     if (_formKey.currentState!.validate()) {
       if (_isUsernameAvailable != true) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -155,9 +155,9 @@ class _ProfessionalOnboardingScreenState
           appliedForVerification: _applyForVerification,
         );
 
-        ref.read(authProvider.notifier).completeOnboarding(newUserModel);
+        await ref.read(authProvider.notifier).completeOnboarding(newUserModel);
 
-        if (_applyForVerification) {
+        if (_applyForVerification && mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
                 content: Text(
@@ -165,7 +165,7 @@ class _ProfessionalOnboardingScreenState
           );
         }
 
-        context.go(AppRoutes.ascensionTransition);
+        if (mounted) context.go(AppRoutes.ascensionTransition);
       }
     }
   }

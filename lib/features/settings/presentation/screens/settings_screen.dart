@@ -134,9 +134,18 @@ class SettingsScreen extends ConsumerWidget {
           icon: Icons.logout_rounded,
           title: 'Logout',
           subtitle: 'Sign out of your account securely',
-          isDestructive: true,
           onTap: () {
             LogoutButton.showLogoutDialog(context, ref);
+          },
+        ),
+        _buildOptionCard(
+          context,
+          icon: Icons.delete_forever_rounded,
+          title: 'Delete Account',
+          subtitle: 'Permanently remove your account and data',
+          isDestructive: true,
+          onTap: () {
+            _showDeleteAccountDialog(context, ref);
           },
         ),
       ]);
@@ -238,6 +247,113 @@ class SettingsScreen extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+
+  void _showDeleteAccountDialog(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'Dismiss',
+      barrierColor: theme.dividerColor,
+      transitionDuration: const Duration(milliseconds: 300),
+      pageBuilder: (context, animation, secondaryAnimation) => const SizedBox(),
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        final curvedAnimation = CurvedAnimation(parent: animation, curve: Curves.easeOutBack);
+        return ScaleTransition(
+          scale: curvedAnimation,
+          child: FadeTransition(
+            opacity: animation,
+            child: AlertDialog(
+              backgroundColor: theme.colorScheme.surface,
+              surfaceTintColor: Colors.transparent,
+              elevation: 24,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+                side: BorderSide(color: theme.colorScheme.error.withOpacity(0.5), width: 1),
+              ),
+              title: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.error.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(Icons.warning_rounded, color: theme.colorScheme.error, size: 36),
+                  ),
+                  const SizedBox(height: 20),
+                  Text('Delete Account', style: theme.textTheme.headlineLarge?.copyWith(fontSize: 24)),
+                ],
+              ),
+              content: Text(
+                'Are you sure you want to permanently delete your account?\n\nThis action cannot be undone. All your stories, comments, bookmarks, and chats will be lost forever.',
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodyLarge?.copyWith(fontSize: 15, height: 1.5),
+              ),
+              actionsPadding: const EdgeInsets.all(24),
+              actions: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () async {
+                        final navContext = Navigator.of(context);
+                        final scaffoldMessenger = ScaffoldMessenger.of(context);
+                        
+                        // Show a loading indicator
+                        showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (context) => const Center(child: CircularProgressIndicator()),
+                        );
+                        
+                        try {
+                          await ref.read(authProvider.notifier).deleteAccount();
+                          // Pop loading indicator
+                          navContext.pop();
+                          // Pop dialog
+                          navContext.pop();
+                          
+                          context.go(AppRoutes.home);
+                        } catch (e) {
+                          // Pop loading indicator
+                          navContext.pop();
+                          // Pop dialog
+                          navContext.pop();
+                          
+                          scaffoldMessenger.showSnackBar(
+                            SnackBar(
+                              content: Text('Failed to delete account: $e'),
+                              backgroundColor: theme.colorScheme.error,
+                            ),
+                          );
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        backgroundColor: theme.colorScheme.error,
+                        foregroundColor: theme.colorScheme.onError,
+                        elevation: 0,
+                      ),
+                      child: const Text('Yes, delete my account'),
+                    ),
+                    const SizedBox(height: 12),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                      ),
+                      child: const Text('Cancel', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

@@ -75,8 +75,15 @@ class InteractionSection extends HookConsumerWidget {
       return null;
     }, [story.reactions, story.likesList, initialUserReaction]);
 
-    final isBookmarked =
-        user?.bookmarkedStories.contains(story.storyId) ?? false;
+    final initialIsBookmarked = user?.bookmarkedStories.contains(story.storyId) ?? false;
+    final optimisticIsBookmarked = useState<bool>(initialIsBookmarked);
+
+    useEffect(() {
+      optimisticIsBookmarked.value = initialIsBookmarked;
+      return null;
+    }, [initialIsBookmarked]);
+
+    final isBookmarked = optimisticIsBookmarked.value;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -313,15 +320,32 @@ class InteractionSection extends HookConsumerWidget {
                     ? theme.colorScheme.primary
                     : theme.textTheme.bodySmall?.color,
                 showLabel: showLabels,
-                onTap: () {
+                onTap: () async {
                   FocusManager.instance.primaryFocus?.unfocus();
                   if (user == null) {
                     context.push(AppRoutes.login);
                     return;
                   }
-                  ref
+                  
+                  // Optimistic update
+                  optimisticIsBookmarked.value = !isBookmarked;
+                  
+                  final updatedBookmarks = List<String>.from(user.bookmarkedStories);
+                  if (!isBookmarked) {
+                    updatedBookmarks.add(story.storyId);
+                  } else {
+                    updatedBookmarks.remove(story.storyId);
+                  }
+                  final updatedUser = user.copyWith(bookmarkedStories: updatedBookmarks);
+                  await ref.read(authProvider.notifier).updateProfile(updatedUser);
+                  
+                  await ref
                       .read(userRepositoryProvider)
                       .toggleBookmark(user.userId, story.storyId);
+                      
+                  // Force refresh user data
+                  ref.invalidate(userStreamProvider(user.userId));
+                  ref.invalidate(bookmarkedStoriesProvider(updatedBookmarks));
                 },
               ),
             ],

@@ -6,19 +6,29 @@ import '../../posts/data/story_providers.dart';
 import '../../../core/models/story_model.dart';
 import '../../posts/data/story_repository.dart';
 
-// The current search query for People
-class PeopleSearchQuery extends Notifier<String> {
-  @override
-  String build() => '';
-}
-final peopleSearchQueryProvider = NotifierProvider<PeopleSearchQuery, String>(PeopleSearchQuery.new);
-
 // The current search query for Hashtags
-class HashtagSearchQuery extends Notifier<String> {
+class HashtagSearchQueryNotifier extends Notifier<String> {
   @override
   String build() => '';
+
+  void updateQuery(String newQuery) {
+    state = newQuery;
+  }
 }
-final hashtagSearchQueryProvider = NotifierProvider<HashtagSearchQuery, String>(HashtagSearchQuery.new);
+
+final hashtagSearchQueryProvider = NotifierProvider<HashtagSearchQueryNotifier, String>(HashtagSearchQueryNotifier.new);
+
+// The current search query for People
+class PeopleSearchQueryNotifier extends Notifier<String> {
+  @override
+  String build() => '';
+
+  void updateQuery(String newQuery) {
+    state = newQuery;
+  }
+}
+
+final peopleSearchQueryProvider = NotifierProvider<PeopleSearchQueryNotifier, String>(PeopleSearchQueryNotifier.new);
 
 // Provider to fetch users based on search query
 final searchUsersProvider = FutureProvider<List<UserModel>>((ref) async {

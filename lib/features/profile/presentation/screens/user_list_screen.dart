@@ -127,7 +127,7 @@ class _UserListScreenState extends ConsumerState<UserListScreen> {
                             if (currentUser == null) {
                               context.push(AppRoutes.login);
                             } else {
-                              ref.read(userRepositoryProvider).toggleFollow(currentUser.userId, user.userId);
+                              ref.read(authProvider.notifier).toggleFollow(user.userId);
                             }
                           },
                           style: ElevatedButton.styleFrom(

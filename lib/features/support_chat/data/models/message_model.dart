@@ -21,10 +21,14 @@ class MessageModel {
     return MessageModel(
       id: id,
       text: map['text'] ?? '',
-      senderId: map['senderId'] ?? '',
-      timestamp: (map['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      messageType: map['messageType'] ?? 'text',
-      fileUrl: map['fileUrl'],
+      senderId: map['senderId'] ?? map['sender_id'] ?? '',
+      timestamp: map['timestamp'] is Timestamp 
+          ? (map['timestamp'] as Timestamp).toDate()
+          : (map['timestamp'] ?? map['created_at']) is String 
+              ? DateTime.tryParse(map['timestamp'] ?? map['created_at']) ?? DateTime.now()
+              : DateTime.now(),
+      messageType: map['messageType'] ?? map['message_type'] ?? 'text',
+      fileUrl: map['fileUrl'] ?? map['file_url'],
     );
   }
 
@@ -32,7 +36,7 @@ class MessageModel {
     return {
       'text': text,
       'senderId': senderId,
-      'timestamp': Timestamp.fromDate(timestamp),
+      'timestamp': timestamp.toIso8601String(),
       'messageType': messageType,
       'fileUrl': fileUrl,
     };

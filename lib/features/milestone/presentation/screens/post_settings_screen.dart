@@ -177,6 +177,7 @@ class _PostSettingsScreenState extends ConsumerState<PostSettingsScreen> {
 
       if (ref.read(postCreationControllerProvider).isEditing) {
         await ref.read(storyRepositoryProvider).updateStory(story);
+        ref.invalidate(storyByIdProvider(story.storyId));
       } else {
         await ref.read(storyRepositoryProvider).createStory(story);
         final updatedUser = user.copyWith(
@@ -184,6 +185,10 @@ class _PostSettingsScreenState extends ConsumerState<PostSettingsScreen> {
         );
         await ref.read(authProvider.notifier).updateProfile(updatedUser);
       }
+      
+      // Refresh the feeds
+      await ref.read(paginatedStoriesProvider.notifier).refresh();
+      ref.invalidate(userStoriesProvider(user.userId));
       if (ref.read(postCreationControllerProvider).draftId != null) {
         await ref.read(draftsProvider.notifier).deleteDraft(ref.read(postCreationControllerProvider).draftId!);
       }
@@ -417,68 +422,6 @@ class _PostSettingsScreenState extends ConsumerState<PostSettingsScreen> {
               }
             },
           ),
-          if (ref.watch(uatModeProvider))
-            Container(
-              margin: const EdgeInsets.only(right: 8),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.primary,
-                shape: BoxShape.circle,
-              ),
-              child: PopupMenuButton<Map<String, dynamic>>(
-                icon: Icon(Icons.auto_fix_high,
-                    color: theme.colorScheme.primary.computeLuminance() > 0.25
-                        ? Colors.black
-                        : Colors.white),
-                tooltip: 'Populate Dummy Post',
-                onSelected: (selected) {
-                  setState(() {
-                    _selectedTags = List<String>.from(selected['tags'] as List);
-                  });
-                },
-                itemBuilder: (BuildContext context) {
-                  return UatDummyData.getAllPosts().map((post) {
-                    final content = post['content'] as String;
-                    final wordCount = content.isEmpty
-                        ? 0
-                        : content.split(RegExp(r'\s+')).length;
-                    var time = (wordCount / 200).ceil();
-                    if (time < 1) time = 1;
-
-                    return PopupMenuItem<Map<String, dynamic>>(
-                      value: post,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            post['title'] as String,
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 13),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 2),
-                          Row(
-                            children: [
-                              Icon(Icons.timer_outlined,
-                                  size: 12,
-                                  color: theme.colorScheme.onSurfaceVariant),
-                              const SizedBox(width: 4),
-                              Text(
-                                '$time min read',
-                                style: TextStyle(
-                                    fontSize: 11,
-                                    color: theme.colorScheme.onSurfaceVariant),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    );
-                  }).toList();
-                },
-              ),
-            ),
         ],
       ),
       bottomNavigationBar: Container(
@@ -769,16 +712,19 @@ class _PostSettingsScreenState extends ConsumerState<PostSettingsScreen> {
                       ),
                       child: Column(
                         children: _suggestions.map((suggestion) {
-                          return ListTile(
-                            dense: true,
-                            title: Text('#$suggestion',
-                                style: TextStyle(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurface)),
-                            onTap: () {
-                              _addTag(suggestion);
-                            },
+                          return Material(
+                            color: Colors.transparent,
+                            child: ListTile(
+                              dense: true,
+                              title: Text('#$suggestion',
+                                  style: TextStyle(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface)),
+                              onTap: () {
+                                _addTag(suggestion);
+                              },
+                            ),
                           );
                         }).toList(),
                       ),
@@ -895,27 +841,30 @@ class _PostSettingsScreenState extends ConsumerState<PostSettingsScreen> {
                       ),
                       child: Column(
                         children: _userSuggestions.map((u) {
-                          return ListTile(
-                            dense: true,
-                            leading: CircleAvatar(
-                              radius: 16,
-                              backgroundImage: NetworkImage(u.profilePicture ??
-                                  'https://api.dicebear.com/7.x/avataaars/png?seed=${u.userId}'),
+                          return Material(
+                            color: Colors.transparent,
+                            child: ListTile(
+                              dense: true,
+                              leading: CircleAvatar(
+                                radius: 16,
+                                backgroundImage: NetworkImage(u.profilePicture ??
+                                    'https://api.dicebear.com/7.x/avataaars/png?seed=${u.userId}'),
+                              ),
+                              title: Text(u.displayName,
+                                  style: TextStyle(
+                                      color:
+                                          Theme.of(context).colorScheme.onSurface,
+                                      fontWeight: FontWeight.bold)),
+                              subtitle: u.username != null
+                                  ? Text('@${u.username}',
+                                      style: TextStyle(
+                                          color: theme.primaryColor,
+                                          fontSize: 12))
+                                  : null,
+                              onTap: () {
+                                _addUser(u);
+                              },
                             ),
-                            title: Text(u.displayName,
-                                style: TextStyle(
-                                    color:
-                                        Theme.of(context).colorScheme.onSurface,
-                                    fontWeight: FontWeight.bold)),
-                            subtitle: u.username != null
-                                ? Text('@${u.username}',
-                                    style: TextStyle(
-                                        color: theme.primaryColor,
-                                        fontSize: 12))
-                                : null,
-                            onTap: () {
-                              _addUser(u);
-                            },
                           );
                         }).toList(),
                       ),
