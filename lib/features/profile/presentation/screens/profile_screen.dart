@@ -356,6 +356,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 final userStoriesAsync =
                     ref.watch(userStoriesProvider(user.userId));
                 return userStoriesAsync.when(
+                  skipLoadingOnReload: true,
                   loading: () => Center(
                       child: CircularProgressIndicator(
                           color: Theme.of(context).primaryColor)),
@@ -370,6 +371,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 final taggedAsync =
                     ref.watch(userTaggedStoriesProvider(user.userId));
                 return taggedAsync.when(
+                  skipLoadingOnReload: true,
                   loading: () => Center(
                       child: CircularProgressIndicator(
                           color: Theme.of(context).primaryColor)),
@@ -382,8 +384,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               // Bookmarks
               Consumer(builder: (context, ref, child) {
                 final bookmarkedAsync = ref
-                    .watch(bookmarkedStoriesProvider(user.bookmarkedStories));
+                    .watch(bookmarkedStoriesProvider(user.userId));
                 return bookmarkedAsync.when(
+                  skipLoadingOnReload: true,
                   loading: () => Center(
                       child: CircularProgressIndicator(
                           color: Theme.of(context).primaryColor)),

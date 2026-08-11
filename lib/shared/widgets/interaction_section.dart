@@ -75,7 +75,8 @@ class InteractionSection extends HookConsumerWidget {
       return null;
     }, [story.reactions, story.likesList, initialUserReaction]);
 
-    final initialIsBookmarked = user?.bookmarkedStories.contains(story.storyId) ?? false;
+    final initialIsBookmarked =
+        user?.bookmarkedStories.contains(story.storyId) ?? false;
     final optimisticIsBookmarked = useState<bool>(initialIsBookmarked);
 
     useEffect(() {
@@ -326,26 +327,32 @@ class InteractionSection extends HookConsumerWidget {
                     context.push(AppRoutes.login);
                     return;
                   }
-                  
+
                   // Optimistic update
                   optimisticIsBookmarked.value = !isBookmarked;
-                  
-                  final updatedBookmarks = List<String>.from(user.bookmarkedStories);
+
+                  final updatedBookmarks =
+                      List<String>.from(user.bookmarkedStories);
                   if (!isBookmarked) {
                     updatedBookmarks.add(story.storyId);
                   } else {
                     updatedBookmarks.remove(story.storyId);
                   }
-                  final updatedUser = user.copyWith(bookmarkedStories: updatedBookmarks);
-                  await ref.read(authProvider.notifier).updateProfile(updatedUser);
-                  
+                  final updatedUser =
+                      user.copyWith(bookmarkedStories: updatedBookmarks);
+                  await ref
+                      .read(authProvider.notifier)
+                      .updateProfile(updatedUser);
+
                   await ref
                       .read(userRepositoryProvider)
                       .toggleBookmark(user.userId, story.storyId);
-                      
+
+                  if (!context.mounted) return;
+
                   // Force refresh user data
                   ref.invalidate(userStreamProvider(user.userId));
-                  ref.invalidate(bookmarkedStoriesProvider(updatedBookmarks));
+                  ref.invalidate(bookmarkedStoriesProvider(user.userId));
                 },
               ),
             ],

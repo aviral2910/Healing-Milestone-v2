@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:healing_milestones/core/models/comment_model.dart';
+import 'package:healing_milestones/core/models/user_model.dart';
 import 'package:healing_milestones/features/posts/data/comment_repository.dart';
 import 'package:healing_milestones/core/network/api_client.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,11 +23,13 @@ class ApiCommentRepository implements CommentRepository {
       final response = await _dio.get('/api/stories/$storyId/comments');
       final items = response.data['items'] as List;
       yield items.map((json) {
+        final userJson = json['user'];
         return CommentModel(
           commentId: json['id'] ?? '',
           storyId: storyId,
           commentText: json['text'] ?? '',
-          userId: json['user']?['displayName'] ?? 'Anonymous', // We just need something to display for now
+          userId: userJson != null ? (userJson['id'] ?? userJson['firebaseUid'] ?? '') : '',
+          user: userJson != null ? UserModel.fromMap(userJson) : null,
           createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']) : DateTime.now(),
         );
       }).toList();

@@ -1,3 +1,4 @@
+import 'package:healing_milestones/core/models/user_model.dart';
 import 'package:healing_milestones/core/router/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -45,10 +46,10 @@ class _CommentsThreadState extends ConsumerState<CommentsThread> {
     );
 
     _commentController.clear();
-    
+
     // Add comment to backend
     await ref.read(commentRepositoryProvider).addComment(comment);
-    
+
     // Refresh the comments list instantly
     ref.invalidate(storyCommentsProvider(widget.milestone.storyId));
   }
@@ -176,7 +177,9 @@ class _CommentBubble extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final userAsync = ref.watch(userByIdProvider(comment.userId));
+    final userAsync = comment.user != null
+        ? AsyncData<UserModel?>(comment.user)
+        : ref.watch(userByIdProvider(comment.userId));
     final currentUser = ref.watch(currentUserProvider);
 
     final isCommentOwner = currentUser?.userId == comment.userId;
@@ -246,10 +249,11 @@ class _CommentBubble extends ConsumerWidget {
                             onPressed: () async {
                               final storyId = comment.storyId;
                               Navigator.pop(context); // Close dialog first
-                              
-                              await ref.read(commentRepositoryProvider).deleteComment(
-                                  storyId, comment.commentId);
-                              
+
+                              await ref
+                                  .read(commentRepositoryProvider)
+                                  .deleteComment(storyId, comment.commentId);
+
                               // Refresh the comments list instantly
                               ref.invalidate(storyCommentsProvider(storyId));
                             },

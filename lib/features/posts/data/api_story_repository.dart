@@ -67,7 +67,10 @@ class ApiStoryRepository implements StoryRepository {
       likesList: const <String>[], 
       likesCount: 0,
       commentCount: json['commentCount'] ?? json['comment_count'] ?? 0,
-      taggedPeople: const <String>[],
+      taggedUsers: (json['taggedUsers'] ?? json['tagged_users'] as List?)
+              ?.map((x) => UserModel.fromMap(x as Map<String, dynamic>))
+              .toList() ??
+          [],
       hashtagsList: List<String>.from(json['tags'] ?? []),
       readingTime: json['readingTime'] ?? json['reading_time'] ?? 0,
       isVerifiedStory: json['isVerifiedStory'] ?? json['is_verified_story'] ?? false,
@@ -91,7 +94,15 @@ class ApiStoryRepository implements StoryRepository {
   }
 
   @override
-  Stream<List<StoryModel>> getStoriesTaggedWithUser(String userId) async* { yield []; }
+  Stream<List<StoryModel>> getStoriesTaggedWithUser(String userId) async* {
+    try {
+      final response = await _dio.get('/api/stories/?tagged_user_id=$userId&limit=50');
+      final items = response.data['items'] as List;
+      yield items.map((json) => _mapApiToStoryModel(json)).toList();
+    } catch (e) {
+      yield [];
+    }
+  }
 
   @override
   Future<List<StoryModel>> getStoriesByHashtag(String hashtag, {int limit = 20}) async {
@@ -134,7 +145,7 @@ class ApiStoryRepository implements StoryRepository {
         'display_author_name': story.displayAuthorName ?? true,
         'is_hidden': story.isHidden ?? false,
         'tags': story.hashtagsList ?? [],
-        'tagged_user_ids': story.taggedPeople ?? [],
+        'tagged_user_ids': story.taggedUsers.map((u) => u.userId).toList(),
       });
     } catch (e) {
       print('Error creating story in API: $e');

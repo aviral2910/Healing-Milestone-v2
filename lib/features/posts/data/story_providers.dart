@@ -12,6 +12,7 @@ import 'package:healing_milestones/features/posts/data/api_comment_repository.da
 import 'package:healing_milestones/features/posts/data/firebase_comment_repository.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:healing_milestones/core/models/comment_model.dart';
+import 'package:healing_milestones/features/auth/data/auth_provider.dart';
 
 final firebaseFirestoreProvider = Provider<FirebaseFirestore>((ref) => FirebaseFirestore.instance);
 final firebaseStorageProvider = Provider<FirebaseStorage>((ref) => FirebaseStorage.instance);
@@ -40,9 +41,10 @@ final userTaggedStoriesProvider = StreamProvider.family<List<StoryModel>, String
   return ref.watch(storyRepositoryProvider).getStoriesTaggedWithUser(userId);
 });
 
-final bookmarkedStoriesProvider = FutureProvider.family<List<StoryModel>, List<String>>((ref, storyIds) {
-  if (storyIds.isEmpty) return Future.value([]);
-  return ref.watch(storyRepositoryProvider).getStoriesByIds(storyIds);
+final bookmarkedStoriesProvider = FutureProvider.family<List<StoryModel>, String>((ref, userId) async {
+  final user = await ref.watch(userStreamProvider(userId).future);
+  if (user == null || user.bookmarkedStories.isEmpty) return [];
+  return ref.watch(storyRepositoryProvider).getStoriesByIds(user.bookmarkedStories);
 });
 
 final commentRepositoryProvider = Provider<CommentRepository>((ref) {

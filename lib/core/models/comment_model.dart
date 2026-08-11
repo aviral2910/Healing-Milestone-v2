@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:healing_milestones/core/models/user_model.dart';
 
 class CommentModel {
   final String commentId;
@@ -6,6 +7,7 @@ class CommentModel {
   final String commentText;
   final String userId;
   final DateTime createdAt;
+  final UserModel? user;
 
   CommentModel({
     required this.commentId,
@@ -13,6 +15,7 @@ class CommentModel {
     required this.commentText,
     required this.userId,
     required this.createdAt,
+    this.user,
   });
 
   CommentModel copyWith({
@@ -21,6 +24,7 @@ class CommentModel {
     String? commentText,
     String? userId,
     DateTime? createdAt,
+    UserModel? user,
   }) {
     return CommentModel(
       commentId: commentId ?? this.commentId,
@@ -28,6 +32,7 @@ class CommentModel {
       commentText: commentText ?? this.commentText,
       userId: userId ?? this.userId,
       createdAt: createdAt ?? this.createdAt,
+      user: user ?? this.user,
     );
   }
 
@@ -38,6 +43,7 @@ class CommentModel {
       'commentText': commentText,
       'userId': userId,
       'createdAt': Timestamp.fromDate(createdAt),
+      // omit user from map to not write it to firestore directly
     };
   }
 
@@ -48,6 +54,7 @@ class CommentModel {
       commentText: map['commentText'] ?? '',
       userId: map['userId'] ?? '',
       createdAt: (map['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      user: map['user'] != null ? UserModel.fromMap(map['user']) : null,
     );
   }
 }

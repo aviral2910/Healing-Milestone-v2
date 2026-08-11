@@ -62,7 +62,9 @@ class StoryDetailScreen extends HookConsumerWidget {
           );
         }
 
-        final userAsync = ref.watch(userByIdProvider(story.authorId));
+        final userAsync = story.author != null 
+            ? AsyncData<UserModel?>(story.author)
+            : ref.watch(userByIdProvider(story.authorId));
 
         final List<MediaAttachment> actualMedia = [];
         if (story.mainImage.isNotEmpty) {
@@ -607,13 +609,13 @@ class StoryDetailScreen extends HookConsumerWidget {
                           ],
 
                           // Tagged People
-                          if (story.taggedPeople.isNotEmpty) ...[
+                          if (story.taggedUsers.isNotEmpty) ...[
                             const SizedBox(height: 16),
                             Padding(
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 24.0),
                               child: _TaggedPeopleList(
-                                  taggedUserIds: story.taggedPeople),
+                                  taggedUsers: story.taggedUsers),
                             ),
                           ],
                           const SizedBox(height: 32),
@@ -811,8 +813,8 @@ class _ExpandableTagsListState extends State<_ExpandableTagsList> {
 }
 
 class _TaggedPeopleList extends ConsumerWidget {
-  final List<String> taggedUserIds;
-  const _TaggedPeopleList({Key? key, required this.taggedUserIds})
+  final List<UserModel> taggedUsers;
+  const _TaggedPeopleList({Key? key, required this.taggedUsers})
       : super(key: key);
 
   @override
@@ -832,88 +834,80 @@ class _TaggedPeopleList extends ConsumerWidget {
         Wrap(
           spacing: 8.0,
           runSpacing: 8.0,
-          children: taggedUserIds.map((userId) {
-            final userAsync = ref.watch(userByIdProvider(userId));
-            return userAsync.when(
-              data: (user) {
-                if (user == null) return const SizedBox.shrink();
-                return GestureDetector(
-                  onTap: () {
-                    final currentUser = ref.read(currentUserProvider);
-                    if (currentUser?.userId == user.userId) {
-                      context.push(AppRoutes.profile);
-                    } else {
-                      context.push(AppRoutes.publicProfile(user.userId));
-                    }
-                  },
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: Theme.of(context).dividerColor,
+          children: taggedUsers.map((user) {
+            return GestureDetector(
+              onTap: () {
+                final currentUser = ref.read(currentUserProvider);
+                if (currentUser?.userId == user.userId) {
+                  context.push(AppRoutes.profile);
+                } else {
+                  context.push(AppRoutes.publicProfile(user.userId));
+                }
+              },
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).cardColor,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: Theme.of(context).dividerColor,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ClipOval(
+                      child: Image.network(
+                        user.profilePicture ??
+                            'https://api.dicebear.com/7.x/avataaars/png?seed=${user.userId}',
+                        width: 20,
+                        height: 20,
+                        fit: BoxFit.cover,
+                        frameBuilder: (context, child, frame,
+                            wasSynchronouslyLoaded) {
+                          if (wasSynchronouslyLoaded || frame != null)
+                            return child;
+                          return Shimmer.fromColors(
+                            baseColor: Theme.of(context)
+                                .colorScheme
+                                .primary
+                                .withValues(alpha: 0.1),
+                            highlightColor: Theme.of(context)
+                                .colorScheme
+                                .primary
+                                .withValues(alpha: 0.25),
+                            child: Container(
+                              width: 20,
+                              height: 20,
+                              color: Colors.white,
+                            ),
+                          );
+                        },
+                        errorBuilder: (context, error, stackTrace) =>
+                            CircleAvatar(
+                          radius: 10,
+                          backgroundColor:
+                              Theme.of(context).scaffoldBackgroundColor,
+                          child: Icon(Icons.person,
+                              size: 12,
+                              color:
+                                  Theme.of(context).colorScheme.onSurface),
+                        ),
                       ),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        ClipOval(
-                          child: Image.network(
-                            user.profilePicture ??
-                                'https://api.dicebear.com/7.x/avataaars/png?seed=${user.userId}',
-                            width: 20,
-                            height: 20,
-                            fit: BoxFit.cover,
-                            frameBuilder: (context, child, frame,
-                                wasSynchronouslyLoaded) {
-                              if (wasSynchronouslyLoaded || frame != null)
-                                return child;
-                              return Shimmer.fromColors(
-                                baseColor: Theme.of(context)
-                                    .colorScheme
-                                    .primary
-                                    .withValues(alpha: 0.1),
-                                highlightColor: Theme.of(context)
-                                    .colorScheme
-                                    .primary
-                                    .withValues(alpha: 0.25),
-                                child: Container(
-                                  width: 20,
-                                  height: 20,
-                                  color: Colors.white,
-                                ),
-                              );
-                            },
-                            errorBuilder: (context, error, stackTrace) =>
-                                CircleAvatar(
-                              radius: 10,
-                              backgroundColor:
-                                  Theme.of(context).scaffoldBackgroundColor,
-                              child: Icon(Icons.person,
-                                  size: 12,
-                                  color:
-                                      Theme.of(context).colorScheme.onSurface),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          '@${user.username ?? user.displayName}',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
-                        ),
-                      ],
+                    const SizedBox(width: 8),
+                    Text(
+                      '@${user.username ?? user.displayName}',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
                     ),
-                  ),
-                );
-              },
-              loading: () => const SizedBox.shrink(),
-              error: (_, __) => const SizedBox.shrink(),
+                  ],
+                ),
+              ),
             );
           }).toList(),
         ),

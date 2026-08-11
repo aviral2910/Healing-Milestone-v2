@@ -28,7 +28,7 @@ class StoryModel {
   final List<String> hashtagsList;
   final String verifierId;
   final bool displayAuthorName;
-  final List<String> taggedPeople;
+  final List<UserModel> taggedUsers;
   final UserModel? author;
   final UserRole authorRole;
   final bool isAuthorVerified;
@@ -57,7 +57,7 @@ class StoryModel {
     this.hashtagsList = const [],
     required this.verifierId,
     this.displayAuthorName = true,
-    this.taggedPeople = const [],
+    this.taggedUsers = const [],
     this.author,
     this.authorRole = UserRole.member,
     this.isAuthorVerified = false,
@@ -87,7 +87,7 @@ class StoryModel {
     List<String>? hashtagsList,
     String? verifierId,
     bool? displayAuthorName,
-    List<String>? taggedPeople,
+    List<UserModel>? taggedUsers,
     UserModel? author,
     UserRole? authorRole,
     bool? isAuthorVerified,
@@ -116,7 +116,7 @@ class StoryModel {
       hashtagsList: hashtagsList ?? this.hashtagsList,
       verifierId: verifierId ?? this.verifierId,
       displayAuthorName: displayAuthorName ?? this.displayAuthorName,
-      taggedPeople: taggedPeople ?? this.taggedPeople,
+      taggedUsers: taggedUsers ?? this.taggedUsers,
       author: author ?? this.author,
       authorRole: authorRole ?? this.authorRole,
       isAuthorVerified: isAuthorVerified ?? this.isAuthorVerified,
@@ -147,7 +147,7 @@ class StoryModel {
       'hashtagsList': hashtagsList,
       'verifierId': verifierId,
       'displayAuthorName': displayAuthorName,
-      'taggedPeople': taggedPeople,
+      'taggedUsers': taggedUsers.map((u) => u.toMap()).toList(),
       'author': author?.toMap(),
       'authorRole': authorRole.name,
       'isAuthorVerified': isAuthorVerified,
@@ -183,7 +183,11 @@ class StoryModel {
       hashtagsList: List<String>.from(map['hashtagsList'] ?? map['tags'] ?? []),
       verifierId: map['verifierId'] ?? map['verifier_id'] ?? '',
       displayAuthorName: map['displayAuthorName'] ?? map['display_author_name'] ?? true,
-      taggedPeople: List<String>.from(map['taggedPeople'] ?? map['tagged_user_ids'] ?? []),
+      taggedUsers: map['taggedUsers'] != null || map['tagged_users'] != null
+          ? List<UserModel>.from(
+              (map['taggedUsers'] ?? map['tagged_users'] as List? ?? [])
+                  .map((x) => UserModel.fromMap(x as Map<String, dynamic>)))
+          : [],
       author: map['author'] != null ? UserModel.fromMap(map['author'] as Map<String, dynamic>) : null,
       authorRole: UserRole.values.firstWhere(
         (e) => e.name == (map['authorRole'] ?? map['author_role']),

@@ -17,24 +17,35 @@ class ApiUserRepository implements UserRepository {
   Dio get _dio => _apiClient.dio;
 
   final Map<String, Future<UserModel?>> _inFlightUserRequests = {};
+  final Map<String, UserModel> _userCache = {};
+  final Map<String, DateTime> _userCacheTime = {};
 
   @override
   Future<UserModel?> getUserData(String uid) {
+    // 1. Return if request is already in-flight
     if (_inFlightUserRequests.containsKey(uid)) {
       return _inFlightUserRequests[uid]!;
     }
+    
+    // 2. Return if we have a fresh cache (less than 2 minutes old)
+    if (_userCache.containsKey(uid)) {
+      final cacheAge = DateTime.now().difference(_userCacheTime[uid]!);
+      if (cacheAge.inMinutes < 2) {
+        return Future.value(_userCache[uid]);
+      }
+    }
 
-    final future = _fetchUserData(uid);
-    _inFlightUserRequests[uid] = future;
-
-    // Clear the cache shortly after completion to allow fresh fetches later, 
-    // but catch immediate back-to-back duplicate requests.
-    future.whenComplete(() {
-      Future.delayed(const Duration(milliseconds: 500), () {
-        _inFlightUserRequests.remove(uid);
-      });
+    final future = _fetchUserData(uid).then((user) {
+      if (user != null) {
+        _userCache[uid] = user;
+        _userCacheTime[uid] = DateTime.now();
+      }
+      return user;
+    }).whenComplete(() {
+      _inFlightUserRequests.remove(uid);
     });
 
+    _inFlightUserRequests[uid] = future;
     return future;
   }
 
@@ -66,6 +77,8 @@ class ApiUserRepository implements UserRepository {
     try {
       // For updates, we hit the /api/auth/me endpoint
       await _dio.patch('/api/auth/me', data: user.toMap());
+      _userCache[user.userId] = user;
+      _userCacheTime[user.userId] = DateTime.now();
     } catch (e) {
       print('Error updating user: $e');
       rethrow;

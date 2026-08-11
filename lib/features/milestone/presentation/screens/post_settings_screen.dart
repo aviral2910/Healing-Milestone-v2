@@ -172,7 +172,7 @@ class _PostSettingsScreenState extends ConsumerState<PostSettingsScreen> {
         authorRole: user.role,
         type: _selectedType,
         hashtagsList: finalTags.toList(),
-        taggedPeople: _selectedUsers.map((u) => u.userId).toList(),
+        taggedUsers: _selectedUsers,
       );
 
       if (ref.read(postCreationControllerProvider).isEditing) {

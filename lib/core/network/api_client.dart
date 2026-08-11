@@ -46,23 +46,23 @@ class ApiClient {
         logPrint: (object) {
           final msg = object.toString();
           
-          if (msg.contains('╔') && msg.contains('Request')) {
+          if (msg.contains('Request ║')) {
             isRequestColor = true;
             isErrorColor = false;
-          } else if (msg.contains('╔') && msg.contains('Response')) {
+          } else if (msg.contains('Response ║')) {
             isRequestColor = false;
             isErrorColor = false;
-          } else if (msg.contains('╔') && msg.contains('Error')) {
+          } else if (msg.contains('Error ║') || msg.contains('DioException ║')) {
             isRequestColor = false;
             isErrorColor = true;
           }
 
           if (isErrorColor) {
-            print('\x1B[31m$msg\x1B[0m'); // Red for Errors
+            print('\x1b[31m$msg\x1b[0m'); // Red for Errors
           } else if (isRequestColor) {
-            print('\x1B[33m$msg\x1B[0m'); // Yellow for Requests
+            print('\x1b[33m$msg\x1b[0m'); // Yellow for Requests
           } else {
-            print('\x1B[92m$msg\x1B[0m'); // Light Green for Responses
+            print('\x1b[92m$msg\x1b[0m'); // Light Green for Responses
           }
         },
       ),
