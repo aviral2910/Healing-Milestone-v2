@@ -67,10 +67,14 @@ class ApiStoryRepository implements StoryRepository {
       likesList: const <String>[], 
       likesCount: 0,
       commentCount: json['commentCount'] ?? json['comment_count'] ?? 0,
-      taggedUsers: (json['taggedUsers'] ?? json['tagged_users'] as List?)
-              ?.map((x) => UserModel.fromMap(x as Map<String, dynamic>))
-              .toList() ??
-          [],
+      taggedUsers: (json['taggedUsers'] ?? json['tagged_users'] as List?)?.map((x) {
+        if (x is String) {
+          return UserModel(userId: x, email: '', displayName: 'User');
+        } else if (x is Map) {
+          return UserModel.fromMap(Map<String, dynamic>.from(x));
+        }
+        return UserModel(userId: '', email: '', displayName: 'User');
+      }).toList() ?? [],
       hashtagsList: List<String>.from(json['tags'] ?? []),
       readingTime: json['readingTime'] ?? json['reading_time'] ?? 0,
       isVerifiedStory: json['isVerifiedStory'] ?? json['is_verified_story'] ?? false,
@@ -88,7 +92,8 @@ class ApiStoryRepository implements StoryRepository {
       final response = await _dio.get('/api/stories/?author_id=$userId&limit=50');
       final items = response.data['items'] as List;
       yield items.map((json) => _mapApiToStoryModel(json)).toList();
-    } catch (e) {
+    } catch (e, stack) {
+      print('Error parsing user stories: $e\n$stack');
       yield [];
     }
   }
@@ -99,7 +104,8 @@ class ApiStoryRepository implements StoryRepository {
       final response = await _dio.get('/api/stories/?tagged_user_id=$userId&limit=50');
       final items = response.data['items'] as List;
       yield items.map((json) => _mapApiToStoryModel(json)).toList();
-    } catch (e) {
+    } catch (e, stack) {
+      print('Error parsing tagged stories: $e\n$stack');
       yield [];
     }
   }
