@@ -33,7 +33,7 @@ class _RecommendedSwipeScreenState extends ConsumerState<RecommendedSwipeScreen>
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(viewportFraction: 0.9);
+    _pageController = PageController(viewportFraction: 1.0);
   }
 
   @override
@@ -138,67 +138,19 @@ class _RecommendedSwipeScreenState extends ConsumerState<RecommendedSwipeScreen>
 
               return PageView.builder(
                 key: const PageStorageKey('recommended_swipe_page_view'),
-                controller: _pageController,
-                scrollDirection: Axis.horizontal,
+                controller: _pageController, // We will update the PageController in initState to viewportFraction: 1.0
+                scrollDirection: Axis.vertical,
                 physics: const PageScrollPhysics(parent: BouncingScrollPhysics()),
                 itemCount: filteredStories.length,
                 itemBuilder: (context, index) {
                   final story = filteredStories[index];
 
-                  return AnimatedBuilder(
-                    animation: _pageController,
-                    builder: (context, child) {
-                      double value = 0.0;
-                      if (_pageController.position.haveDimensions) {
-                        value = _pageController.page! - index;
-                      }
-
-                      double dx = 0.0;
-                      double dy = 0.0;
-                      double scale = 1.0;
-                      double opacity = 1.0;
-                      double rotation = 0.0;
-
-                      if (value > 0) {
-                        // Card sliding out to the left
-                        dx = 0.0;
-                        scale = 1.0;
-                        dy = 0.0;
-                        rotation = -value * 0.1;
-                        opacity = (1 - value * 0.8).clamp(0.0, 1.0);
-                      } else {
-                        // Card sliding in from the right
-                        dx = value * pageViewWidth * 0.5;
-                        scale = (1 + value * 0.1).clamp(0.9, 1.0);
-                        dy = 0.0;
-                        rotation = 0.0;
-                        opacity = (1 + value).clamp(0.0, 1.0);
-                      }
-
-                      return Transform.translate(
-                        offset: Offset(dx, dy),
-                        child: Transform.scale(
-                          scale: scale,
-                          child: Transform.rotate(
-                            angle: rotation,
-                            child: Opacity(
-                              opacity: opacity,
-                              child: child,
-                            ),
-                          ),
-                        ),
-                      );
+                  return SwipeStoryCard(
+                    story: story,
+                    content: _truncateContent(story.description, 200),
+                    onTap: () {
+                      context.push(AppRoutes.storyDetail(story.storyId));
                     },
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 4.0, right: 4.0, top: 4.0, bottom: 24.0),
-                      child: SwipeStoryCard(
-                        story: story,
-                        content: _truncateContent(story.description, 200),
-                        onTap: () {
-                          context.push(AppRoutes.storyDetail(story.storyId));
-                        },
-                      ),
-                    ),
                   );
                 },
               );

@@ -15,11 +15,13 @@ import 'package:share_plus/share_plus.dart';
 class InteractionSection extends HookConsumerWidget {
   final StoryModel story;
   final bool showLabels;
+  final bool isVertical;
 
   const InteractionSection({
     Key? key,
     required this.story,
     this.showLabels = true,
+    this.isVertical = false,
   }) : super(key: key);
 
   @override
@@ -85,7 +87,156 @@ class InteractionSection extends HookConsumerWidget {
     }, [initialIsBookmarked]);
 
     final isBookmarked = optimisticIsBookmarked.value;
+    
+    // Vertical Layout (TikTok / Reels style)
+    if (isVertical) {
+      final iconShadows = [
+        Shadow(color: Colors.black.withValues(alpha: 0.6), blurRadius: 8, offset: const Offset(0, 2))
+      ];
 
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // REACT BUTTON
+          _ActionButton(
+            isVertical: true,
+            icon: optimisticUserReaction.value != null
+                ? Text(optimisticUserReaction.value!.emoji,
+                    style: TextStyle(fontSize: 24, shadows: iconShadows))
+                : Icon(Icons.favorite_border,
+                    color: Colors.white, size: 24, shadows: iconShadows),
+            label: '${optimisticTotalReactions.value}',
+            labelColor: Colors.white,
+            showLabel: optimisticTotalReactions.value > 0, // Show count directly below icon
+            reserveLabelSpace: true, // Prevent layout shift when count goes from 0 to 1
+            labelShadows: iconShadows,
+            onTap: () {
+              FocusManager.instance.primaryFocus?.unfocus();
+              if (user == null) {
+                context.push(AppRoutes.login);
+                return;
+              }
+              final targetReaction = optimisticUserReaction.value?.name ??
+                  ReactionType.heart.name;
+
+              if (optimisticUserReaction.value != null) {
+                final oldReaction = optimisticUserReaction.value!;
+                optimisticUserReaction.value = null;
+                optimisticTotalReactions.value =
+                    (optimisticTotalReactions.value - 1).clamp(0, 999999);
+
+                final newCounts = Map<ReactionType, int>.from(
+                    optimisticReactionCounts.value);
+                newCounts[oldReaction] = (newCounts[oldReaction] ?? 1) - 1;
+                if (newCounts[oldReaction]! <= 0)
+                  newCounts.remove(oldReaction);
+                optimisticReactionCounts.value = newCounts;
+              } else {
+                optimisticUserReaction.value = ReactionType.heart;
+                optimisticTotalReactions.value++;
+
+                final newCounts = Map<ReactionType, int>.from(
+                    optimisticReactionCounts.value);
+                newCounts[ReactionType.heart] =
+                    (newCounts[ReactionType.heart] ?? 0) + 1;
+                optimisticReactionCounts.value = newCounts;
+              }
+              ref.read(storyRepositoryProvider).toggleReaction(
+                  story.storyId, user.userId, targetReaction);
+            },
+            onLongPressStart: (details) {
+              FocusManager.instance.primaryFocus?.unfocus();
+              if (user == null) {
+                context.push(AppRoutes.login);
+                return;
+              }
+              Future.delayed(const Duration(milliseconds: 50), () {
+                if (!context.mounted) return;
+                showReactionPicker(context, details.globalPosition,
+                    (reaction) {
+                  final newCounts = Map<ReactionType, int>.from(
+                      optimisticReactionCounts.value);
+
+                  if (optimisticUserReaction.value == null) {
+                    optimisticTotalReactions.value++;
+                  } else {
+                    final oldReaction = optimisticUserReaction.value!;
+                    newCounts[oldReaction] =
+                        (newCounts[oldReaction] ?? 1) - 1;
+                    if (newCounts[oldReaction]! <= 0)
+                      newCounts.remove(oldReaction);
+                  }
+
+                  optimisticUserReaction.value = reaction;
+                  newCounts[reaction] = (newCounts[reaction] ?? 0) + 1;
+                  optimisticReactionCounts.value = newCounts;
+
+                  ref.read(storyRepositoryProvider).toggleReaction(
+                      story.storyId, user.userId, reaction.name);
+                });
+              });
+            },
+          ),
+          
+          // SHARE BUTTON
+          _ActionButton(
+            isVertical: true,
+            icon: Icon(Icons.share_outlined, color: Colors.white, size: 24, shadows: iconShadows),
+            label: 'Share',
+            labelColor: Colors.white,
+            showLabel: showLabels,
+            reserveLabelSpace: true, // Equalizes the gap between Share and Save
+            onTap: () {
+              FocusManager.instance.primaryFocus?.unfocus();
+              showShareOptions(context, story.storyId);
+            },
+          ),
+          
+          // SAVE BUTTON
+          _ActionButton(
+            isVertical: true,
+            icon: Icon(
+              isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+              color: isBookmarked ? theme.colorScheme.primary : Colors.white,
+              size: 24,
+              shadows: iconShadows,
+            ),
+            label: 'Save',
+            labelColor: isBookmarked ? theme.colorScheme.primary : Colors.white,
+            showLabel: showLabels,
+            onTap: () async {
+              FocusManager.instance.primaryFocus?.unfocus();
+              if (user == null) {
+                context.push(AppRoutes.login);
+                return;
+              }
+
+              optimisticIsBookmarked.value = !isBookmarked;
+              final updatedBookmarks = List<String>.from(user.bookmarkedStories);
+              if (!isBookmarked) {
+                updatedBookmarks.add(story.storyId);
+              } else {
+                updatedBookmarks.remove(story.storyId);
+              }
+              final updatedUser =
+                  user.copyWith(bookmarkedStories: updatedBookmarks);
+              await ref
+                  .read(authProvider.notifier)
+                  .updateProfile(updatedUser);
+              await ref
+                  .read(userRepositoryProvider)
+                  .toggleBookmark(user.userId, story.storyId);
+
+              if (!context.mounted) return;
+              ref.invalidate(userStreamProvider(user.userId));
+              ref.invalidate(bookmarkedStoriesProvider(user.userId));
+            },
+          ),
+        ],
+      );
+    }
+
+    // Horizontal Layout (Standard)
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -367,18 +518,24 @@ class _ActionButton extends StatelessWidget {
   final Widget icon;
   final String label;
   final Color? labelColor;
+  final List<Shadow>? labelShadows;
   final VoidCallback onTap;
   final void Function(LongPressStartDetails)? onLongPressStart;
   final bool showLabel;
+  final bool reserveLabelSpace;
+  final bool isVertical;
 
   const _ActionButton({
     Key? key,
     required this.icon,
     required this.label,
     required this.labelColor,
+    this.labelShadows,
     required this.onTap,
     this.onLongPressStart,
     this.showLabel = true,
+    this.reserveLabelSpace = false,
+    this.isVertical = false,
   }) : super(key: key);
 
   @override
@@ -388,25 +545,56 @@ class _ActionButton extends StatelessWidget {
       onLongPressStart: onLongPressStart,
       behavior: HitTestBehavior.opaque,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            icon,
-            if (showLabel) ...[
-              const SizedBox(width: 8),
-              Text(
-                label,
-                style: TextStyle(
-                  color: labelColor,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14,
-                  height: 1.0, // consistent line height
-                ),
+        padding: isVertical
+            ? const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0)
+            : const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+        child: isVertical
+            ? Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  icon,
+                  Visibility(
+                    visible: showLabel,
+                    maintainSize: reserveLabelSpace,
+                    maintainAnimation: reserveLabelSpace,
+                    maintainState: reserveLabelSpace,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const SizedBox(height: 4),
+                        Text(
+                          label,
+                          style: TextStyle(
+                            color: labelColor,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13, // slightly larger for count readability
+                            height: 1.0,
+                            shadows: labelShadows,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              )
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  icon,
+                  if (showLabel) ...[
+                    const SizedBox(width: 8),
+                    Text(
+                      label,
+                      style: TextStyle(
+                        color: labelColor,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                        height: 1.0,
+                      ),
+                    ),
+                  ],
+                ],
               ),
-            ],
-          ],
-        ),
       ),
     );
   }
