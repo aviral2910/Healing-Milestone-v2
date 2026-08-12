@@ -11,14 +11,12 @@ import 'package:healing_milestones/core/router/app_routes.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import '../../../../main.dart';
 
-
-
-class PostSwipeScreen extends ConsumerStatefulWidget {
+class RecommendedSwipeScreen extends ConsumerStatefulWidget {
   final ScrollController scrollController;
   final bool isActiveTab;
   final VoidCallback onSearchTapped;
 
-  const PostSwipeScreen({
+  const RecommendedSwipeScreen({
     Key? key,
     required this.scrollController,
     required this.isActiveTab,
@@ -26,10 +24,10 @@ class PostSwipeScreen extends ConsumerStatefulWidget {
   }) : super(key: key);
 
   @override
-  ConsumerState<PostSwipeScreen> createState() => _PostSwipeScreenState();
+  ConsumerState<RecommendedSwipeScreen> createState() => _RecommendedSwipeScreenState();
 }
 
-class _PostSwipeScreenState extends ConsumerState<PostSwipeScreen> {
+class _RecommendedSwipeScreenState extends ConsumerState<RecommendedSwipeScreen> {
   late PageController _pageController;
 
   @override
@@ -51,12 +49,8 @@ class _PostSwipeScreenState extends ConsumerState<PostSwipeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final storiesAsync = ref.watch(paginatedStoriesProvider);
-    final paginationState = ref.watch(paginatedStoriesProvider.notifier);
-    final isPaginating = paginationState.isLoadingMore;
-    final hasMore = paginationState.hasMore;
+    final storiesAsync = ref.watch(recommendedStoriesProvider);
     final selectedTag = ref.watch(selectedTagProvider);
-    final user = ref.watch(currentUserProvider);
     final theme = Theme.of(context);
 
     return SafeArea(
@@ -64,7 +58,8 @@ class _PostSwipeScreenState extends ConsumerState<PostSwipeScreen> {
       child: RefreshIndicator(
         color: const Color(0xFFD4AF37),
         onRefresh: () async {
-          await ref.read(paginatedStoriesProvider.notifier).refresh();
+          // Refresh the recommended stories
+          return await ref.refresh(recommendedStoriesProvider.future);
         },
         child: CustomScrollView(
           physics: const NeverScrollableScrollPhysics(),
@@ -88,7 +83,7 @@ class _PostSwipeScreenState extends ConsumerState<PostSwipeScreen> {
                           size: 48, color: Theme.of(context).dividerColor),
                       const SizedBox(height: 16),
                       Text(
-                        'Unable to load stories',
+                        'Unable to load recommendations',
                         style: theme.textTheme.titleMedium?.copyWith(
                           color: const Color(0xFFA1A1A6),
                         ),
@@ -104,8 +99,6 @@ class _PostSwipeScreenState extends ConsumerState<PostSwipeScreen> {
                 storiesAsync.value!,
                 theme,
                 selectedTag,
-                isPaginating,
-                hasMore,
               ),
           ],
         ),
@@ -119,8 +112,6 @@ class _PostSwipeScreenState extends ConsumerState<PostSwipeScreen> {
     List<StoryModel?> allStories,
     ThemeData theme,
     String selectedTag,
-    bool isPaginating,
-    bool hasMore,
   ) {
     // Filter stories based on selected tag
     final filteredStories = selectedTag == 'All'
@@ -135,7 +126,7 @@ class _PostSwipeScreenState extends ConsumerState<PostSwipeScreen> {
             padding: const EdgeInsets.all(32.0),
             child: Center(
               child: Text(
-                'No stories found for #$selectedTag',
+                'No recommendations found for #$selectedTag',
                 style: theme.textTheme.bodyLarge?.copyWith(color: const Color(0xFFA1A1A6)),
               ),
             ),
@@ -149,23 +140,12 @@ class _PostSwipeScreenState extends ConsumerState<PostSwipeScreen> {
               final pageViewWidth = MediaQuery.sizeOf(context).width;
 
               return PageView.builder(
-                key: const PageStorageKey('swipe_page_view'),
+                key: const PageStorageKey('recommended_swipe_page_view'),
                 controller: _pageController,
                 scrollDirection: Axis.horizontal,
                 physics: const PageScrollPhysics(parent: BouncingScrollPhysics()),
-                itemCount: filteredStories.length + (hasMore ? 1 : 0),
-                onPageChanged: (index) {
-                  if (index >= filteredStories.length - 2 && hasMore && !isPaginating) {
-                    ref.read(paginatedStoriesProvider.notifier).fetchNextPage();
-                  }
-                },
+                itemCount: filteredStories.length,
                 itemBuilder: (context, index) {
-                  if (index >= filteredStories.length) {
-                    return const Center(
-                      child: CircularProgressIndicator(color: Color(0xFFD4AF37)),
-                    );
-                  }
-
                   final story = filteredStories[index];
 
                   return AnimatedBuilder(
@@ -184,7 +164,6 @@ class _PostSwipeScreenState extends ConsumerState<PostSwipeScreen> {
 
                       if (value > 0) {
                         // Card sliding out to the left
-                        // Native PageView moves it left. Let's just rotate it and fade it for a Tinder feel
                         dx = 0.0;
                         scale = 1.0;
                         dy = 0.0;
@@ -192,7 +171,6 @@ class _PostSwipeScreenState extends ConsumerState<PostSwipeScreen> {
                         opacity = (1 - value * 0.8).clamp(0.0, 1.0);
                       } else {
                         // Card sliding in from the right
-                        // Parallax effect: moves slower than native
                         dx = value * pageViewWidth * 0.5;
                         scale = (1 + value * 0.1).clamp(0.9, 1.0);
                         dy = 0.0;

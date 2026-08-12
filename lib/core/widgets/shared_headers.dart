@@ -13,10 +13,9 @@ import 'package:healing_milestones/features/posts/data/feed_view_provider.dart';
 
 class CommonSliverAppBar extends ConsumerWidget {
   final bool isHeroEnabled;
-  final bool showSwipeToggle;
 
   const CommonSliverAppBar(
-      {Key? key, this.isHeroEnabled = true, this.showSwipeToggle = false})
+      {Key? key, this.isHeroEnabled = true})
       : super(key: key);
 
   @override
@@ -99,21 +98,6 @@ class CommonSliverAppBar extends ConsumerWidget {
             context.push(AppRoutes.uat);
           },
         ),
-        if (showSwipeToggle)
-          Consumer(
-            builder: (context, ref, child) {
-              final isSwipeMode = ref.watch(isSwipeModeProvider);
-              return IconButton(
-                icon: Icon(isSwipeMode
-                    ? Icons.view_agenda_rounded
-                    : Icons.amp_stories_rounded),
-                color: theme.colorScheme.primary,
-                onPressed: () {
-                  ref.read(isSwipeModeProvider.notifier).state = !isSwipeMode;
-                },
-              );
-            },
-          ),
         IconButton(
           icon: const Icon(Icons.more_vert),
           color: theme.colorScheme.primary,

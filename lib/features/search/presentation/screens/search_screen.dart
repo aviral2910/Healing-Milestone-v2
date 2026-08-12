@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:async';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../data/search_providers.dart';
 import '../../../auth/data/auth_provider.dart';
 import '../widgets/user_profile_card.dart';
-import '../../../posts/data/hashtag_repository.dart';
 import '../../../../shared/widgets/story_card.dart';
+import '../../../posts/data/hashtag_repository.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
@@ -24,33 +26,56 @@ class SearchScreen extends ConsumerStatefulWidget {
   ConsumerState<SearchScreen> createState() => _SearchScreenState();
 }
 
-class _SearchScreenState extends ConsumerState<SearchScreen>
-    with SingleTickerProviderStateMixin {
+class _SearchScreenState extends ConsumerState<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
-  late TabController _tabController;
   Timer? _debounce;
   String? _selectedHashtag;
+  
+  List<String> _recentSearches = [];
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-    _tabController.addListener(() {
-      if (_tabController.indexIsChanging) return;
-      _onSearchChanged(_searchController.text);
-      if (_tabController.index == 1) {
-        _selectedHashtag = null; // Clear selected hashtag when moving to People
-      }
-      setState(() {});
+    _loadRecentSearches();
+  }
+
+  Future<void> _loadRecentSearches() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _recentSearches = prefs.getStringList('recent_searches') ?? [];
     });
+  }
+  
+  Future<void> _saveRecentSearch(String query) async {
+    if (query.trim().isEmpty) return;
+    final prefs = await SharedPreferences.getInstance();
+    List<String> searches = prefs.getStringList('recent_searches') ?? [];
+    searches.remove(query);
+    searches.insert(0, query);
+    if (searches.length > 5) searches = searches.sublist(0, 5);
+    await prefs.setStringList('recent_searches', searches);
+    if (mounted) {
+      setState(() {
+        _recentSearches = searches;
+      });
+    }
+  }
+  
+  Future<void> _clearRecentSearches() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('recent_searches');
+    if (mounted) {
+      setState(() {
+        _recentSearches = [];
+      });
+    }
   }
 
   @override
   void didUpdateWidget(covariant SearchScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.isActiveTab && !oldWidget.isActiveTab) {
-      // Clear the search text when switching to this tab
       _searchController.clear();
       _selectedHashtag = null;
       _onSearchChanged('');
@@ -61,7 +86,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   void dispose() {
     _searchController.dispose();
     _focusNode.dispose();
-    _tabController.dispose();
     _debounce?.cancel();
     super.dispose();
   }
@@ -70,19 +94,18 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     _debounce = Timer(const Duration(milliseconds: 300), () {
       if (!mounted) return;
-      if (_tabController.index == 0) {
-        ref.read(hashtagSearchQueryProvider.notifier).updateQuery(query);
-      } else {
-        ref.read(peopleSearchQueryProvider.notifier).updateQuery(query);
-      }
-
-      // If user types, we leave the selected hashtag view
+      ref.read(globalSearchQueryProvider.notifier).updateQuery(query);
       if (query.isNotEmpty && _selectedHashtag != null) {
         setState(() {
           _selectedHashtag = null;
         });
       }
     });
+  }
+
+  void _submitSearch(String query) {
+    _saveRecentSearch(query);
+    FocusScope.of(context).unfocus();
   }
 
   @override
@@ -107,42 +130,32 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                 titleSpacing: 0,
                 toolbarHeight: 72,
                 title: Padding(
-                  padding:
-                      const EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0),
+                  padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor,
+                      color: theme.cardColor,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: Theme.of(context).dividerColor,
+                        color: theme.dividerColor,
                         width: 1.0,
                       ),
                     ),
                     child: TextField(
                       controller: _searchController,
                       focusNode: _focusNode,
-                      style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurface),
+                      style: TextStyle(color: theme.colorScheme.onSurface),
                       onChanged: _onSearchChanged,
+                      onSubmitted: _submitSearch,
+                      textInputAction: TextInputAction.search,
                       decoration: InputDecoration(
-                        hintText: _tabController.index == 0
-                            ? 'Search hashtags...'
-                            : 'Search people...',
+                        hintText: 'Search people, tags, stories...',
                         hintStyle: TextStyle(
-                            color:
-                                (Theme.of(context).textTheme.bodySmall?.color ??
-                                    Colors.grey)),
+                            color: theme.textTheme.bodySmall?.color ?? Colors.grey),
                         prefixIcon: Icon(Icons.search,
-                            color:
-                                (Theme.of(context).textTheme.bodySmall?.color ??
-                                    Colors.grey)),
+                            color: theme.textTheme.bodySmall?.color ?? Colors.grey),
                         suffixIcon: IconButton(
                           icon: Icon(Icons.clear,
-                              color: (Theme.of(context)
-                                      .textTheme
-                                      .bodySmall
-                                      ?.color ??
-                                  Colors.grey),
+                              color: theme.textTheme.bodySmall?.color ?? Colors.grey,
                               size: 20),
                           onPressed: () {
                             _searchController.clear();
@@ -159,48 +172,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                     ),
                   ),
                 ),
-                bottom: PreferredSize(
-                  preferredSize: const Size.fromHeight(64),
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 16),
-                      TabBar(
-                        controller: _tabController,
-                        indicatorColor: theme.colorScheme.primary,
-                        indicatorSize: TabBarIndicatorSize.tab,
-                        indicatorWeight: 3.0,
-                        dividerColor: Colors.transparent,
-                        labelColor: theme.colorScheme.primary,
-                        labelStyle: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            
-                            fontSize: 16),
-                        unselectedLabelColor:
-                            Theme.of(context).textTheme.bodySmall?.color ??
-                                Colors.grey,
-                        unselectedLabelStyle: const TextStyle(
-                            fontWeight: FontWeight.w500,
-                            
-                            fontSize: 16),
-                        splashBorderRadius: BorderRadius.circular(8),
-                        tabs: const [
-                          Tab(text: 'Tags & Stories'),
-                          Tab(text: 'People'),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
               ),
             ];
           },
-          body: TabBarView(
-            controller: _tabController,
-            children: [
-              _buildTagsAndStoriesTab(),
-              _buildPeopleTab(),
-            ],
-          ),
+          body: _buildBody(),
         ),
       ),
     );
@@ -213,312 +188,369 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     return '${text.substring(0, end)}...';
   }
 
-  Widget _buildTagsAndStoriesTab() {
+  Widget _buildBody() {
     if (_selectedHashtag != null) {
-      final storiesAsync = ref.watch(hashtagStoriesProvider(_selectedHashtag!));
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            child: Row(
-              children: [
-                IconButton(
-                  icon: Icon(Icons.arrow_back,
-                      color: Theme.of(context).colorScheme.onSurface, size: 24),
-                  onPressed: () => setState(() => _selectedHashtag = null),
+      return _buildHashtagFeed();
+    }
+
+    final query = ref.watch(globalSearchQueryProvider);
+    if (query.isEmpty) {
+      return _buildEmptyState();
+    }
+
+    return _buildResultsState();
+  }
+  
+  Widget _buildHashtagFeed() {
+    final storiesAsync = ref.watch(hashtagStoriesProvider(_selectedHashtag!));
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          child: Row(
+            children: [
+              IconButton(
+                icon: Icon(Icons.arrow_back,
+                    color: Theme.of(context).colorScheme.onSurface, size: 24),
+                onPressed: () => setState(() => _selectedHashtag = null),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '#$_selectedHashtag',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  '#$_selectedHashtag',
-                  style: TextStyle(
-                      color: Theme.of(context).colorScheme.onSurface,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-          Expanded(
-            child: storiesAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, stack) => Center(
-                  child: Text('Error: $err',
-                      style: const TextStyle(color: Colors.red))),
-              data: (stories) {
-                if (stories.isEmpty) {
-                  return const Center(
-                      child: Text('No stories found for this tag.',
-                          style: TextStyle(color: Colors.grey)));
-                }
-                return RefreshIndicator(
-                  color: Theme.of(context).primaryColor,
-                  backgroundColor: Theme.of(context).cardColor,
-                  onRefresh: () async {
-                    // ignore: unused_result
-                    ref.refresh(hashtagStoriesProvider(_selectedHashtag!));
-                  },
-                  child: AnimationLimiter(
-                    child: ListView.builder(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      itemCount: stories.length,
-                      itemBuilder: (context, index) {
-                        return AnimationConfiguration.staggeredList(
-                          position: index,
-                          duration: const Duration(milliseconds: 375),
-                          child: SlideAnimation(
-                            verticalOffset: 50.0,
-                            child: FadeInAnimation(
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 8),
-                                child: StoryCard(
-                                  story: stories[index],
-                                  content: _truncateContent(
-                                      stories[index].description, 180),
-                                  onTap: () {
-                                    context.push(AppRoutes.storyDetail(
-                                        stories[index].storyId));
-                                  },
-                                ),
+        ),
+        Expanded(
+          child: storiesAsync.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (err, stack) => Center(
+                child: Text('Error: $err',
+                    style: const TextStyle(color: Colors.red))),
+            data: (stories) {
+              if (stories.isEmpty) {
+                return const Center(
+                    child: Text('No stories found for this tag.',
+                        style: TextStyle(color: Colors.grey)));
+              }
+              return RefreshIndicator(
+                color: Theme.of(context).primaryColor,
+                backgroundColor: Theme.of(context).cardColor,
+                onRefresh: () async {
+                  // ignore: unused_result
+                  ref.refresh(hashtagStoriesProvider(_selectedHashtag!));
+                },
+                child: AnimationLimiter(
+                  child: ListView.builder(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    itemCount: stories.length,
+                    itemBuilder: (context, index) {
+                      return AnimationConfiguration.staggeredList(
+                        position: index,
+                        duration: const Duration(milliseconds: 375),
+                        child: SlideAnimation(
+                          verticalOffset: 50.0,
+                          child: FadeInAnimation(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 8),
+                              child: StoryCard(
+                                story: stories[index],
+                                content: _truncateContent(
+                                    stories[index].description, 180),
+                                onTap: () {
+                                  context.push(AppRoutes.storyDetail(
+                                      stories[index].storyId));
+                                },
                               ),
                             ),
                           ),
-                        );
-                      },
-                    ),
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
+                ),
+              );
+            },
           ),
-        ],
-      );
-    }
-
-    final query = ref.watch(hashtagSearchQueryProvider);
-    if (query.isEmpty) {
-      final trendingAsync = ref.watch(trendingHashtagsProvider);
-      return trendingAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(
-            child:
-                Text('Error: $err', style: const TextStyle(color: Colors.red))),
-        data: (tags) {
-          if (tags.isEmpty)
-            return const Center(
-                child: Text('No trending tags yet.',
-                    style: TextStyle(color: Colors.grey)));
-          return _buildHashtagList(tags, 'Trending Tags');
-        },
-      );
-    }
-
-    final searchAsync = ref.watch(searchHashtagsProvider);
-    return searchAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (err, stack) => Center(
-          child:
-              Text('Error: $err', style: const TextStyle(color: Colors.red))),
-      data: (tags) {
-        if (tags.isEmpty)
-          return const Center(
-              child:
-                  Text('No tags found.', style: TextStyle(color: Colors.grey)));
-        return _buildHashtagList(tags, 'Results', isSearch: true);
-      },
+        ),
+      ],
     );
   }
 
-  Widget _buildHashtagList(List<String> tags, String title,
-      {bool isSearch = false}) {
-    final theme = Theme.of(context);
-    return RefreshIndicator(
-      color: theme.primaryColor,
-      backgroundColor: Theme.of(context).cardColor,
-      onRefresh: () async {
-        if (isSearch) {
-          // ignore: unused_result
-          ref.refresh(searchHashtagsProvider);
-        } else {
-          // ignore: unused_result
-          ref.refresh(trendingHashtagsProvider);
-        }
-      },
-      child: CustomScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        slivers: [
+  Widget _buildEmptyState() {
+    final trendingAsync = ref.watch(trendingHashtagsProvider);
+    
+    return CustomScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      slivers: [
+        if (_recentSearches.isNotEmpty) ...[
           SliverToBoxAdapter(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                  child: Text(title,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Recent Searches',
                       style: TextStyle(
                           color: Theme.of(context).colorScheme.onSurface,
                           fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          )),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: AnimationLimiter(
-                    child: Wrap(
-                      spacing: 16,
-                      runSpacing: 16,
-                      children: List.generate(
-                        tags.length,
-                        (index) {
-                          final tag = tags[index];
-                          return AnimationConfiguration.staggeredList(
-                            position: index,
-                            duration: const Duration(milliseconds: 375),
-                            child: SlideAnimation(
-                              verticalOffset: 50.0,
-                              child: FadeInAnimation(
-                                child: InkWell(
-                                  borderRadius: BorderRadius.circular(20),
-                                  onTap: () {
-                                    FocusScope.of(context).unfocus();
-                                    setState(() {
-                                      _selectedHashtag = tag;
-                                      _searchController.clear();
-                                      ref
-                                          .read(hashtagSearchQueryProvider
-                                              .notifier)
-                                          .updateQuery('');
-                                    });
-                                  },
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 14, vertical: 10),
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        colors: [
-                                          theme.colorScheme.primary
-                                              .withValues(alpha: 0.15),
-                                          theme.colorScheme.primary
-                                              .withValues(alpha: 0.05)
-                                        ],
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
-                                      ),
-                                      borderRadius: BorderRadius.circular(20),
-                                      border: Border.all(
-                                          color: theme.colorScheme.primary
-                                              .withValues(alpha: 0.3)),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(Icons.tag,
-                                            color: theme.colorScheme.primary,
-                                            size: 14),
-                                        const SizedBox(width: 6),
-                                        Text(
-                                          tag,
-                                          style: TextStyle(
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .onSurface,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 14),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 32), // bottom padding
-              ],
+                          fontWeight: FontWeight.bold)),
+                  TextButton(
+                    onPressed: _clearRecentSearches,
+                    child: Text('Clear', style: TextStyle(color: Theme.of(context).primaryColor)),
+                  )
+                ],
+              ),
+            ),
+          ),
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final search = _recentSearches[index];
+                return ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+                  leading: const Icon(Icons.history, color: Colors.grey),
+                  title: Text(search, style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
+                  onTap: () {
+                    _searchController.text = search;
+                    _onSearchChanged(search);
+                    _submitSearch(search);
+                  },
+                );
+              },
+              childCount: _recentSearches.length,
             ),
           ),
         ],
-      ),
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+            child: Text('Trending Tags',
+                style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold)),
+          ),
+        ),
+        trendingAsync.when(
+          loading: () => const SliverToBoxAdapter(child: Center(child: CircularProgressIndicator())),
+          error: (err, stack) => SliverToBoxAdapter(
+            child: Center(child: Text('Error: $err', style: const TextStyle(color: Colors.red))),
+          ),
+          data: (tags) {
+            if (tags.isEmpty) {
+              return const SliverToBoxAdapter(
+                child: Center(child: Text('No trending tags yet.', style: TextStyle(color: Colors.grey))),
+              );
+            }
+            return SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: _buildHashtagWrap(tags),
+              ),
+            );
+          },
+        ),
+        const SliverToBoxAdapter(child: SizedBox(height: 32)),
+      ],
     );
   }
 
-  Widget _buildPeopleTab() {
-    final query = ref.watch(peopleSearchQueryProvider);
-    if (query.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.people_outline,
-                size: 64,
-                color: Theme.of(context).primaryColor.withValues(alpha: 0.2)),
-            const SizedBox(height: 16),
-            Text('Search for people by username',
-                style: TextStyle(
-                    color: (Theme.of(context).textTheme.bodySmall?.color ??
-                        Colors.grey),
-                    fontSize: 16)),
-          ],
-        ),
-      );
-    }
-
-    final usersAsync = ref.watch(searchUsersProvider);
-    return usersAsync.when(
+  Widget _buildResultsState() {
+    final searchAsync = ref.watch(globalSearchProvider);
+    
+    return searchAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (err, stack) => Center(
-          child:
-              Text('Error: $err', style: const TextStyle(color: Colors.red))),
-      data: (users) {
-        if (users.isEmpty) {
+          child: Text('Error: $err', style: const TextStyle(color: Colors.red))),
+      data: (result) {
+        if (result == null || (result.people.isEmpty && result.tags.isEmpty && result.stories.isEmpty)) {
           return const Center(
-              child: Text('No people found.',
-                  style: TextStyle(color: Colors.grey)));
+              child: Text('No results found.', style: TextStyle(color: Colors.grey)));
         }
+
         return RefreshIndicator(
           color: Theme.of(context).primaryColor,
           backgroundColor: Theme.of(context).cardColor,
           onRefresh: () async {
             // ignore: unused_result
-            ref.refresh(searchUsersProvider);
+            ref.refresh(globalSearchProvider);
           },
-          child: AnimationLimiter(
-            child: ListView.builder(
-              physics: const AlwaysScrollableScrollPhysics(),
-              itemCount: users.length,
-              itemBuilder: (context, index) {
-                final user = users[index];
-                return AnimationConfiguration.staggeredList(
-                  position: index,
-                  duration: const Duration(milliseconds: 375),
-                  child: SlideAnimation(
-                    verticalOffset: 50.0,
-                    child: FadeInAnimation(
-                      child: UserProfileCard(
-                        user: user,
-                        onTap: () {
-                          final currentUser = ref.read(currentUserProvider);
-                          if (currentUser?.userId == user.userId) {
-                            context.push(AppRoutes.profile);
-                          } else {
-                            context.push(AppRoutes.publicProfile(user.userId));
-                          }
-                        },
-                      ),
+          child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              if (result.people.isNotEmpty) ...[
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+                    child: Text('People',
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurface,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold)),
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: SizedBox(
+                    height: 120,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: result.people.length,
+                      itemBuilder: (context, index) {
+                        final user = result.people[index];
+                        return Container(
+                          width: 250,
+                          margin: const EdgeInsets.only(right: 12),
+                          child: UserProfileCard(
+                            user: user,
+                            onTap: () {
+                              _submitSearch(_searchController.text);
+                              final currentUser = ref.read(currentUserProvider);
+                              if (currentUser?.userId == user.userId) {
+                                context.push(AppRoutes.profile);
+                              } else {
+                                context.push(AppRoutes.publicProfile(user.userId));
+                              }
+                            },
+                          ),
+                        );
+                      },
                     ),
                   ),
-                );
-              },
-            ),
+                ),
+              ],
+              
+              if (result.tags.isNotEmpty) ...[
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+                    child: Text('Tags',
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurface,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold)),
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: _buildHashtagWrap(result.tags),
+                  ),
+                ),
+              ],
+
+              if (result.stories.isNotEmpty) ...[
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+                    child: Text('Stories',
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurface,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold)),
+                  ),
+                ),
+                SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final story = result.stories[index];
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        child: StoryCard(
+                          story: story,
+                          content: _truncateContent(story.description, 180),
+                          onTap: () {
+                            _submitSearch(_searchController.text);
+                            context.push(AppRoutes.storyDetail(story.storyId));
+                          },
+                        ),
+                      );
+                    },
+                    childCount: result.stories.length,
+                  ),
+                ),
+              ],
+              
+              const SliverToBoxAdapter(child: SizedBox(height: 32)),
+            ],
           ),
         );
       },
+    );
+  }
+
+  Widget _buildHashtagWrap(List<String> tags) {
+    final theme = Theme.of(context);
+    return AnimationLimiter(
+      child: Wrap(
+        spacing: 12,
+        runSpacing: 12,
+        children: List.generate(
+          tags.length,
+          (index) {
+            final tag = tags[index];
+            return AnimationConfiguration.staggeredList(
+              position: index,
+              duration: const Duration(milliseconds: 375),
+              child: SlideAnimation(
+                verticalOffset: 50.0,
+                child: FadeInAnimation(
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(20),
+                    onTap: () {
+                      FocusScope.of(context).unfocus();
+                      _submitSearch(tag);
+                      setState(() {
+                        _selectedHashtag = tag;
+                        _searchController.clear();
+                        ref.read(globalSearchQueryProvider.notifier).updateQuery('');
+                      });
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            theme.colorScheme.primary.withValues(alpha: 0.15),
+                            theme.colorScheme.primary.withValues(alpha: 0.05)
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                            color: theme.colorScheme.primary.withValues(alpha: 0.3)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.tag, color: theme.colorScheme.primary, size: 14),
+                          const SizedBox(width: 6),
+                          Text(
+                            tag,
+                            style: TextStyle(
+                                color: theme.colorScheme.onSurface,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ),
     );
   }
 }

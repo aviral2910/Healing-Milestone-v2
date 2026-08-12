@@ -127,8 +127,9 @@ class _StoryCardState extends ConsumerState<StoryCard>
                           )
                         : ClipOval(
                             child: Image.network(
-                              userAsync.value?.profilePicture ??
-                                  'https://api.dicebear.com/7.x/avataaars/png?seed=${widget.story.authorId}',
+                              (userAsync.value?.profilePicture != null && userAsync.value!.profilePicture!.startsWith('http'))
+                                  ? userAsync.value!.profilePicture!
+                                  : 'https://api.dicebear.com/7.x/avataaars/png?seed=${widget.story.authorId}',
                               width: 48,
                               height: 48,
                               fit: BoxFit.cover,
@@ -292,9 +293,11 @@ class _StoryCardState extends ConsumerState<StoryCard>
                       ClipRRect(
                         borderRadius: BorderRadius.circular(16),
                         child: Image.network(
-                          widget.story.mainImage.isNotEmpty
+                          (widget.story.mainImage.isNotEmpty && widget.story.mainImage.startsWith('http'))
                               ? widget.story.mainImage
-                              : widget.story.imageAssets.first,
+                              : ((widget.story.imageAssets.isNotEmpty && widget.story.imageAssets.first.startsWith('http'))
+                                  ? widget.story.imageAssets.first
+                                  : 'https://placehold.co/400x250/png?text=No+Image'),
                           width: double.infinity,
                           height: 250,
                           fit: BoxFit.cover,

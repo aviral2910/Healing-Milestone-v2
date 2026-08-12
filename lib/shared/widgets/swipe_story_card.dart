@@ -63,11 +63,11 @@ class _SwipeStoryCardState extends ConsumerState<SwipeStoryCard>
         ? AsyncData<UserModel?>(widget.story.author)
         : ref.watch(userByIdProvider(widget.story.authorId));
 
-    final hasImage = widget.story.mainImage.isNotEmpty ||
-        widget.story.imageAssets.isNotEmpty;
-    final String? backgroundImageUrl = widget.story.mainImage.isNotEmpty
+    final hasImage = (widget.story.mainImage.isNotEmpty && widget.story.mainImage.startsWith('http')) ||
+        (widget.story.imageAssets.isNotEmpty && widget.story.imageAssets.first.startsWith('http'));
+    final String? backgroundImageUrl = (widget.story.mainImage.isNotEmpty && widget.story.mainImage.startsWith('http'))
         ? widget.story.mainImage
-        : (widget.story.imageAssets.isNotEmpty
+        : ((widget.story.imageAssets.isNotEmpty && widget.story.imageAssets.first.startsWith('http'))
             ? widget.story.imageAssets.first
             : null);
 
@@ -116,8 +116,9 @@ class _SwipeStoryCardState extends ConsumerState<SwipeStoryCard>
                           )
                         : ClipOval(
                             child: Image.network(
-                              userAsync.value?.profilePicture ??
-                                  'https://api.dicebear.com/7.x/avataaars/png?seed=${widget.story.authorId}',
+                              (userAsync.value?.profilePicture != null && userAsync.value!.profilePicture!.startsWith('http'))
+                                  ? userAsync.value!.profilePicture!
+                                  : 'https://api.dicebear.com/7.x/avataaars/png?seed=${widget.story.authorId}',
                               width: 48,
                               height: 48,
                               fit: BoxFit.cover,

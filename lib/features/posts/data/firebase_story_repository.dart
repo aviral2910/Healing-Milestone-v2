@@ -235,6 +235,12 @@ class FirebaseStoryRepository implements StoryRepository {
   }
 
   @override
+  Future<List<StoryModel>> getRecommendedStories({int limit = 10}) async {
+    // Not implemented in Firebase repository, handled by API repository
+    return [];
+  }
+
+  @override
   Future<void> reportStory({required String storyId, required String reporterId, required String reason}) async {
     await _firestore.collection('reports').add({
       'storyId': storyId,

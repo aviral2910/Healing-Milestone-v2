@@ -507,6 +507,7 @@ class _PostSettingsScreenState extends ConsumerState<PostSettingsScreen> {
                         )
                       : (ref.read(postCreationControllerProvider).isEditing &&
                               (ref.read(postCreationControllerProvider).imagePath ?? "").isNotEmpty &&
+                              (ref.read(postCreationControllerProvider).imagePath ?? "").startsWith('http') &&
                               !_removeExistingImage)
                           ? DecorationImage(
                               image:
