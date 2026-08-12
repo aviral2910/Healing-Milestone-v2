@@ -350,10 +350,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 child: Center(child: Text('No trending tags yet.', style: TextStyle(color: Colors.grey))),
               );
             }
+            final displayTags = tags.take(5).toList();
             return SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: _buildHashtagWrap(tags),
+                child: _buildHashtagWrap(displayTags),
               ),
             );
           },
