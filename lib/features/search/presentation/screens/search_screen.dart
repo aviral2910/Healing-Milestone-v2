@@ -409,7 +409,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                         final user = result.people[index];
                         return Container(
                           width: 140,
-                          margin: const EdgeInsets.only(right: 12),
+                          margin: const EdgeInsets.only(right: 20),
                           child: UserProfileCard(
                             user: user,
                             onTap: () {
