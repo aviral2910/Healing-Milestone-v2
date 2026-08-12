@@ -65,9 +65,6 @@ class _RecommendedSwipeScreenState extends ConsumerState<RecommendedSwipeScreen>
           physics: const NeverScrollableScrollPhysics(),
           controller: widget.scrollController,
           slivers: [
-            CommonSliverAppBar(
-              isHeroEnabled: widget.isActiveTab,
-            ),
             if (storiesAsync.isLoading)
               const SliverFillRemaining(
                 child: Center(
