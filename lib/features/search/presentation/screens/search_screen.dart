@@ -400,7 +400,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 ),
                 SliverToBoxAdapter(
                   child: SizedBox(
-                    height: 120,
+                    height: 180,
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
                       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -408,7 +408,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                       itemBuilder: (context, index) {
                         final user = result.people[index];
                         return Container(
-                          width: 250,
+                          width: 140,
                           margin: const EdgeInsets.only(right: 12),
                           child: UserProfileCard(
                             user: user,
