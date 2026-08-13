@@ -38,9 +38,10 @@ class _InspireScreenState extends ConsumerState<InspireScreen>
     super.initState();
     _topTabController = TabController(length: 3, vsync: this, initialIndex: 0);
     _outerScrollController = ScrollController();
-    
+
     _topTabController.addListener(() {
-      if (_topTabController.indexIsChanging || _topTabController.index == _topTabController.animation?.value) {
+      if (_topTabController.indexIsChanging ||
+          _topTabController.index == _topTabController.animation?.value) {
         setState(() {}); // Rebuild to update isActiveTab and isVisible
       }
     });
@@ -63,6 +64,7 @@ class _InspireScreenState extends ConsumerState<InspireScreen>
         bottom: false,
         child: ExtendedNestedScrollView(
           controller: _outerScrollController,
+          onlyOneScrollInBody: true,
           headerSliverBuilder: (context, innerBoxIsScrolled) {
             return [
               CommonSliverAppBar(
@@ -98,17 +100,29 @@ class _InspireScreenState extends ConsumerState<InspireScreen>
           body: TabBarView(
             controller: _topTabController,
             children: [
-              PostScreen(
-                isActiveTab: widget.isActiveTab && _topTabController.index == 0,
-                onSearchTapped: widget.onSearchTapped,
+              ExtendedVisibilityDetector(
+                uniqueKey: const Key('timeline_tab'),
+                child: PostScreen(
+                  isActiveTab:
+                      widget.isActiveTab && _topTabController.index == 0,
+                  onSearchTapped: widget.onSearchTapped,
+                ),
               ),
-              RecommendedSwipeScreen(
-                isActiveTab: widget.isActiveTab && _topTabController.index == 1,
-                onSearchTapped: widget.onSearchTapped,
+              ExtendedVisibilityDetector(
+                uniqueKey: const Key('for_you_tab'),
+                child: RecommendedSwipeScreen(
+                  isActiveTab:
+                      widget.isActiveTab && _topTabController.index == 1,
+                  onSearchTapped: widget.onSearchTapped,
+                ),
               ),
-              HealthAwarenessScreen(
-                isActiveTab: widget.isActiveTab && _topTabController.index == 2,
-                onSearchTapped: widget.onSearchTapped,
+              ExtendedVisibilityDetector(
+                uniqueKey: const Key('awareness_tab'),
+                child: HealthAwarenessScreen(
+                  isActiveTab:
+                      widget.isActiveTab && _topTabController.index == 2,
+                  onSearchTapped: widget.onSearchTapped,
+                ),
               ),
             ],
           ),

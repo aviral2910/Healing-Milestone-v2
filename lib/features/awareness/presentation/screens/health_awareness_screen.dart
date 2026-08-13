@@ -34,7 +34,7 @@ class HealthAwarenessScreen extends HookConsumerWidget {
         controller: scrollController,
         slivers: [
           CommonSearchBarSliver(
-            includeWelcomeText: true,
+            includeWelcomeText: false,
             displayName: ref.watch(currentUserProvider)?.displayName ?? 'Guest',
             hintText: 'Search awareness, articles, resources...',
             onTap: onSearchTapped,
@@ -49,30 +49,31 @@ class HealthAwarenessScreen extends HookConsumerWidget {
               ),
             ),
           ),
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            sliver: SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final content = eduContent[index];
-                  return AnimationConfiguration.staggeredList(
-                    position: index,
-                    duration: const Duration(milliseconds: 600),
-                    child: SlideAnimation(
-                      verticalOffset: 100.0,
-                      child: FadeInAnimation(
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 16.0),
-                          child: _EduContentCard(content: content),
+          for (int i = 0; i < 4; i++)
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final content = eduContent[index];
+                    return AnimationConfiguration.staggeredList(
+                      position: index,
+                      duration: const Duration(milliseconds: 600),
+                      child: SlideAnimation(
+                        verticalOffset: 100.0,
+                        child: FadeInAnimation(
+                          child: Padding(
+                            padding: const EdgeInsets.only(bottom: 16.0),
+                            child: _EduContentCard(content: content),
+                          ),
                         ),
                       ),
-                    ),
-                  );
-                },
-                childCount: eduContent.length,
+                    );
+                  },
+                  childCount: eduContent.length,
+                ),
               ),
             ),
-          ),
           const SliverToBoxAdapter(child: SizedBox(height: 100)),
         ],
       ),
