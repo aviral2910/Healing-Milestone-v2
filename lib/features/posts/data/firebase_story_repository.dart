@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:healing_milestones/core/models/paginated_response.dart';
 import 'package:healing_milestones/core/models/story_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'story_repository.dart';
@@ -235,9 +236,14 @@ class FirebaseStoryRepository implements StoryRepository {
   }
 
   @override
-  Future<List<StoryModel>> getRecommendedStories({int limit = 10}) async {
+  Future<PaginatedResponse<StoryModel>> getRecommendedStories({String? cursor, int limit = 10}) async {
     // Not implemented in Firebase repository, handled by API repository
-    return [];
+    return PaginatedResponse<StoryModel>(items: [], isEnd: true);
+  }
+
+  @override
+  Future<void> markStoryAsViewed(String storyId, String userId) async {
+    // Not implemented in Firebase repository, handled by API repository
   }
 
   @override

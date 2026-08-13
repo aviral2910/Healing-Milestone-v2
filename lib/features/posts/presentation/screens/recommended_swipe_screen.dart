@@ -4,6 +4,7 @@ import 'package:healing_milestones/core/theme/app_theme.dart';
 import 'package:healing_milestones/core/widgets/shared_headers.dart';
 import 'package:healing_milestones/features/auth/data/auth_provider.dart';
 import 'package:healing_milestones/features/posts/data/story_providers.dart';
+import 'package:healing_milestones/core/models/paginated_response.dart';
 import 'package:healing_milestones/core/models/story_model.dart';
 import 'package:healing_milestones/shared/widgets/swipe_story_card.dart';
 import 'package:go_router/go_router.dart';
@@ -24,20 +25,34 @@ class RecommendedSwipeScreen extends ConsumerStatefulWidget {
   }) : super(key: key);
 
   @override
-  ConsumerState<RecommendedSwipeScreen> createState() => _RecommendedSwipeScreenState();
+  ConsumerState<RecommendedSwipeScreen> createState() =>
+      _RecommendedSwipeScreenState();
 }
 
-class _RecommendedSwipeScreenState extends ConsumerState<RecommendedSwipeScreen> {
+class _RecommendedSwipeScreenState
+    extends ConsumerState<RecommendedSwipeScreen> {
   late PageController _pageController;
 
   @override
   void initState() {
     super.initState();
     _pageController = PageController(viewportFraction: 1.0);
+    _pageController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    if (!mounted) return;
+
+    // Fetch next page if nearing the end (within 500 pixels)
+    if (_pageController.position.pixels >=
+        _pageController.position.maxScrollExtent - 500) {
+      ref.read(recommendedStoriesProvider.notifier).fetchNextPage();
+    }
   }
 
   @override
   void dispose() {
+    _pageController.removeListener(_onScroll);
     _pageController.dispose();
     super.dispose();
   }
@@ -106,43 +121,65 @@ class _RecommendedSwipeScreenState extends ConsumerState<RecommendedSwipeScreen>
   List<Widget> _buildSuccessSlivers(
     BuildContext context,
     WidgetRef ref,
-    List<StoryModel?> allStories,
+    PaginatedResponse<StoryModel> paginatedResponse,
     ThemeData theme,
     String selectedTag,
   ) {
     // Filter stories based on selected tag
     final filteredStories = selectedTag == 'All'
-        ? allStories.where((s) => s != null).cast<StoryModel>().toList()
-        : allStories.where((s) => s != null && s.hashtagsList.contains(selectedTag)).cast<StoryModel>().toList();
+        ? paginatedResponse.items
+        : paginatedResponse.items
+            .where((s) => s.hashtagsList.contains(selectedTag))
+            .toList();
 
     return [
-      if (filteredStories.isEmpty)
-        SliverFillRemaining(
+      if (filteredStories.isEmpty && !paginatedResponse.isEnd)
+        const SliverFillRemaining(
           hasScrollBody: false,
           child: Padding(
-            padding: const EdgeInsets.all(32.0),
+            padding: EdgeInsets.all(32.0),
             child: Center(
-              child: Text(
-                'No recommendations found for #$selectedTag',
-                style: theme.textTheme.bodyLarge?.copyWith(color: const Color(0xFFA1A1A6)),
-              ),
+              child: CircularProgressIndicator(color: Color(0xFFD4AF37)),
             ),
           ),
+        )
+      else if (filteredStories.isEmpty && paginatedResponse.isEnd)
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: _buildCaughtUpCard(theme),
         )
       else
         SliverFillRemaining(
           hasScrollBody: true,
           child: Builder(
             builder: (context) {
-              final pageViewWidth = MediaQuery.sizeOf(context).width;
+              final itemCount = paginatedResponse.isEnd
+                  ? filteredStories.length + 1
+                  : filteredStories.length;
 
               return PageView.builder(
                 key: const PageStorageKey('recommended_swipe_page_view'),
-                controller: _pageController, // We will update the PageController in initState to viewportFraction: 1.0
+                controller: _pageController,
                 scrollDirection: Axis.vertical,
-                physics: const PageScrollPhysics(parent: BouncingScrollPhysics()),
-                itemCount: filteredStories.length,
+                physics:
+                    const PageScrollPhysics(parent: BouncingScrollPhysics()),
+                itemCount: itemCount,
+                onPageChanged: (index) {
+                  if (index < filteredStories.length) {
+                    final storyId = filteredStories[index].storyId;
+                    final userId = ref.read(authProvider).value?.authUser?.uid;
+                    if (userId != null) {
+                      ref
+                          .read(storyRepositoryProvider)
+                          .markStoryAsViewed(storyId, userId);
+                    }
+                  }
+                },
                 itemBuilder: (context, index) {
+                  if (index == filteredStories.length) {
+                    return _buildCaughtUpCard(theme);
+                  }
+
                   final story = filteredStories[index];
 
                   return SwipeStoryCard(
@@ -158,5 +195,38 @@ class _RecommendedSwipeScreenState extends ConsumerState<RecommendedSwipeScreen>
           ),
         ),
     ];
+  }
+
+  Widget _buildCaughtUpCard(ThemeData theme) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.check_circle_outline,
+                size: 80, color: Color(0xFFD4AF37)),
+            const SizedBox(height: 24),
+            Text(
+              "You're caught up!",
+              style: theme.textTheme.headlineMedium?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              "Take time for your own healing journey today.",
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: const Color(0xFFA1A1A6),
+                height: 1.5,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

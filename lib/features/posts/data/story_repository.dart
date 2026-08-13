@@ -1,4 +1,5 @@
 import 'package:healing_milestones/core/models/story_model.dart';
+import 'package:healing_milestones/core/models/paginated_response.dart';
 
 abstract class StoryRepository {
   Stream<List<StoryModel>> getStories();
@@ -13,6 +14,7 @@ abstract class StoryRepository {
   Future<void> deleteStory(String storyId);
   Future<void> toggleReaction(String storyId, String userId, String reactionType);
   Future<List<StoryModel>> getStoriesByIds(List<String> storyIds);
-  Future<List<StoryModel>> getRecommendedStories({int limit = 10});
+  Future<PaginatedResponse<StoryModel>> getRecommendedStories({String? cursor, int limit = 10});
+  Future<void> markStoryAsViewed(String storyId, String userId);
   Future<void> reportStory({required String storyId, required String reporterId, required String reason});
 }

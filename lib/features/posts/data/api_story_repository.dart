@@ -1,9 +1,11 @@
 import 'package:dio/dio.dart';
 import 'package:healing_milestones/core/models/story_model.dart';
+import 'package:healing_milestones/core/models/paginated_response.dart';
 import 'package:healing_milestones/core/models/user_model.dart';
 import 'package:healing_milestones/core/network/api_client.dart';
 import 'package:healing_milestones/features/posts/data/story_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:async';
 
 final apiStoryRepositoryProvider = Provider<StoryRepository>((ref) {
   final apiClient = ref.watch(apiClientProvider);
@@ -12,6 +14,11 @@ final apiStoryRepositoryProvider = Provider<StoryRepository>((ref) {
 
 class ApiStoryRepository implements StoryRepository {
   final ApiClient _apiClient;
+  
+  // View Tracking Batching
+  final List<String> _viewedStoryBuffer = [];
+  Timer? _batchTimer;
+  String? _currentUserId;
 
   ApiStoryRepository(this._apiClient);
 
@@ -198,14 +205,52 @@ class ApiStoryRepository implements StoryRepository {
   }
 
   @override
-  Future<List<StoryModel>> getRecommendedStories({int limit = 10}) async {
+  Future<PaginatedResponse<StoryModel>> getRecommendedStories({String? cursor, int limit = 10}) async {
     try {
-      final response = await _dio.get('/api/stories/recommended?limit=$limit');
-      final items = response.data['items'] as List;
-      return items.map((json) => _mapApiToStoryModel(json)).toList();
+      final cursorParam = cursor != null ? '&cursor=$cursor' : '';
+      final response = await _dio.get('/api/stories/recommended?limit=$limit$cursorParam');
+      return PaginatedResponse<StoryModel>.fromJson(
+        response.data,
+        (json) => _mapApiToStoryModel(json),
+      );
     } catch (e) {
       print('Error getting recommended stories: $e');
-      return [];
+      return PaginatedResponse<StoryModel>(items: [], isEnd: true);
+    }
+  }
+
+  @override
+  Future<void> markStoryAsViewed(String storyId, String userId) async {
+    _currentUserId = userId;
+    
+    if (!_viewedStoryBuffer.contains(storyId)) {
+      _viewedStoryBuffer.add(storyId);
+    }
+    
+    // Send batch if we hit 10 items
+    if (_viewedStoryBuffer.length >= 10) {
+      _sendBatchedViews();
+    } else {
+      // Or send after 10 seconds of inactivity
+      _batchTimer?.cancel();
+      _batchTimer = Timer(const Duration(seconds: 10), _sendBatchedViews);
+    }
+  }
+
+  Future<void> _sendBatchedViews() async {
+    if (_viewedStoryBuffer.isEmpty || _currentUserId == null) return;
+    
+    final batchToSend = List<String>.from(_viewedStoryBuffer);
+    _viewedStoryBuffer.clear();
+    _batchTimer?.cancel();
+    
+    try {
+      await _apiClient.dio.post('/api/stories/views/batch', data: {
+        'user_id': _currentUserId,
+        'story_ids': batchToSend,
+      });
+    } catch (e) {
+      print('Error sending batched views: $e');
     }
   }
 
