@@ -14,10 +14,14 @@ import 'package:healing_milestones/features/posts/data/feed_view_provider.dart';
 class CommonSliverAppBar extends ConsumerWidget {
   final bool isHeroEnabled;
   final bool isVisible;
+  final VoidCallback? onSearchTapped;
 
-  const CommonSliverAppBar(
-      {Key? key, this.isHeroEnabled = true, this.isVisible = true})
-      : super(key: key);
+  const CommonSliverAppBar({
+    Key? key,
+    this.isHeroEnabled = false,
+    this.isVisible = true,
+    this.onSearchTapped,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -27,8 +31,7 @@ class CommonSliverAppBar extends ConsumerWidget {
     final user = ref.watch(currentUserProvider);
     final authState = ref.watch(authProvider);
     final isAuthLoading = authState.isLoading;
-    final isAuthenticated =
-        authState.value?.status == AuthStatus.authenticated;
+    final isAuthenticated = authState.value?.status == AuthStatus.authenticated;
     final isProfileLoading = isAuthLoading || (isAuthenticated && user == null);
 
     return SliverAppBar(
@@ -94,16 +97,22 @@ class CommonSliverAppBar extends ConsumerWidget {
       ),
       title: HealingMilestonesLogoWidget(),
       actions: [
-        IconButton(
-          icon: const Icon(Icons.bug_report_outlined),
-          color: theme.colorScheme.primary,
-          onPressed: () {
-            context.push(AppRoutes.uat);
-          },
-        ),
+        if (onSearchTapped != null)
+          IconButton(
+            icon: const Icon(Icons.search),
+            color: Colors.white,
+            onPressed: onSearchTapped,
+          ),
+        // IconButton(
+        //   icon: const Icon(Icons.bug_report_outlined),
+        //   color: Colors.white,
+        //   onPressed: () {
+        //     context.push(AppRoutes.uat);
+        //   },
+        // ),
         IconButton(
           icon: const Icon(Icons.more_vert),
-          color: theme.colorScheme.primary,
+          color: Colors.white,
           onPressed: () {
             context.push(AppRoutes.settings, extra: MenuContext.home);
           },
@@ -141,8 +150,8 @@ class CommonSearchBarSliver extends StatelessWidget {
               child: Text(
                 'Welcome Reader,',
                 style: theme.textTheme.headlineLarge?.copyWith(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w800,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w400,
                   color: theme.colorScheme.onSurface,
                 ),
               ),
@@ -160,108 +169,78 @@ class CommonSearchBarSliver extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             // Minimal UI Reading Mode Toggle
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Consumer(
-                builder: (context, ref, child) {
-                  final isGreyscale =
-                      ref.watch(accessibilityProvider).isGreyscaleMode;
-                  return GestureDetector(
-                    onTap: () {
-                      ref
-                          .read(accessibilityProvider.notifier)
-                          .toggleGreyscaleMode();
-                    },
-                    behavior: HitTestBehavior.opaque,
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 12),
-                      decoration: BoxDecoration(
-                        color: isGreyscale
-                            ? theme.colorScheme.primary.withOpacity(0.12)
-                            : theme.dividerColor.withOpacity(0.3),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: isGreyscale
-                              ? theme.colorScheme.primary.withOpacity(0.3)
-                              : Colors.transparent,
-                          width: 1,
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.auto_stories_rounded,
-                            size: 18,
-                            color: isGreyscale
-                                ? theme.colorScheme.primary
-                                : theme.iconTheme.color?.withOpacity(0.7),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: RichText(
-                              text: TextSpan(
-                                text: isGreyscale
-                                    ? 'Want to turn off reading mode? '
-                                    : 'Want to turn on reading mode? ',
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: theme.colorScheme.onSurface
-                                      .withOpacity(0.9),
-                                  fontWeight: FontWeight.w500,
-                                ),
-                                children: [
-                                  TextSpan(
-                                    text: isGreyscale ? 'OFF' : 'ON',
-                                    style: TextStyle(
-                                      color: theme.colorScheme.primary,
-                                      fontWeight: FontWeight.w900,
-                                      letterSpacing: 0.5,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 16),
           ],
-          // Search Bar
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).cardColor,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: Theme.of(context).dividerColor,
-                  width: 1.0,
-                ),
-              ),
-              child: TextField(
-                readOnly: onTap != null,
-                onTap: onTap,
-                style:
-                    TextStyle(color: Theme.of(context).colorScheme.onSurface),
-                decoration: InputDecoration(
-                  hintText: hintText,
-                  hintStyle: const TextStyle(color: Color(0xFF7A7A7A)),
-                  prefixIcon:
-                      const Icon(Icons.search, color: Color(0xFFA1A1A6)),
-                  border: InputBorder.none,
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                ),
-              ),
+            child: Consumer(
+              builder: (context, ref, child) {
+                final isGreyscale =
+                    ref.watch(accessibilityProvider).isGreyscaleMode;
+                return GestureDetector(
+                  onTap: () {
+                    ref
+                        .read(accessibilityProvider.notifier)
+                        .toggleGreyscaleMode();
+                  },
+                  behavior: HitTestBehavior.opaque,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: isGreyscale
+                          ? theme.colorScheme.primary.withOpacity(0.12)
+                          : theme.dividerColor.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isGreyscale
+                            ? theme.colorScheme.primary.withOpacity(0.3)
+                            : Colors.transparent,
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.auto_stories_rounded,
+                          size: 18,
+                          color: isGreyscale
+                              ? theme.colorScheme.primary
+                              : theme.iconTheme.color?.withOpacity(0.7),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: RichText(
+                            text: TextSpan(
+                              text: isGreyscale
+                                  ? 'Want to turn off reading mode? '
+                                  : 'Want to turn on reading mode? ',
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: theme.colorScheme.onSurface
+                                    .withOpacity(0.9),
+                                fontWeight: FontWeight.w500,
+                              ),
+                              children: [
+                                TextSpan(
+                                  text: isGreyscale ? 'OFF' : 'ON',
+                                  style: TextStyle(
+                                    color: theme.colorScheme.primary,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
           Divider(color: Theme.of(context).dividerColor, height: 1),
           const SizedBox(height: 12),
         ],

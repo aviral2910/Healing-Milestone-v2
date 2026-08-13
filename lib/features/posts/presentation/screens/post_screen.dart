@@ -132,14 +132,16 @@ class PostScreen extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     useAutomaticKeepAlive();
     final storiesAsync = ref.watch(paginatedStoriesProvider);
-    final isPaginating = ref.watch(paginatedStoriesProvider.notifier).isLoadingMore;
+    final isPaginating =
+        ref.watch(paginatedStoriesProvider.notifier).isLoadingMore;
     final hasMore = ref.watch(paginatedStoriesProvider.notifier).hasMore;
 
-    final targetController = scrollController ?? PrimaryScrollController.maybeOf(context);
+    final targetController =
+        scrollController ?? PrimaryScrollController.maybeOf(context);
 
     useEffect(() {
       if (targetController == null) return null;
-      
+
       void listener() {
         if (!targetController.hasClients) return;
         for (final position in targetController.positions) {
@@ -151,6 +153,7 @@ class PostScreen extends HookConsumerWidget {
           }
         }
       }
+
       targetController.addListener(listener);
       return () => targetController.removeListener(listener);
     }, [targetController, isPaginating, hasMore, ref]);
@@ -172,190 +175,192 @@ class PostScreen extends HookConsumerWidget {
         },
         child: AnimationLimiter(
           child: CustomScrollView(
-          key: const PageStorageKey<String>('timeline_scroll_key'),
-          controller: scrollController, // If null, inherits PrimaryScrollController
-          slivers: [
-            CommonSearchBarSliver(
-              includeWelcomeText: true,
-              displayName: user?.displayName ?? 'Guest',
-              hintText: 'Search stories, topics, people...',
-              onTap: onSearchTapped,
-            ),
-            storiesAsync.when(
-              loading: () => const SliverFillRemaining(
-                child: Center(
-                    child: CircularProgressIndicator(color: Color(0xFFD4AF37))),
+            key: const PageStorageKey<String>('timeline_scroll_key'),
+            controller:
+                scrollController, // If null, inherits PrimaryScrollController
+            slivers: [
+              CommonSearchBarSliver(
+                includeWelcomeText: false,
+                displayName: user?.displayName ?? 'Guest',
+                hintText: 'Search stories, topics, people...',
+                onTap: onSearchTapped,
               ),
-              error: (err, stack) => SliverFillRemaining(
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.error_outline,
-                          size: 48, color: Theme.of(context).dividerColor),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Unable to load stories',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          color: const Color(0xFFA1A1A6),
+              storiesAsync.when(
+                loading: () => const SliverFillRemaining(
+                  child: Center(
+                      child:
+                          CircularProgressIndicator(color: Color(0xFFD4AF37))),
+                ),
+                error: (err, stack) => SliverFillRemaining(
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.error_outline,
+                            size: 48, color: Theme.of(context).dividerColor),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Unable to load stories',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            color: const Color(0xFFA1A1A6),
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              data: (allStories) {
-                // Extract top tags using all stories
-                final tagFrequency = <String, int>{};
-                for (var story in allStories) {
-                  for (var tag in story.hashtagsList) {
-                    tagFrequency[tag] = (tagFrequency[tag] ?? 0) + 1;
+                data: (allStories) {
+                  // Extract top tags using all stories
+                  final tagFrequency = <String, int>{};
+                  for (var story in allStories) {
+                    for (var tag in story.hashtagsList) {
+                      tagFrequency[tag] = (tagFrequency[tag] ?? 0) + 1;
+                    }
                   }
-                }
 
-                final sortedTags = tagFrequency.keys.toList()
-                  ..sort(
-                      (a, b) => tagFrequency[b]!.compareTo(tagFrequency[a]!));
+                  final sortedTags = tagFrequency.keys.toList()
+                    ..sort(
+                        (a, b) => tagFrequency[b]!.compareTo(tagFrequency[a]!));
 
-                final topTags = ['All', ...sortedTags.take(9)];
+                  final topTags = ['All', ...sortedTags.take(9)];
 
-                // Filter stories based on selected tag
-                final filteredStories = selectedTag == 'All'
-                    ? allStories
-                    : allStories
-                        .where((s) => s.hashtagsList.contains(selectedTag))
-                        .toList();
+                  // Filter stories based on selected tag
+                  final filteredStories = selectedTag == 'All'
+                      ? allStories
+                      : allStories
+                          .where((s) => s.hashtagsList.contains(selectedTag))
+                          .toList();
 
-                if (allStories.isEmpty) {
-                  return SliverFillRemaining(
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.auto_awesome_mosaic_outlined,
-                              size: 64, color: Theme.of(context).dividerColor),
-                          const SizedBox(height: 16),
-                          Text(
-                            'No stories yet',
-                            style: theme.textTheme.headlineMedium?.copyWith(
-                              color: const Color(0xFFA1A1A6),
-                              fontWeight: FontWeight.bold,
+                  if (allStories.isEmpty) {
+                    return SliverFillRemaining(
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.auto_awesome_mosaic_outlined,
+                                size: 64,
+                                color: Theme.of(context).dividerColor),
+                            const SizedBox(height: 16),
+                            Text(
+                              'No stories yet',
+                              style: theme.textTheme.headlineMedium?.copyWith(
+                                color: const Color(0xFFA1A1A6),
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Be the first to share a milestone.',
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: const Color(0xFFA1A1A6)
-                                  .withValues(alpha: 0.7),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Be the first to share a milestone.',
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: const Color(0xFFA1A1A6)
+                                    .withValues(alpha: 0.7),
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }
-
-                return SliverMainAxisGroup(
-                  slivers: [
-                    // Tags Header (Pinned)
-                    if (topTags.length > 1)
-                      SliverPersistentHeader(
-                        pinned: false,
-                        delegate: _SliverTagsDelegate(
-                          tags: topTags,
-                          selectedTag: selectedTag,
-                          onTagSelected: (tag) => ref
-                              .read(selectedTagProvider.notifier)
-                              .state = tag,
+                          ],
                         ),
                       ),
+                    );
+                  }
 
-
-                    if (filteredStories.isEmpty)
-                      SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.all(32.0),
-                          child: Center(
-                            child: Text(
-                              'No stories found for #$selectedTag',
-                              style: theme.textTheme.bodyLarge
-                                  ?.copyWith(color: const Color(0xFFA1A1A6)),
-                            ),
+                  return SliverMainAxisGroup(
+                    slivers: [
+                      // Tags Header (Pinned)
+                      if (topTags.length > 1)
+                        SliverPersistentHeader(
+                          pinned: false,
+                          delegate: _SliverTagsDelegate(
+                            tags: topTags,
+                            selectedTag: selectedTag,
+                            onTagSelected: (tag) => ref
+                                .read(selectedTagProvider.notifier)
+                                .state = tag,
                           ),
                         ),
-                      )
-                    else
-                      // Vertical Feed of Posts
-                      SliverPadding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        sliver: SliverList(
-                          delegate: SliverChildBuilderDelegate(
-                            (context, index) {
-                              final story = filteredStories[index];
-                              return AnimationConfiguration.staggeredList(
-                                position: index,
-                                duration: const Duration(milliseconds: 375),
-                                child: SlideAnimation(
-                                  verticalOffset: 50.0,
-                                  child: FadeInAnimation(
-                                    child: Padding(
-                                      padding:
-                                          const EdgeInsets.only(bottom: 32.0),
-                                      child: StoryCard(
-                                        story: story,
-                                        content: _truncateContent(
-                                            story.description, 180),
-                                        onTap: () {
-                                          context.push(AppRoutes.storyDetail(
-                                              story.storyId));
-                                        },
+
+                      if (filteredStories.isEmpty)
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsets.all(32.0),
+                            child: Center(
+                              child: Text(
+                                'No stories found for #$selectedTag',
+                                style: theme.textTheme.bodyLarge
+                                    ?.copyWith(color: const Color(0xFFA1A1A6)),
+                              ),
+                            ),
+                          ),
+                        )
+                      else
+                        // Vertical Feed of Posts
+                        SliverPadding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          sliver: SliverList(
+                            delegate: SliverChildBuilderDelegate(
+                              (context, index) {
+                                final story = filteredStories[index];
+                                return AnimationConfiguration.staggeredList(
+                                  position: index,
+                                  duration: const Duration(milliseconds: 375),
+                                  child: SlideAnimation(
+                                    verticalOffset: 50.0,
+                                    child: FadeInAnimation(
+                                      child: Padding(
+                                        padding:
+                                            const EdgeInsets.only(bottom: 32.0),
+                                        child: StoryCard(
+                                          story: story,
+                                          content: _truncateContent(
+                                              story.description, 180),
+                                          onTap: () {
+                                            context.push(AppRoutes.storyDetail(
+                                                story.storyId));
+                                          },
+                                        ),
                                       ),
                                     ),
                                   ),
+                                );
+                              },
+                              childCount: filteredStories.length,
+                            ),
+                          ),
+                        ),
+                      if (isPaginating)
+                        const SliverToBoxAdapter(
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(vertical: 32.0),
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                  color: Color(0xFFD4AF37)),
+                            ),
+                          ),
+                        ),
+                      if (!hasMore && allStories.isNotEmpty)
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 32.0),
+                            child: Center(
+                              child: Text(
+                                "You've reached the end!",
+                                style: TextStyle(
+                                  color: Theme.of(context).disabledColor,
+                                  fontStyle: FontStyle.italic,
                                 ),
-                              );
-                            },
-                            childCount: filteredStories.length,
-                          ),
-                        ),
-                      ),
-                    if (isPaginating)
-                      const SliverToBoxAdapter(
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(vertical: 32.0),
-                          child: Center(
-                            child: CircularProgressIndicator(color: Color(0xFFD4AF37)),
-                          ),
-                        ),
-                      ),
-                    if (!hasMore && allStories.isNotEmpty)
-                      SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 32.0),
-                          child: Center(
-                            child: Text(
-                              "You've reached the end!",
-                              style: TextStyle(
-                                color: Theme.of(context).disabledColor,
-                                fontStyle: FontStyle.italic,
                               ),
                             ),
                           ),
                         ),
+                      const SliverToBoxAdapter(
+                        child: SizedBox(height: 100), // Bottom padding
                       ),
-                    const SliverToBoxAdapter(
-                      child: SizedBox(height: 100), // Bottom padding
-                    ),
-                  ],
-                );
-              },
-            ),
-          ],
+                    ],
+                  );
+                },
+              ),
+            ],
+          ),
         ),
-      ),
       ),
     );
   }
 }
-

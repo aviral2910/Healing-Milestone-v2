@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:healing_milestones/features/home/presentation/screens/inspire_screen.dart';
+import 'package:healing_milestones/features/journey/presentation/screens/my_path_screen.dart';
+import 'package:healing_milestones/features/journey/presentation/screens/together_feed_screen.dart';
 
 import '../../../../features/search/presentation/screens/search_screen.dart';
 import '../../../../features/support_chat/presentation/screens/messages_screen.dart';
@@ -118,13 +120,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               isActiveTab: _currentIndex == 0,
               onSearchTapped: () {
                 // Navigate to search screen
-                context.push('/search'); // Ensure you have a top-level route or manage it otherwise
+                context.push(
+                  '/search',
+                ); // Ensure you have a top-level route or manage it otherwise
               },
             ),
-            // Placeholder for Tab 2: Together (Journeys)
-            const Center(child: Text("Journeys & Together Feed coming soon")),
-            // Placeholder for Tab 3: My Path (Gratitude Tree)
-            const Center(child: Text("Gratitude Tree & My Path coming soon")),
+            // Tab 2: Together (Journeys)
+            const TogetherFeedScreen(),
+            // Tab 3: My Path (Gratitude Tree & Milestones)
+            const MyPathScreen(),
             // Tab 4: Connect (Messages)
             MessagesScreen(
               scrollController: _messagesScrollController,
@@ -139,7 +143,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             color: Theme.of(context).scaffoldBackgroundColor,
             border: Border(
               top: BorderSide(
-                  color: Theme.of(context).dividerColor, width: 0.5),
+                color: Theme.of(context).dividerColor,
+                width: 0.5,
+              ),
             ),
           ),
           child: SafeArea(
@@ -149,33 +155,33 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   _buildNavItem(
-                    icon: Icons.auto_awesome_outlined,
-                    activeIcon: Icons.auto_awesome,
+                    icon: Icons.home_outlined,
+                    activeIcon: Icons.home_rounded,
                     index: 0,
                     theme: theme,
                   ),
                   _buildNavItem(
-                    icon: Icons.directions_walk_outlined,
-                    activeIcon: Icons.directions_walk,
+                    icon: Icons.timeline,
+                    activeIcon: Icons.timeline_rounded,
                     index: 1,
                     theme: theme,
                   ),
                   _buildNavItem(
-                    icon: Icons.park_outlined,
-                    activeIcon: Icons.park,
+                    icon: Icons.eco_outlined,
+                    activeIcon: Icons.eco_rounded,
                     index: 2,
                     theme: theme,
                   ),
                   _buildNavItem(
-                    icon: Icons.chat_bubble_outline,
-                    activeIcon: Icons.chat_bubble,
+                    icon: Icons.forum_outlined,
+                    activeIcon: Icons.forum_rounded,
                     index: 3,
                     theme: theme,
                     unreadCount: unreadCount,
                   ),
                   _buildNavItem(
-                    icon: Icons.person_outline,
-                    activeIcon: Icons.person,
+                    icon: Icons.person_outline_rounded,
+                    activeIcon: Icons.person_rounded,
                     index: 4,
                     theme: theme,
                   ),
@@ -194,7 +200,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     required int index,
     required ThemeData theme,
     int unreadCount = 0,
-    double angle = 0.0,
   }) {
     final isSelected = _currentIndex == index;
     Widget iconWidget = AnimatedSwitcher(
@@ -202,24 +207,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       transitionBuilder: (child, animation) {
         return FadeTransition(opacity: animation, child: child);
       },
-      child: Transform.rotate(
-        angle: angle,
-        child: Icon(
-          isSelected ? activeIcon : icon,
-          key: ValueKey<bool>(isSelected),
-          color: isSelected
-              ? theme.colorScheme.primary
-              : theme.colorScheme.onSurface.withValues(alpha: 0.5),
-          size: 28,
-          shadows: isSelected
-              ? [
-                  Shadow(
-                    color: theme.colorScheme.primary.withValues(alpha: 0.8),
-                    blurRadius: 16.0,
-                  )
-                ]
-              : null,
-        ),
+      child: Icon(
+        isSelected ? activeIcon : icon,
+        key: ValueKey<bool>(isSelected),
+        color: isSelected
+            ? theme.colorScheme.primary
+            : theme.colorScheme.onSurface.withValues(alpha: 0.4),
+        size: 28,
+        shadows: isSelected
+            ? [
+                Shadow(
+                  color: theme.colorScheme.primary.withValues(alpha: 0.6),
+                  blurRadius: 12.0,
+                ),
+              ]
+            : null,
       ),
     );
 

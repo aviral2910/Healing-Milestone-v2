@@ -70,6 +70,7 @@ class _InspireScreenState extends ConsumerState<InspireScreen>
               CommonSliverAppBar(
                 isHeroEnabled: widget.isActiveTab,
                 isVisible: _topTabController.index != 1,
+                onSearchTapped: widget.onSearchTapped,
               ),
               SliverPersistentHeader(
                 pinned: true,
@@ -77,14 +78,14 @@ class _InspireScreenState extends ConsumerState<InspireScreen>
                   TabBar(
                     controller: _topTabController,
                     indicatorColor: theme.colorScheme.primary,
-                    indicatorWeight: 3.0,
+                    indicatorWeight: 1,
                     labelColor: theme.colorScheme.primary,
                     unselectedLabelColor:
                         theme.colorScheme.onSurface.withValues(alpha: 0.5),
                     labelStyle: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 16),
+                        fontWeight: FontWeight.w200, fontSize: 15),
                     unselectedLabelStyle: const TextStyle(
-                        fontWeight: FontWeight.w600, fontSize: 15),
+                        fontWeight: FontWeight.w200, fontSize: 14),
                     dividerColor: theme.dividerColor,
                     tabs: const [
                       Tab(text: 'Timeline'),
