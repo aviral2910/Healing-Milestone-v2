@@ -13,13 +13,16 @@ import 'package:healing_milestones/features/posts/data/feed_view_provider.dart';
 
 class CommonSliverAppBar extends ConsumerWidget {
   final bool isHeroEnabled;
+  final bool isVisible;
 
   const CommonSliverAppBar(
-      {Key? key, this.isHeroEnabled = true})
+      {Key? key, this.isHeroEnabled = true, this.isVisible = true})
       : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (!isVisible) return const SliverToBoxAdapter(child: SizedBox.shrink());
+
     final theme = Theme.of(context);
     final user = ref.watch(currentUserProvider);
     final authState = ref.watch(authProvider);

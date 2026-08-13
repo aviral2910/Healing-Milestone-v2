@@ -3,6 +3,7 @@ class AppRoutes {
   static const String ascensionTransition = '/ascension-transition';
   static const String suspended = '/suspended';
   static const String home = '/';
+  static const String search = '/search';
   static const String phoneAuth = '/phone-auth';
   static const String verifyOtp = '/verify-otp';
   static const String create = '/create';

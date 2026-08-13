@@ -13,13 +13,13 @@ import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import '../../../../main.dart';
 
 class RecommendedSwipeScreen extends ConsumerStatefulWidget {
-  final ScrollController scrollController;
+  final ScrollController? scrollController;
   final bool isActiveTab;
   final VoidCallback onSearchTapped;
 
   const RecommendedSwipeScreen({
     Key? key,
-    required this.scrollController,
+    this.scrollController,
     required this.isActiveTab,
     required this.onSearchTapped,
   }) : super(key: key);
@@ -29,9 +29,14 @@ class RecommendedSwipeScreen extends ConsumerStatefulWidget {
       _RecommendedSwipeScreenState();
 }
 
-class _RecommendedSwipeScreenState
-    extends ConsumerState<RecommendedSwipeScreen> {
+class _RecommendedSwipeScreenState extends ConsumerState<RecommendedSwipeScreen>
+    with AutomaticKeepAliveClientMixin {
   late PageController _pageController;
+  final Set<String> _viewedStoryIds = {};
+  int _currentPage = 0;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -64,6 +69,7 @@ class _RecommendedSwipeScreenState
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final storiesAsync = ref.watch(recommendedStoriesProvider);
     final selectedTag = ref.watch(selectedTagProvider);
     final theme = Theme.of(context);

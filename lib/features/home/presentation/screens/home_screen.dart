@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:healing_milestones/features/posts/presentation/screens/recommended_swipe_screen.dart';
-import 'package:healing_milestones/logo/healing_milestone_logo.dart';
+import 'package:healing_milestones/features/home/presentation/screens/inspire_screen.dart';
 
-import '../../../../features/posts/presentation/screens/post_screen.dart';
 import '../../../../features/search/presentation/screens/search_screen.dart';
-import '../../../../features/awareness/presentation/screens/health_awareness_screen.dart';
 import '../../../../features/support_chat/presentation/screens/messages_screen.dart';
 import '../../../../features/auth/data/auth_provider.dart';
 import '../../../../features/support_chat/presentation/providers/chat_providers.dart';
@@ -24,11 +21,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   late TabController _tabController;
   int _currentIndex = 0;
 
-  final ScrollController _postsScrollController = ScrollController();
-  final ScrollController _recommendedScrollController = ScrollController();
-  final ScrollController _messagesScrollController = ScrollController();
-  final ScrollController _searchScrollController = ScrollController();
+  final ScrollController _timelineScrollController = ScrollController();
+  final ScrollController _forYouScrollController = ScrollController();
   final ScrollController _awarenessScrollController = ScrollController();
+  final ScrollController _messagesScrollController = ScrollController();
 
   @override
   void initState() {
@@ -46,43 +42,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   @override
   void dispose() {
     _tabController.dispose();
-    _postsScrollController.dispose();
-    _recommendedScrollController.dispose();
-    _messagesScrollController.dispose();
-    _searchScrollController.dispose();
+    _timelineScrollController.dispose();
+    _forYouScrollController.dispose();
     _awarenessScrollController.dispose();
+    _messagesScrollController.dispose();
     super.dispose();
   }
 
   void _onBottomNavTapped(int index) {
     if (index == _currentIndex) {
-      // Scroll to top if already on the active tab
-      if (index == 0 && _postsScrollController.hasClients) {
-        _postsScrollController.animateTo(
-          0.0,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-        );
-      } else if (index == 1 && _recommendedScrollController.hasClients) {
-        _recommendedScrollController.animateTo(
-          0.0,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-        );
-      } else if (index == 2 && _messagesScrollController.hasClients) {
+      // Scroll to top if already on the active tab (basic implementation for Inspire and Connect)
+      if (index == 0) {
+        // Can't easily know which top tab is active from here without more state,
+        // so we scroll Timeline as default fallback, or maybe we shouldn't worry for now.
+        if (_timelineScrollController.hasClients) {
+          _timelineScrollController.animateTo(
+            0.0,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        }
+      } else if (index == 3 && _messagesScrollController.hasClients) {
         _messagesScrollController.animateTo(
-          0.0,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-        );
-      } else if (index == 3 && _searchScrollController.hasClients) {
-        _searchScrollController.animateTo(
-          0.0,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-        );
-      } else if (index == 4 && _awarenessScrollController.hasClients) {
-        _awarenessScrollController.animateTo(
           0.0,
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
@@ -126,43 +107,39 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       },
       child: Scaffold(
         resizeToAvoidBottomInset: false,
-        extendBody: false, // Solid background
+        extendBody: false,
         body: IndexedStack(
           index: _currentIndex,
           children: [
-            PostScreen(
-              scrollController: _postsScrollController,
+            InspireScreen(
+              timelineScrollController: _timelineScrollController,
+              forYouScrollController: _forYouScrollController,
+              awarenessScrollController: _awarenessScrollController,
               isActiveTab: _currentIndex == 0,
-              onSearchTapped: () => _onBottomNavTapped(3),
+              onSearchTapped: () {
+                // Navigate to search screen
+                context.push('/search'); // Ensure you have a top-level route or manage it otherwise
+              },
             ),
-            RecommendedSwipeScreen(
-              scrollController: _recommendedScrollController,
-              isActiveTab: _currentIndex == 1,
-              onSearchTapped: () => _onBottomNavTapped(3),
-            ),
+            // Placeholder for Tab 2: Together (Journeys)
+            const Center(child: Text("Journeys & Together Feed coming soon")),
+            // Placeholder for Tab 3: My Path (Gratitude Tree)
+            const Center(child: Text("Gratitude Tree & My Path coming soon")),
+            // Tab 4: Connect (Messages)
             MessagesScreen(
               scrollController: _messagesScrollController,
-              isActiveTab: _currentIndex == 2,
-            ),
-            SearchScreen(
-              scrollController: _searchScrollController,
               isActiveTab: _currentIndex == 3,
             ),
-            HealthAwarenessScreen(
-              scrollController: _awarenessScrollController,
-              isActiveTab: _currentIndex == 4,
-              onSearchTapped: () => _onBottomNavTapped(3),
-            ),
+            // Placeholder for Tab 5: Vault (Profile)
+            const Center(child: Text("Vault coming soon")),
           ],
         ),
         bottomNavigationBar: Container(
           decoration: BoxDecoration(
-            color:
-                Theme.of(context).scaffoldBackgroundColor, // dynamic background
+            color: Theme.of(context).scaffoldBackgroundColor,
             border: Border(
               top: BorderSide(
-                  color: Theme.of(context).dividerColor,
-                  width: 0.5), // Very thin border
+                  color: Theme.of(context).dividerColor, width: 0.5),
             ),
           ),
           child: SafeArea(
@@ -172,34 +149,33 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   _buildNavItem(
-                    icon: Icons.feed_outlined,
-                    activeIcon: Icons.feed,
+                    icon: Icons.auto_awesome_outlined,
+                    activeIcon: Icons.auto_awesome,
                     index: 0,
                     theme: theme,
                   ),
                   _buildNavItem(
-                    icon: Icons.auto_awesome_outlined,
-                    activeIcon: Icons.auto_awesome,
+                    icon: Icons.directions_walk_outlined,
+                    activeIcon: Icons.directions_walk,
                     index: 1,
                     theme: theme,
                   ),
                   _buildNavItem(
-                    icon: Icons.send_outlined,
-                    activeIcon: Icons.send,
+                    icon: Icons.park_outlined,
+                    activeIcon: Icons.park,
                     index: 2,
                     theme: theme,
-                    unreadCount: unreadCount,
-                    angle: -0.5, // Tilts the paper plane upwards
                   ),
                   _buildNavItem(
-                    icon: Icons.search_outlined,
-                    activeIcon: Icons.search,
+                    icon: Icons.chat_bubble_outline,
+                    activeIcon: Icons.chat_bubble,
                     index: 3,
                     theme: theme,
+                    unreadCount: unreadCount,
                   ),
                   _buildNavItem(
-                    icon: Icons.health_and_safety_outlined,
-                    activeIcon: Icons.health_and_safety,
+                    icon: Icons.person_outline,
+                    activeIcon: Icons.person,
                     index: 4,
                     theme: theme,
                   ),
@@ -259,7 +235,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       onTap: () => _onBottomNavTapped(index),
       behavior: HitTestBehavior.opaque,
       child: Container(
-        width: 70, // Slightly reduced to fit 5 items comfortably
+        width: 70,
         alignment: Alignment.center,
         child: iconWidget,
       ),

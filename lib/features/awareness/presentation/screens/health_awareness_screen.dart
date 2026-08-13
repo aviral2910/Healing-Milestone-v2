@@ -4,9 +4,13 @@ import '../../../../core/data/dummy_data.dart';
 import '../../../../core/widgets/shared_headers.dart';
 import '../../../../core/models/educational_content_model.dart';
 import '../../../../logo/healing_milestone_logo.dart';
+import '../../../../features/auth/data/auth_provider.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 
-class HealthAwarenessScreen extends ConsumerWidget {
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+
+class HealthAwarenessScreen extends HookConsumerWidget {
   final ScrollController? scrollController;
   final bool isActiveTab;
   final VoidCallback? onSearchTapped;
@@ -20,16 +24,18 @@ class HealthAwarenessScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    useAutomaticKeepAlive();
     final eduContent = ref.watch(dummyEduContentProvider);
     final theme = Theme.of(context);
 
     return AnimationLimiter(
       child: CustomScrollView(
+        key: const PageStorageKey<String>('awareness_scroll_key'),
         controller: scrollController,
         slivers: [
-          CommonSliverAppBar(isHeroEnabled: isActiveTab),
           CommonSearchBarSliver(
-            includeWelcomeText: false,
+            includeWelcomeText: true,
+            displayName: ref.watch(currentUserProvider)?.displayName ?? 'Guest',
             hintText: 'Search awareness, articles, resources...',
             onTap: onSearchTapped,
           ),

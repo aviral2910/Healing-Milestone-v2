@@ -130,20 +130,30 @@ class PostScreen extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    useAutomaticKeepAlive();
     final storiesAsync = ref.watch(paginatedStoriesProvider);
     final isPaginating = ref.watch(paginatedStoriesProvider.notifier).isLoadingMore;
     final hasMore = ref.watch(paginatedStoriesProvider.notifier).hasMore;
 
+    final targetController = scrollController ?? PrimaryScrollController.maybeOf(context);
+
     useEffect(() {
-      if (scrollController == null) return null;
+      if (targetController == null) return null;
+      
       void listener() {
-        if (scrollController!.position.pixels >= scrollController!.position.maxScrollExtent - 500) {
-          ref.read(paginatedStoriesProvider.notifier).fetchNextPage();
+        if (!targetController.hasClients) return;
+        for (final position in targetController.positions) {
+          if (position.pixels >= position.maxScrollExtent - 500) {
+            if (!isPaginating && hasMore) {
+              ref.read(paginatedStoriesProvider.notifier).fetchNextPage();
+            }
+            break;
+          }
         }
       }
-      scrollController!.addListener(listener);
-      return () => scrollController!.removeListener(listener);
-    }, [scrollController]);
+      targetController.addListener(listener);
+      return () => targetController.removeListener(listener);
+    }, [targetController, isPaginating, hasMore, ref]);
 
     final categories =
         []; // Replace with actual categories if needed, or keep empty
@@ -162,11 +172,9 @@ class PostScreen extends HookConsumerWidget {
         },
         child: AnimationLimiter(
           child: CustomScrollView(
-          controller: scrollController,
+          key: const PageStorageKey<String>('timeline_scroll_key'),
+          controller: scrollController, // If null, inherits PrimaryScrollController
           slivers: [
-            CommonSliverAppBar(
-              isHeroEnabled: isActiveTab,
-            ),
             CommonSearchBarSliver(
               includeWelcomeText: true,
               displayName: user?.displayName ?? 'Guest',
@@ -253,7 +261,7 @@ class PostScreen extends HookConsumerWidget {
                     // Tags Header (Pinned)
                     if (topTags.length > 1)
                       SliverPersistentHeader(
-                        pinned: true,
+                        pinned: false,
                         delegate: _SliverTagsDelegate(
                           tags: topTags,
                           selectedTag: selectedTag,
