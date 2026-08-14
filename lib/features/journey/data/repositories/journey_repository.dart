@@ -60,6 +60,7 @@ class JourneyRepository {
   Future<List<JourneyMilestoneModel>> getMilestones({
     String? journeyId,
     bool isFloating = false,
+    bool isPublic = false,
   }) async {
     try {
       final queryParams = <String, dynamic>{};
@@ -68,6 +69,9 @@ class JourneyRepository {
       }
       if (isFloating) {
         queryParams['is_floating'] = true;
+      }
+      if (isPublic) {
+        queryParams['is_public'] = true;
       }
       
       final response = await _apiClient.dio.get(

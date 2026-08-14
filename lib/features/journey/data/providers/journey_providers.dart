@@ -23,6 +23,11 @@ final journeyMilestonesProvider = FutureProvider.autoDispose.family<List<Journey
   return repository.getMilestones(journeyId: journeyId);
 });
 
+final publicJourneyMilestonesProvider = FutureProvider.autoDispose.family<List<JourneyMilestoneModel>, String>((ref, journeyId) async {
+  final repository = ref.watch(journeyRepositoryProvider);
+  return repository.getMilestones(journeyId: journeyId, isPublic: true);
+});
+
 final togetherFeedProvider = FutureProvider.autoDispose<List<JourneyMilestoneModel>>((ref) async {
   final repository = ref.watch(journeyRepositoryProvider);
   return repository.getPublicMilestones();

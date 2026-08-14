@@ -1,19 +1,24 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/journey_models.dart';
+import '../../../auth/data/auth_provider.dart';
+import 'public_journey_detail_overlay.dart';
 
-class TogetherFeedCard extends StatefulWidget {
+class TogetherFeedCard extends ConsumerStatefulWidget {
   final JourneyMilestoneModel milestone;
   final int index;
 
-  const TogetherFeedCard({Key? key, required this.milestone, this.index = 0}) : super(key: key);
+  const TogetherFeedCard({Key? key, required this.milestone, this.index = 0})
+    : super(key: key);
 
   @override
-  State<TogetherFeedCard> createState() => _TogetherFeedCardState();
+  ConsumerState<TogetherFeedCard> createState() => _TogetherFeedCardState();
 }
 
-class _TogetherFeedCardState extends State<TogetherFeedCard> with SingleTickerProviderStateMixin {
+class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
+    with SingleTickerProviderStateMixin {
   late AnimationController _animController;
   late Animation<double> _scaleAnimation;
 
@@ -37,18 +42,23 @@ class _TogetherFeedCardState extends State<TogetherFeedCard> with SingleTickerPr
 
   Color _getEmotionColor() {
     switch (widget.milestone.emotionStatus) {
-      case EmotionStatus.proud: return Colors.amber;
-      case EmotionStatus.hopeful: return Colors.orange;
-      case EmotionStatus.anxious: return Colors.blue;
-      case EmotionStatus.grieving: return Colors.deepPurple;
+      case EmotionStatus.proud:
+        return Colors.amber;
+      case EmotionStatus.hopeful:
+        return Colors.orange;
+      case EmotionStatus.anxious:
+        return Colors.blue;
+      case EmotionStatus.grieving:
+        return Colors.deepPurple;
       case EmotionStatus.neutral:
-      default: return Colors.grey;
+      default:
+        return Colors.grey;
     }
   }
 
   void _showReactionOverlay(BuildContext context) {
     HapticFeedback.heavyImpact();
-    
+
     showGeneralDialog(
       context: context,
       barrierDismissible: true,
@@ -62,10 +72,16 @@ class _TogetherFeedCardState extends State<TogetherFeedCard> with SingleTickerPr
         return FadeTransition(
           opacity: animation,
           child: SlideTransition(
-            position: Tween<Offset>(
-              begin: const Offset(0, 0.05),
-              end: Offset.zero,
-            ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
+            position:
+                Tween<Offset>(
+                  begin: const Offset(0, 0.05),
+                  end: Offset.zero,
+                ).animate(
+                  CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.easeOutCubic,
+                  ),
+                ),
             child: child,
           ),
         );
@@ -77,22 +93,53 @@ class _TogetherFeedCardState extends State<TogetherFeedCard> with SingleTickerPr
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final glowColor = _getEmotionColor();
+    final authState = ref.watch(authProvider).value;
+    final currentUserId = authState?.userModel?.userId.toLowerCase() ?? '';
+    
+    final bool isMyAnonymousJourney = widget.milestone.visibility == MilestoneVisibility.anonymous && 
+                                      currentUserId.isNotEmpty &&
+                                      currentUserId == widget.milestone.userId.toLowerCase();
+                                      
+    final String displayAuthor = widget.milestone.visibility == MilestoneVisibility.anonymous
+        ? (isMyAnonymousJourney ? 'Anonymous (You)' : 'Anonymous')
+        : (widget.milestone.authorName ?? 'Anonymous');
 
     return GestureDetector(
       onTapDown: (_) => _animController.forward(),
       onTapUp: (_) => _animController.reverse(),
       onTapCancel: () => _animController.reverse(),
+      onTap: () {
+        _animController.reverse();
+        if (widget.milestone.journeyId != null &&
+            widget.milestone.journeyTitle != null) {
+          PublicJourneyDetailOverlay.show(
+            context,
+            journeyId: widget.milestone.journeyId!,
+            title: widget.milestone.journeyTitle!,
+            category: widget.milestone.journeyCategory,
+            authorName: widget.milestone.authorName,
+            authorAvatar: widget.milestone.authorAvatar,
+            authorId: widget.milestone.userId,
+            visibility: widget.milestone.visibility,
+          );
+        }
+      },
       onLongPress: () {
         _animController.reverse();
         _showReactionOverlay(context);
       },
-      child: ScaleTransition(
-        scale: _scaleAnimation,
+      child: AnimatedBuilder(
+        animation: _scaleAnimation,
+        builder: (context, child) =>
+            Transform.scale(scale: _scaleAnimation.value, child: child),
         child: Container(
-          margin: const EdgeInsets.symmetric(vertical: 10),
+          margin: const EdgeInsets.only(bottom: 16),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(32),
             color: theme.colorScheme.surface.withValues(alpha: 0.6),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: theme.dividerColor.withValues(alpha: 0.1),
+            ),
             boxShadow: [
               BoxShadow(
                 color: glowColor.withValues(alpha: 0.05),
@@ -100,10 +147,6 @@ class _TogetherFeedCardState extends State<TogetherFeedCard> with SingleTickerPr
                 offset: const Offset(0, 8),
               ),
             ],
-            border: Border.all(
-              color: theme.dividerColor.withValues(alpha: 0.1),
-              width: 1,
-            ),
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(32),
@@ -131,8 +174,12 @@ class _TogetherFeedCardState extends State<TogetherFeedCard> with SingleTickerPr
                           padding: const EdgeInsets.all(3),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: theme.colorScheme.surface.withValues(alpha: 0.5),
-                            border: Border.all(color: glowColor.withValues(alpha: 0.3)),
+                            color: theme.colorScheme.surface.withValues(
+                              alpha: 0.5,
+                            ),
+                            border: Border.all(
+                              color: glowColor.withValues(alpha: 0.3),
+                            ),
                             boxShadow: [
                               BoxShadow(
                                 color: glowColor.withValues(alpha: 0.2),
@@ -144,12 +191,14 @@ class _TogetherFeedCardState extends State<TogetherFeedCard> with SingleTickerPr
                           child: CircleAvatar(
                             radius: 24,
                             backgroundColor: theme.colorScheme.surface,
-                            backgroundImage: widget.milestone.authorAvatar != null
+                            backgroundImage:
+                                widget.milestone.authorAvatar != null
                                 ? NetworkImage(widget.milestone.authorAvatar!)
                                 : null,
                             child: widget.milestone.authorAvatar == null
                                 ? Icon(
-                                    widget.milestone.visibility == MilestoneVisibility.anonymous
+                                    widget.milestone.visibility ==
+                                            MilestoneVisibility.anonymous
                                         ? Icons.visibility_off_rounded
                                         : Icons.person_rounded,
                                     color: theme.colorScheme.onSurfaceVariant,
@@ -174,21 +223,27 @@ class _TogetherFeedCardState extends State<TogetherFeedCard> with SingleTickerPr
                               Text(
                                 _getTimeAgo(widget.milestone.createdAt),
                                 style: theme.textTheme.labelMedium?.copyWith(
-                                  color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
+                                  color: theme.colorScheme.onSurfaceVariant
+                                      .withValues(alpha: 0.8),
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        
+
                         // Emotion Indicator
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 8,
+                          ),
                           decoration: BoxDecoration(
                             color: glowColor.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: glowColor.withValues(alpha: 0.2)),
+                            border: Border.all(
+                              color: glowColor.withValues(alpha: 0.2),
+                            ),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
@@ -203,13 +258,14 @@ class _TogetherFeedCardState extends State<TogetherFeedCard> with SingleTickerPr
                                     BoxShadow(
                                       color: glowColor.withValues(alpha: 0.6),
                                       blurRadius: 6,
-                                    )
-                                  ]
+                                    ),
+                                  ],
                                 ),
                               ),
                               const SizedBox(width: 8),
                               Text(
-                                widget.milestone.emotionStatus.name.toUpperCase(),
+                                widget.milestone.emotionStatus.name
+                                    .toUpperCase(),
                                 style: theme.textTheme.labelSmall?.copyWith(
                                   color: glowColor,
                                   fontWeight: FontWeight.w800,
@@ -221,8 +277,62 @@ class _TogetherFeedCardState extends State<TogetherFeedCard> with SingleTickerPr
                         ),
                       ],
                     ),
-                    const SizedBox(height: 24),
-                    
+                    const SizedBox(height: 20),
+
+                    // Journey Title Tag
+                    if (widget.milestone.journeyId != null &&
+                        widget.milestone.journeyTitle != null) ...[
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.surface.withValues(
+                            alpha: 0.6,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: theme.colorScheme.primary.withValues(
+                              alpha: 0.15,
+                            ),
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.route_rounded,
+                              size: 14,
+                              color: theme.colorScheme.primary,
+                            ),
+                            const SizedBox(width: 6),
+                            Flexible(
+                              child: Text(
+                                widget.milestone.journeyTitle!,
+                                style: theme.textTheme.labelMedium?.copyWith(
+                                  color: theme.colorScheme.primary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Icon(
+                              Icons.chevron_right_rounded,
+                              size: 16,
+                              color: theme.colorScheme.primary.withValues(
+                                alpha: 0.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+
                     // Content
                     if (widget.milestone.content != null)
                       Text(
@@ -230,27 +340,40 @@ class _TogetherFeedCardState extends State<TogetherFeedCard> with SingleTickerPr
                         style: theme.textTheme.bodyLarge?.copyWith(
                           height: 1.6,
                           fontSize: 16,
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.9),
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.9,
+                          ),
                           letterSpacing: 0.2,
                         ),
                       ),
-                      
+
                     const SizedBox(height: 28),
-                    
+
                     // Action Bar
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
                           decoration: BoxDecoration(
-                            color: theme.colorScheme.surface.withValues(alpha: 0.5),
+                            color: theme.colorScheme.surface.withValues(
+                              alpha: 0.5,
+                            ),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: theme.dividerColor.withValues(alpha: 0.1)),
+                            border: Border.all(
+                              color: theme.dividerColor.withValues(alpha: 0.1),
+                            ),
                           ),
                           child: Row(
                             children: [
-                              Icon(Icons.auto_awesome_rounded, size: 16, color: glowColor),
+                              Icon(
+                                Icons.auto_awesome_rounded,
+                                size: 16,
+                                color: glowColor,
+                              ),
                               const SizedBox(width: 6),
                               Text(
                                 '12 Sparks',
@@ -264,12 +387,18 @@ class _TogetherFeedCardState extends State<TogetherFeedCard> with SingleTickerPr
                         ),
                         Row(
                           children: [
-                            Icon(Icons.touch_app_rounded, size: 16, color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5)),
+                            Icon(
+                              Icons.touch_app_rounded,
+                              size: 16,
+                              color: theme.colorScheme.onSurfaceVariant
+                                  .withValues(alpha: 0.5),
+                            ),
                             const SizedBox(width: 6),
                             Text(
                               'Hold to react',
                               style: theme.textTheme.labelSmall?.copyWith(
-                                color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                                color: theme.colorScheme.onSurfaceVariant
+                                    .withValues(alpha: 0.7),
                                 fontWeight: FontWeight.w600,
                                 letterSpacing: 0.3,
                               ),
@@ -300,7 +429,12 @@ class _TogetherFeedCardState extends State<TogetherFeedCard> with SingleTickerPr
 class _ReactionOverlay extends StatelessWidget {
   const _ReactionOverlay({Key? key}) : super(key: key);
 
-  Widget _buildReactionOption(BuildContext context, String emoji, String label, Color color) {
+  Widget _buildReactionOption(
+    BuildContext context,
+    String emoji,
+    String label,
+    Color color,
+  ) {
     final theme = Theme.of(context);
     return Material(
       color: Colors.transparent,
@@ -314,12 +448,17 @@ class _ReactionOverlay extends StatelessWidget {
                 children: [
                   Text(emoji, style: const TextStyle(fontSize: 18)),
                   const SizedBox(width: 12),
-                  Text('Sent $label!', style: const TextStyle(fontWeight: FontWeight.w500)),
+                  Text(
+                    'Sent $label!',
+                    style: const TextStyle(fontWeight: FontWeight.w500),
+                  ),
                 ],
               ),
               backgroundColor: theme.colorScheme.inverseSurface,
               behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
               margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
               duration: const Duration(seconds: 2),
             ),
@@ -363,7 +502,7 @@ class _ReactionOverlay extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Stack(
@@ -372,10 +511,12 @@ class _ReactionOverlay extends StatelessWidget {
           BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
             child: Container(
-              color: (isDark ? Colors.black : Colors.white).withValues(alpha: 0.5),
+              color: (isDark ? Colors.black : Colors.white).withValues(
+                alpha: 0.5,
+              ),
             ),
           ),
-          
+
           // Tap to dismiss
           Positioned.fill(
             child: GestureDetector(
@@ -384,7 +525,7 @@ class _ReactionOverlay extends StatelessWidget {
               child: Container(),
             ),
           ),
-          
+
           // Center content
           Center(
             child: Padding(
@@ -410,13 +551,41 @@ class _ReactionOverlay extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      Expanded(child: _buildReactionOption(context, '✨', 'Spark', Colors.amber)),
+                      Expanded(
+                        child: _buildReactionOption(
+                          context,
+                          '✨',
+                          'Spark',
+                          Colors.amber,
+                        ),
+                      ),
                       const SizedBox(width: 12),
-                      Expanded(child: _buildReactionOption(context, '💪', 'Strength', Colors.orange)),
+                      Expanded(
+                        child: _buildReactionOption(
+                          context,
+                          '💪',
+                          'Strength',
+                          Colors.orange,
+                        ),
+                      ),
                       const SizedBox(width: 12),
-                      Expanded(child: _buildReactionOption(context, '❤️', 'Love', Colors.pink)),
+                      Expanded(
+                        child: _buildReactionOption(
+                          context,
+                          '❤️',
+                          'Love',
+                          Colors.pink,
+                        ),
+                      ),
                       const SizedBox(width: 12),
-                      Expanded(child: _buildReactionOption(context, '🙏', 'Support', Colors.blue)),
+                      Expanded(
+                        child: _buildReactionOption(
+                          context,
+                          '🙏',
+                          'Support',
+                          Colors.blue,
+                        ),
+                      ),
                     ],
                   ),
                 ],

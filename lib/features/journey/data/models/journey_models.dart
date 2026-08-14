@@ -93,6 +93,8 @@ class JourneyMilestoneModel {
   final String id;
   final String userId;
   final String? journeyId;
+  final String? journeyTitle;
+  final String? journeyCategory;
   final TimelinePosition timelinePosition;
   final EmotionStatus emotionStatus;
   final String? content;
@@ -101,11 +103,15 @@ class JourneyMilestoneModel {
   final DateTime createdAt;
   final String? authorName;
   final String? authorAvatar;
+  final String? authorUsername;
+  final String? authorUid;
 
   JourneyMilestoneModel({
     required this.id,
     required this.userId,
     this.journeyId,
+    this.journeyTitle,
+    this.journeyCategory,
     this.timelinePosition = TimelinePosition.standalone,
     required this.emotionStatus,
     this.content,
@@ -114,6 +120,8 @@ class JourneyMilestoneModel {
     required this.createdAt,
     this.authorName,
     this.authorAvatar,
+    this.authorUsername,
+    this.authorUid,
   });
 
   factory JourneyMilestoneModel.fromJson(Map<String, dynamic> json) {
@@ -121,6 +129,8 @@ class JourneyMilestoneModel {
       id: json['id'] as String,
       userId: json['user_id'] as String,
       journeyId: json['journey_id'] as String?,
+      journeyTitle: json['journey_title'] as String?,
+      journeyCategory: json['journey_category'] as String?,
       timelinePosition: TimelinePosition.fromString(json['timeline_position'] as String? ?? 'standalone'),
       emotionStatus: EmotionStatus.fromString(json['emotion_status'] as String? ?? 'neutral'),
       content: json['content'] as String?,
@@ -129,6 +139,8 @@ class JourneyMilestoneModel {
       createdAt: DateTime.parse(json['created_at'] as String).toLocal(),
       authorName: json['author_name'] as String?,
       authorAvatar: json['author_avatar'] as String?,
+      authorUsername: json['author_username'] as String?,
+      authorUid: json['author_uid'] as String?,
     );
   }
 

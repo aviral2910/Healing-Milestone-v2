@@ -83,9 +83,9 @@ class _CreateJourneyOverlayState extends State<CreateJourneyOverlay> {
         children: [
           // Full screen glassmorphism background
           BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+            filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
             child: Container(
-              color: theme.scaffoldBackgroundColor.withValues(alpha: 0.85),
+              color: theme.scaffoldBackgroundColor.withValues(alpha: 0.75),
             ),
           ),
 
@@ -181,10 +181,11 @@ class _CreateJourneyOverlayState extends State<CreateJourneyOverlay> {
                         const SizedBox(height: 12),
                         TextField(
                           controller: _titleController,
+                          maxLength: 25,
                           autofocus:
                               !isEditing, // Focus instantly so they find it
-                          style: theme.textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.w600,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w500,
                           ),
                           decoration: InputDecoration(
                             hintText: 'e.g. Mental Health Reset',
@@ -192,6 +193,12 @@ class _CreateJourneyOverlayState extends State<CreateJourneyOverlay> {
                               fontWeight: FontWeight.normal,
                               color: theme.colorScheme.onSurfaceVariant
                                   .withValues(alpha: 0.5),
+                            ),
+                            counterStyle: theme.textTheme.labelSmall?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant
+                                  .withValues(alpha: 0.6),
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: 0.5,
                             ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
@@ -236,12 +243,19 @@ class _CreateJourneyOverlayState extends State<CreateJourneyOverlay> {
                         const SizedBox(height: 12),
                         TextField(
                           controller: _categoryController,
+                          maxLength: 25,
                           style: theme.textTheme.bodyLarge,
                           decoration: InputDecoration(
                             hintText: 'e.g. Physical Recovery, Grief, Career',
                             hintStyle: TextStyle(
                               color: theme.colorScheme.onSurfaceVariant
                                   .withValues(alpha: 0.5),
+                            ),
+                            counterStyle: theme.textTheme.labelSmall?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant
+                                  .withValues(alpha: 0.6),
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: 0.5,
                             ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
