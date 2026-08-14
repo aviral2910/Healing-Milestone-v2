@@ -128,12 +128,13 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
           PublicJourneyDetailOverlay.show(
             context,
             journeyId: widget.milestone.journeyId!,
-            title: widget.milestone.journeyTitle!,
+            title: widget.milestone.journeyTitle ?? 'Journey',
             category: widget.milestone.journeyCategory,
             authorName: widget.milestone.authorName,
             authorAvatar: widget.milestone.authorAvatar,
             isMine: widget.milestone.isMine,
             visibility: widget.milestone.visibility,
+            initialIsFollowing: widget.milestone.isFollowing,
           );
         }
       },

@@ -57,6 +57,32 @@ class JourneyRepository {
     }
   }
 
+  Future<List<JourneyModel>> getFollowingJourneys() async {
+    try {
+      final response = await _apiClient.dio.get('/api/journeys/following');
+      final data = response.data as List;
+      return data.map((json) => JourneyModel.fromJson(json)).toList();
+    } catch (e) {
+      throw Exception('Failed to load following journeys: $e');
+    }
+  }
+
+  Future<void> followJourney(String journeyId) async {
+    try {
+      await _apiClient.dio.post('/api/journeys/$journeyId/follow');
+    } catch (e) {
+      throw Exception('Failed to follow journey: $e');
+    }
+  }
+
+  Future<void> unfollowJourney(String journeyId) async {
+    try {
+      await _apiClient.dio.delete('/api/journeys/$journeyId/follow');
+    } catch (e) {
+      throw Exception('Failed to unfollow journey: $e');
+    }
+  }
+
   Future<List<JourneyMilestoneModel>> getMilestones({
     String? journeyId,
     bool isFloating = false,

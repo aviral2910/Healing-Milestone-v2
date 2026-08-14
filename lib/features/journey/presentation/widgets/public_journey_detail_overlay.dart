@@ -6,7 +6,7 @@ import '../../data/models/journey_models.dart';
 import '../../../auth/data/auth_provider.dart';
 import 'timeline_node.dart';
 
-class PublicJourneyDetailOverlay extends ConsumerWidget {
+class PublicJourneyDetailOverlay extends ConsumerStatefulWidget {
   final String journeyId;
   final String title;
   final String? category;
@@ -14,6 +14,7 @@ class PublicJourneyDetailOverlay extends ConsumerWidget {
   final String? authorAvatar;
   final bool isMine;
   final MilestoneVisibility visibility;
+  final bool initialIsFollowing;
 
   const PublicJourneyDetailOverlay({
     Key? key,
@@ -24,7 +25,11 @@ class PublicJourneyDetailOverlay extends ConsumerWidget {
     this.authorAvatar,
     required this.isMine,
     required this.visibility,
+    this.initialIsFollowing = false,
   }) : super(key: key);
+
+  @override
+  ConsumerState<PublicJourneyDetailOverlay> createState() => _PublicJourneyDetailOverlayState();
 
   static Future<void> show(
     BuildContext context, {
@@ -35,6 +40,7 @@ class PublicJourneyDetailOverlay extends ConsumerWidget {
     String? authorAvatar,
     required bool isMine,
     required MilestoneVisibility visibility,
+    bool initialIsFollowing = false,
   }) {
     return showGeneralDialog(
       context: context,
@@ -51,6 +57,7 @@ class PublicJourneyDetailOverlay extends ConsumerWidget {
           authorAvatar: authorAvatar,
           isMine: isMine,
           visibility: visibility,
+          initialIsFollowing: initialIsFollowing,
         );
       },
       transitionBuilder: (context, animation, secondaryAnimation, child) {
@@ -76,19 +83,57 @@ class PublicJourneyDetailOverlay extends ConsumerWidget {
       },
     );
   }
+}
+
+class _PublicJourneyDetailOverlayState extends ConsumerState<PublicJourneyDetailOverlay> {
+  late bool _isFollowing;
+  bool _isLoadingFollow = false;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  void initState() {
+    super.initState();
+    _isFollowing = widget.initialIsFollowing;
+  }
+
+  Future<void> _toggleFollow() async {
+    if (_isLoadingFollow) return;
+    setState(() => _isLoadingFollow = true);
+
+    try {
+      final repo = ref.read(journeyRepositoryProvider);
+      if (_isFollowing) {
+        await repo.unfollowJourney(widget.journeyId);
+      } else {
+        await repo.followJourney(widget.journeyId);
+      }
+      setState(() {
+        _isFollowing = !_isFollowing;
+        _isLoadingFollow = false;
+      });
+      // Optionally refresh the feed
+      ref.invalidate(togetherFeedProvider);
+    } catch (e) {
+      setState(() => _isLoadingFollow = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to update: $e')),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final milestonesAsync = ref.watch(
-      publicJourneyMilestonesProvider(journeyId),
+      publicJourneyMilestonesProvider(widget.journeyId),
     );
     
-    final bool isMyAnonymousJourney = visibility == MilestoneVisibility.anonymous && isMine;
+    final bool isMyAnonymousJourney = widget.visibility == MilestoneVisibility.anonymous && widget.isMine;
 
-    final String displayAuthor = visibility == MilestoneVisibility.anonymous
+    final String displayAuthor = widget.visibility == MilestoneVisibility.anonymous
         ? (isMyAnonymousJourney ? 'Anonymous (You)' : 'Anonymous')
-        : (authorName ?? 'Anonymous');
+        : (widget.authorName ?? 'Anonymous');
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -187,17 +232,17 @@ class PublicJourneyDetailOverlay extends ConsumerWidget {
                                         )
                                       : theme.colorScheme.surface,
                                   backgroundImage:
-                                      authorAvatar != null &&
-                                          visibility ==
+                                      widget.authorAvatar != null &&
+                                          widget.visibility ==
                                               MilestoneVisibility.public
-                                      ? NetworkImage(authorAvatar!)
+                                      ? NetworkImage(widget.authorAvatar!)
                                       : null,
                                   child:
-                                      (authorAvatar == null ||
-                                          visibility ==
+                                      (widget.authorAvatar == null ||
+                                          widget.visibility ==
                                               MilestoneVisibility.anonymous)
                                       ? Icon(
-                                          visibility ==
+                                          widget.visibility ==
                                                   MilestoneVisibility.anonymous
                                               ? Icons.visibility_off_rounded
                                               : Icons.person_rounded,
@@ -241,18 +286,52 @@ class PublicJourneyDetailOverlay extends ConsumerWidget {
                                   ],
                                 ),
                               ),
+                              if (!widget.isMine)
+                                SizedBox(
+                                  height: 36,
+                                  child: FilledButton.icon(
+                                    onPressed: _isLoadingFollow ? null : _toggleFollow,
+                                    icon: _isLoadingFollow
+                                      ? const SizedBox(
+                                          width: 16,
+                                          height: 16,
+                                          child: CircularProgressIndicator(strokeWidth: 2),
+                                        )
+                                      : Icon(
+                                          _isFollowing ? Icons.directions_walk_rounded : Icons.directions_walk_rounded,
+                                          size: 16,
+                                        ),
+                                    label: Text(
+                                      _isFollowing ? 'Walking together' : 'Walk with them',
+                                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                                    ),
+                                    style: FilledButton.styleFrom(
+                                      backgroundColor: _isFollowing 
+                                          ? theme.colorScheme.primaryContainer 
+                                          : theme.colorScheme.primary,
+                                      foregroundColor: _isFollowing 
+                                          ? theme.colorScheme.onPrimaryContainer 
+                                          : theme.colorScheme.onPrimary,
+                                      elevation: 0,
+                                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                    ),
+                                  ),
+                                ),
                             ],
                           ),
                           const SizedBox(height: 24),
                           Text(
-                            title,
+                            widget.title,
                             style: theme.textTheme.headlineSmall?.copyWith(
                               fontWeight: FontWeight.bold,
                               letterSpacing: -0.5,
                               color: theme.colorScheme.onSurface,
                             ),
                           ),
-                          if (category != null) ...[
+                          if (widget.category != null) ...[
                             const SizedBox(height: 12),
                             Container(
                               padding: const EdgeInsets.symmetric(
@@ -280,7 +359,7 @@ class PublicJourneyDetailOverlay extends ConsumerWidget {
                                   ),
                                   const SizedBox(width: 6),
                                   Text(
-                                    category!.toUpperCase(),
+                                    widget.category!.toUpperCase(),
                                     style: theme.textTheme.labelSmall?.copyWith(
                                       color: theme.colorScheme.primary,
                                       fontWeight: FontWeight.w800,

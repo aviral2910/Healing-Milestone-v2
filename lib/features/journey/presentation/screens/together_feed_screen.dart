@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/providers/journey_providers.dart';
 import '../widgets/together_feed_card.dart';
+import '../widgets/walking_with_carousel.dart';
 import '../../../../core/widgets/shared_headers.dart';
 
 class TogetherFeedScreen extends ConsumerStatefulWidget {
@@ -138,6 +139,14 @@ class _TogetherFeedScreenState extends ConsumerState<TogetherFeedScreen>
                       ),
                     ],
                   ),
+                ),
+              ),
+
+              // Walking With Carousel
+              const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.only(bottom: 16.0),
+                  child: WalkingWithCarousel(),
                 ),
               ),
 

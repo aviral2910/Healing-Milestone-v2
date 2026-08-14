@@ -53,6 +53,9 @@ class JourneyModel {
   final MilestoneVisibility visibility;
   final bool isActive;
   final DateTime createdAt;
+  final bool isFollowing;
+  final String? authorName;
+  final String? authorAvatar;
 
   JourneyModel({
     required this.id,
@@ -62,6 +65,9 @@ class JourneyModel {
     this.visibility = MilestoneVisibility.public,
     this.isActive = true,
     required this.createdAt,
+    this.isFollowing = false,
+    this.authorName,
+    this.authorAvatar,
   });
 
   factory JourneyModel.fromJson(Map<String, dynamic> json) {
@@ -73,6 +79,9 @@ class JourneyModel {
       visibility: MilestoneVisibility.fromString(json['visibility'] as String? ?? 'public'),
       isActive: json['is_active'] as bool? ?? true,
       createdAt: DateTime.parse(json['created_at'] as String).toLocal(),
+      isFollowing: json['is_following'] as bool? ?? false,
+      authorName: json['author_name'] as String?,
+      authorAvatar: json['author_avatar'] as String?,
     );
   }
 
@@ -85,6 +94,7 @@ class JourneyModel {
       'visibility': visibility.name,
       'is_active': isActive,
       'created_at': createdAt.toIso8601String(),
+      'is_following': isFollowing,
     };
   }
 }
@@ -109,6 +119,7 @@ class JourneyMilestoneModel {
   final int reactionCount;
   final Map<String, int> reactionCounts;
   final String? userReaction;
+  final bool isFollowing;
 
   JourneyMilestoneModel({
     required this.id,
@@ -130,6 +141,7 @@ class JourneyMilestoneModel {
     this.reactionCount = 0,
     this.reactionCounts = const {},
     this.userReaction,
+    this.isFollowing = false,
   });
 
   factory JourneyMilestoneModel.fromJson(Map<String, dynamic> json) {
@@ -153,6 +165,7 @@ class JourneyMilestoneModel {
       reactionCount: json['reaction_count'] as int? ?? 0,
       reactionCounts: (json['reaction_counts'] as Map<String, dynamic>?)?.map((k, v) => MapEntry(k, v as int)) ?? {},
       userReaction: json['user_reaction'] as String?,
+      isFollowing: json['is_following'] as bool? ?? false,
     );
   }
 

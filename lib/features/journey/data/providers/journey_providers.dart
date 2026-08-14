@@ -32,3 +32,8 @@ final togetherFeedProvider = FutureProvider.autoDispose<List<JourneyMilestoneMod
   final repository = ref.watch(journeyRepositoryProvider);
   return repository.getPublicMilestones();
 });
+
+final followingJourneysProvider = FutureProvider.autoDispose<List<JourneyModel>>((ref) async {
+  final repository = ref.watch(journeyRepositoryProvider);
+  return repository.getFollowingJourneys();
+});
