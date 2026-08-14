@@ -12,7 +12,7 @@ class PublicJourneyDetailOverlay extends ConsumerWidget {
   final String? category;
   final String? authorName;
   final String? authorAvatar;
-  final String authorId;
+  final bool isMine;
   final MilestoneVisibility visibility;
 
   const PublicJourneyDetailOverlay({
@@ -22,7 +22,7 @@ class PublicJourneyDetailOverlay extends ConsumerWidget {
     this.category,
     this.authorName,
     this.authorAvatar,
-    required this.authorId,
+    required this.isMine,
     required this.visibility,
   }) : super(key: key);
 
@@ -33,7 +33,7 @@ class PublicJourneyDetailOverlay extends ConsumerWidget {
     String? category,
     String? authorName,
     String? authorAvatar,
-    required String authorId,
+    required bool isMine,
     required MilestoneVisibility visibility,
   }) {
     return showGeneralDialog(
@@ -49,7 +49,7 @@ class PublicJourneyDetailOverlay extends ConsumerWidget {
           category: category,
           authorName: authorName,
           authorAvatar: authorAvatar,
-          authorId: authorId,
+          isMine: isMine,
           visibility: visibility,
         );
       },
@@ -60,15 +60,16 @@ class PublicJourneyDetailOverlay extends ConsumerWidget {
             curve: Curves.easeOutCubic,
           ),
           child: SlideTransition(
-            position: Tween<Offset>(
-              begin: const Offset(0, 0.05),
-              end: Offset.zero,
-            ).animate(
-              CurvedAnimation(
-                parent: animation,
-                curve: Curves.easeOutCubic,
-              ),
-            ),
+            position:
+                Tween<Offset>(
+                  begin: const Offset(0, 0.05),
+                  end: Offset.zero,
+                ).animate(
+                  CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.easeOutCubic,
+                  ),
+                ),
             child: child,
           ),
         );
@@ -79,13 +80,11 @@ class PublicJourneyDetailOverlay extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final milestonesAsync = ref.watch(publicJourneyMilestonesProvider(journeyId));
-    final authState = ref.watch(authProvider).value;
-    final currentUserId = authState?.userModel?.userId.toLowerCase() ?? '';
+    final milestonesAsync = ref.watch(
+      publicJourneyMilestonesProvider(journeyId),
+    );
     
-    final bool isMyAnonymousJourney = visibility == MilestoneVisibility.anonymous && 
-                                      currentUserId.isNotEmpty &&
-                                      currentUserId == authorId.toLowerCase();
+    final bool isMyAnonymousJourney = visibility == MilestoneVisibility.anonymous && isMine;
 
     final String displayAuthor = visibility == MilestoneVisibility.anonymous
         ? (isMyAnonymousJourney ? 'Anonymous (You)' : 'Anonymous')
@@ -103,7 +102,7 @@ class PublicJourneyDetailOverlay extends ConsumerWidget {
               color: theme.scaffoldBackgroundColor.withValues(alpha: 0.85),
             ),
           ),
-          
+
           SafeArea(
             bottom: false,
             child: CustomScrollView(
@@ -134,7 +133,10 @@ class PublicJourneyDetailOverlay extends ConsumerWidget {
                 ),
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0,
+                      vertical: 8.0,
+                    ),
                     child: Container(
                       padding: const EdgeInsets.all(24.0),
                       decoration: BoxDecoration(
@@ -145,7 +147,9 @@ class PublicJourneyDetailOverlay extends ConsumerWidget {
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: theme.colorScheme.shadow.withValues(alpha: 0.05),
+                            color: theme.colorScheme.shadow.withValues(
+                              alpha: 0.05,
+                            ),
                             blurRadius: 20,
                             offset: const Offset(0, 8),
                           ),
@@ -160,31 +164,48 @@ class PublicJourneyDetailOverlay extends ConsumerWidget {
                                 padding: const EdgeInsets.all(3),
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: isMyAnonymousJourney 
-                                    ? theme.colorScheme.primary.withValues(alpha: 0.2)
-                                    : theme.colorScheme.surface.withValues(alpha: 0.5),
+                                  color: isMyAnonymousJourney
+                                      ? theme.colorScheme.primary.withValues(
+                                          alpha: 0.2,
+                                        )
+                                      : theme.colorScheme.surface.withValues(
+                                          alpha: 0.5,
+                                        ),
                                   border: Border.all(
                                     color: isMyAnonymousJourney
-                                      ? theme.colorScheme.primary
-                                      : theme.colorScheme.primary.withValues(alpha: 0.3)
+                                        ? theme.colorScheme.primary
+                                        : theme.colorScheme.primary.withValues(
+                                            alpha: 0.3,
+                                          ),
                                   ),
                                 ),
                                 child: CircleAvatar(
                                   radius: 20,
                                   backgroundColor: isMyAnonymousJourney
-                                    ? theme.colorScheme.primary.withValues(alpha: 0.1)
-                                    : theme.colorScheme.surface,
-                                  backgroundImage: authorAvatar != null && visibility == MilestoneVisibility.public
+                                      ? theme.colorScheme.primary.withValues(
+                                          alpha: 0.1,
+                                        )
+                                      : theme.colorScheme.surface,
+                                  backgroundImage:
+                                      authorAvatar != null &&
+                                          visibility ==
+                                              MilestoneVisibility.public
                                       ? NetworkImage(authorAvatar!)
                                       : null,
-                                  child: (authorAvatar == null || visibility == MilestoneVisibility.anonymous)
+                                  child:
+                                      (authorAvatar == null ||
+                                          visibility ==
+                                              MilestoneVisibility.anonymous)
                                       ? Icon(
-                                          visibility == MilestoneVisibility.anonymous
+                                          visibility ==
+                                                  MilestoneVisibility.anonymous
                                               ? Icons.visibility_off_rounded
                                               : Icons.person_rounded,
-                                          color: isMyAnonymousJourney 
-                                            ? theme.colorScheme.primary
-                                            : theme.colorScheme.onSurfaceVariant,
+                                          color: isMyAnonymousJourney
+                                              ? theme.colorScheme.primary
+                                              : theme
+                                                    .colorScheme
+                                                    .onSurfaceVariant,
                                           size: 20,
                                         )
                                       : null,
@@ -197,18 +218,23 @@ class PublicJourneyDetailOverlay extends ConsumerWidget {
                                   children: [
                                     Text(
                                       'Journey by',
-                                      style: theme.textTheme.labelSmall?.copyWith(
-                                        color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
-                                        fontWeight: FontWeight.w600,
-                                        letterSpacing: 0.5,
-                                      ),
+                                      style: theme.textTheme.labelSmall
+                                          ?.copyWith(
+                                            color: theme
+                                                .colorScheme
+                                                .onSurfaceVariant
+                                                .withValues(alpha: 0.8),
+                                            fontWeight: FontWeight.w600,
+                                            letterSpacing: 0.5,
+                                          ),
                                     ),
                                     Text(
                                       displayAuthor,
-                                      style: theme.textTheme.titleMedium?.copyWith(
-                                        fontWeight: FontWeight.w700,
-                                        letterSpacing: -0.3,
-                                      ),
+                                      style: theme.textTheme.titleMedium
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w700,
+                                            letterSpacing: -0.3,
+                                          ),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
@@ -229,18 +255,29 @@ class PublicJourneyDetailOverlay extends ConsumerWidget {
                           if (category != null) ...[
                             const SizedBox(height: 12),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 6,
+                              ),
                               decoration: BoxDecoration(
-                                color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                                color: theme.colorScheme.primary.withValues(
+                                  alpha: 0.1,
+                                ),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                  color: theme.colorScheme.primary.withValues(alpha: 0.2), 
+                                  color: theme.colorScheme.primary.withValues(
+                                    alpha: 0.2,
+                                  ),
                                 ),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(Icons.folder_open_rounded, size: 14, color: theme.colorScheme.primary),
+                                  Icon(
+                                    Icons.folder_open_rounded,
+                                    size: 14,
+                                    color: theme.colorScheme.primary,
+                                  ),
                                   const SizedBox(width: 6),
                                   Text(
                                     category!.toUpperCase(),
@@ -259,7 +296,7 @@ class PublicJourneyDetailOverlay extends ConsumerWidget {
                     ),
                   ),
                 ),
-                
+
                 milestonesAsync.when(
                   data: (milestones) {
                     if (milestones.isEmpty) {
@@ -272,7 +309,9 @@ class PublicJourneyDetailOverlay extends ConsumerWidget {
                                 Icon(
                                   Icons.auto_awesome_rounded,
                                   size: 48,
-                                  color: theme.colorScheme.primary.withValues(alpha: 0.3),
+                                  color: theme.colorScheme.primary.withValues(
+                                    alpha: 0.3,
+                                  ),
                                 ),
                                 const SizedBox(height: 16),
                                 Text(
@@ -295,24 +334,26 @@ class PublicJourneyDetailOverlay extends ConsumerWidget {
                         ),
                       );
                     }
-                    
+
                     // Sort newest first
                     final reversedMilestones = milestones.toList()
                       ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
-                      
+
                     return SliverPadding(
-                      padding: const EdgeInsets.only(left: 16, right: 8, top: 24, bottom: 100),
+                      padding: const EdgeInsets.only(
+                        left: 16,
+                        right: 8,
+                        top: 24,
+                        bottom: 100,
+                      ),
                       sliver: SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) {
-                            final milestone = reversedMilestones[index];
-                            return TimelineNode(
-                              milestone: milestone,
-                              isReversed: true,
-                            );
-                          },
-                          childCount: reversedMilestones.length,
-                        ),
+                        delegate: SliverChildBuilderDelegate((context, index) {
+                          final milestone = reversedMilestones[index];
+                          return TimelineNode(
+                            milestone: milestone,
+                            isReversed: true,
+                          );
+                        }, childCount: reversedMilestones.length),
                       ),
                     );
                   },

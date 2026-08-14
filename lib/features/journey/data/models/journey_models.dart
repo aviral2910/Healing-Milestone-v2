@@ -105,6 +105,7 @@ class JourneyMilestoneModel {
   final String? authorAvatar;
   final String? authorUsername;
   final String? authorUid;
+  final bool isMine;
 
   JourneyMilestoneModel({
     required this.id,
@@ -122,6 +123,7 @@ class JourneyMilestoneModel {
     this.authorAvatar,
     this.authorUsername,
     this.authorUid,
+    this.isMine = false,
   });
 
   factory JourneyMilestoneModel.fromJson(Map<String, dynamic> json) {
@@ -141,6 +143,7 @@ class JourneyMilestoneModel {
       authorAvatar: json['author_avatar'] as String?,
       authorUsername: json['author_username'] as String?,
       authorUid: json['author_uid'] as String?,
+      isMine: json['is_mine'] as bool? ?? false,
     );
   }
 

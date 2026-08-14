@@ -93,12 +93,9 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final glowColor = _getEmotionColor();
-    final authState = ref.watch(authProvider).value;
-    final currentUserId = authState?.userModel?.userId.toLowerCase() ?? '';
     
     final bool isMyAnonymousJourney = widget.milestone.visibility == MilestoneVisibility.anonymous && 
-                                      currentUserId.isNotEmpty &&
-                                      currentUserId == widget.milestone.userId.toLowerCase();
+                                      widget.milestone.isMine;
                                       
     final String displayAuthor = widget.milestone.visibility == MilestoneVisibility.anonymous
         ? (isMyAnonymousJourney ? 'Anonymous (You)' : 'Anonymous')
@@ -119,7 +116,7 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
             category: widget.milestone.journeyCategory,
             authorName: widget.milestone.authorName,
             authorAvatar: widget.milestone.authorAvatar,
-            authorId: widget.milestone.userId,
+            isMine: widget.milestone.isMine,
             visibility: widget.milestone.visibility,
           );
         }
@@ -174,11 +171,13 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
                           padding: const EdgeInsets.all(3),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: theme.colorScheme.surface.withValues(
-                              alpha: 0.5,
-                            ),
+                            color: isMyAnonymousJourney
+                                ? theme.colorScheme.primary.withValues(alpha: 0.2)
+                                : theme.colorScheme.surface.withValues(alpha: 0.5),
                             border: Border.all(
-                              color: glowColor.withValues(alpha: 0.3),
+                              color: isMyAnonymousJourney
+                                  ? theme.colorScheme.primary
+                                  : glowColor.withValues(alpha: 0.3),
                             ),
                             boxShadow: [
                               BoxShadow(
@@ -190,18 +189,22 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
                           ),
                           child: CircleAvatar(
                             radius: 24,
-                            backgroundColor: theme.colorScheme.surface,
+                            backgroundColor: isMyAnonymousJourney
+                                ? theme.colorScheme.primary.withValues(alpha: 0.1)
+                                : theme.colorScheme.surface,
                             backgroundImage:
-                                widget.milestone.authorAvatar != null
+                                widget.milestone.authorAvatar != null && widget.milestone.visibility == MilestoneVisibility.public
                                 ? NetworkImage(widget.milestone.authorAvatar!)
                                 : null,
-                            child: widget.milestone.authorAvatar == null
+                            child: (widget.milestone.authorAvatar == null || widget.milestone.visibility == MilestoneVisibility.anonymous)
                                 ? Icon(
                                     widget.milestone.visibility ==
                                             MilestoneVisibility.anonymous
                                         ? Icons.visibility_off_rounded
                                         : Icons.person_rounded,
-                                    color: theme.colorScheme.onSurfaceVariant,
+                                    color: isMyAnonymousJourney
+                                        ? theme.colorScheme.primary
+                                        : theme.colorScheme.onSurfaceVariant,
                                     size: 20,
                                   )
                                 : null,
@@ -213,7 +216,7 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                widget.milestone.authorName ?? 'Anonymous',
+                                displayAuthor,
                                 style: theme.textTheme.titleMedium?.copyWith(
                                   fontWeight: FontWeight.w700,
                                   letterSpacing: -0.3,
