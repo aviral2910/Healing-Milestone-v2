@@ -107,6 +107,7 @@ class JourneyMilestoneModel {
   final String? authorUid;
   final bool isMine;
   final int reactionCount;
+  final Map<String, int> reactionCounts;
   final String? userReaction;
 
   JourneyMilestoneModel({
@@ -127,6 +128,7 @@ class JourneyMilestoneModel {
     this.authorUid,
     this.isMine = false,
     this.reactionCount = 0,
+    this.reactionCounts = const {},
     this.userReaction,
   });
 
@@ -149,6 +151,7 @@ class JourneyMilestoneModel {
       authorUid: json['author_uid'] as String?,
       isMine: json['is_mine'] as bool? ?? false,
       reactionCount: json['reaction_count'] as int? ?? 0,
+      reactionCounts: (json['reaction_counts'] as Map<String, dynamic>?)?.map((k, v) => MapEntry(k, v as int)) ?? {},
       userReaction: json['user_reaction'] as String?,
     );
   }
