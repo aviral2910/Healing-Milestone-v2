@@ -154,4 +154,23 @@ class JourneyRepository {
       throw Exception('Failed to delete milestone: $e');
     }
   }
+
+  Future<void> reactToMilestone(String milestoneId, String reactionType) async {
+    try {
+      await _apiClient.dio.post(
+        '/api/milestones/$milestoneId/react',
+        queryParameters: {'reaction_type': reactionType},
+      );
+    } catch (e) {
+      throw Exception('Failed to react to milestone: $e');
+    }
+  }
+
+  Future<void> removeReaction(String milestoneId) async {
+    try {
+      await _apiClient.dio.delete('/api/milestones/$milestoneId/react');
+    } catch (e) {
+      throw Exception('Failed to remove reaction: $e');
+    }
+  }
 }

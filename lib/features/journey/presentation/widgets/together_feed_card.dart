@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/journey_models.dart';
 import '../../../auth/data/auth_provider.dart';
+import '../../data/providers/journey_providers.dart';
+import '../screens/together_feed_screen.dart';
 import 'public_journey_detail_overlay.dart';
 
 class TogetherFeedCard extends ConsumerStatefulWidget {
@@ -66,7 +68,10 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
       barrierColor: Colors.transparent,
       transitionDuration: const Duration(milliseconds: 400),
       pageBuilder: (context, animation, secondaryAnimation) {
-        return const _ReactionOverlay();
+        return _ReactionOverlay(
+          milestoneId: widget.milestone.id,
+          currentReaction: widget.milestone.userReaction,
+        );
       },
       transitionBuilder: (context, animation, secondaryAnimation, child) {
         return FadeTransition(
@@ -100,6 +105,32 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
     final String displayAuthor = widget.milestone.visibility == MilestoneVisibility.anonymous
         ? (isMyAnonymousJourney ? 'Anonymous (You)' : 'Anonymous')
         : (widget.milestone.authorName ?? 'Anonymous');
+
+    String reactionText = 'Spark';
+    IconData reactionIcon = Icons.auto_awesome_rounded;
+    Color reactionColor = glowColor;
+
+    if (widget.milestone.userReaction != null) {
+      if (widget.milestone.userReaction == 'spark') {
+        reactionText = 'Sparked';
+        reactionColor = Colors.amber;
+      } else if (widget.milestone.userReaction == 'strength') {
+        reactionText = 'Strength';
+        reactionIcon = Icons.fitness_center_rounded;
+        reactionColor = Colors.orange;
+      } else if (widget.milestone.userReaction == 'love') {
+        reactionText = 'Loved';
+        reactionIcon = Icons.favorite_rounded;
+        reactionColor = Colors.pink;
+      } else if (widget.milestone.userReaction == 'support') {
+        reactionText = 'Supported';
+        reactionIcon = Icons.volunteer_activism_rounded;
+        reactionColor = Colors.blue;
+      }
+    }
+
+    final int displayCount = widget.milestone.reactionCount > 0 ? widget.milestone.reactionCount : 0;
+    final String countString = displayCount > 0 ? '$displayCount $reactionText${displayCount > 1 && !reactionText.endsWith('s') && !reactionText.endsWith('ed') ? 's' : ''}' : 'React';
 
     return GestureDetector(
       onTapDown: (_) => _animController.forward(),
@@ -356,36 +387,62 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.surface.withValues(
-                              alpha: 0.5,
+                        GestureDetector(
+                          onTap: () async {
+                            final scaffoldMessenger = ScaffoldMessenger.of(context);
+                            HapticFeedback.selectionClick();
+                            
+                            try {
+                              if (widget.milestone.userReaction != null) {
+                                // Remove reaction if already reacted
+                                await ref.read(journeyRepositoryProvider).removeReaction(widget.milestone.id);
+                              } else {
+                                // Add default reaction "spark"
+                                await ref.read(journeyRepositoryProvider).reactToMilestone(widget.milestone.id, 'spark');
+                              }
+                              ref.invalidate(togetherFeedProvider);
+                            } catch (e) {
+                              scaffoldMessenger.showSnackBar(
+                                SnackBar(content: Text('Failed to update reaction')),
+                              );
+                            }
+                          },
+                          onLongPress: () {
+                            _showReactionOverlay(context);
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
                             ),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: theme.dividerColor.withValues(alpha: 0.1),
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.auto_awesome_rounded,
-                                size: 16,
-                                color: glowColor,
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.surface.withValues(
+                                alpha: 0.5,
                               ),
-                              const SizedBox(width: 6),
-                              Text(
-                                '12 Sparks',
-                                style: theme.textTheme.labelMedium?.copyWith(
-                                  color: theme.colorScheme.onSurface,
-                                  fontWeight: FontWeight.w700,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: widget.milestone.userReaction != null 
+                                  ? reactionColor.withValues(alpha: 0.5) 
+                                  : theme.dividerColor.withValues(alpha: 0.1),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  reactionIcon,
+                                  size: 16,
+                                  color: reactionColor,
                                 ),
-                              ),
-                            ],
+                                const SizedBox(width: 6),
+                                Text(
+                                  countString,
+                                  style: theme.textTheme.labelMedium?.copyWith(
+                                    color: widget.milestone.userReaction != null ? reactionColor : theme.colorScheme.onSurface,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                         Row(
@@ -429,51 +486,56 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
   }
 }
 
-class _ReactionOverlay extends StatelessWidget {
-  const _ReactionOverlay({Key? key}) : super(key: key);
+class _ReactionOverlay extends ConsumerWidget {
+  final String milestoneId;
+  final String? currentReaction;
+
+  const _ReactionOverlay({
+    Key? key,
+    required this.milestoneId,
+    this.currentReaction,
+  }) : super(key: key);
 
   Widget _buildReactionOption(
     BuildContext context,
+    WidgetRef ref,
     String emoji,
     String label,
     Color color,
+    String typeValue,
   ) {
     final theme = Theme.of(context);
+    final isSelected = currentReaction == typeValue;
+    
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () {
+        onTap: () async {
+          final scaffoldMessenger = ScaffoldMessenger.of(context);
           HapticFeedback.selectionClick();
           Navigator.pop(context);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Row(
-                children: [
-                  Text(emoji, style: const TextStyle(fontSize: 18)),
-                  const SizedBox(width: 12),
-                  Text(
-                    'Sent $label!',
-                    style: const TextStyle(fontWeight: FontWeight.w500),
-                  ),
-                ],
-              ),
-              backgroundColor: theme.colorScheme.inverseSurface,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-              duration: const Duration(seconds: 2),
-            ),
-          );
+          
+          try {
+            if (isSelected) {
+              await ref.read(journeyRepositoryProvider).removeReaction(milestoneId);
+            } else {
+              await ref.read(journeyRepositoryProvider).reactToMilestone(milestoneId, typeValue);
+            }
+            // Invalidate the public milestones feed to trigger a refresh
+            ref.invalidate(togetherFeedProvider);
+          } catch (e) {
+            scaffoldMessenger.showSnackBar(
+              SnackBar(content: Text('Failed to send reaction')),
+            );
+          }
         },
         borderRadius: BorderRadius.circular(24),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 16.0),
           decoration: BoxDecoration(
-            color: theme.colorScheme.surface.withValues(alpha: 0.5),
+            color: isSelected ? color.withValues(alpha: 0.2) : theme.colorScheme.surface.withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: color.withValues(alpha: 0.2)),
+            border: Border.all(color: isSelected ? color : color.withValues(alpha: 0.2), width: isSelected ? 2 : 1),
             boxShadow: [
               BoxShadow(
                 color: color.withValues(alpha: 0.1),
@@ -490,7 +552,7 @@ class _ReactionOverlay extends StatelessWidget {
               Text(
                 label,
                 style: theme.textTheme.labelMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
+                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
                   color: color,
                 ),
               ),
@@ -502,7 +564,7 @@ class _ReactionOverlay extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -557,36 +619,44 @@ class _ReactionOverlay extends StatelessWidget {
                       Expanded(
                         child: _buildReactionOption(
                           context,
+                          ref,
                           '✨',
                           'Spark',
                           Colors.amber,
+                          'spark',
                         ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: _buildReactionOption(
                           context,
+                          ref,
                           '💪',
                           'Strength',
                           Colors.orange,
+                          'strength',
                         ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: _buildReactionOption(
                           context,
+                          ref,
                           '❤️',
                           'Love',
                           Colors.pink,
+                          'love',
                         ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: _buildReactionOption(
                           context,
+                          ref,
                           '🙏',
                           'Support',
                           Colors.blue,
+                          'support',
                         ),
                       ),
                     ],
