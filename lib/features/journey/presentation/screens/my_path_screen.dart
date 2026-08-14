@@ -23,24 +23,31 @@ class MyPathScreen extends ConsumerWidget {
         physics: const BouncingScrollPhysics(),
         slivers: [
           const CommonSliverAppBar(),
-          
+
           // Gratitude Tree Placeholder Section
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 12.0,
+              ),
               child: Container(
                 height: 140,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
                       theme.colorScheme.primaryContainer.withValues(alpha: 0.4),
-                      theme.colorScheme.secondaryContainer.withValues(alpha: 0.1),
+                      theme.colorScheme.secondaryContainer.withValues(
+                        alpha: 0.1,
+                      ),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(32),
-                  border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.05)),
+                  border: Border.all(
+                    color: theme.colorScheme.primary.withValues(alpha: 0.05),
+                  ),
                 ),
                 child: Center(
                   child: Column(
@@ -95,7 +102,7 @@ class MyPathScreen extends ConsumerWidget {
           // My Journeys Horizontal List
           SliverToBoxAdapter(
             child: SizedBox(
-              height: 140,
+              height: 170, // Increased height for more breathing room
               child: journeysAsync.when(
                 data: (journeys) {
                   return ListView.builder(
@@ -107,14 +114,14 @@ class MyPathScreen extends ConsumerWidget {
                       if (index == 0) {
                         // Start New Journey Card
                         return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
                           child: GestureDetector(
                             onTap: () => CreateJourneyOverlay.show(context),
                             child: Container(
-                              width: 130,
+                              width: 140, // Match visual weight
                               decoration: BoxDecoration(
                                 color: theme.colorScheme.surface.withValues(alpha: 0.5),
-                                borderRadius: BorderRadius.circular(24),
+                                borderRadius: BorderRadius.circular(28),
                                 border: Border.all(
                                   color: theme.dividerColor.withValues(alpha: 0.3),
                                   style: BorderStyle.solid,
@@ -124,7 +131,7 @@ class MyPathScreen extends ConsumerWidget {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Container(
-                                    padding: const EdgeInsets.all(12),
+                                    padding: const EdgeInsets.all(16),
                                     decoration: BoxDecoration(
                                       color: theme.colorScheme.primary.withValues(alpha: 0.08),
                                       shape: BoxShape.circle,
@@ -132,15 +139,16 @@ class MyPathScreen extends ConsumerWidget {
                                     child: Icon(
                                       Icons.add_rounded,
                                       color: theme.colorScheme.primary,
-                                      size: 24,
+                                      size: 28,
                                     ),
                                   ),
-                                  const SizedBox(height: 12),
+                                  const SizedBox(height: 16),
                                   Text(
                                     'Start New',
                                     style: theme.textTheme.labelMedium?.copyWith(
                                       fontWeight: FontWeight.w600,
                                       color: theme.colorScheme.primary,
+                                      letterSpacing: 0.2,
                                     ),
                                   ),
                                 ],
@@ -152,120 +160,135 @@ class MyPathScreen extends ConsumerWidget {
                       
                       final journey = journeys[index - 1];
                       return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
                         child: GestureDetector(
                           onTap: () {
                             Navigator.of(context).push(
                               MaterialPageRoute(
-                                builder: (_) => JourneyDetailScreen(journeyId: journey.id, title: journey.title),
+                                builder: (_) => JourneyDetailScreen(
+                                  journeyId: journey.id, 
+                                  title: journey.title,
+                                  category: journey.category,
+                                ),
                               ),
                             );
                           },
                           child: Container(
-                            width: 140,
-                            padding: const EdgeInsets.all(20),
+                            width: 150, // Wider for long titles
+                            padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: theme.colorScheme.surface,
-                              borderRadius: BorderRadius.circular(24),
+                              gradient: LinearGradient(
+                                colors: [
+                                  theme.colorScheme.surface,
+                                  theme.colorScheme.surfaceContainerHigh.withValues(alpha: 0.3),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(28),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.03),
-                                  blurRadius: 16,
-                                  offset: const Offset(0, 4),
+                                  color: theme.colorScheme.primary.withValues(alpha: 0.08),
+                                  blurRadius: 20,
+                                  offset: const Offset(0, 6),
                                 ),
                               ],
-                              border: Border.all(color: theme.dividerColor.withValues(alpha: 0.15)),
+                              border: Border.all(color: theme.dividerColor.withValues(alpha: 0.1)),
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
-                                    Icon(Icons.folder_open_rounded, color: theme.colorScheme.primary, size: 28),
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(Icons.folder_open_rounded, color: theme.colorScheme.primary, size: 24),
+                                    ),
                                     Theme(
                                       data: Theme.of(context).copyWith(
                                         splashColor: Colors.transparent,
                                         highlightColor: Colors.transparent,
                                       ),
-                                      child: PopupMenuButton<String>(
-                                        icon: Icon(Icons.more_vert, size: 18, color: theme.colorScheme.onSurfaceVariant),
-                                        padding: EdgeInsets.zero,
-                                        onSelected: (value) async {
-                                          if (value == 'edit') {
-                                            CreateJourneyOverlay.show(context, journey: journey);
-                                          } else if (value == 'delete') {
-                                            final confirm = await showDialog<bool>(
-                                              context: context,
-                                              builder: (context) => AlertDialog(
-                                                title: const Text('Delete Journey'),
-                                                content: const Text('Are you sure you want to delete this journey and all its check-ins?'),
-                                                actions: [
-                                                  TextButton(
-                                                    onPressed: () => Navigator.pop(context, false),
-                                                    child: const Text('Cancel'),
-                                                  ),
-                                                  TextButton(
-                                                    onPressed: () => Navigator.pop(context, true),
-                                                    child: const Text('Delete', style: TextStyle(color: Colors.red)),
-                                                  ),
-                                                ],
-                                              ),
-                                            );
-                                            
-                                            if (confirm == true) {
-                                              try {
-                                                await ref.read(journeyRepositoryProvider).deleteJourney(journey.id);
-                                                ref.invalidate(myJourneysProvider);
-                                                ref.invalidate(myFloatingMilestonesProvider);
-                                                ref.invalidate(togetherFeedProvider);
-                                              } catch (e) {
-                                                if (context.mounted) {
-                                                  ScaffoldMessenger.of(context).showSnackBar(
-                                                    SnackBar(content: Text('Failed to delete journey: $e')),
-                                                  );
+                                      child: SizedBox(
+                                        height: 32,
+                                        width: 32,
+                                        child: PopupMenuButton<String>(
+                                          icon: Icon(Icons.more_horiz_rounded, size: 20, color: theme.colorScheme.onSurfaceVariant),
+                                          padding: EdgeInsets.zero,
+                                          onSelected: (value) async {
+                                            if (value == 'edit') {
+                                              CreateJourneyOverlay.show(context, journey: journey);
+                                            } else if (value == 'delete') {
+                                              final confirm = await showDialog<bool>(
+                                                context: context,
+                                                builder: (context) => AlertDialog(
+                                                  title: const Text('Delete Journey'),
+                                                  content: const Text('Are you sure you want to delete this journey and all its check-ins?'),
+                                                  actions: [
+                                                    TextButton(
+                                                      onPressed: () => Navigator.pop(context, false),
+                                                      child: const Text('Cancel'),
+                                                    ),
+                                                    TextButton(
+                                                      onPressed: () => Navigator.pop(context, true),
+                                                      child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                                                    ),
+                                                  ],
+                                                ),
+                                              );
+                                              
+                                              if (confirm == true) {
+                                                try {
+                                                  await ref.read(journeyRepositoryProvider).deleteJourney(journey.id);
+                                                  ref.invalidate(myJourneysProvider);
+                                                  ref.invalidate(myFloatingMilestonesProvider);
+                                                  ref.invalidate(togetherFeedProvider);
+                                                } catch (e) {
+                                                  if (context.mounted) {
+                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                      SnackBar(content: Text('Failed to delete journey: $e')),
+                                                    );
+                                                  }
                                                 }
                                               }
                                             }
-                                          }
-                                        },
-                                        itemBuilder: (context) => [
-                                          const PopupMenuItem(
-                                            value: 'edit',
-                                            child: Text('Edit'),
-                                          ),
-                                          const PopupMenuItem(
-                                            value: 'delete',
-                                            child: Text('Delete', style: TextStyle(color: Colors.red)),
-                                          ),
-                                        ],
+                                          },
+                                          itemBuilder: (context) => [
+                                            const PopupMenuItem(
+                                              value: 'edit',
+                                              child: Text('Edit'),
+                                            ),
+                                            const PopupMenuItem(
+                                              value: 'delete',
+                                              child: Text('Delete', style: TextStyle(color: Colors.red)),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ],
                                 ),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
+                                const SizedBox(height: 12),
+                                Expanded(
+                                  child: Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
                                       journey.title,
-                                      maxLines: 2,
+                                      maxLines: 3,
                                       overflow: TextOverflow.ellipsis,
                                       style: theme.textTheme.labelLarge?.copyWith(
-                                        fontWeight: FontWeight.w600,
-                                        height: 1.2,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: -0.3,
+                                        height: 1.3,
                                       ),
                                     ),
-                                    const SizedBox(height: 4),
-                                    if (journey.category != null)
-                                      Text(
-                                        journey.category!,
-                                        style: theme.textTheme.bodySmall?.copyWith(
-                                          color: theme.colorScheme.onSurfaceVariant,
-                                        ),
-                                      ),
-                                  ],
+                                  ),
                                 ),
                               ],
                             ),
@@ -306,31 +329,32 @@ class MyPathScreen extends ConsumerWidget {
                       child: Text(
                         'No check-ins yet. Tap + to log your mood.',
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.5,
+                          ),
                         ),
                       ),
                     ),
                   ),
                 );
               }
-              
+
               // Sort newest first
               final reversedMilestones = milestones.toList()
                 ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
-                
+
               return SliverPadding(
-                padding: const EdgeInsets.only(left: 16, right: 8, top: 16, bottom: 100),
+                padding: const EdgeInsets.only(
+                  left: 16,
+                  right: 8,
+                  top: 16,
+                  bottom: 100,
+                ),
                 sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final milestone = reversedMilestones[index];
-                      return TimelineNode(
-                        milestone: milestone,
-                        isReversed: true,
-                      );
-                    },
-                    childCount: reversedMilestones.length,
-                  ),
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final milestone = reversedMilestones[index];
+                    return TimelineNode(milestone: milestone, isReversed: true);
+                  }, childCount: reversedMilestones.length),
                 ),
               );
             },
@@ -342,9 +366,8 @@ class MyPathScreen extends ConsumerWidget {
                 ),
               ),
             ),
-            error: (err, stack) => SliverToBoxAdapter(
-              child: Center(child: Text('Error: $err')),
-            ),
+            error: (err, stack) =>
+                SliverToBoxAdapter(child: Center(child: Text('Error: $err'))),
           ),
         ],
       ),
@@ -356,7 +379,10 @@ class MyPathScreen extends ConsumerWidget {
         backgroundColor: theme.colorScheme.primary,
         foregroundColor: theme.colorScheme.onPrimary,
         icon: const Icon(Icons.add_rounded),
-        label: const Text('Check In', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        label: const Text(
+          'Check In',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
       ),
     );
   }

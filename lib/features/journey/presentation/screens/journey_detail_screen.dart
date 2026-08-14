@@ -7,11 +7,13 @@ import '../widgets/log_milestone_overlay.dart';
 class JourneyDetailScreen extends ConsumerWidget {
   final String journeyId;
   final String title;
+  final String? category;
 
   const JourneyDetailScreen({
     Key? key,
     required this.journeyId,
     required this.title,
+    this.category,
   }) : super(key: key);
 
   @override
@@ -32,12 +34,46 @@ class JourneyDetailScreen extends ConsumerWidget {
             backgroundColor: theme.scaffoldBackgroundColor.withValues(alpha: 0.8),
             flexibleSpace: FlexibleSpaceBar(
               titlePadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              title: Text(
-                title,
-                style: theme.textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: -0.5,
-                ),
+              title: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text(
+                    title,
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  if (category != null) ...[
+                    const SizedBox(height: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            theme.colorScheme.primary.withValues(alpha: 0.15),
+                            theme.colorScheme.secondary.withValues(alpha: 0.05),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.2), width: 0.5),
+                      ),
+                      child: Text(
+                        category!.toUpperCase(),
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: theme.colorScheme.primary,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1.2,
+                          fontSize: 8,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
               ),
               background: Stack(
                 fit: StackFit.expand,
