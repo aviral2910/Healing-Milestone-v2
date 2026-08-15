@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/network/api_client.dart';
+import '../../../auth/data/auth_provider.dart';
 import '../models/journey_models.dart';
 import '../repositories/journey_repository.dart';
 
@@ -9,11 +10,15 @@ final journeyRepositoryProvider = Provider<JourneyRepository>((ref) {
 });
 
 final myJourneysProvider = FutureProvider.autoDispose<List<JourneyModel>>((ref) async {
+  final auth = ref.watch(authProvider).value;
+  if (auth?.status != AuthStatus.authenticated) return [];
   final repository = ref.watch(journeyRepositoryProvider);
   return repository.getJourneys();
 });
 
 final myFloatingMilestonesProvider = FutureProvider.autoDispose<List<JourneyMilestoneModel>>((ref) async {
+  final auth = ref.watch(authProvider).value;
+  if (auth?.status != AuthStatus.authenticated) return [];
   final repository = ref.watch(journeyRepositoryProvider);
   return repository.getMilestones(isFloating: true);
 });
@@ -29,11 +34,15 @@ final publicJourneyMilestonesProvider = FutureProvider.autoDispose.family<List<J
 });
 
 final togetherFeedProvider = FutureProvider.autoDispose<List<JourneyMilestoneModel>>((ref) async {
+  final auth = ref.watch(authProvider).value;
+  if (auth?.status != AuthStatus.authenticated) return [];
   final repository = ref.watch(journeyRepositoryProvider);
   return repository.getPublicMilestones();
 });
 
 final followingJourneysProvider = FutureProvider.autoDispose<List<JourneyModel>>((ref) async {
+  final auth = ref.watch(authProvider).value;
+  if (auth?.status != AuthStatus.authenticated) return [];
   final repository = ref.watch(journeyRepositoryProvider);
   return repository.getFollowingJourneys();
 });

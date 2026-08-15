@@ -46,9 +46,86 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final authState = ref.watch(authProvider);
     final user = ref.watch(currentUserProvider);
-    if (user == null)
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+
+    if (authState.isLoading) {
+      return Scaffold(
+        backgroundColor: theme.scaffoldBackgroundColor,
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (user == null) {
+      return Scaffold(
+        backgroundColor: theme.scaffoldBackgroundColor,
+        appBar: AppBar(
+          title: const Text('Vault', style: TextStyle(fontWeight: FontWeight.bold)),
+          centerTitle: true,
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.lock_outline_rounded,
+                    size: 64,
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+                const SizedBox(height: 32),
+                Text(
+                  'Unlock Your Vault',
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.onSurface,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Sign in to access your personal milestones, manage your drafts, and write letters to your future self.',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 40),
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton(
+                    onPressed: () => context.push(AppRoutes.login),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: theme.colorScheme.primary,
+                      foregroundColor: theme.colorScheme.primary.computeLuminance() > 0.25 ? Colors.black : Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: const Text(
+                      'Sign In or Create Account',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
     final bool isProOrOrg = user.role == UserRole.healthcareProfessional ||
         user.role == UserRole.organization;
 
@@ -122,22 +199,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       Center(
                         child: Column(
                           children: [
-                            Hero(
-                              tag: 'profile-avatar-${user.userId}',
-                              child: Container(
-                                padding: const EdgeInsets.all(2),
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: theme.colorScheme.primary,
-                                ),
-                                child: CircleAvatar(
-                                  radius: 50,
-                                  backgroundColor:
-                                      theme.scaffoldBackgroundColor,
-                                  backgroundImage: NetworkImage(
-                                    user.profilePicture ??
-                                        'https://api.dicebear.com/7.x/avataaars/png?seed=${user.userId}',
-                                  ),
+                            Container(
+                              padding: const EdgeInsets.all(2),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: theme.colorScheme.primary,
+                              ),
+                              child: CircleAvatar(
+                                radius: 50,
+                                backgroundColor:
+                                    theme.scaffoldBackgroundColor,
+                                backgroundImage: NetworkImage(
+                                  user.profilePicture ??
+                                      'https://api.dicebear.com/7.x/avataaars/png?seed=${user.userId}',
                                 ),
                               ),
                             ),

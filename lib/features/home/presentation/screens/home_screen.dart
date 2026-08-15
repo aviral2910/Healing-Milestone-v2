@@ -4,11 +4,14 @@ import 'package:go_router/go_router.dart';
 import 'package:healing_milestones/features/home/presentation/screens/inspire_screen.dart';
 import 'package:healing_milestones/features/journey/presentation/screens/my_path_screen.dart';
 import 'package:healing_milestones/features/journey/presentation/screens/together_feed_screen.dart';
+import 'package:healing_milestones/features/profile/presentation/screens/profile_screen.dart';
 
 import '../../../../features/search/presentation/screens/search_screen.dart';
 import '../../../../features/support_chat/presentation/screens/messages_screen.dart';
 import '../../../../features/auth/data/auth_provider.dart';
 import '../../../../features/support_chat/presentation/providers/chat_providers.dart';
+import '../providers/home_tab_provider.dart';
+
 import '../../../../main.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -18,10 +21,10 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
+
 class _HomeScreenState extends ConsumerState<HomeScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  int _currentIndex = 0;
 
   final ScrollController _timelineScrollController = ScrollController();
   final ScrollController _forYouScrollController = ScrollController();
@@ -33,10 +36,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     super.initState();
     _tabController = TabController(length: 5, vsync: this);
     _tabController.addListener(() {
-      if (_tabController.index != _currentIndex) {
-        setState(() {
-          _currentIndex = _tabController.index;
-        });
+      final currentTab = ref.read(homeTabProvider);
+      if (_tabController.index != currentTab) {
+        ref.read(homeTabProvider.notifier).state = _tabController.index;
       }
     });
   }
@@ -52,7 +54,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   }
 
   void _onBottomNavTapped(int index) {
-    if (index == _currentIndex) {
+    final currentTab = ref.read(homeTabProvider);
+    if (index == currentTab) {
       // Scroll to top if already on the active tab (basic implementation for Inspire and Connect)
       if (index == 0) {
         // Can't easily know which top tab is active from here without more state,
@@ -72,9 +75,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         );
       }
     } else {
-      setState(() {
-        _currentIndex = index;
-      });
+      ref.read(homeTabProvider.notifier).state = index;
       _tabController.animateTo(index);
     }
   }
@@ -84,6 +85,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     final theme = Theme.of(context);
     final authState = ref.watch(authProvider).value;
     final isAuthenticated = authState?.status == AuthStatus.authenticated;
+    final currentIndex = ref.watch(homeTabProvider);
+    
+    // Sync tab controller if the provider changes from outside
+    if (_tabController.index != currentIndex) {
+      _tabController.animateTo(currentIndex);
+    }
 
     int unreadCount = 0;
     if (isAuthenticated) {
@@ -101,9 +108,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     }
 
     return PopScope(
-      canPop: _currentIndex == 0,
+      canPop: currentIndex == 0,
       onPopInvokedWithResult: (didPop, result) {
-        if (!didPop && _currentIndex != 0) {
+        if (!didPop && currentIndex != 0) {
           _onBottomNavTapped(0);
         }
       },
@@ -111,13 +118,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         resizeToAvoidBottomInset: false,
         extendBody: false,
         body: IndexedStack(
-          index: _currentIndex,
+          index: currentIndex,
           children: [
             InspireScreen(
               timelineScrollController: _timelineScrollController,
               forYouScrollController: _forYouScrollController,
               awarenessScrollController: _awarenessScrollController,
-              isActiveTab: _currentIndex == 0,
+              isActiveTab: currentIndex == 0,
               onSearchTapped: () {
                 // Navigate to search screen
                 context.push(
@@ -132,10 +139,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             // Tab 4: Connect (Messages)
             MessagesScreen(
               scrollController: _messagesScrollController,
-              isActiveTab: _currentIndex == 3,
+              isActiveTab: currentIndex == 3,
             ),
-            // Placeholder for Tab 5: Vault (Profile)
-            const Center(child: Text("Vault coming soon")),
+            // Tab 5: Vault (Profile)
+            const ProfileScreen(),
           ],
         ),
         bottomNavigationBar: Container(
@@ -201,7 +208,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     required ThemeData theme,
     int unreadCount = 0,
   }) {
-    final isSelected = _currentIndex == index;
+    final isSelected = ref.read(homeTabProvider) == index;
     Widget iconWidget = AnimatedSwitcher(
       duration: const Duration(milliseconds: 300),
       transitionBuilder: (child, animation) {

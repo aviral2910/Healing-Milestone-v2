@@ -28,11 +28,6 @@ class CommonSliverAppBar extends ConsumerWidget {
     if (!isVisible) return const SliverToBoxAdapter(child: SizedBox.shrink());
 
     final theme = Theme.of(context);
-    final user = ref.watch(currentUserProvider);
-    final authState = ref.watch(authProvider);
-    final isAuthLoading = authState.isLoading;
-    final isAuthenticated = authState.value?.status == AuthStatus.authenticated;
-    final isProfileLoading = isAuthLoading || (isAuthenticated && user == null);
 
     return SliverAppBar(
       floating: true,
@@ -41,60 +36,6 @@ class CommonSliverAppBar extends ConsumerWidget {
       centerTitle: true,
       backgroundColor: theme.scaffoldBackgroundColor,
       elevation: 0,
-      leading: Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: InkWell(
-          onTap: () {
-            if (user != null) {
-              context.push(AppRoutes.profile);
-            } else {
-              context.push(AppRoutes.login);
-            }
-          },
-          borderRadius: BorderRadius.circular(20),
-          child: user != null
-              ? HeroMode(
-                  enabled: isHeroEnabled,
-                  child: Hero(
-                    tag: 'profile-avatar-${user.userId}',
-                    child: Container(
-                      padding: const EdgeInsets.all(2),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: theme.colorScheme.primary,
-                      ),
-                      child: CircleAvatar(
-                        radius: 18,
-                        backgroundColor: theme.scaffoldBackgroundColor,
-                        backgroundImage: NetworkImage(
-                          user.profilePicture ??
-                              'https://api.dicebear.com/7.x/avataaars/png?seed=${user.userId}',
-                        ),
-                      ),
-                    ),
-                  ),
-                )
-              : isProfileLoading
-                  ? const _SkeletonAvatar()
-                  : Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurface
-                                .withValues(alpha: 0.24)),
-                      ),
-                      child: CircleAvatar(
-                        radius: 18,
-                        backgroundColor: Colors.transparent,
-                        child: Icon(Icons.person_outline,
-                            size: 20,
-                            color: Theme.of(context).colorScheme.onSurface),
-                      ),
-                    ),
-        ),
-      ),
       title: HealingMilestonesLogoWidget(),
       actions: [
         if (onSearchTapped != null)

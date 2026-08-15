@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
@@ -11,21 +12,44 @@ class ApiClient {
   final Dio _dio;
 
   ApiClient({required String baseUrl}) : _dio = Dio(BaseOptions(baseUrl: baseUrl)) {
+    // Auth interceptor: attach Firebase token to every request
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
           final user = FirebaseAuth.instance.currentUser;
           if (user != null) {
             try {
-              final token = await user.getIdToken();
+              final token = await user.getIdToken(true);
               if (token != null) {
                 options.headers['Authorization'] = 'Bearer $token';
               }
             } catch (e) {
-              // Token fetch failed, proceed without token or log error
+              debugPrint('Token fetch failed: $e');
             }
           }
           return handler.next(options);
+        },
+        onError: (error, handler) async {
+          // Only retry on 401 and only once (check for retry marker)
+          if (error.response?.statusCode == 401 &&
+              error.requestOptions.headers['_retried'] != true) {
+            final user = FirebaseAuth.instance.currentUser;
+            if (user != null) {
+              try {
+                final freshToken = await user.getIdToken(true);
+                if (freshToken != null) {
+                  final opts = error.requestOptions;
+                  opts.headers['Authorization'] = 'Bearer $freshToken';
+                  opts.headers['_retried'] = true; // Mark to prevent infinite retry
+                  final response = await _dio.fetch(opts);
+                  return handler.resolve(response);
+                }
+              } catch (e) {
+                debugPrint('Token refresh retry failed: $e');
+              }
+            }
+          }
+          return handler.next(error);
         },
       ),
     );

@@ -3,6 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../data/providers/journey_providers.dart';
 import '../widgets/timeline_node.dart';
+import '../widgets/gratitude_tree.dart';
+import '../widgets/time_capsule_card.dart';
+import '../providers/time_capsule_provider.dart';
+import '../../../auth/data/auth_provider.dart';
+
 import '../../../../core/widgets/shared_headers.dart';
 import '../widgets/log_milestone_overlay.dart';
 import '../widgets/create_journey_overlay.dart';
@@ -24,57 +29,102 @@ class MyPathScreen extends ConsumerWidget {
         slivers: [
           const CommonSliverAppBar(),
 
-          // Gratitude Tree Placeholder Section
+          // Gratitude Tree Section
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: 24.0,
                 vertical: 12.0,
               ),
-              child: Container(
-                height: 140,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      theme.colorScheme.primaryContainer.withValues(alpha: 0.4),
-                      theme.colorScheme.secondaryContainer.withValues(
-                        alpha: 0.1,
-                      ),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+              child: Column(
+                children: [
+                  GratitudeTree(gratitudeScore: 100),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Your tree is blooming',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                  borderRadius: BorderRadius.circular(32),
-                  border: Border.all(
-                    color: theme.colorScheme.primary.withValues(alpha: 0.05),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Gratitude grows here.',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
                   ),
-                ),
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.eco_rounded,
-                        size: 40,
-                        color: theme.colorScheme.primary,
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        'Gratitude Tree',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Your tree is growing strong.',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
+                  const SizedBox(height: 16),
+                  
+                  // Time Capsule Integration
+                  Consumer(
+                    builder: (context, ref, child) {
+                      final capsulesAsync = ref.watch(myTimeCapsulesProvider);
+                      final capsule = capsulesAsync.value?.isNotEmpty == true 
+                          ? capsulesAsync.value!.first 
+                          : null;
+                          
+                      return TimeCapsuleCard(
+                        activeCapsule: capsule,
+                        onOpen: () {
+                          if (capsule != null) {
+                            ref.read(myTimeCapsulesProvider.notifier).openCapsule(capsule.id);
+                            showGeneralDialog(
+                              context: context,
+                              pageBuilder: (context, animation, secondaryAnimation) {
+                                return Scaffold(
+                                  backgroundColor: const Color(0xFFFFC107).withOpacity(0.1),
+                                  appBar: AppBar(
+                                    backgroundColor: Colors.transparent,
+                                    elevation: 0,
+                                    leading: IconButton(
+                                      icon: const Icon(Icons.close),
+                                      onPressed: () => Navigator.of(context).pop(),
+                                    ),
+                                  ),
+                                  body: Center(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(32.0),
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          const Icon(Icons.mark_email_read_rounded, size: 64, color: Color(0xFFFFC107)),
+                                          const SizedBox(height: 24),
+                                          Text(
+                                            "A Message From Your Past Self",
+                                            textAlign: TextAlign.center,
+                                            style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            "Written on " + capsule.createdAt.toLocal().toString().split(' ')[0],
+                                            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
+                                          ),
+                                          const SizedBox(height: 32),
+                                          Expanded(
+                                            child: SingleChildScrollView(
+                                              child: Text(
+                                                capsule.content,
+                                                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                                  height: 1.6,
+                                                  fontStyle: FontStyle.italic,
+                                                ),
+                                                textAlign: TextAlign.center,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }
+                            );
+                          }
+                        }
+                      );
+                    }
                   ),
-                ),
+                ],
               ),
             ),
           ),

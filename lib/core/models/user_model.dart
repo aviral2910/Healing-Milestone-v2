@@ -34,6 +34,7 @@ class UserModel {
   
   final bool appliedForVerification;
   final String status; // 'active', 'suspended', 'banned'
+  final int gratitudeScore;
 
   UserModel({
     required this.userId,
@@ -60,6 +61,7 @@ class UserModel {
     this.registrationNumber,
     this.appliedForVerification = false,
     this.status = 'active',
+    this.gratitudeScore = 20,
   });
 
   UserModel copyWith({
@@ -87,6 +89,7 @@ class UserModel {
     String? registrationNumber,
     bool? appliedForVerification,
     String? status,
+    int? gratitudeScore,
   }) {
     return UserModel(
       userId: userId ?? this.userId,
@@ -113,6 +116,7 @@ class UserModel {
       registrationNumber: registrationNumber ?? this.registrationNumber,
       appliedForVerification: appliedForVerification ?? this.appliedForVerification,
       status: status ?? this.status,
+      gratitudeScore: gratitudeScore ?? this.gratitudeScore,
     );
   }
 
@@ -142,6 +146,7 @@ class UserModel {
       'registrationNumber': registrationNumber,
       'appliedForVerification': appliedForVerification,
       'status': status,
+      'gratitudeScore': gratitudeScore,
     };
   }
 
@@ -174,6 +179,7 @@ class UserModel {
       registrationNumber: map['registrationNumber'] ?? map['registration_number'],
       appliedForVerification: map['appliedForVerification'] ?? map['applied_for_verification'] ?? false,
       status: map['status'] ?? 'active',
+      gratitudeScore: map['gratitudeScore'] ?? map['gratitude_score'] ?? 20,
     );
   }
 }

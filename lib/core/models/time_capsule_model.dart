@@ -1,0 +1,41 @@
+class TimeCapsuleModel {
+  final String id;
+  final String userId;
+  final String content;
+  final DateTime unlockDate;
+  final DateTime createdAt;
+  final bool isOpened;
+
+  TimeCapsuleModel({
+    required this.id,
+    required this.userId,
+    required this.content,
+    required this.unlockDate,
+    required this.createdAt,
+    required this.isOpened,
+  });
+
+  factory TimeCapsuleModel.fromJson(Map<String, dynamic> json) {
+    return TimeCapsuleModel(
+      id: json['id'] as String,
+      userId: json['userId'] as String,
+      content: json['content'] as String,
+      unlockDate: DateTime.parse(json['unlockDate'] as String),
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      isOpened: json['isOpened'] as bool? ?? false,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'userId': userId,
+      'content': content,
+      'unlockDate': unlockDate.toIso8601String(),
+      'createdAt': createdAt.toIso8601String(),
+      'isOpened': isOpened,
+    };
+  }
+
+  bool get isLocked => DateTime.now().isBefore(unlockDate);
+}
