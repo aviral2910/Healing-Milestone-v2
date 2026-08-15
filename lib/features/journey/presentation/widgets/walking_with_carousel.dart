@@ -34,7 +34,7 @@ class WalkingWithCarousel extends ConsumerWidget {
               ),
             ),
             SizedBox(
-              height: 160,
+              height: 130,
               child: ListView.builder(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 scrollDirection: Axis.horizontal,
@@ -88,11 +88,13 @@ class _WalkingWithItem extends StatelessWidget {
         );
       },
       child: Container(
-        width: 140,
+        width: 190,
         margin: const EdgeInsets.only(right: 12, bottom: 8),
         padding: const EdgeInsets.all(16.0),
         decoration: BoxDecoration(
-          color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.8),
+          color: theme.colorScheme.surfaceContainerHighest.withValues(
+            alpha: 0.8,
+          ),
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
             color: glowColor.withValues(alpha: 0.5),
@@ -127,11 +129,7 @@ class _WalkingWithItem extends StatelessWidget {
                         : null,
                     backgroundColor: glowColor.withValues(alpha: 0.1),
                     child: journey.authorAvatar == null
-                        ? Icon(
-                            Icons.person_rounded,
-                            size: 14,
-                            color: glowColor,
-                          )
+                        ? Icon(Icons.person_rounded, size: 14, color: glowColor)
                         : null,
                   ),
                 ),
