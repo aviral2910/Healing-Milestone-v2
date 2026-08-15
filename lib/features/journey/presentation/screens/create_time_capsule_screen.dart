@@ -25,6 +25,8 @@ class _CreateTimeCapsuleScreenState extends ConsumerState<CreateTimeCapsuleScree
   }
 
   void _sealCapsule() async {
+    final theme = Theme.of(context);
+
     final title = _titleController.text.trim();
     final content = _contentController.text.trim();
     if (title.isEmpty || content.isEmpty) return;
@@ -50,7 +52,7 @@ class _CreateTimeCapsuleScreenState extends ConsumerState<CreateTimeCapsuleScree
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text("Time Capsule sealed!"),
-            backgroundColor: const Color(0xFFFFC107).withOpacity(0.9),
+            backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.9),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -71,17 +73,7 @@ class _CreateTimeCapsuleScreenState extends ConsumerState<CreateTimeCapsuleScree
       initialDate: DateTime.now().add(const Duration(days: 30)),
       firstDate: DateTime.now().add(const Duration(days: 1)),
       lastDate: DateTime.now().add(const Duration(days: 365 * 100)), // Up to 100 years!
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: Theme.of(context).colorScheme.copyWith(
-              primary: const Color(0xFFFFC107),
-              onPrimary: Colors.black,
-            ),
-          ),
-          child: child!,
-        );
-      },
+
     );
     if (picked != null) {
       setState(() {
@@ -94,7 +86,7 @@ class _CreateTimeCapsuleScreenState extends ConsumerState<CreateTimeCapsuleScree
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final baseColor = const Color(0xFFFFC107); // Amber
+    final baseColor = theme.colorScheme.primary;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -112,12 +104,12 @@ class _CreateTimeCapsuleScreenState extends ConsumerState<CreateTimeCapsuleScree
               onPressed: _isLoading || _titleController.text.trim().isEmpty || _contentController.text.trim().isEmpty ? null : _sealCapsule,
               style: FilledButton.styleFrom(
                 backgroundColor: baseColor,
-                foregroundColor: Colors.black87,
+                foregroundColor: theme.colorScheme.onPrimary,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
               ),
               child: _isLoading
-                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black54))
-                  : const Text("Seal", style: TextStyle(fontWeight: FontWeight.bold)),
+                  ? SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: theme.colorScheme.onPrimary.withValues(alpha: 0.5)))
+                  : Text("Seal", style: TextStyle(fontWeight: FontWeight.bold, color: theme.colorScheme.onPrimary)),
             ),
           )
         ],
@@ -134,7 +126,7 @@ class _CreateTimeCapsuleScreenState extends ConsumerState<CreateTimeCapsuleScree
                   border: InputBorder.none,
                   hintText: "Title (e.g. To my 30th Birthday Self)",
                   hintStyle: theme.textTheme.headlineSmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant.withOpacity(0.4),
+                    color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
                   ),
                 ),
                 onChanged: (_) => setState(() {}),
@@ -156,7 +148,7 @@ class _CreateTimeCapsuleScreenState extends ConsumerState<CreateTimeCapsuleScree
                     border: InputBorder.none,
                     hintText: "Dear future me...",
                     hintStyle: theme.textTheme.bodyLarge?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant.withOpacity(0.5),
+                      color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
                       fontSize: 18,
                     ),
                   ),
@@ -171,7 +163,7 @@ class _CreateTimeCapsuleScreenState extends ConsumerState<CreateTimeCapsuleScree
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: theme.colorScheme.shadow.withValues(alpha: 0.05),
                     blurRadius: 20,
                     offset: const Offset(0, -5),
                   )
@@ -184,14 +176,14 @@ class _CreateTimeCapsuleScreenState extends ConsumerState<CreateTimeCapsuleScree
                     Row(
                       children: [
                         Icon(Icons.lock_clock_rounded, color: baseColor),
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8),
                         Text(
                           "Unlock Date",
                           style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16),
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Row(
@@ -211,7 +203,7 @@ class _CreateTimeCapsuleScreenState extends ConsumerState<CreateTimeCapsuleScree
                                     });
                                   }
                                 },
-                                selectedColor: baseColor.withOpacity(0.2),
+                                selectedColor: baseColor.withValues(alpha: 0.2),
                                 labelStyle: TextStyle(
                                   color: isSelected ? baseColor : theme.colorScheme.onSurface,
                                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
@@ -219,7 +211,7 @@ class _CreateTimeCapsuleScreenState extends ConsumerState<CreateTimeCapsuleScree
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(20),
                                   side: BorderSide(
-                                    color: isSelected ? baseColor : theme.colorScheme.outline.withOpacity(0.2),
+                                    color: isSelected ? baseColor : theme.colorScheme.outline.withValues(alpha: 0.2),
                                   ),
                                 ),
                               ),
@@ -231,7 +223,7 @@ class _CreateTimeCapsuleScreenState extends ConsumerState<CreateTimeCapsuleScree
                                 : "Custom Date"),
                             selected: _customDate != null,
                             onSelected: (_) => _pickCustomDate(),
-                            selectedColor: baseColor.withOpacity(0.2),
+                            selectedColor: baseColor.withValues(alpha: 0.2),
                             labelStyle: TextStyle(
                               color: _customDate != null ? baseColor : theme.colorScheme.onSurface,
                               fontWeight: _customDate != null ? FontWeight.bold : FontWeight.normal,
@@ -239,7 +231,7 @@ class _CreateTimeCapsuleScreenState extends ConsumerState<CreateTimeCapsuleScree
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20),
                               side: BorderSide(
-                                color: _customDate != null ? baseColor : theme.colorScheme.outline.withOpacity(0.2),
+                                color: _customDate != null ? baseColor : theme.colorScheme.outline.withValues(alpha: 0.2),
                               ),
                             ),
                           ),

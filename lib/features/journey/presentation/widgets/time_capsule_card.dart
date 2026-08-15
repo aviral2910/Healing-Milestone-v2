@@ -8,13 +8,15 @@ import 'package:healing_milestones/features/journey/presentation/providers/time_
 class TimeCapsuleCard extends ConsumerWidget {
   final TimeCapsuleModel? activeCapsule;
   final VoidCallback onOpen;
-  final bool showDelete;
+  final VoidCallback? onLongPress;
+  final int lockedCount;
 
   const TimeCapsuleCard({
     Key? key,
     this.activeCapsule,
     required this.onOpen,
-    this.showDelete = false,
+    this.onLongPress,
+    this.lockedCount = 0,
   }) : super(key: key);
 
   @override
@@ -25,7 +27,7 @@ class TimeCapsuleCard extends ConsumerWidget {
     final isReadyToOpen = hasCapsule && !activeCapsule!.isLocked && !activeCapsule!.isOpened;
     final isOpened = hasCapsule && activeCapsule!.isOpened;
 
-    final baseColor = const Color(0xFFFFC107);
+    final baseColor = theme.colorScheme.primary;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
@@ -66,6 +68,7 @@ class TimeCapsuleCard extends ConsumerWidget {
               color: Colors.transparent,
               child: InkWell(
                 onTap: onOpen,
+                onLongPress: onLongPress,
                 child: Padding(
                   padding: const EdgeInsets.all(24.0),
                   child: Row(
@@ -100,54 +103,23 @@ class TimeCapsuleCard extends ConsumerWidget {
                               _getTitle(isLocked, isReadyToOpen, isOpened, hasCapsule),
                               style: theme.textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
-                                color: isReadyToOpen ? Colors.black87 : theme.colorScheme.onSurface,
+                                color: isReadyToOpen ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface,
                               ),
                             ),
                             const SizedBox(height: 6),
                             Text(
                               _getSubtitle(isLocked, isReadyToOpen, isOpened, hasCapsule, activeCapsule),
                               style: theme.textTheme.bodyMedium?.copyWith(
-                                color: isReadyToOpen 
-                                    ? Colors.black54 
-                                    : theme.colorScheme.onSurface.withOpacity(0.7),
+                                color: isReadyToOpen ? theme.colorScheme.onPrimary.withOpacity(0.8) : theme.colorScheme.onSurface.withOpacity(0.7),
                               ),
                             ),
                           ],
                         ),
                       ),
-                      if (showDelete && hasCapsule)
-                        IconButton(
-                          icon: Icon(
-                            Icons.delete_outline,
-                            color: isReadyToOpen ? Colors.black54 : theme.colorScheme.error.withOpacity(0.8),
-                          ),
-                          onPressed: () {
-                            showDialog(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                title: const Text('Destroy Capsule?'),
-                                content: const Text('Are you sure? This message from your past will be lost forever.'),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(context),
-                                    child: const Text('Cancel'),
-                                  ),
-                                  TextButton(
-                                    onPressed: () {
-                                      ref.read(myTimeCapsulesProvider.notifier).deleteCapsule(activeCapsule!.id);
-                                      Navigator.pop(context);
-                                    },
-                                    child: Text('Destroy', style: TextStyle(color: theme.colorScheme.error)),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        )
-                      else if (!isLocked)
+                      if (!isLocked && onLongPress == null)
                         Icon(
                           Icons.chevron_right,
-                          color: isReadyToOpen ? Colors.black54 : theme.colorScheme.onSurfaceVariant,
+                          color: isReadyToOpen ? theme.colorScheme.onPrimary.withOpacity(0.8) : theme.colorScheme.onSurfaceVariant,
                         ),
                     ],
                   ),
@@ -169,11 +141,15 @@ class TimeCapsuleCard extends ConsumerWidget {
 
   String _getTitle(bool isLocked, bool isReadyToOpen, bool isOpened, bool hasCapsule) {
     if (!hasCapsule) return "Time Capsule Vault";
-    return activeCapsule!.title;
+    final title = activeCapsule!.title;
+    return (title.trim().isEmpty) ? "Untitled Capsule" : title;
   }
 
   String _getSubtitle(bool isLocked, bool isReadyToOpen, bool isOpened, bool hasCapsule, TimeCapsuleModel? capsule) {
-    if (!hasCapsule) return "Tap to enter the vault.";
+    if (!hasCapsule) {
+      if (lockedCount > 0) return "$lockedCount sealed capsule${lockedCount > 1 ? 's' : ''} inside. Tap to enter.";
+      return "Tap to enter the vault.";
+    }
     if (isReadyToOpen) return "A message from your past awaits! Tap to unlock.";
     if (isOpened) return "Opened.";
     

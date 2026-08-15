@@ -59,16 +59,17 @@ class MyPathScreen extends ConsumerWidget {
                   Consumer(
                     builder: (context, ref, child) {
                       final capsulesAsync = ref.watch(myTimeCapsulesProvider);
-                      final hasCapsules = capsulesAsync.value?.isNotEmpty == true;
+                      final capsules = capsulesAsync.value ?? [];
+                      final hasCapsules = capsules.isNotEmpty;
+                      final lockedCount = capsules.where((c) => c.isLocked).length;
                       
                       // Find if any capsule is ready to open to prioritize it on the dashboard
-                      final readyCapsule = hasCapsules ? capsulesAsync.value!.where((c) => !c.isLocked && !c.isOpened).firstOrNull : null;
+                      final readyCapsule = hasCapsules ? capsules.where((c) => !c.isLocked && !c.isOpened).firstOrNull : null;
                       
                       return TimeCapsuleCard(
                         activeCapsule: readyCapsule,
+                        lockedCount: lockedCount,
                         onOpen: () {
-                          // Always route to vault now, unless they tap a ready capsule?
-                          // Let's just always route to vault for simplicity, and they open it there.
                           context.push('/time-capsules-vault');
                         }
                       );

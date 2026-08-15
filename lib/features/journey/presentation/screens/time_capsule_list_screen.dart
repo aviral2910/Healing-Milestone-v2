@@ -11,7 +11,7 @@ class TimeCapsuleListScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final capsulesAsync = ref.watch(myTimeCapsulesProvider);
-    final baseColor = const Color(0xFFFFC107);
+    final baseColor = theme.colorScheme.primary;
 
     return Scaffold(
       appBar: AppBar(
@@ -31,7 +31,7 @@ class TimeCapsuleListScreen extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.lock_clock_rounded, size: 64, color: theme.colorScheme.onSurfaceVariant.withOpacity(0.3)),
+                  Icon(Icons.lock_clock_rounded, size: 64, color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.3)),
                   const SizedBox(height: 16),
                   Text(
                     'Your vault is empty.',
@@ -42,8 +42,8 @@ class TimeCapsuleListScreen extends ConsumerWidget {
                   const SizedBox(height: 24),
                   FilledButton.icon(
                     onPressed: () => context.push('/create-time-capsule'),
-                    icon: const Icon(Icons.edit_note, color: Colors.black87),
-                    label: const Text('Seal a Memory', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
+                    icon: Icon(Icons.edit_note, color: theme.colorScheme.onPrimary),
+                    label: Text('Seal a Memory', style: TextStyle(color: theme.colorScheme.onPrimary, fontWeight: FontWeight.bold)),
                     style: FilledButton.styleFrom(backgroundColor: baseColor),
                   ),
                 ],
@@ -58,7 +58,28 @@ class TimeCapsuleListScreen extends ConsumerWidget {
               final capsule = capsules[index];
               return TimeCapsuleCard(
                 activeCapsule: capsule,
-                showDelete: true,
+                onLongPress: () {
+                  showDialog(
+                    context: context,
+                    builder: (dialogContext) => AlertDialog(
+                      title: const Text('Destroy Capsule?'),
+                      content: const Text('Are you sure? This message from your past will be lost forever.'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(dialogContext),
+                          child: const Text('Cancel'),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            ref.read(myTimeCapsulesProvider.notifier).deleteCapsule(capsule.id);
+                            Navigator.pop(dialogContext);
+                          },
+                          child: Text('Destroy', style: TextStyle(color: theme.colorScheme.error)),
+                        ),
+                      ],
+                    ),
+                  );
+                },
                 onOpen: () {
                   if (capsule.isLocked && !capsule.isOpened) {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -75,7 +96,7 @@ class TimeCapsuleListScreen extends ConsumerWidget {
                     context: context,
                     pageBuilder: (context, animation, secondaryAnimation) {
                       return Scaffold(
-                        backgroundColor: const Color(0xFFFFC107).withOpacity(0.1),
+                        backgroundColor: theme.colorScheme.surface,
                         appBar: AppBar(
                           backgroundColor: Colors.transparent,
                           elevation: 0,
@@ -90,7 +111,7 @@ class TimeCapsuleListScreen extends ConsumerWidget {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Icon(Icons.mark_email_read_rounded, size: 64, color: Color(0xFFFFC107)),
+                                Icon(Icons.mark_email_read_rounded, size: 64, color: theme.colorScheme.primary),
                                 const SizedBox(height: 24),
                                 Text(
                                   capsule.title,
