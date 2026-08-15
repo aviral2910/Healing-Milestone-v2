@@ -23,15 +23,16 @@ class CreateTimeCapsuleOverlay extends StatefulWidget {
             curve: Curves.easeOutCubic,
           ),
           child: SlideTransition(
-            position: Tween<Offset>(
-              begin: const Offset(0, 0.05),
-              end: Offset.zero,
-            ).animate(
-              CurvedAnimation(
-                parent: animation,
-                curve: Curves.easeOutCubic,
-              ),
-            ),
+            position:
+                Tween<Offset>(
+                  begin: const Offset(0, 0.05),
+                  end: Offset.zero,
+                ).animate(
+                  CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.easeOutCubic,
+                  ),
+                ),
             child: child,
           ),
         );
@@ -40,13 +41,14 @@ class CreateTimeCapsuleOverlay extends StatefulWidget {
   }
 
   @override
-  State<CreateTimeCapsuleOverlay> createState() => _CreateTimeCapsuleOverlayState();
+  State<CreateTimeCapsuleOverlay> createState() =>
+      _CreateTimeCapsuleOverlayState();
 }
 
 class _CreateTimeCapsuleOverlayState extends State<CreateTimeCapsuleOverlay> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _contentController = TextEditingController();
-  int? _selectedMonths = 6;
+  int? _selectedMonths = 1;
   DateTime? _customDate;
   bool _isSubmitting = false;
 
@@ -112,7 +114,9 @@ class _CreateTimeCapsuleOverlayState extends State<CreateTimeCapsuleOverlay> {
                                 shape: BoxShape.circle,
                                 color: theme.colorScheme.surface,
                                 border: Border.all(
-                                  color: theme.dividerColor.withValues(alpha: 0.2),
+                                  color: theme.dividerColor.withValues(
+                                    alpha: 0.2,
+                                  ),
                                 ),
                               ),
                               child: IconButton(
@@ -182,24 +186,40 @@ class _CreateTimeCapsuleOverlayState extends State<CreateTimeCapsuleOverlay> {
                             hintText: 'e.g. To my 30th Birthday Self',
                             hintStyle: TextStyle(
                               fontWeight: FontWeight.normal,
-                              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                              color: theme.colorScheme.onSurfaceVariant
+                                  .withValues(alpha: 0.5),
                             ),
                             counterStyle: theme.textTheme.labelSmall?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                              color: theme.colorScheme.onSurfaceVariant
+                                  .withValues(alpha: 0.6),
                             ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
-                              borderSide: BorderSide(color: theme.dividerColor.withValues(alpha: 0.5)),
+                              borderSide: BorderSide(
+                                color: theme.dividerColor.withValues(
+                                  alpha: 0.5,
+                                ),
+                              ),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
-                              borderSide: BorderSide(color: theme.dividerColor.withValues(alpha: 0.5)),
+                              borderSide: BorderSide(
+                                color: theme.dividerColor.withValues(
+                                  alpha: 0.5,
+                                ),
+                              ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
-                              borderSide: BorderSide(color: baseColor, width: 1),
+                              borderSide: BorderSide(
+                                color: baseColor,
+                                width: 1,
+                              ),
                             ),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 18,
+                            ),
                             filled: true,
                             fillColor: theme.colorScheme.surface,
                           ),
@@ -223,23 +243,39 @@ class _CreateTimeCapsuleOverlayState extends State<CreateTimeCapsuleOverlay> {
                             height: 1.6,
                           ),
                           decoration: InputDecoration(
-                            hintText: 'Write something you want your future self to remember...',
+                            hintText:
+                                'Write something you want your future self to remember...',
                             hintStyle: TextStyle(
-                              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                              color: theme.colorScheme.onSurfaceVariant
+                                  .withValues(alpha: 0.5),
                             ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
-                              borderSide: BorderSide(color: theme.dividerColor.withValues(alpha: 0.5)),
+                              borderSide: BorderSide(
+                                color: theme.dividerColor.withValues(
+                                  alpha: 0.5,
+                                ),
+                              ),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
-                              borderSide: BorderSide(color: theme.dividerColor.withValues(alpha: 0.5)),
+                              borderSide: BorderSide(
+                                color: theme.dividerColor.withValues(
+                                  alpha: 0.5,
+                                ),
+                              ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
-                              borderSide: BorderSide(color: baseColor, width: 1),
+                              borderSide: BorderSide(
+                                color: baseColor,
+                                width: 1,
+                              ),
                             ),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 18,
+                            ),
                             filled: true,
                             fillColor: theme.colorScheme.surface,
                           ),
@@ -250,7 +286,11 @@ class _CreateTimeCapsuleOverlayState extends State<CreateTimeCapsuleOverlay> {
                         // Unlock Date
                         Row(
                           children: [
-                            Icon(Icons.lock_clock_rounded, color: baseColor, size: 20),
+                            Icon(
+                              Icons.lock_clock_rounded,
+                              color: baseColor,
+                              size: 20,
+                            ),
                             const SizedBox(width: 8),
                             Text(
                               'When to unlock?',
@@ -266,12 +306,53 @@ class _CreateTimeCapsuleOverlayState extends State<CreateTimeCapsuleOverlay> {
                           physics: const BouncingScrollPhysics(),
                           child: Row(
                             children: [
+                              ChoiceChip(
+                                label: Text(
+                                  _customDate != null
+                                      ? _customDate!.toLocal().toString().split(
+                                          ' ',
+                                        )[0]
+                                      : "Custom Date",
+                                ),
+                                selected: _customDate != null,
+                                onSelected: (_) => _pickCustomDate(),
+                                selectedColor: baseColor.withValues(
+                                  alpha: 0.15,
+                                ),
+                                backgroundColor: theme.colorScheme.surface,
+                                showCheckmark: false,
+                                labelStyle: TextStyle(
+                                  color: _customDate != null
+                                      ? baseColor
+                                      : theme.colorScheme.onSurfaceVariant,
+                                  fontWeight: _customDate != null
+                                      ? FontWeight.w600
+                                      : FontWeight.normal,
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 12,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  side: BorderSide(
+                                    color: _customDate != null
+                                        ? baseColor.withValues(alpha: 0.5)
+                                        : theme.dividerColor.withValues(
+                                            alpha: 0.5,
+                                          ),
+                                    width: _customDate != null ? 1.5 : 1,
+                                  ),
+                                ),
+                              ),
                               ...[1, 3, 6, 12].map((months) {
                                 final isSelected = _selectedMonths == months;
                                 return Padding(
                                   padding: const EdgeInsets.only(right: 12.0),
                                   child: ChoiceChip(
-                                    label: Text("$months Month${months > 1 ? 's' : ''}"),
+                                    label: Text(
+                                      "$months Month${months > 1 ? 's' : ''}",
+                                    ),
                                     selected: isSelected,
                                     onSelected: (selected) {
                                       if (selected) {
@@ -281,46 +362,37 @@ class _CreateTimeCapsuleOverlayState extends State<CreateTimeCapsuleOverlay> {
                                         });
                                       }
                                     },
-                                    selectedColor: baseColor.withValues(alpha: 0.15),
+                                    selectedColor: baseColor.withValues(
+                                      alpha: 0.15,
+                                    ),
                                     backgroundColor: theme.colorScheme.surface,
                                     showCheckmark: false,
                                     labelStyle: TextStyle(
-                                      color: isSelected ? baseColor : theme.colorScheme.onSurfaceVariant,
-                                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                                      color: isSelected
+                                          ? baseColor
+                                          : theme.colorScheme.onSurfaceVariant,
+                                      fontWeight: isSelected
+                                          ? FontWeight.w600
+                                          : FontWeight.normal,
                                     ),
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 12,
+                                    ),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(16),
                                       side: BorderSide(
-                                        color: isSelected ? baseColor.withValues(alpha: 0.5) : theme.dividerColor.withValues(alpha: 0.5),
+                                        color: isSelected
+                                            ? baseColor.withValues(alpha: 0.5)
+                                            : theme.dividerColor.withValues(
+                                                alpha: 0.5,
+                                              ),
                                         width: isSelected ? 1.5 : 1,
                                       ),
                                     ),
                                   ),
                                 );
                               }),
-                              ChoiceChip(
-                                label: Text(_customDate != null 
-                                    ? _customDate!.toLocal().toString().split(' ')[0] 
-                                    : "Custom Date"),
-                                selected: _customDate != null,
-                                onSelected: (_) => _pickCustomDate(),
-                                selectedColor: baseColor.withValues(alpha: 0.15),
-                                backgroundColor: theme.colorScheme.surface,
-                                showCheckmark: false,
-                                labelStyle: TextStyle(
-                                  color: _customDate != null ? baseColor : theme.colorScheme.onSurfaceVariant,
-                                  fontWeight: _customDate != null ? FontWeight.w600 : FontWeight.normal,
-                                ),
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                  side: BorderSide(
-                                    color: _customDate != null ? baseColor.withValues(alpha: 0.5) : theme.dividerColor.withValues(alpha: 0.5),
-                                    width: _customDate != null ? 1.5 : 1,
-                                  ),
-                                ),
-                              ),
                             ],
                           ),
                         ),
@@ -332,7 +404,9 @@ class _CreateTimeCapsuleOverlayState extends State<CreateTimeCapsuleOverlay> {
                           width: double.infinity,
                           child: Consumer(
                             builder: (context, ref, child) {
-                              final isValid = _titleController.text.trim().isNotEmpty && _contentController.text.trim().isNotEmpty;
+                              final isValid =
+                                  _titleController.text.trim().isNotEmpty &&
+                                  _contentController.text.trim().isNotEmpty;
                               return FilledButton(
                                 onPressed: (_isSubmitting || !isValid)
                                     ? null
@@ -343,29 +417,49 @@ class _CreateTimeCapsuleOverlayState extends State<CreateTimeCapsuleOverlay> {
                                           if (_customDate != null) {
                                             unlockDate = _customDate!;
                                           } else {
-                                            unlockDate = DateTime.now().add(Duration(days: (_selectedMonths ?? 6) * 30));
+                                            unlockDate = DateTime.now().add(
+                                              Duration(
+                                                days:
+                                                    (_selectedMonths ?? 6) * 30,
+                                              ),
+                                            );
                                           }
 
-                                          await ref.read(myTimeCapsulesProvider.notifier).addCapsule(
-                                            _titleController.text.trim(),
-                                            _contentController.text.trim(),
-                                            unlockDate,
-                                          );
+                                          await ref
+                                              .read(
+                                                myTimeCapsulesProvider.notifier,
+                                              )
+                                              .addCapsule(
+                                                _titleController.text.trim(),
+                                                _contentController.text.trim(),
+                                                unlockDate,
+                                              );
 
                                           if (context.mounted) {
                                             Navigator.of(context).pop();
-                                            ScaffoldMessenger.of(context).showSnackBar(
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
                                               SnackBar(
-                                                content: const Text("Time Capsule sealed!"),
-                                                backgroundColor: baseColor.withValues(alpha: 0.9),
+                                                content: const Text(
+                                                  "Time Capsule sealed!",
+                                                ),
+                                                backgroundColor: baseColor
+                                                    .withValues(alpha: 0.9),
                                               ),
                                             );
                                           }
                                         } catch (e) {
                                           setState(() => _isSubmitting = false);
                                           if (context.mounted) {
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              const SnackBar(content: Text("Failed to seal capsule.")),
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                  "Failed to seal capsule.",
+                                                ),
+                                              ),
                                             );
                                           }
                                         }
@@ -373,7 +467,9 @@ class _CreateTimeCapsuleOverlayState extends State<CreateTimeCapsuleOverlay> {
                                 style: FilledButton.styleFrom(
                                   backgroundColor: baseColor,
                                   foregroundColor: theme.colorScheme.onPrimary,
-                                  padding: const EdgeInsets.symmetric(vertical: 20),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 20,
+                                  ),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(24),
                                   ),
