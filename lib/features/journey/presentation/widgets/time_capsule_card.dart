@@ -1,54 +1,57 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:healing_milestones/core/models/time_capsule_model.dart';
+import 'package:healing_milestones/features/journey/presentation/providers/time_capsule_provider.dart';
 
-class TimeCapsuleCard extends StatelessWidget {
+class TimeCapsuleCard extends ConsumerWidget {
   final TimeCapsuleModel? activeCapsule;
   final VoidCallback onOpen;
+  final bool showDelete;
 
   const TimeCapsuleCard({
     Key? key,
     this.activeCapsule,
     required this.onOpen,
+    this.showDelete = false,
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final hasCapsule = activeCapsule != null;
     final isLocked = hasCapsule && activeCapsule!.isLocked && !activeCapsule!.isOpened;
     final isReadyToOpen = hasCapsule && !activeCapsule!.isLocked && !activeCapsule!.isOpened;
     final isOpened = hasCapsule && activeCapsule!.isOpened;
 
-    // Use a very soft amber / organic color base
-    final baseColor = const Color(0xFFFFC107); // Amber
+    final baseColor = const Color(0xFFFFC107);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(24),
           gradient: LinearGradient(
             colors: isReadyToOpen
-                ? [baseColor.withValues(alpha: 0.8), baseColor.withValues(alpha: 0.5)]
+                ? [baseColor.withOpacity(0.8), baseColor.withOpacity(0.5)]
                 : [
-                    theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                    theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
+                    theme.colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                    theme.colorScheme.surfaceContainerHighest.withOpacity(0.2),
                   ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           border: Border.all(
             color: isReadyToOpen
-                ? baseColor.withValues(alpha: 0.6)
-                : theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+                ? baseColor.withOpacity(0.6)
+                : theme.colorScheme.outlineVariant.withOpacity(0.5),
             width: 1.5,
           ),
           boxShadow: isReadyToOpen
               ? [
                   BoxShadow(
-                    color: baseColor.withValues(alpha: 0.3),
+                    color: baseColor.withOpacity(0.3),
                     blurRadius: 20,
                     spreadRadius: 2,
                   )
@@ -62,20 +65,7 @@ class TimeCapsuleCard extends StatelessWidget {
             child: Material(
               color: Colors.transparent,
               child: InkWell(
-                onTap: () {
-                  if (!hasCapsule || isOpened) {
-                    context.push('/create-time-capsule');
-                  } else if (isReadyToOpen) {
-                    onOpen();
-                  } else if (isLocked) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Patience! Your future self isn't ready yet."),
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
-                  }
-                },
+                onTap: onOpen,
                 child: Padding(
                   padding: const EdgeInsets.all(24.0),
                   child: Row(
@@ -84,12 +74,12 @@ class TimeCapsuleCard extends StatelessWidget {
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           color: isReadyToOpen
-                              ? theme.scaffoldBackgroundColor.withValues(alpha: 0.9)
+                              ? theme.scaffoldBackgroundColor.withOpacity(0.9)
                               : theme.colorScheme.surface,
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.05),
+                              color: Colors.black.withOpacity(0.05),
                               blurRadius: 10,
                               spreadRadius: 1,
                             )
@@ -119,13 +109,42 @@ class TimeCapsuleCard extends StatelessWidget {
                               style: theme.textTheme.bodyMedium?.copyWith(
                                 color: isReadyToOpen 
                                     ? Colors.black54 
-                                    : theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                                    : theme.colorScheme.onSurface.withOpacity(0.7),
                               ),
                             ),
                           ],
                         ),
                       ),
-                      if (!isLocked)
+                      if (showDelete && hasCapsule)
+                        IconButton(
+                          icon: Icon(
+                            Icons.delete_outline,
+                            color: isReadyToOpen ? Colors.black54 : theme.colorScheme.error.withOpacity(0.8),
+                          ),
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: const Text('Destroy Capsule?'),
+                                content: const Text('Are you sure? This message from your past will be lost forever.'),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    child: const Text('Cancel'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      ref.read(myTimeCapsulesProvider.notifier).deleteCapsule(activeCapsule!.id);
+                                      Navigator.pop(context);
+                                    },
+                                    child: Text('Destroy', style: TextStyle(color: theme.colorScheme.error)),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        )
+                      else if (!isLocked)
                         Icon(
                           Icons.chevron_right,
                           color: isReadyToOpen ? Colors.black54 : theme.colorScheme.onSurfaceVariant,
@@ -142,20 +161,21 @@ class TimeCapsuleCard extends StatelessWidget {
   }
 
   IconData _getIcon(bool isLocked, bool isReadyToOpen, bool isOpened, bool hasCapsule) {
-    if (!hasCapsule || isOpened) return Icons.edit_note_rounded;
+    if (!hasCapsule) return Icons.lock_clock_rounded;
+    if (isOpened) return Icons.drafts_rounded;
     if (isReadyToOpen) return Icons.mark_email_unread_rounded;
     return Icons.lock_clock_rounded;
   }
 
   String _getTitle(bool isLocked, bool isReadyToOpen, bool isOpened, bool hasCapsule) {
-    if (!hasCapsule || isOpened) return "Time Capsule";
-    if (isReadyToOpen) return "A message awaits!";
-    return "Time Capsule Sealed";
+    if (!hasCapsule) return "Time Capsule Vault";
+    return activeCapsule!.title;
   }
 
   String _getSubtitle(bool isLocked, bool isReadyToOpen, bool isOpened, bool hasCapsule, TimeCapsuleModel? capsule) {
-    if (!hasCapsule || isOpened) return "Write a letter to your future self.";
-    if (isReadyToOpen) return "Your past self has something to say. Tap to unlock.";
+    if (!hasCapsule) return "Tap to enter the vault.";
+    if (isReadyToOpen) return "A message from your past awaits! Tap to unlock.";
+    if (isOpened) return "Opened.";
     
     if (capsule != null) {
       final days = capsule.unlockDate.difference(DateTime.now()).inDays;

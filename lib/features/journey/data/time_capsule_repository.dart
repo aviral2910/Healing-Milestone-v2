@@ -16,17 +16,23 @@ class TimeCapsuleRepository {
   Dio get _dio => _apiClient.dio;
 
   Future<TimeCapsuleModel> createTimeCapsule({
+    required String title,
     required String content,
     required DateTime unlockDate,
   }) async {
     final response = await _dio.post(
       '/api/time-capsules/',
       data: {
+        'title': title,
         'content': content,
         'unlockDate': unlockDate.toUtc().toIso8601String(),
       },
     );
     return TimeCapsuleModel.fromJson(response.data);
+  }
+
+  Future<void> deleteTimeCapsule(String capsuleId) async {
+    await _dio.delete('/api/time-capsules/$capsuleId');
   }
 
   Future<List<TimeCapsuleModel>> getMyTimeCapsules() async {

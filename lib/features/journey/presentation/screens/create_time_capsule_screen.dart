@@ -11,25 +11,37 @@ class CreateTimeCapsuleScreen extends ConsumerStatefulWidget {
 }
 
 class _CreateTimeCapsuleScreenState extends ConsumerState<CreateTimeCapsuleScreen> {
+  final TextEditingController _titleController = TextEditingController();
   final TextEditingController _contentController = TextEditingController();
-  int _selectedMonths = 6; // Default to 6 months
+  int? _selectedMonths = 6; 
+  DateTime? _customDate;
   bool _isLoading = false;
 
   @override
   void dispose() {
+    _titleController.dispose();
     _contentController.dispose();
     super.dispose();
   }
 
   void _sealCapsule() async {
-    if (_contentController.text.trim().isEmpty) return;
+    final title = _titleController.text.trim();
+    final content = _contentController.text.trim();
+    if (title.isEmpty || content.isEmpty) return;
+
+    DateTime unlockDate;
+    if (_customDate != null) {
+      unlockDate = _customDate!;
+    } else {
+      unlockDate = DateTime.now().add(Duration(days: (_selectedMonths ?? 6) * 30));
+    }
 
     setState(() { _isLoading = true; });
 
     try {
-      final unlockDate = DateTime.now().add(Duration(days: _selectedMonths * 30));
       await ref.read(myTimeCapsulesProvider.notifier).addCapsule(
-        _contentController.text.trim(),
+        title,
+        content,
         unlockDate,
       );
 
@@ -37,8 +49,8 @@ class _CreateTimeCapsuleScreenState extends ConsumerState<CreateTimeCapsuleScree
         context.pop();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("Time Capsule sealed for $_selectedMonths months."),
-            backgroundColor: const Color(0xFFFFC107).withValues(alpha: 0.9),
+            content: const Text("Time Capsule sealed!"),
+            backgroundColor: const Color(0xFFFFC107).withOpacity(0.9),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -50,6 +62,32 @@ class _CreateTimeCapsuleScreenState extends ConsumerState<CreateTimeCapsuleScree
           const SnackBar(content: Text("Failed to seal capsule.")),
         );
       }
+    }
+  }
+  
+  Future<void> _pickCustomDate() async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now().add(const Duration(days: 30)),
+      firstDate: DateTime.now().add(const Duration(days: 1)),
+      lastDate: DateTime.now().add(const Duration(days: 365 * 100)), // Up to 100 years!
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: Theme.of(context).colorScheme.copyWith(
+              primary: const Color(0xFFFFC107),
+              onPrimary: Colors.black,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null) {
+      setState(() {
+        _customDate = picked;
+        _selectedMonths = null;
+      });
     }
   }
 
@@ -71,7 +109,7 @@ class _CreateTimeCapsuleScreenState extends ConsumerState<CreateTimeCapsuleScree
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: FilledButton(
-              onPressed: _isLoading || _contentController.text.trim().isEmpty ? null : _sealCapsule,
+              onPressed: _isLoading || _titleController.text.trim().isEmpty || _contentController.text.trim().isEmpty ? null : _sealCapsule,
               style: FilledButton.styleFrom(
                 backgroundColor: baseColor,
                 foregroundColor: Colors.black87,
@@ -87,9 +125,25 @@ class _CreateTimeCapsuleScreenState extends ConsumerState<CreateTimeCapsuleScree
       body: SafeArea(
         child: Column(
           children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+              child: TextField(
+                controller: _titleController,
+                style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                decoration: InputDecoration(
+                  border: InputBorder.none,
+                  hintText: "Title (e.g. To my 30th Birthday Self)",
+                  hintStyle: theme.textTheme.headlineSmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant.withOpacity(0.4),
+                  ),
+                ),
+                onChanged: (_) => setState(() {}),
+              ),
+            ),
+            const Divider(indent: 24, endIndent: 24),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
                 child: TextField(
                   controller: _contentController,
                   maxLines: null,
@@ -102,7 +156,7 @@ class _CreateTimeCapsuleScreenState extends ConsumerState<CreateTimeCapsuleScree
                     border: InputBorder.none,
                     hintText: "Dear future me...",
                     hintStyle: theme.textTheme.bodyLarge?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                      color: theme.colorScheme.onSurfaceVariant.withOpacity(0.5),
                       fontSize: 18,
                     ),
                   ),
@@ -117,7 +171,7 @@ class _CreateTimeCapsuleScreenState extends ConsumerState<CreateTimeCapsuleScree
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
+                    color: Colors.black.withOpacity(0.05),
                     blurRadius: 20,
                     offset: const Offset(0, -5),
                   )
@@ -141,32 +195,55 @@ class _CreateTimeCapsuleScreenState extends ConsumerState<CreateTimeCapsuleScree
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Row(
-                        children: [1, 3, 6, 12].map((months) {
-                          final isSelected = _selectedMonths == months;
-                          return Padding(
-                            padding: const EdgeInsets.only(right: 12.0),
-                            child: ChoiceChip(
-                              label: Text("$months Month${months > 1 ? 's' : ''}"),
-                              selected: isSelected,
-                              onSelected: (selected) {
-                                if (selected) {
-                                  setState(() { _selectedMonths = months; });
-                                }
-                              },
-                              selectedColor: baseColor.withValues(alpha: 0.2),
-                              labelStyle: TextStyle(
-                                color: isSelected ? baseColor : theme.colorScheme.onSurface,
-                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                                side: BorderSide(
-                                  color: isSelected ? baseColor : theme.colorScheme.outline.withValues(alpha: 0.2),
+                        children: [
+                          ...[1, 3, 6, 12].map((months) {
+                            final isSelected = _selectedMonths == months;
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 12.0),
+                              child: ChoiceChip(
+                                label: Text("$months Month${months > 1 ? 's' : ''}"),
+                                selected: isSelected,
+                                onSelected: (selected) {
+                                  if (selected) {
+                                    setState(() {
+                                      _selectedMonths = months;
+                                      _customDate = null;
+                                    });
+                                  }
+                                },
+                                selectedColor: baseColor.withOpacity(0.2),
+                                labelStyle: TextStyle(
+                                  color: isSelected ? baseColor : theme.colorScheme.onSurface,
+                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                  side: BorderSide(
+                                    color: isSelected ? baseColor : theme.colorScheme.outline.withOpacity(0.2),
+                                  ),
                                 ),
                               ),
+                            );
+                          }).toList(),
+                          ChoiceChip(
+                            label: Text(_customDate != null 
+                                ? _customDate!.toLocal().toString().split(' ')[0] 
+                                : "Custom Date"),
+                            selected: _customDate != null,
+                            onSelected: (_) => _pickCustomDate(),
+                            selectedColor: baseColor.withOpacity(0.2),
+                            labelStyle: TextStyle(
+                              color: _customDate != null ? baseColor : theme.colorScheme.onSurface,
+                              fontWeight: _customDate != null ? FontWeight.bold : FontWeight.normal,
                             ),
-                          );
-                        }).toList(),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              side: BorderSide(
+                                color: _customDate != null ? baseColor : theme.colorScheme.outline.withOpacity(0.2),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],

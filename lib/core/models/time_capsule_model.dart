@@ -1,6 +1,7 @@
 class TimeCapsuleModel {
   final String id;
   final String userId;
+  final String title;
   final String content;
   final DateTime unlockDate;
   final DateTime createdAt;
@@ -9,6 +10,7 @@ class TimeCapsuleModel {
   TimeCapsuleModel({
     required this.id,
     required this.userId,
+    required this.title,
     required this.content,
     required this.unlockDate,
     required this.createdAt,
@@ -19,6 +21,7 @@ class TimeCapsuleModel {
     return TimeCapsuleModel(
       id: json['id'] as String,
       userId: json['userId'] as String,
+      title: json['title'] as String? ?? 'Untitled Capsule',
       content: json['content'] as String,
       unlockDate: DateTime.parse(json['unlockDate'] as String),
       createdAt: DateTime.parse(json['createdAt'] as String),
@@ -30,6 +33,7 @@ class TimeCapsuleModel {
     return {
       'id': id,
       'userId': userId,
+      'title': title,
       'content': content,
       'unlockDate': unlockDate.toIso8601String(),
       'createdAt': createdAt.toIso8601String(),

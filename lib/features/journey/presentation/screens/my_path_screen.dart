@@ -55,71 +55,21 @@ class MyPathScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 16),
                   
-                  // Time Capsule Integration
+                  // Time Capsule Vault Entry Card
                   Consumer(
                     builder: (context, ref, child) {
                       final capsulesAsync = ref.watch(myTimeCapsulesProvider);
-                      final capsule = capsulesAsync.value?.isNotEmpty == true 
-                          ? capsulesAsync.value!.first 
-                          : null;
-                          
+                      final hasCapsules = capsulesAsync.value?.isNotEmpty == true;
+                      
+                      // Find if any capsule is ready to open to prioritize it on the dashboard
+                      final readyCapsule = hasCapsules ? capsulesAsync.value!.where((c) => !c.isLocked && !c.isOpened).firstOrNull : null;
+                      
                       return TimeCapsuleCard(
-                        activeCapsule: capsule,
+                        activeCapsule: readyCapsule,
                         onOpen: () {
-                          if (capsule != null) {
-                            ref.read(myTimeCapsulesProvider.notifier).openCapsule(capsule.id);
-                            showGeneralDialog(
-                              context: context,
-                              pageBuilder: (context, animation, secondaryAnimation) {
-                                return Scaffold(
-                                  backgroundColor: const Color(0xFFFFC107).withOpacity(0.1),
-                                  appBar: AppBar(
-                                    backgroundColor: Colors.transparent,
-                                    elevation: 0,
-                                    leading: IconButton(
-                                      icon: const Icon(Icons.close),
-                                      onPressed: () => Navigator.of(context).pop(),
-                                    ),
-                                  ),
-                                  body: Center(
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(32.0),
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          const Icon(Icons.mark_email_read_rounded, size: 64, color: Color(0xFFFFC107)),
-                                          const SizedBox(height: 24),
-                                          Text(
-                                            "A Message From Your Past Self",
-                                            textAlign: TextAlign.center,
-                                            style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-                                          ),
-                                          const SizedBox(height: 8),
-                                          Text(
-                                            "Written on " + capsule.createdAt.toLocal().toString().split(' ')[0],
-                                            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
-                                          ),
-                                          const SizedBox(height: 32),
-                                          Expanded(
-                                            child: SingleChildScrollView(
-                                              child: Text(
-                                                capsule.content,
-                                                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                                  height: 1.6,
-                                                  fontStyle: FontStyle.italic,
-                                                ),
-                                                textAlign: TextAlign.center,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              }
-                            );
-                          }
+                          // Always route to vault now, unless they tap a ready capsule?
+                          // Let's just always route to vault for simplicity, and they open it there.
+                          context.push('/time-capsules-vault');
                         }
                       );
                     }

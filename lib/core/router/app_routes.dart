@@ -7,6 +7,8 @@ class AppRoutes {
   static const String phoneAuth = '/phone-auth';
   static const String verifyOtp = '/verify-otp';
   static const String createTimeCapsule = '/create-time-capsule';
+  static const String timeCapsulesVault = '/time-capsules-vault';
+
 
   static const String create = '/create';
   static const String createPostGuided = '/create/guided';
