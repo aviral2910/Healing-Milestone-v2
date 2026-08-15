@@ -6,7 +6,7 @@ import '../../../posts/presentation/screens/recommended_swipe_screen.dart';
 import '../../../awareness/presentation/screens/health_awareness_screen.dart';
 import '../../../../features/auth/data/auth_provider.dart';
 
-import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
+
 
 class InspireScreen extends ConsumerStatefulWidget {
   final ScrollController timelineScrollController;
@@ -57,14 +57,13 @@ class _InspireScreenState extends ConsumerState<InspireScreen>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final user = ref.watch(currentUserProvider);
 
     return Scaffold(
       body: SafeArea(
         bottom: false,
-        child: ExtendedNestedScrollView(
+        child: NestedScrollView(
           controller: _outerScrollController,
-          onlyOneScrollInBody: true,
+          
           headerSliverBuilder: (context, innerBoxIsScrolled) {
             return [
               CommonSliverAppBar(
@@ -101,24 +100,24 @@ class _InspireScreenState extends ConsumerState<InspireScreen>
           body: TabBarView(
             controller: _topTabController,
             children: [
-              ExtendedVisibilityDetector(
-                uniqueKey: const Key('timeline_tab'),
+              Container(
+                key: const Key('timeline_tab'),
                 child: PostScreen(
                   isActiveTab:
                       widget.isActiveTab && _topTabController.index == 0,
                   onSearchTapped: widget.onSearchTapped,
                 ),
               ),
-              ExtendedVisibilityDetector(
-                uniqueKey: const Key('for_you_tab'),
+              Container(
+                key: const Key('for_you_tab'),
                 child: RecommendedSwipeScreen(
                   isActiveTab:
                       widget.isActiveTab && _topTabController.index == 1,
                   onSearchTapped: widget.onSearchTapped,
                 ),
               ),
-              ExtendedVisibilityDetector(
-                uniqueKey: const Key('awareness_tab'),
+              Container(
+                key: const Key('awareness_tab'),
                 child: HealthAwarenessScreen(
                   isActiveTab:
                       widget.isActiveTab && _topTabController.index == 2,
