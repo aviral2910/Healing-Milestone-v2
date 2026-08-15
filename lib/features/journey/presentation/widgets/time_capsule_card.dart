@@ -36,18 +36,18 @@ class TimeCapsuleCard extends ConsumerWidget {
           borderRadius: BorderRadius.circular(24),
           gradient: LinearGradient(
             colors: isReadyToOpen
-                ? [baseColor.withOpacity(0.8), baseColor.withOpacity(0.5)]
+                ? [baseColor.withValues(alpha: 0.8), baseColor.withValues(alpha: 0.5)]
                 : [
-                    theme.colorScheme.surfaceContainerHighest.withOpacity(0.5),
-                    theme.colorScheme.surfaceContainerHighest.withOpacity(0.2),
+                    baseColor.withValues(alpha: 0.1),
+                    baseColor.withValues(alpha: 0.02),
                   ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           border: Border.all(
             color: isReadyToOpen
-                ? baseColor.withOpacity(0.6)
-                : theme.colorScheme.outlineVariant.withOpacity(0.5),
+                ? baseColor.withValues(alpha: 0.8)
+                : baseColor.withValues(alpha: 0.3),
             width: 1.5,
           ),
           boxShadow: isReadyToOpen
@@ -90,7 +90,7 @@ class TimeCapsuleCard extends ConsumerWidget {
                         ),
                         child: Icon(
                           _getIcon(isLocked, isReadyToOpen, isOpened, hasCapsule),
-                          color: isReadyToOpen ? baseColor : theme.colorScheme.onSurface,
+                          color: baseColor,
                           size: 28,
                         ),
                       ),

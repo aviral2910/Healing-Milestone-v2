@@ -31,12 +31,12 @@ class TimeCapsuleListScreen extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.lock_clock_rounded, size: 64, color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.3)),
+                  Icon(Icons.lock_clock_rounded, size: 64, color: baseColor.withValues(alpha: 0.5)),
                   const SizedBox(height: 16),
                   Text(
                     'Your vault is empty.',
                     style: theme.textTheme.titleMedium?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
+                      color: baseColor.withValues(alpha: 0.8),
                     ),
                   ),
                   const SizedBox(height: 24),
