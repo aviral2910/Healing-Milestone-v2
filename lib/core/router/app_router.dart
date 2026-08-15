@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../features/journey/presentation/screens/create_time_capsule_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/search/presentation/screens/search_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
@@ -83,6 +84,7 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // Protected routes
       final isProtectedRoute = state.matchedLocation == AppRoutes.create ||
+          state.matchedLocation == AppRoutes.createTimeCapsule ||
           state.matchedLocation == AppRoutes.createPostGuided ||
           state.matchedLocation == AppRoutes.createPostManual ||
           state.matchedLocation == AppRoutes.createPostSettings ||
@@ -124,6 +126,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.ascensionTransition,
         builder: (context, state) => const AscensionOverlayScreen(isTransitionMode: true),
+      ),
+      GoRoute(
+        path: AppRoutes.createTimeCapsule,
+        builder: (context, state) => const CreateTimeCapsuleScreen(),
       ),
       GoRoute(
         path: AppRoutes.home,
