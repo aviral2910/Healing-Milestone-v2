@@ -48,6 +48,21 @@ class JourneyRepository {
     }
   }
 
+  
+  Future<JourneyModel> completeJourney(String journeyId, String content) async {
+    try {
+      final response = await _apiClient.dio.post(
+        '/api/journeys/$journeyId/complete',
+        data: {
+          'content': content,
+        },
+      );
+      return JourneyModel.fromJson(response.data);
+    } catch (e) {
+      throw Exception('Failed to complete journey: $e');
+    }
+  }
+
   Future<void> deleteJourney(String id) async {
     try {
       await _apiClient.dio.delete('/api/journeys/$id');

@@ -1,4 +1,3 @@
-import 'package:healing_milestones/shared/widgets/app_loader.dart';
 part of 'post_settings_screen.dart';
 
 extension PostSettingsUserTagging on _PostSettingsScreenState {

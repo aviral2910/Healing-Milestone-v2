@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/providers/journey_providers.dart';
 import '../widgets/timeline_node.dart';
 import '../widgets/log_milestone_overlay.dart';
+import '../widgets/complete_journey_overlay.dart';
 import 'package:healing_milestones/shared/widgets/app_loader.dart';
 
 class JourneyDetailScreen extends ConsumerWidget {
@@ -34,6 +35,45 @@ class JourneyDetailScreen extends ConsumerWidget {
             backgroundColor: theme.scaffoldBackgroundColor.withValues(
               alpha: 0.8,
             ),
+            actions: [
+              Consumer(
+                builder: (context, ref, child) {
+                  final milestonesAsync = ref.watch(journeyMilestonesProvider(journeyId));
+                  final milestones = milestonesAsync.value ?? [];
+                  final isCompleted = milestones.isNotEmpty && milestones.first.isClosure;
+                  if (isCompleted) {
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 16.0),
+                      child: Center(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.5)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.verified_rounded, size: 16, color: theme.colorScheme.primary),
+                              const SizedBox(width: 4),
+                              Text('Healed', style: theme.textTheme.labelMedium?.copyWith(color: theme.colorScheme.primary, fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+                  return IconButton(
+                    icon: Icon(Icons.check_circle_outline_rounded, color: theme.colorScheme.primary),
+                    tooltip: 'Complete Journey',
+                    onPressed: () {
+                      CompleteJourneyOverlay.show(context, journeyId: journeyId);
+                    },
+                  );
+                },
+              ),
+            ],
             flexibleSpace: FlexibleSpaceBar(
               titlePadding: const EdgeInsets.symmetric(
                 horizontal: 24,
@@ -182,7 +222,7 @@ class JourneyDetailScreen extends ConsumerWidget {
                   child: Center(
                     child: Padding(
                       padding: EdgeInsets.all(40.0),
-                      child: const AppLoader(),
+                      child: AppLoader(),
                     ),
                   ),
                 ),
@@ -194,18 +234,28 @@ class JourneyDetailScreen extends ConsumerWidget {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          LogMilestoneOverlay.show(context, journeyId: journeyId);
+      floatingActionButton: Consumer(
+        builder: (context, ref, child) {
+          final milestonesAsync = ref.watch(journeyMilestonesProvider(journeyId));
+          final milestones = milestonesAsync.value ?? [];
+          final isCompleted = milestones.isNotEmpty && milestones.first.isClosure;
+          
+          if (isCompleted) return const SizedBox.shrink();
+          
+          return FloatingActionButton.extended(
+            onPressed: () {
+              LogMilestoneOverlay.show(context, journeyId: journeyId);
+            },
+            elevation: 8,
+            backgroundColor: theme.colorScheme.primary,
+            foregroundColor: theme.colorScheme.onPrimary,
+            icon: const Icon(Icons.add_rounded),
+            label: const Text(
+              'Log Step',
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+            ),
+          );
         },
-        elevation: 8,
-        backgroundColor: theme.colorScheme.primary,
-        foregroundColor: theme.colorScheme.onPrimary,
-        icon: const Icon(Icons.add_rounded),
-        label: const Text(
-          'Log Step',
-          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
-        ),
       ),
     );
   }

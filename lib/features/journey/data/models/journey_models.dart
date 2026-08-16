@@ -45,6 +45,20 @@ enum MilestoneVisibility {
   }
 }
 
+
+enum JourneyStatus {
+  @JsonValue('active')
+  active,
+  @JsonValue('completed')
+  completed,
+  @JsonValue('archived')
+  archived;
+
+  static JourneyStatus fromString(String value) {
+    return JourneyStatus.values.firstWhere((e) => e.name == value, orElse: () => JourneyStatus.active);
+  }
+}
+
 class JourneyModel {
   final String id;
   final String userId;
@@ -52,6 +66,7 @@ class JourneyModel {
   final String category;
   final MilestoneVisibility visibility;
   final bool isActive;
+  final JourneyStatus status;
   final DateTime createdAt;
   final bool isFollowing;
   final String? authorName;
@@ -64,6 +79,7 @@ class JourneyModel {
     required this.category,
     this.visibility = MilestoneVisibility.public,
     this.isActive = true,
+    this.status = JourneyStatus.active,
     required this.createdAt,
     this.isFollowing = false,
     this.authorName,
@@ -78,6 +94,7 @@ class JourneyModel {
       category: json['category'] as String? ?? 'General',
       visibility: MilestoneVisibility.fromString(json['visibility'] as String? ?? 'public'),
       isActive: json['is_active'] as bool? ?? true,
+      status: JourneyStatus.fromString(json['status'] as String? ?? 'active'),
       createdAt: DateTime.parse(json['created_at'] as String).toLocal(),
       isFollowing: json['is_following'] as bool? ?? false,
       authorName: json['author_name'] as String?,
@@ -93,6 +110,7 @@ class JourneyModel {
       'category': category,
       'visibility': visibility.name,
       'is_active': isActive,
+      'status': status.name,
       'created_at': createdAt.toIso8601String(),
       'is_following': isFollowing,
     };
@@ -108,6 +126,7 @@ class JourneyMilestoneModel {
   final TimelinePosition timelinePosition;
   final EmotionStatus emotionStatus;
   final String? content;
+  final bool isClosure;
   final String? mediaUrl;
   final MilestoneVisibility visibility;
   final DateTime createdAt;
@@ -130,6 +149,7 @@ class JourneyMilestoneModel {
     this.timelinePosition = TimelinePosition.standalone,
     required this.emotionStatus,
     this.content,
+    this.isClosure = false,
     this.mediaUrl,
     this.visibility = MilestoneVisibility.private,
     required this.createdAt,
@@ -154,6 +174,7 @@ class JourneyMilestoneModel {
       timelinePosition: TimelinePosition.fromString(json['timeline_position'] as String? ?? 'standalone'),
       emotionStatus: EmotionStatus.fromString(json['emotion_status'] as String? ?? 'neutral'),
       content: json['content'] as String?,
+      isClosure: json['is_closure'] as bool? ?? false,
       mediaUrl: json['media_url'] as String?,
       visibility: MilestoneVisibility.fromString(json['visibility'] as String? ?? 'private'),
       createdAt: DateTime.parse(json['created_at'] as String).toLocal(),
@@ -178,6 +199,7 @@ class JourneyMilestoneModel {
       'timeline_position': timelinePosition.name,
       'emotion_status': emotionStatus.name,
       'content': content,
+      'is_closure': isClosure,
       'media_url': mediaUrl,
       'visibility': visibility.name,
       'created_at': createdAt.toIso8601String(),
