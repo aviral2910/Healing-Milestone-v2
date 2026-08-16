@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'dart:math' as math;
 
-enum AppLoaderType { defaultLoader, overlay, small }
+enum AppLoaderType {
+  defaultLoader,
+  overlay,
+  small,
+}
 
 class AppLoader extends StatelessWidget {
   final AppLoaderType type;
@@ -8,20 +13,29 @@ class AppLoader extends StatelessWidget {
   final Color? color;
   final double? size;
 
-  const AppLoader({Key? key, this.color, this.size})
-    : type = AppLoaderType.defaultLoader,
-      text = null,
-      super(key: key);
+  const AppLoader({
+    Key? key,
+    this.color,
+    this.size,
+  })  : type = AppLoaderType.defaultLoader,
+        text = null,
+        super(key: key);
 
-  const AppLoader.overlay({Key? key, this.text, this.color, this.size})
-    : type = AppLoaderType.overlay,
-      super(key: key);
+  const AppLoader.overlay({
+    Key? key,
+    this.text,
+    this.color,
+    this.size,
+  })  : type = AppLoaderType.overlay,
+        super(key: key);
 
-  const AppLoader.small({Key? key, this.color})
-    : type = AppLoaderType.small,
-      text = null,
-      size = 16,
-      super(key: key);
+  const AppLoader.small({
+    Key? key,
+    this.color,
+  })  : type = AppLoaderType.small,
+        text = null,
+        size = 16,
+        super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -36,10 +50,8 @@ class AppLoader extends StatelessWidget {
   }
 
   Widget _buildDefault(BuildContext context) {
-    // You can test different loaders here by swapping out _BreathingLoader
-    // with CircularProgressIndicator, CupertinoActivityIndicator, etc.
     return Center(
-      child: _BreathingLoader(
+      child: _GlowingRingLoader(
         color: color ?? Theme.of(context).primaryColor,
         size: size ?? 40.0,
       ),
@@ -86,21 +98,19 @@ class AppLoader extends StatelessWidget {
   }
 }
 
-class _BreathingLoader extends StatefulWidget {
+class _GlowingRingLoader extends StatefulWidget {
   final Color color;
   final double size;
 
-  const _BreathingLoader({required this.color, this.size = 40.0});
+  const _GlowingRingLoader({required this.color, this.size = 40.0});
 
   @override
-  State<_BreathingLoader> createState() => _BreathingLoaderState();
+  State<_GlowingRingLoader> createState() => _GlowingRingLoaderState();
 }
 
-class _BreathingLoaderState extends State<_BreathingLoader>
+class _GlowingRingLoaderState extends State<_GlowingRingLoader>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late Animation<double> _scaleAnimation;
-  late Animation<double> _opacityAnimation;
 
   @override
   void initState() {
@@ -108,15 +118,7 @@ class _BreathingLoaderState extends State<_BreathingLoader>
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1200),
-    )..repeat(reverse: true);
-
-    _scaleAnimation = Tween<double>(begin: 0.6, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOutSine),
-    );
-
-    _opacityAnimation = Tween<double>(begin: 0.3, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOutSine),
-    );
+    )..repeat();
   }
 
   @override
@@ -127,30 +129,65 @@ class _BreathingLoaderState extends State<_BreathingLoader>
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        return Transform.scale(
-          scale: _scaleAnimation.value,
-          child: Opacity(opacity: _opacityAnimation.value, child: child),
-        );
-      },
-      child: Container(
+    return RotationTransition(
+      turns: _controller,
+      child: SizedBox(
         width: widget.size,
         height: widget.size,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: widget.color.withValues(alpha: 0.2),
-          border: Border.all(color: widget.color, width: 2),
-          boxShadow: [
-            BoxShadow(
-              color: widget.color.withValues(alpha: 0.4),
-              blurRadius: 12,
-              spreadRadius: 2,
-            ),
-          ],
+        child: CustomPaint(
+          painter: _GlowingRingPainter(color: widget.color),
         ),
       ),
     );
   }
+}
+
+class _GlowingRingPainter extends CustomPainter {
+  final Color color;
+
+  _GlowingRingPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rect = Rect.fromLTWH(0, 0, size.width, size.height);
+    
+    // Base ring (faint)
+    final bgPaint = Paint()
+      ..color = color.withValues(alpha: 0.1)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.0;
+    canvas.drawCircle(rect.center, size.width / 2 - 2, bgPaint);
+
+    // Glowing animated arc
+    final gradient = SweepGradient(
+      colors: [
+        color.withValues(alpha: 0.0),
+        color,
+      ],
+      stops: const [0.0, 1.0],
+      transform: const GradientRotation(-math.pi / 2),
+    );
+
+    final paint = Paint()
+      ..shader = gradient.createShader(rect)
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 3.0;
+
+    // Add glow using mask filter
+    final glowPaint = Paint()
+      ..shader = gradient.createShader(rect)
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 3.0
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6.0); // The glow
+
+    final arcRect = rect.deflate(2.0);
+    // Draw glow first, then the actual arc on top
+    canvas.drawArc(arcRect, -math.pi / 2, math.pi * 1.5, false, glowPaint);
+    canvas.drawArc(arcRect, -math.pi / 2, math.pi * 1.5, false, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
