@@ -160,10 +160,6 @@ extension PostSettingsUserTagging on _PostSettingsScreenState {
                     ),
                 ],
               ),
-            ),
-
-            const SizedBox(height: 24),;
-  }
-};
+            );
   }
 }

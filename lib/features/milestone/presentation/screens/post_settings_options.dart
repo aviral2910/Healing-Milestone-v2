@@ -146,7 +146,8 @@ extension PostSettingsOptions on _PostSettingsScreenState {
                   ),
                 ],
               ),
-            ),
-            const SizedBox(height: 120);
+            );
+  }
+}
   }
 }
