@@ -80,13 +80,14 @@ class _RecommendedSwipeScreenState extends ConsumerState<RecommendedSwipeScreen>
           return await ref.refresh(recommendedStoriesProvider.future);
         },
         child: CustomScrollView(
-          physics: const NeverScrollableScrollPhysics(),
+          physics: const AlwaysScrollableScrollPhysics(),
           controller: widget.scrollController,
           slivers: [
             if (storiesAsync.isLoading)
               const SliverFillRemaining(
                 child: Center(
-                    child: CircularProgressIndicator(color: Color(0xFFD4AF37))),
+                  child: CircularProgressIndicator(color: Color(0xFFD4AF37)),
+                ),
               )
             else if (storiesAsync.hasError)
               SliverFillRemaining(
@@ -94,13 +95,28 @@ class _RecommendedSwipeScreenState extends ConsumerState<RecommendedSwipeScreen>
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.error_outline,
-                          size: 48, color: Theme.of(context).dividerColor),
+                      Icon(
+                        Icons.error_outline,
+                        size: 48,
+                        color: Theme.of(context).dividerColor,
+                      ),
                       const SizedBox(height: 16),
                       Text(
-                        'Unable to load recommendations',
+                        'Unable to load',
                         style: theme.textTheme.titleMedium?.copyWith(
                           color: const Color(0xFFA1A1A6),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      ElevatedButton.icon(
+                        onPressed: () => ref
+                            .read(recommendedStoriesProvider.notifier)
+                            .refresh(),
+                        icon: const Icon(Icons.refresh),
+                        label: const Text('Try Again'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFD4AF37),
+                          foregroundColor: Colors.white,
                         ),
                       ),
                     ],
@@ -132,8 +148,8 @@ class _RecommendedSwipeScreenState extends ConsumerState<RecommendedSwipeScreen>
     final filteredStories = selectedTag == 'All'
         ? paginatedResponse.items
         : paginatedResponse.items
-            .where((s) => s.hashtagsList.contains(selectedTag))
-            .toList();
+              .where((s) => s.hashtagsList.contains(selectedTag))
+              .toList();
 
     return [
       if (filteredStories.isEmpty && !paginatedResponse.isEnd)
@@ -164,8 +180,9 @@ class _RecommendedSwipeScreenState extends ConsumerState<RecommendedSwipeScreen>
                 key: const PageStorageKey('recommended_swipe_page_view'),
                 controller: _pageController,
                 scrollDirection: Axis.vertical,
-                physics:
-                    const PageScrollPhysics(parent: BouncingScrollPhysics()),
+                physics: const PageScrollPhysics(
+                  parent: BouncingScrollPhysics(),
+                ),
                 itemCount: itemCount,
                 onPageChanged: (index) {
                   if (index < filteredStories.length) {
@@ -207,8 +224,11 @@ class _RecommendedSwipeScreenState extends ConsumerState<RecommendedSwipeScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.check_circle_outline,
-                size: 80, color: Color(0xFFD4AF37)),
+            const Icon(
+              Icons.check_circle_outline,
+              size: 80,
+              color: Color(0xFFD4AF37),
+            ),
             const SizedBox(height: 24),
             Text(
               "You're caught up!",

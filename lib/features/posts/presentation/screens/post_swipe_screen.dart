@@ -9,8 +9,6 @@ import 'package:go_router/go_router.dart';
 import 'package:healing_milestones/core/router/app_routes.dart';
 import '../../../../main.dart';
 
-
-
 class PostSwipeScreen extends ConsumerStatefulWidget {
   final ScrollController scrollController;
   final bool isActiveTab;
@@ -65,16 +63,15 @@ class _PostSwipeScreenState extends ConsumerState<PostSwipeScreen> {
           await ref.read(paginatedStoriesProvider.notifier).refresh();
         },
         child: CustomScrollView(
-          physics: const NeverScrollableScrollPhysics(),
+          physics: const AlwaysScrollableScrollPhysics(),
           controller: widget.scrollController,
           slivers: [
-            CommonSliverAppBar(
-              isHeroEnabled: widget.isActiveTab,
-            ),
+            CommonSliverAppBar(isHeroEnabled: widget.isActiveTab),
             if (storiesAsync.isLoading)
               const SliverFillRemaining(
                 child: Center(
-                    child: CircularProgressIndicator(color: Color(0xFFD4AF37))),
+                  child: CircularProgressIndicator(color: Color(0xFFD4AF37)),
+                ),
               )
             else if (storiesAsync.hasError)
               SliverFillRemaining(
@@ -82,13 +79,28 @@ class _PostSwipeScreenState extends ConsumerState<PostSwipeScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.error_outline,
-                          size: 48, color: Theme.of(context).dividerColor),
+                      Icon(
+                        Icons.error_outline,
+                        size: 48,
+                        color: Theme.of(context).dividerColor,
+                      ),
                       const SizedBox(height: 16),
                       Text(
-                        'Unable to load stories',
+                        'Unable to load',
                         style: theme.textTheme.titleMedium?.copyWith(
                           color: const Color(0xFFA1A1A6),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      ElevatedButton.icon(
+                        onPressed: () => ref
+                            .read(paginatedStoriesProvider.notifier)
+                            .refresh(),
+                        icon: const Icon(Icons.refresh),
+                        label: const Text('Try Again'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFD4AF37),
+                          foregroundColor: Colors.white,
                         ),
                       ),
                     ],
@@ -123,7 +135,10 @@ class _PostSwipeScreenState extends ConsumerState<PostSwipeScreen> {
     // Filter stories based on selected tag
     final filteredStories = selectedTag == 'All'
         ? allStories.where((s) => s != null).cast<StoryModel>().toList()
-        : allStories.where((s) => s != null && s.hashtagsList.contains(selectedTag)).cast<StoryModel>().toList();
+        : allStories
+              .where((s) => s != null && s.hashtagsList.contains(selectedTag))
+              .cast<StoryModel>()
+              .toList();
 
     return [
       if (filteredStories.isEmpty)
@@ -134,7 +149,9 @@ class _PostSwipeScreenState extends ConsumerState<PostSwipeScreen> {
             child: Center(
               child: Text(
                 'No stories found for #$selectedTag',
-                style: theme.textTheme.bodyLarge?.copyWith(color: const Color(0xFFA1A1A6)),
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: const Color(0xFFA1A1A6),
+                ),
               ),
             ),
           ),
@@ -150,17 +167,23 @@ class _PostSwipeScreenState extends ConsumerState<PostSwipeScreen> {
                 key: const PageStorageKey('swipe_page_view'),
                 controller: _pageController,
                 scrollDirection: Axis.horizontal,
-                physics: const PageScrollPhysics(parent: BouncingScrollPhysics()),
+                physics: const PageScrollPhysics(
+                  parent: BouncingScrollPhysics(),
+                ),
                 itemCount: filteredStories.length + (hasMore ? 1 : 0),
                 onPageChanged: (index) {
-                  if (index >= filteredStories.length - 2 && hasMore && !isPaginating) {
+                  if (index >= filteredStories.length - 2 &&
+                      hasMore &&
+                      !isPaginating) {
                     ref.read(paginatedStoriesProvider.notifier).fetchNextPage();
                   }
                 },
                 itemBuilder: (context, index) {
                   if (index >= filteredStories.length) {
                     return const Center(
-                      child: CircularProgressIndicator(color: Color(0xFFD4AF37)),
+                      child: CircularProgressIndicator(
+                        color: Color(0xFFD4AF37),
+                      ),
                     );
                   }
 
@@ -204,16 +227,18 @@ class _PostSwipeScreenState extends ConsumerState<PostSwipeScreen> {
                           scale: scale,
                           child: Transform.rotate(
                             angle: rotation,
-                            child: Opacity(
-                              opacity: opacity,
-                              child: child,
-                            ),
+                            child: Opacity(opacity: opacity, child: child),
                           ),
                         ),
                       );
                     },
                     child: Padding(
-                      padding: const EdgeInsets.only(left: 4.0, right: 4.0, top: 4.0, bottom: 24.0),
+                      padding: const EdgeInsets.only(
+                        left: 4.0,
+                        right: 4.0,
+                        top: 4.0,
+                        bottom: 24.0,
+                      ),
                       child: SwipeStoryCard(
                         story: story,
                         content: _truncateContent(story.description, 200),
