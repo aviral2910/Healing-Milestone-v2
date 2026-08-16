@@ -10,6 +10,7 @@ import '../../../../features/support_chat/presentation/screens/messages_screen.d
 import '../../../../features/auth/data/auth_provider.dart';
 import '../../../../features/support_chat/presentation/providers/chat_providers.dart';
 import '../providers/home_tab_provider.dart';
+import '../../../../core/widgets/lazy_indexed_stack.dart';
 
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -102,7 +103,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       child: Scaffold(
         resizeToAvoidBottomInset: false,
         extendBody: false,
-        body: IndexedStack(
+        body: LazyIndexedStack(
           index: currentIndex,
           children: [
             InspireScreen(
