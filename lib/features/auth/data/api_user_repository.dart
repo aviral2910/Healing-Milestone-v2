@@ -123,6 +123,8 @@ class ApiUserRepository implements UserRepository {
   Future<void> toggleFollow(String currentUserId, String targetUserId) async {
     try {
       await _dio.post('/api/users/$targetUserId/follow');
+      _userCache.remove(currentUserId);
+      _userCache.remove(targetUserId);
     } catch (e) {
       print('Error following user: $e');
     }
