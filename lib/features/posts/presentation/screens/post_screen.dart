@@ -214,19 +214,21 @@ class PostScreen extends HookConsumerWidget {
                   ),
                 ),
                 data: (allStories) {
-                  // Extract top tags using all stories
-                  final tagFrequency = <String, int>{};
-                  for (var story in allStories) {
-                    for (var tag in story.hashtagsList) {
-                      tagFrequency[tag] = (tagFrequency[tag] ?? 0) + 1;
+                  // Extract top tags using all stories, memoized to prevent recomputation on tag select
+                  final topTags = useMemoized(() {
+                    final tagFrequency = <String, int>{};
+                    for (var story in allStories) {
+                      for (var tag in story.hashtagsList) {
+                        tagFrequency[tag] = (tagFrequency[tag] ?? 0) + 1;
+                      }
                     }
-                  }
 
-                  final sortedTags = tagFrequency.keys.toList()
-                    ..sort(
-                        (a, b) => tagFrequency[b]!.compareTo(tagFrequency[a]!));
+                    final sortedTags = tagFrequency.keys.toList()
+                      ..sort(
+                          (a, b) => tagFrequency[b]!.compareTo(tagFrequency[a]!));
 
-                  final topTags = ['All', ...sortedTags.take(9)];
+                    return ['All', ...sortedTags.take(9)];
+                  }, [allStories]);
 
                   // Filter stories based on selected tag
                   final filteredStories = selectedTag == 'All'

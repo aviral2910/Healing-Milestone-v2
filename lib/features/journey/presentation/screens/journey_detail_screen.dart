@@ -156,9 +156,8 @@ class JourneyDetailScreen extends ConsumerWidget {
                     );
                   }
 
-                  // Sort newest first (reverse chronological)
-                  final reversedMilestones = milestones.toList()
-                    ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+                  // Backend already returns sorted newest first
+                  final sortedMilestones = milestones;
 
                   return SliverPadding(
                     padding: const EdgeInsets.only(
@@ -169,12 +168,12 @@ class JourneyDetailScreen extends ConsumerWidget {
                     ),
                     sliver: SliverList(
                       delegate: SliverChildBuilderDelegate((context, index) {
-                        final milestone = reversedMilestones[index];
+                        final milestone = sortedMilestones[index];
                         return TimelineNode(
                           milestone: milestone,
                           isReversed: true,
                         );
-                      }, childCount: reversedMilestones.length),
+                      }, childCount: sortedMilestones.length),
                     ),
                   );
                 },
