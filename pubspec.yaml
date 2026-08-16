@@ -11,7 +11,6 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_hooks: ^0.21.0
-  flutter_riverpod: ^3.4.2
   hooks_riverpod: ^3.4.2
   riverpod_annotation: ^4.0.6
   freezed_annotation: ^3.1.0
@@ -37,7 +36,6 @@ dependencies:
   firebase_ai: ^3.15.0
   firebase_remote_config: ^6.5.6
   share_plus: ^13.3.0
-  app_links: ^7.0.0
   qr_flutter: ^4.1.0
   screenshot: ^3.0.0
   path_provider: ^2.1.6

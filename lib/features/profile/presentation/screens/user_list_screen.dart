@@ -122,6 +122,7 @@ class _UserListScreenState extends ConsumerState<UserListScreen> {
             )
           : ListView.builder(
               controller: _scrollController,
+              itemExtent: 72.0,
               itemCount: _users.length + (_isLoading ? 1 : 0),
               itemBuilder: (context, index) {
                 if (index == _users.length) {

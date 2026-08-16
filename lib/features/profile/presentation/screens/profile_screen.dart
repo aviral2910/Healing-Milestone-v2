@@ -3,7 +3,6 @@ import '../../../../features/milestone/presentation/providers/post_creation_stat
 import 'package:healing_milestones/core/router/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:healing_milestones/features/auth/data/auth_provider.dart';
 import 'package:healing_milestones/features/posts/data/story_providers.dart';
 import '../../../../core/models/user_model.dart';
@@ -508,45 +507,34 @@ class _StoryList extends StatelessWidget {
       );
     }
 
-    return AnimationLimiter(
-      child: ListView.builder(
-        padding: const EdgeInsets.all(16.0),
-        itemCount: stories.length,
-        itemBuilder: (context, index) {
-          final story = stories[index];
-          final theme = Theme.of(context);
-          return AnimationConfiguration.staggeredList(
-            position: index,
-            duration: const Duration(milliseconds: 600),
-            child: SlideAnimation(
-              verticalOffset: 100.0,
-              child: FadeInAnimation(
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 24.0),
-                      child: StoryCard(
-                        story: story,
-                        onTap: () =>
-                            context.push(AppRoutes.storyDetail(story.storyId)),
-                        content: story.shortDescription,
-                      ),
-                    ),
-                    if (index < stories.length - 1)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 24.0),
-                        child: Divider(
-                            color: theme.colorScheme.primary
-                                .withValues(alpha: 0.2),
-                            thickness: 1),
-                      ),
-                  ],
-                ),
+    return ListView.builder(
+      padding: const EdgeInsets.all(16.0),
+      itemCount: stories.length,
+      itemBuilder: (context, index) {
+        final story = stories[index];
+        final theme = Theme.of(context);
+        return Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(bottom: 24.0),
+              child: StoryCard(
+                story: story,
+                onTap: () =>
+                    context.push(AppRoutes.storyDetail(story.storyId)),
+                content: story.shortDescription,
               ),
             ),
-          );
-        },
-      ),
+            if (index < stories.length - 1)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 24.0),
+                child: Divider(
+                    color: theme.colorScheme.primary
+                        .withValues(alpha: 0.2),
+                    thickness: 1),
+              ),
+          ],
+        );
+      },
     );
   }
 }

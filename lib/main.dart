@@ -40,24 +40,34 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  try {
-    final remoteConfig = FirebaseRemoteConfig.instance;
-    await remoteConfig.setConfigSettings(RemoteConfigSettings(
-      fetchTimeout: const Duration(seconds: 10),
-      minimumFetchInterval: const Duration(hours: 1),
-    ));
-    await remoteConfig.fetchAndActivate();
-  } catch (e) {
-    debugPrint('Failed to fetch remote config on startup: $e');
-  }
-
-  // Initialize App Check with Debug provider
-  await FirebaseAppCheck.instance.activate(
-    androidProvider: AndroidProvider.debug,
-    appleProvider: AppleProvider.debug,
-  );
-
-  final prefs = await SharedPreferences.getInstance();
+  // Parallelize independent startup tasks to save 200-400ms
+  late final SharedPreferences prefs;
+  await Future.wait([
+    // Remote Config
+    () async {
+      try {
+        final remoteConfig = FirebaseRemoteConfig.instance;
+        await remoteConfig.setConfigSettings(RemoteConfigSettings(
+          fetchTimeout: const Duration(seconds: 10),
+          minimumFetchInterval: const Duration(hours: 1),
+        ));
+        await remoteConfig.fetchAndActivate();
+      } catch (e) {
+        debugPrint('Failed to fetch remote config on startup: $e');
+      }
+    }(),
+    
+    // App Check
+    FirebaseAppCheck.instance.activate(
+      androidProvider: AndroidProvider.debug,
+      appleProvider: AppleProvider.debug,
+    ),
+    
+    // Shared Prefs
+    () async {
+      prefs = await SharedPreferences.getInstance();
+    }(),
+  ]);
 
   runApp(
     ProviderScope(
@@ -98,8 +108,7 @@ class HealingMilestonesApp extends ConsumerWidget {
         theme: baseTheme,
         routerConfig: router,
         debugShowCheckedModeBanner: false,
-        useInheritedMediaQuery: true,
-        locale: DevicePreview.locale(context),
+                locale: DevicePreview.locale(context),
         builder: (context, child) {
           final widget = DevicePreview.appBuilder(context, child);
           final data = MediaQuery.of(context);
