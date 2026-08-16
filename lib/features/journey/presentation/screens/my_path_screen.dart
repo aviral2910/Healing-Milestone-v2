@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../../shared/widgets/app_loader.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../data/providers/journey_providers.dart';
@@ -381,7 +383,7 @@ class MyPathScreen extends ConsumerWidget {
                     },
                   );
                 },
-                loading: () => const Center(child: CircularProgressIndicator()),
+                loading: () => const Center(child: AppLoader()),
                 error: (err, stack) => Center(child: Text('Error: $err')),
               ),
             ),
@@ -452,7 +454,7 @@ class MyPathScreen extends ConsumerWidget {
                   child: Center(
                     child: Padding(
                       padding: EdgeInsets.all(40.0),
-                      child: CircularProgressIndicator(),
+                      child: AppLoader(),
                     ),
                   ),
                 ),

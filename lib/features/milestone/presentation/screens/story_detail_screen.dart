@@ -5,6 +5,8 @@ import 'package:healing_milestones/core/router/app_routes.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/material.dart';
+import '../../../../shared/widgets/app_loader.dart';
+
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shimmer/shimmer.dart';
 import 'immersive_reading_screen.dart';
@@ -47,7 +49,7 @@ class StoryDetailScreen extends HookConsumerWidget {
 
     return storyAsync.when(
       loading: () =>
-          const Scaffold(body: Center(child: CircularProgressIndicator())),
+          const Scaffold(body: Center(child: AppLoader())),
       error: (error, stack) =>
           Scaffold(body: Center(child: Text('Error loading story: $error'))),
       data: (story) {
