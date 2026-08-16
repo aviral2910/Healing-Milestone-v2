@@ -88,7 +88,17 @@ class StoryDetailScreen extends HookConsumerWidget {
           body: Stack(
             children: [
               AnimationLimiter(
-                child: CustomScrollView(
+                child: NotificationListener<ScrollNotification>(
+                  onNotification: (ScrollNotification scrollInfo) {
+                    if (scrollInfo.metrics.pixels >=
+                        scrollInfo.metrics.maxScrollExtent - 200) {
+                      ref
+                          .read(paginatedCommentsProvider(milestoneId).notifier)
+                          .fetchNextPage();
+                    }
+                    return false;
+                  },
+                  child: CustomScrollView(
                   controller: mainScrollController,
                   slivers: [
                     SliverAppBar(

@@ -1,15 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:healing_milestones/core/models/user_model.dart';
+import 'package:healing_milestones/core/network/api_client.dart';
 import '../../../core/repositories/auth_repository.dart';
 import '../../../core/repositories/user_repository.dart';
 import 'repository_providers.dart';
 
-enum AuthStatus {
-  initial,
-  unauthenticated,
-  needsOnboarding,
-  authenticated,
-}
+enum AuthStatus { initial, unauthenticated, needsOnboarding, authenticated }
 
 class AuthState {
   final AuthStatus status;
@@ -51,7 +47,7 @@ class AuthNotifier extends Notifier<AsyncValue<AuthState>> {
   AsyncValue<AuthState> build() {
     _authRepository = ref.watch(authRepositoryProvider);
     _userRepository = ref.watch(userRepositoryProvider);
-    // Use Future.microtask or similar if _init modifies state synchronously? 
+    // Use Future.microtask or similar if _init modifies state synchronously?
     // Actually, _init just sets up a listener, which is fine to call in build.
     _init();
     return const AsyncValue.loading();
@@ -71,16 +67,17 @@ class AuthNotifier extends Notifier<AsyncValue<AuthState>> {
     try {
       final userModel = await _userRepository.getUserData(user.uid);
       if (userModel == null) {
-        state = AsyncData(AuthState(
-          status: AuthStatus.needsOnboarding,
-          authUser: user,
-        ));
+        state = AsyncData(
+          AuthState(status: AuthStatus.needsOnboarding, authUser: user),
+        );
       } else {
-        state = AsyncData(AuthState(
-          status: AuthStatus.authenticated,
-          authUser: user,
-          userModel: userModel,
-        ));
+        state = AsyncData(
+          AuthState(
+            status: AuthStatus.authenticated,
+            authUser: user,
+            userModel: userModel,
+          ),
+        );
       }
     } catch (e, st) {
       state = AsyncError(e, st);
@@ -127,27 +124,34 @@ class AuthNotifier extends Notifier<AsyncValue<AuthState>> {
     try {
       await _userRepository.createUserData(userModel);
       final currentUser = _authRepository.currentUser;
-      state = AsyncData(AuthState(
-        status: AuthStatus.authenticated,
-        authUser: currentUser,
-        userModel: userModel,
-      ));
+      state = AsyncData(
+        AuthState(
+          status: AuthStatus.authenticated,
+          authUser: currentUser,
+          userModel: userModel,
+        ),
+      );
     } catch (e, st) {
       state = AsyncError(e, st);
     }
   }
 
-  Future<void> verifyPhoneNumber(String phoneNumber, {required Function() onCodeSent}) async {
+  Future<void> verifyPhoneNumber(
+    String phoneNumber, {
+    required Function() onCodeSent,
+  }) async {
     try {
       await _authRepository.verifyPhoneNumber(
         phoneNumber: phoneNumber,
         codeSent: (String verificationId, int? resendToken) {
           final currentState = state.value;
           if (currentState != null) {
-            state = AsyncData(currentState.copyWith(
-              verificationId: verificationId,
-              linkingPhoneNumber: phoneNumber,
-            ));
+            state = AsyncData(
+              currentState.copyWith(
+                verificationId: verificationId,
+                linkingPhoneNumber: phoneNumber,
+              ),
+            );
             onCodeSent();
           }
         },
@@ -157,10 +161,12 @@ class AuthNotifier extends Notifier<AsyncValue<AuthState>> {
         codeAutoRetrievalTimeout: (String verificationId) {
           final currentState = state.value;
           if (currentState != null) {
-            state = AsyncData(currentState.copyWith(
-              verificationId: verificationId,
-              linkingPhoneNumber: phoneNumber,
-            ));
+            state = AsyncData(
+              currentState.copyWith(
+                verificationId: verificationId,
+                linkingPhoneNumber: phoneNumber,
+              ),
+            );
           }
         },
       );
@@ -172,7 +178,10 @@ class AuthNotifier extends Notifier<AsyncValue<AuthState>> {
   Future<void> verifyOtp(String smsCode) async {
     final verificationId = state.value?.verificationId;
     if (verificationId == null) {
-      state = AsyncError(Exception("Verification ID not found. Please try sending OTP again."), StackTrace.current);
+      state = AsyncError(
+        Exception("Verification ID not found. Please try sending OTP again."),
+        StackTrace.current,
+      );
       return;
     }
 
@@ -189,27 +198,39 @@ class AuthNotifier extends Notifier<AsyncValue<AuthState>> {
     final currentState = state.value;
     final verificationId = currentState?.verificationId;
     if (verificationId == null) {
-      state = AsyncError(Exception("Verification ID not found. Please try sending OTP again."), StackTrace.current);
+      state = AsyncError(
+        Exception("Verification ID not found. Please try sending OTP again."),
+        StackTrace.current,
+      );
       return;
     }
 
     try {
-      final user = await _authRepository.linkPhoneCredential(verificationId, smsCode);
+      final user = await _authRepository.linkPhoneCredential(
+        verificationId,
+        smsCode,
+      );
       if (user != null && currentState != null) {
-         var updatedUserModel = currentState.userModel;
-         
-         final phoneToSave = user.phoneNumber ?? currentState.linkingPhoneNumber;
-         
-         if (phoneToSave != null && phoneToSave.isNotEmpty && updatedUserModel != null) {
-            updatedUserModel = updatedUserModel.copyWith(phoneNumber: phoneToSave);
-            await _userRepository.updateUserData(updatedUserModel);
-         }
-         
-         state = AsyncData(currentState.copyWith(
-           authUser: user, 
-           userModel: updatedUserModel,
-           linkingPhoneNumber: null, // clear it
-         ));
+        var updatedUserModel = currentState.userModel;
+
+        final phoneToSave = user.phoneNumber ?? currentState.linkingPhoneNumber;
+
+        if (phoneToSave != null &&
+            phoneToSave.isNotEmpty &&
+            updatedUserModel != null) {
+          updatedUserModel = updatedUserModel.copyWith(
+            phoneNumber: phoneToSave,
+          );
+          await _userRepository.updateUserData(updatedUserModel);
+        }
+
+        state = AsyncData(
+          currentState.copyWith(
+            authUser: user,
+            userModel: updatedUserModel,
+            linkingPhoneNumber: null, // clear it
+          ),
+        );
       }
     } catch (e) {
       if (currentState != null) {
@@ -224,12 +245,14 @@ class AuthNotifier extends Notifier<AsyncValue<AuthState>> {
     try {
       final user = await _authRepository.linkGoogleCredential();
       if (user != null && currentState != null) {
-         var updatedUserModel = currentState.userModel;
-         if (user.email != null && updatedUserModel != null) {
-            updatedUserModel = updatedUserModel.copyWith(email: user.email);
-            await _userRepository.updateUserData(updatedUserModel);
-         }
-         state = AsyncData(currentState.copyWith(authUser: user, userModel: updatedUserModel));
+        var updatedUserModel = currentState.userModel;
+        if (user.email != null && updatedUserModel != null) {
+          updatedUserModel = updatedUserModel.copyWith(email: user.email);
+          await _userRepository.updateUserData(updatedUserModel);
+        }
+        state = AsyncData(
+          currentState.copyWith(authUser: user, userModel: updatedUserModel),
+        );
       }
     } catch (e) {
       print('Link Google Account Error: $e');
@@ -276,30 +299,13 @@ class AuthNotifier extends Notifier<AsyncValue<AuthState>> {
     if (userModel == null) return;
 
     try {
-      final isFollowing = userModel.followingList.contains(targetUserId);
-      final updatedFollowingList = List<String>.from(userModel.followingList);
-      
-      if (isFollowing) {
-        updatedFollowingList.remove(targetUserId);
-      } else {
-        updatedFollowingList.add(targetUserId);
-      }
-
-      final updatedUserModel = userModel.copyWith(
-        followingList: updatedFollowingList,
-        followingCount: updatedFollowingList.length,
-      );
-
-      // Optimistically update the UI state
-      state = AsyncData(currentState!.copyWith(userModel: updatedUserModel));
-
       // Actually perform the network request
       await _userRepository.toggleFollow(userModel.userId, targetUserId);
 
       // Invalidate target user so it refreshes in the background
       ref.invalidate(userStreamProvider(targetUserId));
       ref.invalidate(userByIdProvider(targetUserId));
-      
+
       // AWAIT the refresh of the current user so the spinner stays active until fresh data arrives
       await ref.refresh(userStreamProvider(userModel.userId).future);
       ref.invalidate(userByIdProvider(userModel.userId));
@@ -315,7 +321,7 @@ class AuthNotifier extends Notifier<AsyncValue<AuthState>> {
   Future<void> applyForVerification() async {
     final currentUser = state.value?.userModel;
     if (currentUser == null) return;
-    
+
     final updatedUser = currentUser.copyWith(appliedForVerification: true);
     await updateProfile(updatedUser);
   }
@@ -333,13 +339,13 @@ class AuthNotifier extends Notifier<AsyncValue<AuthState>> {
     final currentState = state.value;
     try {
       state = const AsyncValue.loading();
-      
+
       // 1. Delete user from the backend database (PostgreSQL)
       await _userRepository.deleteUserData();
-      
+
       // 2. Delete user from Firebase Authentication
       await _authRepository.deleteAccount();
-      
+
       // The authStateChanges listener will handle transition to unauthenticated automatically.
     } catch (e, st) {
       if (currentState != null) {
@@ -356,7 +362,10 @@ final authProvider = NotifierProvider<AuthNotifier, AsyncValue<AuthState>>(() {
   return AuthNotifier();
 });
 
-final userStreamProvider = StreamProvider.family<UserModel?, String>((ref, userId) {
+final userStreamProvider = StreamProvider.family<UserModel?, String>((
+  ref,
+  userId,
+) {
   final userRepository = ref.watch(userRepositoryProvider);
   return userRepository.getUserStream(userId);
 });
@@ -364,7 +373,8 @@ final userStreamProvider = StreamProvider.family<UserModel?, String>((ref, userI
 // A convenient provider just to get the authenticated UserModel
 final currentUserProvider = Provider<UserModel?>((ref) {
   final authState = ref.watch(authProvider).value;
-  if (authState?.status == AuthStatus.authenticated && authState?.authUser != null) {
+  if (authState?.status == AuthStatus.authenticated &&
+      authState?.authUser != null) {
     // Watch the real-time stream of the user's data
     final userStream = ref.watch(userStreamProvider(authState!.authUser!.uid));
     return userStream.value ?? authState.userModel;
@@ -376,7 +386,23 @@ final currentUserProvider = Provider<UserModel?>((ref) {
 final userByIdProvider = userStreamProvider;
 
 // A provider to fetch a list of users by their IDs
-final getUsersByIdsProvider = FutureProvider.family<List<UserModel>, List<String>>((ref, userIds) {
-  final userRepository = ref.watch(userRepositoryProvider);
-  return userRepository.getUsersByIds(userIds);
+final getUsersByIdsProvider =
+    FutureProvider.family<List<UserModel>, List<String>>((ref, userIds) {
+      final userRepository = ref.watch(userRepositoryProvider);
+      return userRepository.getUsersByIds(userIds);
+    });
+
+final isFollowingProvider = FutureProvider.family<bool, String>((
+  ref,
+  targetUid,
+) async {
+  final apiClient = ref.watch(apiClientProvider);
+  try {
+    final response = await apiClient.dio.get(
+      '/api/users/$targetUid/is-following',
+    );
+    return response.data['isFollowing'] ?? false;
+  } catch (e) {
+    return false;
+  }
 });

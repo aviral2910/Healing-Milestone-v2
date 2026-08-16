@@ -134,7 +134,7 @@ class _UserListScreenState extends ConsumerState<UserListScreen> {
                 }
 
                 final user = _users[index];
-                final isFollowing = currentUser?.followingList.contains(user.userId) ?? false;
+                final isFollowing = ref.watch(isFollowingProvider(user.userId)).value ?? false;
                 final isCurrentUser = currentUser?.userId == user.userId;
 
                 return ListTile(
@@ -163,6 +163,7 @@ class _UserListScreenState extends ConsumerState<UserListScreen> {
                                 _loadingFollowIds.add(user.userId);
                               });
                               await ref.read(authProvider.notifier).toggleFollow(user.userId);
+ref.invalidate(isFollowingProvider(user.userId));
                               if (mounted) {
                                 setState(() {
                                   _loadingFollowIds.remove(user.userId);

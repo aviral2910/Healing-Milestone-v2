@@ -219,9 +219,7 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen>
                           // Action Buttons
                           Consumer(builder: (context, ref, child) {
                             final currentUser = ref.watch(currentUserProvider);
-                            final isFollowing = currentUser?.followingList
-                                    .contains(user.userId) ??
-                                false;
+                            final isFollowing = ref.watch(isFollowingProvider(user.userId)).value ?? false;
 
                             return SizedBox(
                               width: double.infinity,
@@ -230,22 +228,10 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen>
                                   if (currentUser == null) {
                                     context.push(AppRoutes.login);
                                   } else {
-                                    // Update local authProvider for optimistic UI
-                                    final updatedFollowingList = List<String>.from(currentUser.followingList);
-                                    if (isFollowing) {
-                                      updatedFollowingList.remove(user.userId);
-                                    } else {
-                                      updatedFollowingList.add(user.userId);
-                                    }
-                                    
-                                    final updatedUser = currentUser.copyWith(
-                                      followingList: updatedFollowingList,
-                                      followingCount: updatedFollowingList.length,
-                                    );
-                                    
-                                    await ref.read(authProvider.notifier).updateProfile(updatedUser);
+
                                     
                                     await ref.read(authProvider.notifier).toggleFollow(user.userId);
+ref.invalidate(isFollowingProvider(user.userId));
                                     
                                     // Await the refresh to prevent UI flickering
                                     await ref.refresh(userStreamProvider(currentUser.userId).future);
