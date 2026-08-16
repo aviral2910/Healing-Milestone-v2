@@ -214,6 +214,7 @@ class JourneyDetailScreen extends ConsumerWidget {
                         return TimelineNode(
                           milestone: milestone,
                           isReversed: true,
+                          isHistoricalClosure: milestone.isClosure && index != 0,
                         );
                       }, childCount: sortedMilestones.length),
                     ),

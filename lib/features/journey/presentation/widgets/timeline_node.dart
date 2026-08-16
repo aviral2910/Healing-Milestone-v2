@@ -8,11 +8,13 @@ import 'log_milestone_overlay.dart';
 class TimelineNode extends ConsumerWidget {
   final JourneyMilestoneModel milestone;
   final bool isReversed;
+  final bool isHistoricalClosure;
 
   const TimelineNode({
     super.key, 
     required this.milestone,
     this.isReversed = false,
+    this.isHistoricalClosure = false,
   });
 
   Color _getEmotionColor(BuildContext context, EmotionStatus status) {
@@ -285,7 +287,7 @@ class TimelineNode extends ConsumerWidget {
             child: () {
               if (milestone.isReopening) {
                 return _buildReopeningCard(context, theme);
-              } else if (milestone.isClosure) {
+              } else if (milestone.isClosure && !isHistoricalClosure) {
                 return _buildClosureCard(context, theme);
               }
               return _buildStandardCard(context, theme, emotionColor);

@@ -176,6 +176,7 @@ class JourneyMilestoneModel {
       timelinePosition: TimelinePosition.fromString(json['timeline_position'] as String? ?? 'standalone'),
       emotionStatus: EmotionStatus.fromString(json['emotion_status'] as String? ?? 'neutral'),
       content: json['content'] as String?,
+      isReopening: json['is_reopening'] as bool? ?? false,
       isClosure: json['is_closure'] as bool? ?? false,
       mediaUrl: json['media_url'] as String?,
       visibility: MilestoneVisibility.fromString(json['visibility'] as String? ?? 'private'),
