@@ -7,6 +7,29 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 final apiUserRepositoryProvider = Provider<UserRepository>((ref) {
   final apiClient = ref.watch(apiClientProvider);
   return ApiUserRepository(apiClient);
+  @override
+  Future<List<UserModel>> getFollowers(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/followers', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching followers: $e');
+      return [];
+    }
+  }
+
+  @override
+  Future<List<UserModel>> getFollowing(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/following', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching following: $e');
+      return [];
+    }
+  }
 });
 
 class ApiUserRepository implements UserRepository {
@@ -16,52 +39,374 @@ class ApiUserRepository implements UserRepository {
 
   Dio get _dio => _apiClient.dio;
 
-  final Map<String, Future<UserModel?>> _inFlightUserRequests = {};
-  final Map<String, UserModel> _userCache = {};
-  final Map<String, DateTime> _userCacheTime = {};
+  final Map<String, Future<UserModel?>> _inFlightUserRequests = {  @override
+  Future<List<UserModel>> getFollowers(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/followers', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching followers: $e');
+      return [];
+    }
+  }
+
+  @override
+  Future<List<UserModel>> getFollowing(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/following', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching following: $e');
+      return [];
+    }
+  }
+};
+  final Map<String, UserModel> _userCache = {  @override
+  Future<List<UserModel>> getFollowers(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/followers', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching followers: $e');
+      return [];
+    }
+  }
+
+  @override
+  Future<List<UserModel>> getFollowing(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/following', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching following: $e');
+      return [];
+    }
+  }
+};
+  final Map<String, DateTime> _userCacheTime = {  @override
+  Future<List<UserModel>> getFollowers(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/followers', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching followers: $e');
+      return [];
+    }
+  }
+
+  @override
+  Future<List<UserModel>> getFollowing(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/following', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching following: $e');
+      return [];
+    }
+  }
+};
 
   @override
   Future<UserModel?> getUserData(String uid) {
     // 1. Return if request is already in-flight
     if (_inFlightUserRequests.containsKey(uid)) {
       return _inFlightUserRequests[uid]!;
+      @override
+  Future<List<UserModel>> getFollowers(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/followers', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching followers: $e');
+      return [];
     }
+  }
+
+  @override
+  Future<List<UserModel>> getFollowing(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/following', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching following: $e');
+      return [];
+    }
+  }
+}
     
     // 2. Return if we have a fresh cache (less than 2 minutes old)
     if (_userCache.containsKey(uid)) {
       final cacheAge = DateTime.now().difference(_userCacheTime[uid]!);
       if (cacheAge.inMinutes < 2) {
         return Future.value(_userCache[uid]);
-      }
+        @override
+  Future<List<UserModel>> getFollowers(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/followers', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching followers: $e');
+      return [];
     }
+  }
+
+  @override
+  Future<List<UserModel>> getFollowing(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/following', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching following: $e');
+      return [];
+    }
+  }
+}
+      @override
+  Future<List<UserModel>> getFollowers(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/followers', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching followers: $e');
+      return [];
+    }
+  }
+
+  @override
+  Future<List<UserModel>> getFollowing(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/following', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching following: $e');
+      return [];
+    }
+  }
+}
 
     final future = _fetchUserData(uid).then((user) {
       if (user != null) {
         _userCache[uid] = user;
         _userCacheTime[uid] = DateTime.now();
-      }
+        @override
+  Future<List<UserModel>> getFollowers(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/followers', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching followers: $e');
+      return [];
+    }
+  }
+
+  @override
+  Future<List<UserModel>> getFollowing(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/following', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching following: $e');
+      return [];
+    }
+  }
+}
       return user;
-    }).whenComplete(() {
+      @override
+  Future<List<UserModel>> getFollowers(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/followers', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching followers: $e');
+      return [];
+    }
+  }
+
+  @override
+  Future<List<UserModel>> getFollowing(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/following', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching following: $e');
+      return [];
+    }
+  }
+}).whenComplete(() {
       _inFlightUserRequests.remove(uid);
-    });
+      @override
+  Future<List<UserModel>> getFollowers(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/followers', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching followers: $e');
+      return [];
+    }
+  }
+
+  @override
+  Future<List<UserModel>> getFollowing(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/following', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching following: $e');
+      return [];
+    }
+  }
+});
 
     _inFlightUserRequests[uid] = future;
     return future;
+    @override
+  Future<List<UserModel>> getFollowers(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/followers', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching followers: $e');
+      return [];
+    }
   }
+
+  @override
+  Future<List<UserModel>> getFollowing(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/following', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching following: $e');
+      return [];
+    }
+  }
+}
 
   Future<UserModel?> _fetchUserData(String uid) async {
     try {
       final response = await _dio.get('/api/users/$uid');
       return UserModel.fromMap(response.data);
+      @override
+  Future<List<UserModel>> getFollowers(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/followers', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
     } catch (e) {
-      return null;
+      print('Error fetching followers: $e');
+      return [];
     }
   }
 
   @override
+  Future<List<UserModel>> getFollowing(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/following', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching following: $e');
+      return [];
+    }
+  }
+} catch (e) {
+      return null;
+      @override
+  Future<List<UserModel>> getFollowers(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/followers', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching followers: $e');
+      return [];
+    }
+  }
+
+  @override
+  Future<List<UserModel>> getFollowing(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/following', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching following: $e');
+      return [];
+    }
+  }
+}
+    @override
+  Future<List<UserModel>> getFollowers(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/followers', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching followers: $e');
+      return [];
+    }
+  }
+
+  @override
+  Future<List<UserModel>> getFollowing(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/following', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching following: $e');
+      return [];
+    }
+  }
+}
+
+  @override
   Stream<UserModel?> getUserStream(String uid) async* {
     yield await getUserData(uid);
+    @override
+  Future<List<UserModel>> getFollowers(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/followers', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching followers: $e');
+      return [];
+    }
   }
+
+  @override
+  Future<List<UserModel>> getFollowing(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/following', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching following: $e');
+      return [];
+    }
+  }
+}
 
   @override
   Future<void> createUserData(UserModel user) async {
@@ -70,7 +415,30 @@ class ApiUserRepository implements UserRepository {
     // However, the profile setup screen sets initial data like username, 
     // so we need to PATCH that data to the backend.
     await updateUserData(user);
+    @override
+  Future<List<UserModel>> getFollowers(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/followers', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching followers: $e');
+      return [];
+    }
   }
+
+  @override
+  Future<List<UserModel>> getFollowing(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/following', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching following: $e');
+      return [];
+    }
+  }
+}
 
   @override
   Future<void> updateUserData(UserModel user) async {
@@ -79,21 +447,159 @@ class ApiUserRepository implements UserRepository {
       await _dio.patch('/api/auth/me', data: user.toMap());
       _userCache[user.userId] = user;
       _userCacheTime[user.userId] = DateTime.now();
+      @override
+  Future<List<UserModel>> getFollowers(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/followers', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
     } catch (e) {
-      print('Error updating user: $e');
-      rethrow;
+      print('Error fetching followers: $e');
+      return [];
     }
   }
+
+  @override
+  Future<List<UserModel>> getFollowing(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/following', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching following: $e');
+      return [];
+    }
+  }
+} catch (e) {
+      print('Error updating user: $e');
+      rethrow;
+      @override
+  Future<List<UserModel>> getFollowers(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/followers', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching followers: $e');
+      return [];
+    }
+  }
+
+  @override
+  Future<List<UserModel>> getFollowing(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/following', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching following: $e');
+      return [];
+    }
+  }
+}
+    @override
+  Future<List<UserModel>> getFollowers(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/followers', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching followers: $e');
+      return [];
+    }
+  }
+
+  @override
+  Future<List<UserModel>> getFollowing(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/following', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching following: $e');
+      return [];
+    }
+  }
+}
 
   @override
   Future<bool> isUsernameAvailable(String username) async {
     try {
       final response = await _dio.get('/api/users/check-username?username=$username');
       return response.data['is_available'] ?? false;
+      @override
+  Future<List<UserModel>> getFollowers(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/followers', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
     } catch (e) {
-      return false;
+      print('Error fetching followers: $e');
+      return [];
     }
   }
+
+  @override
+  Future<List<UserModel>> getFollowing(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/following', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching following: $e');
+      return [];
+    }
+  }
+} catch (e) {
+      return false;
+      @override
+  Future<List<UserModel>> getFollowers(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/followers', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching followers: $e');
+      return [];
+    }
+  }
+
+  @override
+  Future<List<UserModel>> getFollowing(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/following', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching following: $e');
+      return [];
+    }
+  }
+}
+    @override
+  Future<List<UserModel>> getFollowers(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/followers', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching followers: $e');
+      return [];
+    }
+  }
+
+  @override
+  Future<List<UserModel>> getFollowing(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/following', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching following: $e');
+      return [];
+    }
+  }
+}
 
   @override
   Future<List<UserModel>> searchUsers(String query) async {
@@ -101,10 +607,79 @@ class ApiUserRepository implements UserRepository {
       final response = await _dio.get('/api/users/search?q=$query');
       final items = response.data['items'] as List;
       return items.map((json) => UserModel.fromMap(json)).toList();
+      @override
+  Future<List<UserModel>> getFollowers(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/followers', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
     } catch (e) {
+      print('Error fetching followers: $e');
       return [];
     }
   }
+
+  @override
+  Future<List<UserModel>> getFollowing(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/following', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching following: $e');
+      return [];
+    }
+  }
+} catch (e) {
+      return [];
+      @override
+  Future<List<UserModel>> getFollowers(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/followers', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching followers: $e');
+      return [];
+    }
+  }
+
+  @override
+  Future<List<UserModel>> getFollowing(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/following', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching following: $e');
+      return [];
+    }
+  }
+}
+    @override
+  Future<List<UserModel>> getFollowers(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/followers', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching followers: $e');
+      return [];
+    }
+  }
+
+  @override
+  Future<List<UserModel>> getFollowing(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/following', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching following: $e');
+      return [];
+    }
+  }
+}
 
   @override
   Future<List<UserModel>> getUsersByIds(List<String> uids) async {
@@ -117,33 +692,286 @@ class ApiUserRepository implements UserRepository {
     
     // Filter out any nulls if a user wasn't found
     return users.whereType<UserModel>().toList();
+    @override
+  Future<List<UserModel>> getFollowers(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/followers', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching followers: $e');
+      return [];
+    }
   }
+
+  @override
+  Future<List<UserModel>> getFollowing(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/following', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching following: $e');
+      return [];
+    }
+  }
+}
 
   @override
   Future<void> toggleFollow(String currentUserId, String targetUserId) async {
     try {
       await _dio.post('/api/users/$targetUserId/follow');
+      @override
+  Future<List<UserModel>> getFollowers(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/followers', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
     } catch (e) {
-      print('Error following user: $e');
+      print('Error fetching followers: $e');
+      return [];
     }
   }
+
+  @override
+  Future<List<UserModel>> getFollowing(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/following', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching following: $e');
+      return [];
+    }
+  }
+} catch (e) {
+      print('Error following user: $e');
+      @override
+  Future<List<UserModel>> getFollowers(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/followers', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching followers: $e');
+      return [];
+    }
+  }
+
+  @override
+  Future<List<UserModel>> getFollowing(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/following', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching following: $e');
+      return [];
+    }
+  }
+}
+    @override
+  Future<List<UserModel>> getFollowers(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/followers', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching followers: $e');
+      return [];
+    }
+  }
+
+  @override
+  Future<List<UserModel>> getFollowing(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/following', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching following: $e');
+      return [];
+    }
+  }
+}
 
   @override
   Future<void> toggleBookmark(String userId, String storyId) async {
     try {
       await _dio.post('/api/stories/$storyId/bookmarks');
+      @override
+  Future<List<UserModel>> getFollowers(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/followers', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
     } catch (e) {
-      print('Error bookmarking story: $e');
+      print('Error fetching followers: $e');
+      return [];
     }
   }
+
+  @override
+  Future<List<UserModel>> getFollowing(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/following', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching following: $e');
+      return [];
+    }
+  }
+} catch (e) {
+      print('Error bookmarking story: $e');
+      @override
+  Future<List<UserModel>> getFollowers(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/followers', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching followers: $e');
+      return [];
+    }
+  }
+
+  @override
+  Future<List<UserModel>> getFollowing(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/following', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching following: $e');
+      return [];
+    }
+  }
+}
+    @override
+  Future<List<UserModel>> getFollowers(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/followers', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching followers: $e');
+      return [];
+    }
+  }
+
+  @override
+  Future<List<UserModel>> getFollowing(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/following', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching following: $e');
+      return [];
+    }
+  }
+}
 
   @override
   Future<void> deleteUserData() async {
     try {
       await _dio.delete('/api/auth/me');
+      @override
+  Future<List<UserModel>> getFollowers(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/followers', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
     } catch (e) {
+      print('Error fetching followers: $e');
+      return [];
+    }
+  }
+
+  @override
+  Future<List<UserModel>> getFollowing(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/following', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching following: $e');
+      return [];
+    }
+  }
+} catch (e) {
       print('Error deleting user data: $e');
       rethrow;
+      @override
+  Future<List<UserModel>> getFollowers(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/followers', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching followers: $e');
+      return [];
+    }
+  }
+
+  @override
+  Future<List<UserModel>> getFollowing(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/following', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching following: $e');
+      return [];
+    }
+  }
+}
+    @override
+  Future<List<UserModel>> getFollowers(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/followers', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching followers: $e');
+      return [];
+    }
+  }
+
+  @override
+  Future<List<UserModel>> getFollowing(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/following', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching following: $e');
+      return [];
+    }
+  }
+}
+  @override
+  Future<List<UserModel>> getFollowers(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/followers', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching followers: $e');
+      return [];
+    }
+  }
+
+  @override
+  Future<List<UserModel>> getFollowing(String uid, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _dio.get('/users/$uid/following', queryParameters: {'skip': skip, 'limit': limit});
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error fetching following: $e');
+      return [];
     }
   }
 }

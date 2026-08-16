@@ -292,7 +292,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                 onTap: () {
                                   context.push(AppRoutes.userList, extra: {
                                     'title': 'Followers',
-                                    'userIds': user.followersList,
+                                    'targetUserId': user.userId,
+                                    'listType': 'followers',
                                   });
                                 }),
                             Container(
@@ -305,7 +306,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                 onTap: () {
                                   context.push(AppRoutes.userList, extra: {
                                     'title': 'Following',
-                                    'userIds': user.followingList,
+                                    'targetUserId': user.userId,
+                                    'listType': 'following',
                                   });
                                 }),
                           ],

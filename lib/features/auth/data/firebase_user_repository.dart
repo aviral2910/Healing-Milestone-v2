@@ -176,4 +176,13 @@ class FirebaseUserRepository implements UserRepository {
   Future<void> deleteUserData() async {
     throw UnimplementedError('Not implemented for Firebase backend (using API backend).');
   }
+  @override
+  Future<List<UserModel>> getFollowers(String uid, {int skip = 0, int limit = 20}) async {
+    return []; // Not implemented for legacy firebase
+  }
+
+  @override
+  Future<List<UserModel>> getFollowing(String uid, {int skip = 0, int limit = 20}) async {
+    return []; // Not implemented for legacy firebase
+  }
 }

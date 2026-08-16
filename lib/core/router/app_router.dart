@@ -250,8 +250,15 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final extra = state.extra as Map<String, dynamic>?;
           final title = extra?['title'] as String? ?? 'Users';
-          final userIds = extra?['userIds'] as List<String>? ?? [];
-          return UserListScreen(title: title, userIds: userIds);
+          final userIds = extra?['userIds'] as List<String>?;
+          final targetUserId = extra?['targetUserId'] as String?;
+          final listType = extra?['listType'] as String?;
+          return UserListScreen(
+            title: title, 
+            userIds: userIds,
+            targetUserId: targetUserId,
+            listType: listType,
+          );
         },
       ),
       GoRoute(

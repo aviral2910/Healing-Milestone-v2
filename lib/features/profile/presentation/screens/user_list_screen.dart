@@ -8,12 +8,16 @@ import '../../../auth/data/repository_providers.dart';
 
 class UserListScreen extends ConsumerStatefulWidget {
   final String title;
-  final List<String> userIds;
+  final List<String>? userIds;
+  final String? targetUserId;
+  final String? listType;
 
   const UserListScreen({
     Key? key,
     required this.title,
-    required this.userIds,
+    this.userIds,
+    this.targetUserId,
+    this.listType,
   }) : super(key: key);
 
   @override
@@ -44,28 +48,55 @@ class _UserListScreenState extends ConsumerState<UserListScreen> {
     super.dispose();
   }
 
+  bool _hasMore = true;
+
   Future<void> _loadMoreUsers() async {
-    if (_isLoading || _currentOffset >= widget.userIds.length) return;
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    final endIndex = (_currentOffset + _chunkSize > widget.userIds.length)
-        ? widget.userIds.length
-        : _currentOffset + _chunkSize;
-        
-    final chunk = widget.userIds.sublist(_currentOffset, endIndex);
+    if (_isLoading || !_hasMore) return;
     
-    final repo = ref.read(userRepositoryProvider);
-    final usersChunk = await repo.getUsersByIds(chunk);
+    // Legacy behavior (fallback)
+    if (widget.userIds != null && widget.targetUserId == null) {
+      if (_currentOffset >= widget.userIds!.length) return;
+      
+      setState(() { _isLoading = true; });
+      final endIndex = (_currentOffset + _chunkSize > widget.userIds!.length)
+          ? widget.userIds!.length
+          : _currentOffset + _chunkSize;
+      final chunk = widget.userIds!.sublist(_currentOffset, endIndex);
+      final repo = ref.read(userRepositoryProvider);
+      final usersChunk = await repo.getUsersByIds(chunk);
+      if (mounted) {
+        setState(() {
+          _users.addAll(usersChunk);
+          _currentOffset = endIndex;
+          _isLoading = false;
+          if (endIndex >= widget.userIds!.length) _hasMore = false;
+        });
+      }
+      return;
+    }
 
-    if (mounted) {
-      setState(() {
-        _users.addAll(usersChunk);
-        _currentOffset = endIndex;
-        _isLoading = false;
-      });
+    // New Server-Side Paginated Behavior
+    if (widget.targetUserId != null && widget.listType != null) {
+      setState(() { _isLoading = true; });
+      final repo = ref.read(userRepositoryProvider);
+      List<UserModel> usersChunk = [];
+      
+      if (widget.listType == 'followers') {
+        usersChunk = await repo.getFollowers(widget.targetUserId!, skip: _currentOffset, limit: _chunkSize);
+      } else if (widget.listType == 'following') {
+        usersChunk = await repo.getFollowing(widget.targetUserId!, skip: _currentOffset, limit: _chunkSize);
+      }
+      
+      if (mounted) {
+        setState(() {
+          _users.addAll(usersChunk);
+          _currentOffset += usersChunk.length;
+          _isLoading = false;
+          if (usersChunk.length < _chunkSize) {
+            _hasMore = false;
+          }
+        });
+      }
     }
   }
 
@@ -80,7 +111,7 @@ class _UserListScreenState extends ConsumerState<UserListScreen> {
         backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
       ),
-      body: widget.userIds.isEmpty
+      body: _users.isEmpty && !_isLoading && !_hasMore
           ? Center(
               child: Text(
                 'No users yet.',

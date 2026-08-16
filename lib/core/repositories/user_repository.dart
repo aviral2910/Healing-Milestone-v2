@@ -11,4 +11,6 @@ abstract class UserRepository {
   Future<void> toggleFollow(String currentUserId, String targetUserId);
   Future<void> toggleBookmark(String userId, String storyId);
   Future<void> deleteUserData();
+  Future<List<UserModel>> getFollowers(String uid, {int skip = 0, int limit = 20});
+  Future<List<UserModel>> getFollowing(String uid, {int skip = 0, int limit = 20});
 }
