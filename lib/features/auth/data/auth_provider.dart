@@ -296,11 +296,12 @@ class AuthNotifier extends Notifier<AsyncValue<AuthState>> {
       // Actually perform the network request
       await _userRepository.toggleFollow(userModel.userId, targetUserId);
 
-      // Invalidate to refresh target user's data
+      // Invalidate target user so it refreshes in the background
       ref.invalidate(userStreamProvider(targetUserId));
       ref.invalidate(userByIdProvider(targetUserId));
-      // Invalidate current user to refresh following list and count
-      ref.invalidate(userStreamProvider(userModel.userId));
+      
+      // AWAIT the refresh of the current user so the spinner stays active until fresh data arrives
+      await ref.refresh(userStreamProvider(userModel.userId).future);
       ref.invalidate(userByIdProvider(userModel.userId));
     } catch (e) {
       // Revert on error

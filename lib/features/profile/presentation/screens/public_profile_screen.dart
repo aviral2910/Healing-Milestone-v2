@@ -251,8 +251,8 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen>
                                     
                                     await ref.read(authProvider.notifier).toggleFollow(user.userId);
                                     
-                                    // Invalidate providers to refetch the fresh follow counts
-                                    ref.invalidate(userStreamProvider(currentUser.userId));
+                                    // Await the refresh to prevent UI flickering
+                                    await ref.refresh(userStreamProvider(currentUser.userId).future);
                                     ref.invalidate(userByIdProvider(user.userId));
                                   }
                                 },
