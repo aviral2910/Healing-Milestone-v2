@@ -1,6 +1,4 @@
-import 'package:healing_milestones/core/network/api_client.dart';
 
-import 'package:healing_milestones/core/models/user_model.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
@@ -65,8 +63,10 @@ class RecommendedStoriesNotifier
           isEnd: response.isEnd,
         ),
       );
-    } catch (e) {
+    } catch (e, st) {
       print('Error fetching next page: $e');
+      // ignore: invalid_use_of_internal_member
+      state = AsyncValue<PaginatedResponse<StoryModel>>.error(e, st).copyWithPrevious(state);
     } finally {
       _isFetchingMore = false;
     }
@@ -155,8 +155,10 @@ class PaginatedStoriesNotifier extends AsyncNotifier<List<StoryModel>> {
     try {
       final nextStories = await _fetchPage();
       state = AsyncData([...state.value ?? [], ...nextStories]);
-    } catch (e) {
+    } catch (e, st) {
       print('Error fetching next page: $e');
+      // ignore: invalid_use_of_internal_member
+      state = AsyncValue<List<StoryModel>>.error(e, st).copyWithPrevious(state);
     } finally {
       isLoadingMore = false;
     }

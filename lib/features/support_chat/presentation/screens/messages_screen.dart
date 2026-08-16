@@ -253,7 +253,16 @@ class _MessagesScreenState extends ConsumerState<MessagesScreen> {
                             );
                           },
                           loading: () => const SizedBox.shrink(),
-                          error: (e, s) => const SizedBox.shrink(),
+                          error: (e, s) => Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(24.0),
+                              child: Text(
+                                'Could not load chat.\n$e',
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(color: Color(0xFFA1A1A6)),
+                              ),
+                            ),
+                          ),
                         );
                       },
                       loading: () => const Center(
@@ -261,7 +270,23 @@ class _MessagesScreenState extends ConsumerState<MessagesScreen> {
                         padding: EdgeInsets.all(40.0),
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )),
-                      error: (e, s) => const SizedBox.shrink(),
+                      error: (e, s) => Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.error_outline, size: 48, color: Color(0xFFA1A1A6)),
+                            const SizedBox(height: 16),
+                            const Text('Failed to load messages', style: TextStyle(color: Color(0xFFA1A1A6))),
+                            const SizedBox(height: 16),
+                            TextButton.icon(
+                              onPressed: () => ref.invalidate(supportChatIdProvider),
+                              icon: const Icon(Icons.refresh),
+                              label: const Text('Try Again'),
+                              style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.primary),
+                            ),
+                          ],
+                        ),
+                      ),
                     );
                   },
                 ),

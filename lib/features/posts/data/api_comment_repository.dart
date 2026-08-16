@@ -35,7 +35,7 @@ class ApiCommentRepository implements CommentRepository {
       }).toList();
     } catch (e) {
       print('Error parsing comments: $e');
-      yield [];
+      rethrow;
     }
   }
 
@@ -47,6 +47,7 @@ class ApiCommentRepository implements CommentRepository {
       });
     } catch (e) {
       print('Error adding comment: $e');
+      rethrow;
     }
   }
 
@@ -56,6 +57,7 @@ class ApiCommentRepository implements CommentRepository {
       await _dio.delete('/api/stories/$storyId/comments/$commentId');
     } catch (e) {
       print('Error deleting comment: $e');
+      rethrow;
     }
   }
 }

@@ -76,7 +76,7 @@ class _PostSwipeScreenState extends ConsumerState<PostSwipeScreen> {
                       child: CircularProgressIndicator(color: Color(0xFFD4AF37)),
                     ),
                   );
-                } else if (storiesAsync.hasError) {
+                } else if (storiesAsync.hasError && !storiesAsync.hasValue) {
                   return SliverFillRemaining(
                     child: Center(
                       child: Column(
@@ -189,6 +189,22 @@ class _PostSwipeScreenState extends ConsumerState<PostSwipeScreen> {
                 },
                 itemBuilder: (context, index) {
                   if (index >= filteredStories.length) {
+                    final hasError = ref.read(paginatedStoriesProvider).hasError;
+                    if (hasError) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.error_outline, color: Color(0xFFA1A1A6)),
+                            const SizedBox(height: 8),
+                            TextButton(
+                              onPressed: () => ref.read(paginatedStoriesProvider.notifier).fetchNextPage(),
+                              child: const Text('Tap to retry', style: TextStyle(color: Color(0xFFD4AF37))),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
                     return const Center(
                       child: CircularProgressIndicator(
                         color: Color(0xFFD4AF37),

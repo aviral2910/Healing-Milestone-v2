@@ -31,7 +31,7 @@ class ApiStoryRepository implements StoryRepository {
       final items = response.data['items'] as List;
       yield items.map((json) => _mapApiToStoryModel(json)).toList();
     } catch (e) {
-      yield [];
+      rethrow;
     }
   }
 
@@ -45,7 +45,7 @@ class ApiStoryRepository implements StoryRepository {
       final stories = items.map((json) => _mapApiToStoryModel(json)).toList();
       return (stories: stories, lastDoc: offset + limit);
     } catch (e) {
-      return (stories: <StoryModel>[], lastDoc: null);
+      rethrow;
     }
   }
 
@@ -124,7 +124,7 @@ class ApiStoryRepository implements StoryRepository {
       final items = response.data['items'] as List;
       return items.map((json) => _mapApiToStoryModel(json)).toList();
     } catch (e) {
-      return [];
+      rethrow;
     }
   }
 
@@ -139,7 +139,7 @@ class ApiStoryRepository implements StoryRepository {
       final response = await _dio.get('/api/stories/$storyId');
       yield _mapApiToStoryModel(response.data);
     } catch (e) {
-      yield null;
+      rethrow;
     }
   }
 
@@ -200,7 +200,7 @@ class ApiStoryRepository implements StoryRepository {
       return items.map((json) => _mapApiToStoryModel(json)).toList();
     } catch (e) {
       print('Error getting stories by ids: $e');
-      return [];
+      rethrow;
     }
   }
 
@@ -215,7 +215,7 @@ class ApiStoryRepository implements StoryRepository {
       );
     } catch (e) {
       print('Error getting recommended stories: $e');
-      return PaginatedResponse<StoryModel>(items: [], isEnd: true);
+      rethrow;
     }
   }
 

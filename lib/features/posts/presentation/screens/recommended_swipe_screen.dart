@@ -89,7 +89,7 @@ class _RecommendedSwipeScreenState extends ConsumerState<RecommendedSwipeScreen>
                   child: CircularProgressIndicator(color: Color(0xFFD4AF37)),
                 ),
               )
-            else if (storiesAsync.hasError)
+            else if (storiesAsync.hasError && !storiesAsync.hasValue)
               SliverFillRemaining(
                 child: Center(
                   child: Column(
@@ -196,6 +196,25 @@ class _RecommendedSwipeScreenState extends ConsumerState<RecommendedSwipeScreen>
                 },
                 itemBuilder: (context, index) {
                   if (index == filteredStories.length) {
+                    if (!paginatedResponse.isEnd) {
+                      final hasError = ref.read(recommendedStoriesProvider).hasError;
+                      if (hasError) {
+                        return Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.error_outline, color: Color(0xFFA1A1A6)),
+                              const SizedBox(height: 8),
+                              TextButton(
+                                onPressed: () => ref.read(recommendedStoriesProvider.notifier).fetchNextPage(),
+                                child: const Text('Tap to retry', style: TextStyle(color: Color(0xFFD4AF37))),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+                      return const Center(child: CircularProgressIndicator(color: Color(0xFFD4AF37)));
+                    }
                     return _buildCaughtUpCard(theme);
                   }
 
