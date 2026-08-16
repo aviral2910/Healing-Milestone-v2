@@ -4,6 +4,7 @@ import '../../data/providers/journey_providers.dart';
 import '../widgets/timeline_node.dart';
 import '../widgets/log_milestone_overlay.dart';
 import '../widgets/complete_journey_overlay.dart';
+import '../widgets/reopen_journey_overlay.dart';
 import 'package:healing_milestones/shared/widgets/app_loader.dart';
 
 class JourneyDetailScreen extends ConsumerWidget {
@@ -240,7 +241,21 @@ class JourneyDetailScreen extends ConsumerWidget {
           final milestones = milestonesAsync.value ?? [];
           final isCompleted = milestones.isNotEmpty && milestones.first.isClosure;
           
-          if (isCompleted) return const SizedBox.shrink();
+          if (isCompleted) {
+            return FloatingActionButton.extended(
+              onPressed: () {
+                ReopenJourneyOverlay.show(context, journeyId: journeyId);
+              },
+              elevation: 8,
+              backgroundColor: theme.colorScheme.surface,
+              foregroundColor: theme.colorScheme.primary,
+              icon: const Icon(Icons.energy_savings_leaf_rounded),
+              label: const Text(
+                'Resume Journey',
+                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+              ),
+            );
+          }
           
           return FloatingActionButton.extended(
             onPressed: () {

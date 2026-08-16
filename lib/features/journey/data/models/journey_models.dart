@@ -126,6 +126,7 @@ class JourneyMilestoneModel {
   final TimelinePosition timelinePosition;
   final EmotionStatus emotionStatus;
   final String? content;
+  final bool isReopening;
   final bool isClosure;
   final String? mediaUrl;
   final MilestoneVisibility visibility;
@@ -149,6 +150,7 @@ class JourneyMilestoneModel {
     this.timelinePosition = TimelinePosition.standalone,
     required this.emotionStatus,
     this.content,
+    this.isReopening = false,
     this.isClosure = false,
     this.mediaUrl,
     this.visibility = MilestoneVisibility.private,
@@ -199,6 +201,7 @@ class JourneyMilestoneModel {
       'timeline_position': timelinePosition.name,
       'emotion_status': emotionStatus.name,
       'content': content,
+      'is_reopening': isReopening,
       'is_closure': isClosure,
       'media_url': mediaUrl,
       'visibility': visibility.name,

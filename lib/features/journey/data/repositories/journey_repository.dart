@@ -217,4 +217,12 @@ class JourneyRepository {
       throw Exception('Failed to remove reaction: $e');
     }
   }
+
+  Future<JourneyModel> reopenJourney(String journeyId, String content) async {
+    final response = await _apiClient.dio.post(
+      '/api/journeys/$journeyId/reopen',
+      data: {'content': content},
+    );
+    return JourneyModel.fromJson(response.data);
+  }
 }
