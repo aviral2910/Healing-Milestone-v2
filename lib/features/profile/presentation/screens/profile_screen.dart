@@ -46,17 +46,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final authState = ref.watch(authProvider);
-    final user = ref.watch(currentUserProvider);
+    final isAuthLoading = ref.watch(authProvider.select((state) => state.isLoading));
+    final isLoggedIn = ref.watch(currentUserProvider.select((user) => user != null));
+    final userId = ref.watch(currentUserProvider.select((user) => user?.userId));
 
-    if (authState.isLoading) {
+    if (isAuthLoading) {
       return Scaffold(
         backgroundColor: theme.scaffoldBackgroundColor,
         body: const Center(child: CircularProgressIndicator()),
       );
     }
 
-    if (user == null) {
+    if (!isLoggedIn || userId == null) {
       return Scaffold(
         backgroundColor: theme.scaffoldBackgroundColor,
         appBar: AppBar(
@@ -126,9 +127,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         ),
       );
     }
-    final bool isProOrOrg = user.role == UserRole.healthcareProfessional ||
-        user.role == UserRole.organization;
-
     return Scaffold(
       body: SafeArea(
         top: true,
@@ -189,15 +187,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 ],
               ),
               SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 16),
-                      // Centered Profile Header
-                      Center(
-                        child: Column(
+                child: Consumer(
+                  builder: (context, ref, child) {
+                    final user = ref.watch(currentUserProvider);
+                    if (user == null) return const SizedBox.shrink();
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 16),
+                          // Centered Profile Header
+                          Center(
+                            child: Column(
                           children: [
                             Container(
                               padding: const EdgeInsets.all(2),
@@ -389,6 +391,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       const SizedBox(height: 16),
                     ],
                   ),
+                );
+                  },
                 ),
               ),
               SliverPersistentHeader(
@@ -429,7 +433,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               // Own Stories
               Consumer(builder: (context, ref, child) {
                 final userStoriesAsync =
-                    ref.watch(userStoriesProvider(user.userId));
+                    ref.watch(userStoriesProvider(userId));
                 return userStoriesAsync.when(
                   skipLoadingOnReload: true,
                   loading: () => Center(
@@ -444,7 +448,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               // Tagged Stories
               Consumer(builder: (context, ref, child) {
                 final taggedAsync =
-                    ref.watch(userTaggedStoriesProvider(user.userId));
+                    ref.watch(userTaggedStoriesProvider(userId));
                 return taggedAsync.when(
                   skipLoadingOnReload: true,
                   loading: () => Center(
@@ -459,7 +463,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               // Bookmarks
               Consumer(builder: (context, ref, child) {
                 final bookmarkedAsync = ref
-                    .watch(bookmarkedStoriesProvider(user.userId));
+                    .watch(bookmarkedStoriesProvider(userId));
                 return bookmarkedAsync.when(
                   skipLoadingOnReload: true,
                   loading: () => Center(

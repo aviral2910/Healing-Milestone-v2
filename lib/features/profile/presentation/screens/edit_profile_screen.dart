@@ -37,8 +37,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   String? _originalUsername;
   bool _isUploadingProfilePic = false;
 
+  final ValueNotifier<bool> _hasChangesNotifier = ValueNotifier(false);
+
   void _onFieldChanged() {
-    setState(() {}); // Trigger rebuild to evaluate _hasChanges
+    _hasChangesNotifier.value = _hasChanges;
   }
 
   bool get _hasChanges {
@@ -374,29 +376,34 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(24.0, 0, 24.0, 24.0),
-          child: FilledButton(
-            onPressed: _hasChanges ? _saveChanges : null,
-            style: FilledButton.styleFrom(
-              backgroundColor:
-                  _hasChanges ? Theme.of(context).colorScheme.primary : Theme.of(context).cardColor,
-              foregroundColor: _hasChanges
-                  ? Theme.of(context).scaffoldBackgroundColor
-                  : (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey).withValues(alpha: 0.5),
-              disabledBackgroundColor: Theme.of(context).cardColor,
-              disabledForegroundColor:
-                  (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey).withValues(alpha: 0.5),
-              padding: const EdgeInsets.symmetric(vertical: 18),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-            ),
-            child: Text(
-              'Save Changes',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+          child: ValueListenableBuilder<bool>(
+            valueListenable: _hasChangesNotifier,
+            builder: (context, hasChanges, child) {
+              return FilledButton(
+                onPressed: hasChanges ? _saveChanges : null,
+                style: FilledButton.styleFrom(
+                  backgroundColor:
+                      hasChanges ? Theme.of(context).colorScheme.primary : Theme.of(context).cardColor,
+                  foregroundColor: hasChanges
+                      ? Theme.of(context).scaffoldBackgroundColor
+                      : (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey).withValues(alpha: 0.5),
+                  disabledBackgroundColor: Theme.of(context).cardColor,
+                  disabledForegroundColor:
+                      (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey).withValues(alpha: 0.5),
+                  padding: const EdgeInsets.symmetric(vertical: 18),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                child: const Text(
+                  'Save Changes',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              );
+            },
           ),
         ),
       ),

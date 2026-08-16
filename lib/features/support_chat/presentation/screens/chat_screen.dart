@@ -244,181 +244,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   Widget _buildMessagesList(String chatId, String currentUserId) {
-    final messagesAsync = ref.watch(supportChatMessagesProvider(chatId));
-
-    return messagesAsync.when(
-      data: (messages) {
-        if (messages.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.mark_chat_read_outlined,
-                  size: 64,
-                  color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Send a message to start the conversation.',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: const Color(0xFFA1A1A6),
-                  ),
-                ),
-              ],
-            ),
-          );
-        }
-        
-        return ListView.builder(
-          reverse: true,
-          controller: _scrollController,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-          itemCount: messages.length,
-          itemBuilder: (context, index) {
-            final msg = messages[index];
-            final isMe = msg.senderId == currentUserId;
-
-            // Optional: Group messages to show time breaks
-            bool showTime = false;
-            if (index == messages.length - 1) {
-              showTime = true;
-            } else {
-              final previousMsg = messages[index + 1];
-              if (msg.timestamp.difference(previousMsg.timestamp).inMinutes > 30) {
-                showTime = true;
-              }
-            }
-
-            return Column(
-              children: [
-                if (showTime)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 24.0),
-                    child: Text(
-                      _formatDateDivider(msg.timestamp),
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: const Color(0xFFA1A1A6),
-                        fontWeight: FontWeight.w600,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                Align(
-                  alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-                  child: Container(
-                    margin: const EdgeInsets.only(bottom: 8),
-                    constraints: BoxConstraints(
-                      maxWidth: MediaQuery.of(context).size.width * 0.75,
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: isMe
-                          ? Theme.of(context).colorScheme.primary
-                          : Theme.of(context).colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(20).copyWith(
-                        bottomRight: isMe ? const Radius.circular(4) : const Radius.circular(20),
-                        bottomLeft: isMe ? const Radius.circular(20) : const Radius.circular(4),
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (msg.messageType == 'image' && msg.fileUrl != null) ...[
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: CachedNetworkImage(imageUrl: msg.fileUrl!, memCacheWidth: 800, fit: BoxFit.cover,),
-                          ),
-                          if (msg.text.isNotEmpty) const SizedBox(height: 8),
-                        ],
-                        if (msg.text.isNotEmpty)
-                          Text(
-                            msg.text,
-                            style: TextStyle(
-                              fontSize: 15,
-                              height: 1.3,
-                              color: isMe
-                                  ? Theme.of(context).colorScheme.onPrimary
-                                  : Theme.of(context).colorScheme.onSurface,
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            );
-          },
-        );
-      },
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, st) => Center(child: Text('Error: $e')),
+    return _MessagesListWidget(
+      chatId: chatId,
+      currentUserId: currentUserId,
+      scrollController: _scrollController,
     );
-  }
-
-  String _formatDateDivider(DateTime date) {
-    final now = DateTime.now();
-    final difference = now.difference(date);
-    if (difference.inDays == 0 && now.day == date.day) {
-      return DateFormat.jm().format(date);
-    } else if (difference.inDays == 1 || (difference.inDays == 0 && now.day != date.day)) {
-      return 'Yesterday, ${DateFormat.jm().format(date)}';
-    } else if (difference.inDays < 7) {
-      return '${DateFormat.E().format(date)}, ${DateFormat.jm().format(date)}';
-    } else {
-      return DateFormat('MMM d, yyyy h:mm a').format(date);
-    }
   }
 
   Widget _buildTypingIndicator(String chatId) {
-    final chatAsync = ref.watch(supportChatStreamProvider(chatId));
-
-    return chatAsync.when(
-      data: (chat) {
-        if (chat != null && chat.typingStatus['admin'] == true) {
-          return Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-            alignment: Alignment.centerLeft,
-            child: Row(
-              children: [
-                Container(
-                  width: 24,
-                  height: 24,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Theme.of(context).colorScheme.primary,
-                        Theme.of(context).colorScheme.primary.withValues(alpha: 0.7),
-                      ],
-                    ),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: Icon(
-                      Icons.headset_mic_rounded,
-                      color: Theme.of(context).colorScheme.onPrimary,
-                      size: 12,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'Typing...',
-                  style: TextStyle(
-                    fontStyle: FontStyle.italic,
-                    fontSize: 13,
-                    color: const Color(0xFFA1A1A6),
-                  ),
-                ),
-              ],
-            ),
-          );
-        }
-        return const SizedBox.shrink();
-      },
-      loading: () => const SizedBox.shrink(),
-      error: (_, __) => const SizedBox.shrink(),
-    );
+    return _TypingIndicatorWidget(chatId: chatId);
   }
 
   Widget _buildMessageInput(String chatId, String userId, ThemeData theme) {
@@ -551,4 +385,206 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       ),
     );
   }
+}
+
+
+class _TypingIndicatorWidget extends ConsumerWidget {
+  final String chatId;
+  const _TypingIndicatorWidget({Key? key, required this.chatId}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final chatAsync = ref.watch(supportChatStreamProvider(chatId));
+    
+    return chatAsync.when(
+      data: (chat) {
+        if (chat != null && chat.typingStatus['admin'] == true) {
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+            alignment: Alignment.centerLeft,
+            child: Row(
+              children: [
+                Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Theme.of(context).colorScheme.primary,
+                        Theme.of(context).colorScheme.primary.withValues(alpha: 0.7),
+                      ],
+                    ),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Icon(
+                      Icons.headset_mic_rounded,
+                      color: Theme.of(context).colorScheme.onPrimary,
+                      size: 12,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Text(
+                  'Typing...',
+                  style: TextStyle(
+                    fontStyle: FontStyle.italic,
+                    fontSize: 13,
+                    color: Color(0xFFA1A1A6),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+        return const SizedBox.shrink();
+      },
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
+    );
+  }
+}
+
+
+class _MessagesListWidget extends ConsumerWidget {
+  final String chatId;
+  final String currentUserId;
+  final ScrollController scrollController;
+
+  const _MessagesListWidget({
+    Key? key,
+    required this.chatId,
+    required this.currentUserId,
+    required this.scrollController,
+  }) : super(key: key);
+
+  String _formatDateDivider(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
+    if (difference.inDays == 0 && now.day == date.day) {
+      return DateFormat.jm().format(date);
+    } else if (difference.inDays == 1 || (difference.inDays == 0 && now.day != date.day)) {
+      return 'Yesterday, ${DateFormat.jm().format(date)}';
+    } else if (difference.inDays < 7) {
+      return '${DateFormat.E().format(date)}, ${DateFormat.jm().format(date)}';
+    } else {
+      return DateFormat('MMM d, yyyy h:mm a').format(date);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final messagesAsync = ref.watch(supportChatMessagesProvider(chatId));
+
+      return messagesAsync.when(
+        data: (messages) {
+          if (messages.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.mark_chat_read_outlined,
+                    size: 64,
+                    color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Send a message to start the conversation.',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: const Color(0xFFA1A1A6),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+        
+          return ListView.builder(
+            reverse: true,
+            controller: scrollController,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+            itemCount: messages.length,
+            itemBuilder: (context, index) {
+              final msg = messages[index];
+              final isMe = msg.senderId == currentUserId;
+
+              // Optional: Group messages to show time breaks
+              bool showTime = false;
+              if (index == messages.length - 1) {
+                showTime = true;
+              } else {
+                final previousMsg = messages[index + 1];
+                if (msg.timestamp.difference(previousMsg.timestamp).inMinutes > 30) {
+                  showTime = true;
+                }
+              }
+
+              return Column(
+                children: [
+                  if (showTime)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 24.0),
+                      child: Text(
+                        _formatDateDivider(msg.timestamp),
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: const Color(0xFFA1A1A6),
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  Align(
+                    alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      constraints: BoxConstraints(
+                        maxWidth: MediaQuery.of(context).size.width * 0.75,
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: isMe
+                            ? Theme.of(context).colorScheme.primary
+                            : Theme.of(context).colorScheme.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(20).copyWith(
+                          bottomRight: isMe ? const Radius.circular(4) : const Radius.circular(20),
+                          bottomLeft: isMe ? const Radius.circular(20) : const Radius.circular(4),
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (msg.messageType == 'image' && msg.fileUrl != null) ...[
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: CachedNetworkImage(imageUrl: msg.fileUrl!, memCacheWidth: 800, fit: BoxFit.cover,),
+                            ),
+                            if (msg.text.isNotEmpty) const SizedBox(height: 8),
+                          ],
+                          if (msg.text.isNotEmpty)
+                            Text(
+                              msg.text,
+                              style: TextStyle(
+                                fontSize: 15,
+                                height: 1.3,
+                                color: isMe
+                                    ? Theme.of(context).colorScheme.onPrimary
+                                    : Theme.of(context).colorScheme.onSurface,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, st) => Center(child: Text('Error: $e')),
+      );
+    }
+
+
 }

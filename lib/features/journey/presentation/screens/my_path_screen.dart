@@ -53,26 +53,32 @@ class MyPathScreen extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  
+
                   // Time Capsule Vault Entry Card
                   Consumer(
                     builder: (context, ref, child) {
                       final capsulesAsync = ref.watch(myTimeCapsulesProvider);
                       final capsules = capsulesAsync.value ?? [];
                       final hasCapsules = capsules.isNotEmpty;
-                      final lockedCount = capsules.where((c) => c.isLocked).length;
-                      
+                      final lockedCount = capsules
+                          .where((c) => c.isLocked)
+                          .length;
+
                       // Find if any capsule is ready to open to prioritize it on the dashboard
-                      final readyCapsule = hasCapsules ? capsules.where((c) => !c.isLocked && !c.isOpened).firstOrNull : null;
-                      
+                      final readyCapsule = hasCapsules
+                          ? capsules
+                                .where((c) => !c.isLocked && !c.isOpened)
+                                .firstOrNull
+                          : null;
+
                       return TimeCapsuleCard(
                         activeCapsule: readyCapsule,
                         lockedCount: lockedCount,
                         onOpen: () {
                           context.push('/time-capsules-vault');
-                        }
+                        },
                       );
-                    }
+                    },
                   ),
                 ],
               ),
@@ -114,16 +120,23 @@ class MyPathScreen extends ConsumerWidget {
                       if (index == 0) {
                         // Start New Journey Card
                         return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8.0,
+                            vertical: 4.0,
+                          ),
                           child: GestureDetector(
                             onTap: () => CreateJourneyOverlay.show(context),
                             child: Container(
                               width: 140, // Match visual weight
                               decoration: BoxDecoration(
-                                color: theme.colorScheme.surface.withValues(alpha: 0.5),
+                                color: theme.colorScheme.surface.withValues(
+                                  alpha: 0.5,
+                                ),
                                 borderRadius: BorderRadius.circular(28),
                                 border: Border.all(
-                                  color: theme.dividerColor.withValues(alpha: 0.3),
+                                  color: theme.dividerColor.withValues(
+                                    alpha: 0.3,
+                                  ),
                                   style: BorderStyle.solid,
                                 ),
                               ),
@@ -133,7 +146,8 @@ class MyPathScreen extends ConsumerWidget {
                                   Container(
                                     padding: const EdgeInsets.all(16),
                                     decoration: BoxDecoration(
-                                      color: theme.colorScheme.primary.withValues(alpha: 0.08),
+                                      color: theme.colorScheme.primary
+                                          .withValues(alpha: 0.08),
                                       shape: BoxShape.circle,
                                     ),
                                     child: Icon(
@@ -145,11 +159,12 @@ class MyPathScreen extends ConsumerWidget {
                                   const SizedBox(height: 16),
                                   Text(
                                     'Start New',
-                                    style: theme.textTheme.labelMedium?.copyWith(
-                                      fontWeight: FontWeight.w600,
-                                      color: theme.colorScheme.primary,
-                                      letterSpacing: 0.2,
-                                    ),
+                                    style: theme.textTheme.labelMedium
+                                        ?.copyWith(
+                                          fontWeight: FontWeight.w600,
+                                          color: theme.colorScheme.primary,
+                                          letterSpacing: 0.2,
+                                        ),
                                   ),
                                 ],
                               ),
@@ -157,16 +172,19 @@ class MyPathScreen extends ConsumerWidget {
                           ),
                         );
                       }
-                      
+
                       final journey = journeys[index - 1];
                       return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8.0,
+                          vertical: 4.0,
+                        ),
                         child: GestureDetector(
                           onTap: () {
                             Navigator.of(context).push(
                               MaterialPageRoute(
                                 builder: (_) => JourneyDetailScreen(
-                                  journeyId: journey.id, 
+                                  journeyId: journey.id,
                                   title: journey.title,
                                   category: journey.category,
                                 ),
@@ -180,7 +198,8 @@ class MyPathScreen extends ConsumerWidget {
                               gradient: LinearGradient(
                                 colors: [
                                   theme.colorScheme.surface,
-                                  theme.colorScheme.surfaceContainerHigh.withValues(alpha: 0.3),
+                                  theme.colorScheme.surfaceContainerHigh
+                                      .withValues(alpha: 0.3),
                                 ],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
@@ -188,27 +207,39 @@ class MyPathScreen extends ConsumerWidget {
                               borderRadius: BorderRadius.circular(28),
                               boxShadow: [
                                 BoxShadow(
-                                  color: theme.colorScheme.primary.withValues(alpha: 0.08),
+                                  color: theme.colorScheme.primary.withValues(
+                                    alpha: 0.08,
+                                  ),
                                   blurRadius: 20,
                                   offset: const Offset(0, 6),
                                 ),
                               ],
-                              border: Border.all(color: theme.dividerColor.withValues(alpha: 0.1)),
+                              border: Border.all(
+                                color: theme.dividerColor.withValues(
+                                  alpha: 0.1,
+                                ),
+                              ),
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     Container(
                                       padding: const EdgeInsets.all(8),
                                       decoration: BoxDecoration(
-                                        color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                                        color: theme.colorScheme.primary
+                                            .withValues(alpha: 0.1),
                                         shape: BoxShape.circle,
                                       ),
-                                      child: Icon(Icons.folder_open_rounded, color: theme.colorScheme.primary, size: 24),
+                                      child: Icon(
+                                        Icons.folder_open_rounded,
+                                        color: theme.colorScheme.primary,
+                                        size: 24,
+                                      ),
                                     ),
                                     Theme(
                                       data: Theme.of(context).copyWith(
@@ -219,40 +250,86 @@ class MyPathScreen extends ConsumerWidget {
                                         height: 32,
                                         width: 32,
                                         child: PopupMenuButton<String>(
-                                          icon: Icon(Icons.more_horiz_rounded, size: 20, color: theme.colorScheme.onSurfaceVariant),
+                                          icon: Icon(
+                                            Icons.more_horiz_rounded,
+                                            size: 20,
+                                            color: theme
+                                                .colorScheme
+                                                .onSurfaceVariant,
+                                          ),
                                           padding: EdgeInsets.zero,
                                           onSelected: (value) async {
                                             if (value == 'edit') {
-                                              CreateJourneyOverlay.show(context, journey: journey);
+                                              CreateJourneyOverlay.show(
+                                                context,
+                                                journey: journey,
+                                              );
                                             } else if (value == 'delete') {
                                               final confirm = await showDialog<bool>(
                                                 context: context,
                                                 builder: (context) => AlertDialog(
-                                                  title: const Text('Delete Journey'),
-                                                  content: const Text('Are you sure you want to delete this journey and all its check-ins?'),
+                                                  title: const Text(
+                                                    'Delete Journey',
+                                                  ),
+                                                  content: const Text(
+                                                    'Are you sure you want to delete this journey and all its check-ins?',
+                                                  ),
                                                   actions: [
                                                     TextButton(
-                                                      onPressed: () => Navigator.pop(context, false),
-                                                      child: const Text('Cancel'),
+                                                      onPressed: () =>
+                                                          Navigator.pop(
+                                                            context,
+                                                            false,
+                                                          ),
+                                                      child: const Text(
+                                                        'Cancel',
+                                                      ),
                                                     ),
                                                     TextButton(
-                                                      onPressed: () => Navigator.pop(context, true),
-                                                      child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                                                      onPressed: () =>
+                                                          Navigator.pop(
+                                                            context,
+                                                            true,
+                                                          ),
+                                                      child: const Text(
+                                                        'Delete',
+                                                        style: TextStyle(
+                                                          color: Colors.red,
+                                                        ),
+                                                      ),
                                                     ),
                                                   ],
                                                 ),
                                               );
-                                              
+
                                               if (confirm == true) {
                                                 try {
-                                                  await ref.read(journeyRepositoryProvider).deleteJourney(journey.id);
-                                                  ref.invalidate(myJourneysProvider);
-                                                  ref.invalidate(myFloatingMilestonesProvider);
-                                                  ref.invalidate(togetherFeedProvider);
+                                                  await ref
+                                                      .read(
+                                                        journeyRepositoryProvider,
+                                                      )
+                                                      .deleteJourney(
+                                                        journey.id,
+                                                      );
+                                                  ref.invalidate(
+                                                    myJourneysProvider,
+                                                  );
+                                                  ref.invalidate(
+                                                    myFloatingMilestonesProvider,
+                                                  );
+                                                  ref.invalidate(
+                                                    togetherFeedProvider,
+                                                  );
                                                 } catch (e) {
                                                   if (context.mounted) {
-                                                    ScaffoldMessenger.of(context).showSnackBar(
-                                                      SnackBar(content: Text('Failed to delete journey: $e')),
+                                                    ScaffoldMessenger.of(
+                                                      context,
+                                                    ).showSnackBar(
+                                                      SnackBar(
+                                                        content: Text(
+                                                          'Failed to delete journey: $e',
+                                                        ),
+                                                      ),
                                                     );
                                                   }
                                                 }
@@ -266,7 +343,12 @@ class MyPathScreen extends ConsumerWidget {
                                             ),
                                             const PopupMenuItem(
                                               value: 'delete',
-                                              child: Text('Delete', style: TextStyle(color: Colors.red)),
+                                              child: Text(
+                                                'Delete',
+                                                style: TextStyle(
+                                                  color: Colors.red,
+                                                ),
+                                              ),
                                             ),
                                           ],
                                         ),
@@ -282,11 +364,12 @@ class MyPathScreen extends ConsumerWidget {
                                       journey.title,
                                       maxLines: 3,
                                       overflow: TextOverflow.ellipsis,
-                                      style: theme.textTheme.labelLarge?.copyWith(
-                                        fontWeight: FontWeight.w700,
-                                        letterSpacing: -0.3,
-                                        height: 1.3,
-                                      ),
+                                      style: theme.textTheme.labelLarge
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w700,
+                                            letterSpacing: -0.3,
+                                            height: 1.3,
+                                          ),
                                     ),
                                   ),
                                 ),
@@ -319,55 +402,66 @@ class MyPathScreen extends ConsumerWidget {
           ),
 
           // Timeline Milestones (Floating only)
-          floatingMilestonesAsync.when(
-            data: (milestones) {
-              if (milestones.isEmpty) {
-                return SliverToBoxAdapter(
-                  child: Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(40.0),
-                      child: Text(
-                        'No check-ins yet. Tap + to log your mood.',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurface.withValues(
-                            alpha: 0.5,
+          Consumer(
+            builder: (context, ref, child) {
+              final floatingMilestonesAsync = ref.watch(
+                myFloatingMilestonesProvider,
+              );
+              return floatingMilestonesAsync.when(
+                data: (milestones) {
+                  if (milestones.isEmpty) {
+                    return SliverToBoxAdapter(
+                      child: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(40.0),
+                          child: Text(
+                            'No check-ins yet. Tap + to log your mood.',
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: 0.5,
+                              ),
+                            ),
                           ),
                         ),
                       ),
+                    );
+                  }
+
+                  // Sort newest first
+                  final reversedMilestones = milestones.toList()
+                    ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+                  return SliverPadding(
+                    padding: const EdgeInsets.only(
+                      left: 16,
+                      right: 8,
+                      top: 16,
+                      bottom: 100,
+                    ),
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate((context, index) {
+                        final milestone = reversedMilestones[index];
+                        return TimelineNode(
+                          milestone: milestone,
+                          isReversed: true,
+                        );
+                      }, childCount: reversedMilestones.length),
+                    ),
+                  );
+                },
+                loading: () => const SliverToBoxAdapter(
+                  child: Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(40.0),
+                      child: CircularProgressIndicator(),
                     ),
                   ),
-                );
-              }
-
-              // Sort newest first
-              final reversedMilestones = milestones.toList()
-                ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
-
-              return SliverPadding(
-                padding: const EdgeInsets.only(
-                  left: 16,
-                  right: 8,
-                  top: 16,
-                  bottom: 100,
                 ),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate((context, index) {
-                    final milestone = reversedMilestones[index];
-                    return TimelineNode(milestone: milestone, isReversed: true);
-                  }, childCount: reversedMilestones.length),
+                error: (err, stack) => SliverToBoxAdapter(
+                  child: Center(child: Text('Error: $err')),
                 ),
               );
             },
-            loading: () => const SliverToBoxAdapter(
-              child: Center(
-                child: Padding(
-                  padding: EdgeInsets.all(40.0),
-                  child: CircularProgressIndicator(),
-                ),
-              ),
-            ),
-            error: (err, stack) =>
-                SliverToBoxAdapter(child: Center(child: Text('Error: $err'))),
           ),
         ],
       ),

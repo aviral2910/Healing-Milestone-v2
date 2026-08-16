@@ -175,7 +175,20 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               ),
             ];
           },
-          body: _buildBody(),
+          body: Consumer(
+            builder: (context, ref, child) {
+              if (_selectedHashtag != null) {
+                return _buildHashtagFeed(ref);
+              }
+
+              final query = ref.watch(globalSearchQueryProvider);
+              if (query.isEmpty) {
+                return _buildEmptyState();
+              }
+
+              return _buildResultsState(ref);
+            },
+          ),
         ),
       ),
     );
@@ -188,20 +201,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     return '${text.substring(0, end)}...';
   }
 
-  Widget _buildBody() {
-    if (_selectedHashtag != null) {
-      return _buildHashtagFeed();
-    }
-
-    final query = ref.watch(globalSearchQueryProvider);
-    if (query.isEmpty) {
-      return _buildEmptyState();
-    }
-
-    return _buildResultsState();
-  }
   
-  Widget _buildHashtagFeed() {
+  Widget _buildHashtagFeed(WidgetRef ref) {
     final storiesAsync = ref.watch(hashtagStoriesProvider(_selectedHashtag!));
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -364,7 +365,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     );
   }
 
-  Widget _buildResultsState() {
+  Widget _buildResultsState(WidgetRef ref) {
     final searchAsync = ref.watch(globalSearchProvider);
     
     return searchAsync.when(

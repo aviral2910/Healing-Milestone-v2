@@ -47,12 +47,6 @@ class _PostSwipeScreenState extends ConsumerState<PostSwipeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final storiesAsync = ref.watch(paginatedStoriesProvider);
-    final paginationState = ref.watch(paginatedStoriesProvider.notifier);
-    final isPaginating = paginationState.isLoadingMore;
-    final hasMore = paginationState.hasMore;
-    final selectedTag = ref.watch(selectedTagProvider);
-    final user = ref.watch(currentUserProvider);
     final theme = Theme.of(context);
 
     return SafeArea(
@@ -67,56 +61,71 @@ class _PostSwipeScreenState extends ConsumerState<PostSwipeScreen> {
           controller: widget.scrollController,
           slivers: [
             CommonSliverAppBar(isHeroEnabled: widget.isActiveTab),
-            if (storiesAsync.isLoading)
-              const SliverFillRemaining(
-                child: Center(
-                  child: CircularProgressIndicator(color: Color(0xFFD4AF37)),
-                ),
-              )
-            else if (storiesAsync.hasError)
-              SliverFillRemaining(
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.error_outline,
-                        size: 48,
-                        color: Theme.of(context).dividerColor,
+            Consumer(
+              builder: (context, ref, child) {
+                final storiesAsync = ref.watch(paginatedStoriesProvider);
+                final paginationState = ref.watch(paginatedStoriesProvider.notifier);
+                final isPaginating = paginationState.isLoadingMore;
+                final hasMore = paginationState.hasMore;
+                final selectedTag = ref.watch(selectedTagProvider);
+                final user = ref.watch(currentUserProvider);
+
+                if (storiesAsync.isLoading) {
+                  return const SliverFillRemaining(
+                    child: Center(
+                      child: CircularProgressIndicator(color: Color(0xFFD4AF37)),
+                    ),
+                  );
+                } else if (storiesAsync.hasError) {
+                  return SliverFillRemaining(
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.error_outline,
+                            size: 48,
+                            color: Theme.of(context).dividerColor,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Unable to load',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              color: const Color(0xFFA1A1A6),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          ElevatedButton.icon(
+                            onPressed: () => ref
+                                .read(paginatedStoriesProvider.notifier)
+                                .refresh(),
+                            icon: const Icon(Icons.refresh),
+                            label: const Text('Try Again'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFD4AF37),
+                              foregroundColor: Colors.white,
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Unable to load',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          color: const Color(0xFFA1A1A6),
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      ElevatedButton.icon(
-                        onPressed: () => ref
-                            .read(paginatedStoriesProvider.notifier)
-                            .refresh(),
-                        icon: const Icon(Icons.refresh),
-                        label: const Text('Try Again'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFD4AF37),
-                          foregroundColor: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              )
-            else if (storiesAsync.hasValue)
-              ..._buildSuccessSlivers(
-                context,
-                ref,
-                storiesAsync.value!,
-                theme,
-                selectedTag,
-                isPaginating,
-                hasMore,
-              ),
+                    ),
+                  );
+                } else if (storiesAsync.hasValue) {
+                  return SliverMainAxisGroup(
+                    slivers: _buildSuccessSlivers(
+                      context,
+                      ref,
+                      storiesAsync.value!,
+                      theme,
+                      selectedTag,
+                      isPaginating,
+                      hasMore,
+                    ),
+                  );
+                }
+                return const SliverToBoxAdapter(child: SizedBox.shrink());
+              },
+            ),
           ],
         ),
       ),

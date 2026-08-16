@@ -20,7 +20,6 @@ class JourneyDetailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final milestonesAsync = ref.watch(journeyMilestonesProvider(journeyId));
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -31,9 +30,14 @@ class JourneyDetailScreen extends ConsumerWidget {
           SliverAppBar(
             expandedHeight: 140,
             pinned: true,
-            backgroundColor: theme.scaffoldBackgroundColor.withValues(alpha: 0.8),
+            backgroundColor: theme.scaffoldBackgroundColor.withValues(
+              alpha: 0.8,
+            ),
             flexibleSpace: FlexibleSpaceBar(
-              titlePadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              titlePadding: const EdgeInsets.symmetric(
+                horizontal: 24,
+                vertical: 16,
+              ),
               title: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -49,7 +53,10 @@ class JourneyDetailScreen extends ConsumerWidget {
                   if (category != null) ...[
                     const SizedBox(height: 4),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
@@ -60,7 +67,12 @@ class JourneyDetailScreen extends ConsumerWidget {
                           end: Alignment.bottomRight,
                         ),
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.2), width: 0.5),
+                        border: Border.all(
+                          color: theme.colorScheme.primary.withValues(
+                            alpha: 0.2,
+                          ),
+                          width: 0.5,
+                        ),
                       ),
                       child: Text(
                         category!.toUpperCase(),
@@ -78,9 +90,7 @@ class JourneyDetailScreen extends ConsumerWidget {
               background: Stack(
                 fit: StackFit.expand,
                 children: [
-                  Container(
-                    color: theme.scaffoldBackgroundColor,
-                  ),
+                  Container(color: theme.scaffoldBackgroundColor),
                   Positioned(
                     top: -50,
                     right: -50,
@@ -102,74 +112,85 @@ class JourneyDetailScreen extends ConsumerWidget {
               ),
             ),
           ),
-          
-          milestonesAsync.when(
-            data: (milestones) {
-              if (milestones.isEmpty) {
-                return SliverToBoxAdapter(
+
+          Consumer(
+            builder: (context, ref, child) {
+              final milestonesAsync = ref.watch(
+                journeyMilestonesProvider(journeyId),
+              );
+              return milestonesAsync.when(
+                data: (milestones) {
+                  if (milestones.isEmpty) {
+                    return SliverToBoxAdapter(
+                      child: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(40.0),
+                          child: Column(
+                            children: [
+                              Icon(
+                                Icons.auto_awesome_rounded,
+                                size: 48,
+                                color: theme.colorScheme.primary.withValues(
+                                  alpha: 0.3,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Your journey starts here.',
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Tap the + button to log your first step.',
+                                textAlign: TextAlign.center,
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+
+                  // Sort newest first (reverse chronological)
+                  final reversedMilestones = milestones.toList()
+                    ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+                  return SliverPadding(
+                    padding: const EdgeInsets.only(
+                      left: 16,
+                      right: 8,
+                      top: 24,
+                      bottom: 100,
+                    ),
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate((context, index) {
+                        final milestone = reversedMilestones[index];
+                        return TimelineNode(
+                          milestone: milestone,
+                          isReversed: true,
+                        );
+                      }, childCount: reversedMilestones.length),
+                    ),
+                  );
+                },
+                loading: () => const SliverToBoxAdapter(
                   child: Center(
                     child: Padding(
-                      padding: const EdgeInsets.all(40.0),
-                      child: Column(
-                        children: [
-                          Icon(
-                            Icons.auto_awesome_rounded,
-                            size: 48,
-                            color: theme.colorScheme.primary.withValues(alpha: 0.3),
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Your journey starts here.',
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Tap the + button to log your first step.',
-                            textAlign: TextAlign.center,
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
-                      ),
+                      padding: EdgeInsets.all(40.0),
+                      child: CircularProgressIndicator(),
                     ),
                   ),
-                );
-              }
-              
-              // Sort newest first (reverse chronological)
-              final reversedMilestones = milestones.toList()
-                ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
-                
-              return SliverPadding(
-                padding: const EdgeInsets.only(left: 16, right: 8, top: 24, bottom: 100),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final milestone = reversedMilestones[index];
-                      return TimelineNode(
-                        milestone: milestone,
-                        isReversed: true,
-                      );
-                    },
-                    childCount: reversedMilestones.length,
-                  ),
+                ),
+                error: (err, stack) => SliverToBoxAdapter(
+                  child: Center(child: Text('Error: $err')),
                 ),
               );
             },
-            loading: () => const SliverToBoxAdapter(
-              child: Center(
-                child: Padding(
-                  padding: EdgeInsets.all(40.0),
-                  child: CircularProgressIndicator(),
-                ),
-              ),
-            ),
-            error: (err, stack) => SliverToBoxAdapter(
-              child: Center(child: Text('Error: $err')),
-            ),
           ),
         ],
       ),
@@ -181,7 +202,10 @@ class JourneyDetailScreen extends ConsumerWidget {
         backgroundColor: theme.colorScheme.primary,
         foregroundColor: theme.colorScheme.onPrimary,
         icon: const Icon(Icons.add_rounded),
-        label: const Text('Log Step', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+        label: const Text(
+          'Log Step',
+          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+        ),
       ),
     );
   }
