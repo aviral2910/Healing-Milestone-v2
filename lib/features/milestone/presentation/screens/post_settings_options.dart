@@ -149,5 +149,3 @@ extension PostSettingsOptions on _PostSettingsScreenState {
             );
   }
 }
-  }
-}
