@@ -149,7 +149,7 @@ class ApiUserRepository implements UserRepository {
   @override
   Future<List<UserModel>> getFollowers(String uid, {int skip = 0, int limit = 20}) async {
     try {
-      final response = await _dio.get('/users/$uid/followers', queryParameters: {'skip': skip, 'limit': limit});
+      final response = await _dio.get('/api/users/$uid/followers', queryParameters: {'skip': skip, 'limit': limit});
       final items = response.data['items'] as List;
       return items.map((e) => UserModel.fromMap(e)).toList();
     } catch (e) {
@@ -161,7 +161,7 @@ class ApiUserRepository implements UserRepository {
   @override
   Future<List<UserModel>> getFollowing(String uid, {int skip = 0, int limit = 20}) async {
     try {
-      final response = await _dio.get('/users/$uid/following', queryParameters: {'skip': skip, 'limit': limit});
+      final response = await _dio.get('/api/users/$uid/following', queryParameters: {'skip': skip, 'limit': limit});
       final items = response.data['items'] as List;
       return items.map((e) => UserModel.fromMap(e)).toList();
     } catch (e) {
