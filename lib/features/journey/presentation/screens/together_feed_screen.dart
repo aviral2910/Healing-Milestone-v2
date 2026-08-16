@@ -29,7 +29,14 @@ class _TogetherFeedScreenState extends ConsumerState<TogetherFeedScreen> {
         },
         color: theme.colorScheme.primary,
         backgroundColor: theme.colorScheme.surfaceContainerHighest,
-        child: CustomScrollView(
+        child: NotificationListener<ScrollNotification>(
+          onNotification: (ScrollNotification scrollInfo) {
+            if (scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent - 200) {
+              ref.read(togetherFeedProvider.notifier).fetchNextPage();
+            }
+            return false;
+          },
+          child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(
             parent: BouncingScrollPhysics(),
           ),
@@ -97,7 +104,8 @@ class _TogetherFeedScreenState extends ConsumerState<TogetherFeedScreen> {
             ),
 
             feedAsync.when(
-              data: (feed) {
+              data: (state) {
+                final feed = state.items;
                 if (feed.isEmpty) {
                   return SliverToBoxAdapter(
                     child: Center(
@@ -159,6 +167,7 @@ class _TogetherFeedScreenState extends ConsumerState<TogetherFeedScreen> {
                   SliverToBoxAdapter(child: Center(child: Text('Error: $err'))),
             ),
           ],
+        ),
         ),
       ),
     );

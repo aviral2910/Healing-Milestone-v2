@@ -6,9 +6,9 @@ class JourneyRepository {
 
   JourneyRepository(this._apiClient);
 
-  Future<List<JourneyModel>> getJourneys() async {
+  Future<List<JourneyModel>> getJourneys({int skip = 0, int limit = 20}) async {
     try {
-      final response = await _apiClient.dio.get('/api/journeys/');
+      final response = await _apiClient.dio.get('/api/journeys/', queryParameters: {'skip': skip, 'limit': limit});
       final data = response.data as List;
       return data.map((json) => JourneyModel.fromJson(json)).toList();
     } catch (e) {
@@ -56,9 +56,9 @@ class JourneyRepository {
     }
   }
 
-  Future<List<JourneyModel>> getFollowingJourneys() async {
+  Future<List<JourneyModel>> getFollowingJourneys({int skip = 0, int limit = 20}) async {
     try {
-      final response = await _apiClient.dio.get('/api/journeys/following');
+      final response = await _apiClient.dio.get('/api/journeys/following', queryParameters: {'skip': skip, 'limit': limit});
       final data = response.data as List;
       return data.map((json) => JourneyModel.fromJson(json)).toList();
     } catch (e) {
@@ -86,9 +86,11 @@ class JourneyRepository {
     String? journeyId,
     bool isFloating = false,
     bool isPublic = false,
+    int skip = 0,
+    int limit = 20,
   }) async {
     try {
-      final queryParams = <String, dynamic>{};
+      final queryParams = <String, dynamic>{'skip': skip, 'limit': limit};
       if (journeyId != null) {
         queryParams['journey_id'] = journeyId;
       }
@@ -110,12 +112,14 @@ class JourneyRepository {
     }
   }
 
-  Future<List<JourneyMilestoneModel>> getPublicMilestones() async {
+  Future<List<JourneyMilestoneModel>> getPublicMilestones({int skip = 0, int limit = 20}) async {
     try {
       final response = await _apiClient.dio.get(
         '/api/milestones/',
         queryParameters: {
           'is_public': true,
+          'skip': skip,
+          'limit': limit,
         },
       );
       final data = response.data as List;
