@@ -67,15 +67,9 @@ You must return your response as a valid JSON object matching exactly this struc
       'ai_story_system_prompt': defaultPrompt,
     });
     
-    try {
-      await remoteConfig.setConfigSettings(RemoteConfigSettings(
-        fetchTimeout: const Duration(seconds: 10),
-        minimumFetchInterval: const Duration(hours: 1),
-      ));
-      await remoteConfig.fetchAndActivate();
-    } catch (e) {
-      print('DEBUG: Failed to fetch remote config: $e');
-    }
+    // Remote config is ideally fetched on app startup. We just read it here.
+    // If it hasn't been fetched, it'll use the default we just set above.
+    
 
     final systemPrompt = remoteConfig.getString('ai_story_system_prompt');
 

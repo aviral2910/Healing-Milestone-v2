@@ -11,7 +11,11 @@ import 'models/message_model.dart';
 
 final apiChatRepositoryProvider = Provider<ApiChatRepository>((ref) {
   final apiClient = ref.watch(apiClientProvider);
-  return ApiChatRepository(apiClient);
+  final repo = ApiChatRepository(apiClient);
+  ref.onDispose(() {
+    repo.dispose();
+  });
+  return repo;
 });
 
 class ApiChatRepository {

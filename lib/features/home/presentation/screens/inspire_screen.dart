@@ -31,6 +31,7 @@ class _InspireScreenState extends ConsumerState<InspireScreen>
     with SingleTickerProviderStateMixin {
   late TabController _topTabController;
   late ScrollController _outerScrollController;
+  int _currentIndex = 0;
 
   @override
   void initState() {
@@ -38,10 +39,16 @@ class _InspireScreenState extends ConsumerState<InspireScreen>
     _topTabController = TabController(length: 3, vsync: this, initialIndex: 0);
     _outerScrollController = ScrollController();
 
+    _currentIndex = _topTabController.index;
     _topTabController.addListener(() {
-      if (_topTabController.indexIsChanging ||
-          _topTabController.index == _topTabController.animation?.value) {
-        setState(() {}); // Rebuild to update isActiveTab and isVisible
+      if (_currentIndex != _topTabController.index) {
+        if (!_topTabController.indexIsChanging && _topTabController.index != _topTabController.animation?.value) {
+          // Swipe in progress, do nothing yet
+          return;
+        }
+        setState(() {
+          _currentIndex = _topTabController.index;
+        });
       }
     });
   }

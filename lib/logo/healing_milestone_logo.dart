@@ -543,73 +543,42 @@ class _AscensionLogoPainter extends CustomPainter {
 // ==========================================
 // 4. Original Static Logo Widget Reference
 // ==========================================
-class HealingMilestonesStaticLogoWidget extends StatefulWidget {
+class HealingMilestonesStaticLogoWidget extends StatelessWidget {
   final double logoSize;
   final Color? logoColor;
   final Color? textColor;
   final bool showText;
 
   const HealingMilestonesStaticLogoWidget({
-    Key? key,
-    this.logoSize = 35.0,
+    super.key,
+    this.logoSize = 80.0,
     this.logoColor,
     this.textColor,
     this.showText = true,
-  }) : super(key: key);
-
-  @override
-  State<HealingMilestonesStaticLogoWidget> createState() =>
-      _HealingMilestonesStaticLogoWidgetState();
-}
-
-class _HealingMilestonesStaticLogoWidgetState
-    extends State<HealingMilestonesStaticLogoWidget>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 2500),
-    )..repeat(reverse: true);
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
+  });
 
   @override
   Widget build(BuildContext context) {
-    final double baseFontSize = (widget.logoSize * 30) / 80;
-    final double lateralGap = (widget.logoSize * 24) / 80;
+    final double baseFontSize = (logoSize * 30) / 80;
+    final double lateralGap = (logoSize * 24) / 80;
 
     final Color effectiveLogoColor =
-        widget.logoColor ?? Theme.of(context).primaryColor;
+        logoColor ?? Theme.of(context).primaryColor;
     final Color effectiveTextColor =
-        widget.textColor ?? Theme.of(context).colorScheme.onSurface;
+        textColor ?? Theme.of(context).colorScheme.onSurface;
 
     return Row(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         SizedBox(
-          width: widget.logoSize,
-          height: widget.logoSize,
-          child: AnimatedBuilder(
-            animation: _controller,
-            builder: (context, child) {
-              return CustomPaint(
-                painter:
-                    _LogoMarkPainter(effectiveLogoColor, _controller.value),
-              );
-            },
+          width: logoSize,
+          height: logoSize,
+          child: CustomPaint(
+            painter: _LogoMarkPainter(effectiveLogoColor, 1.0),
           ),
         ),
-        if (widget.showText) ...[
+        if (showText) ...[
           SizedBox(width: lateralGap),
           Flexible(
             child: Column(
@@ -640,7 +609,7 @@ class _HealingMilestonesStaticLogoWidgetState
                 ),
               ],
             ),
-          )
+          ),
         ],
       ],
     );
