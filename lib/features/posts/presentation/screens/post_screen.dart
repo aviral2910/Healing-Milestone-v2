@@ -172,12 +172,23 @@ class PostScreen extends HookConsumerWidget {
             controller:
                 scrollController, // If null, inherits PrimaryScrollController
             slivers: [
-              CommonSearchBarSliver(
-                includeWelcomeText: false,
-                displayName: user?.displayName ?? 'Guest',
-                hintText: 'Search stories, topics, people...',
-                onTap: onSearchTapped,
-              ),
+              Consumer(builder: (context, ref, child) {
+
+                final user = ref.watch(currentUserProvider);
+
+                return CommonSearchBarSliver(
+
+                  includeWelcomeText: false,
+
+                  displayName: user?.displayName ?? 'Guest',
+
+                  hintText: 'Search stories, topics, people...',
+
+                  onTap: onSearchTapped,
+
+                );
+
+              }),
               storiesAsync.when(
                 loading: () => const SliverFillRemaining(
                   child: Center(

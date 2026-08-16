@@ -314,7 +314,7 @@ class StoryDetailScreen extends HookConsumerWidget {
                                 ]
                               ];
                             },
-                          ),
+                          );
                         }),
                       ],
                     ),

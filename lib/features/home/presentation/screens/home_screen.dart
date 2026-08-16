@@ -164,13 +164,51 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     index: 2,
                     theme: theme,
                   ),
-                  _buildNavItem(
-                    icon: Icons.forum_outlined,
-                    activeIcon: Icons.forum_rounded,
-                    index: 3,
-                    theme: theme,
-                    unreadCount: unreadCount,
-                  ),
+                  Consumer(builder: (context, ref, child) {
+
+                    int unreadCount = 0;
+
+                    if (isAuthenticated) {
+
+                      final chatIdAsync = ref.watch(supportChatIdProvider);
+
+                      final chatId = chatIdAsync.value;
+
+                      if (chatId != null) {
+
+                        final chatAsync = ref.watch(supportChatStreamProvider(chatId));
+
+                        if (chatAsync.value != null) {
+
+                          final currentUser = ref.read(currentUserProvider);
+
+                          if (currentUser != null) {
+
+                            unreadCount = chatAsync.value!.unreadCount[currentUser.userId] ?? 0;
+
+                          }
+
+                        }
+
+                      }
+
+                    }
+
+                    return _buildNavItem(
+
+                      icon: Icons.forum_outlined,
+
+                      activeIcon: Icons.forum_rounded,
+
+                      index: 3,
+
+                      theme: theme,
+
+                      unreadCount: unreadCount,
+
+                    );
+
+                  }),
                   _buildNavItem(
                     icon: Icons.person_outline_rounded,
                     activeIcon: Icons.person_rounded,
