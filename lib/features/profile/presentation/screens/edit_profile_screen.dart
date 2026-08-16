@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:healing_milestones/core/models/user_model.dart';
 import 'package:healing_milestones/features/auth/data/auth_provider.dart';
-import 'package:healing_milestones/core/theme/app_theme.dart';
 import 'package:healing_milestones/core/presentation/widgets/user_badge.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';

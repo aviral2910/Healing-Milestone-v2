@@ -4,9 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/journey_models.dart';
-import '../../../auth/data/auth_provider.dart';
 import '../../data/providers/journey_providers.dart';
-import '../screens/together_feed_screen.dart';
 import 'public_journey_detail_overlay.dart';
 
 class TogetherFeedCard extends ConsumerStatefulWidget {

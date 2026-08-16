@@ -6,13 +6,9 @@ import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:healing_milestones/features/auth/data/auth_provider.dart';
 import 'package:healing_milestones/features/posts/data/story_providers.dart';
-import '../../../../core/models/user_model.dart';
 import '../../../../core/models/story_model.dart';
 import '../../../../core/presentation/widgets/user_badge.dart';
 import '../../../../shared/widgets/story_card.dart';
-import '../../../auth/data/auth_provider.dart';
-import '../../../auth/data/repository_providers.dart';
-import '../../../posts/data/story_providers.dart';
 import '../../../../shared/widgets/qr_share_preview.dart';
 
 class PublicProfileScreen extends ConsumerStatefulWidget {

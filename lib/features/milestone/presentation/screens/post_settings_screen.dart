@@ -1,5 +1,4 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:healing_milestones/core/router/app_routes.dart';
 
 import '../providers/post_creation_state.dart';
 import 'package:flutter/material.dart';
@@ -12,18 +11,13 @@ import '../../../../core/models/user_model.dart';
 import '../../../../core/models/story_model.dart';
 import '../../../../features/auth/data/auth_provider.dart';
 import '../../../../features/posts/data/story_providers.dart';
-import 'package:go_router/go_router.dart';
 import 'dart:async';
 import '../../../../features/home/presentation/providers/home_tab_provider.dart';
 
-import '../../../../core/utils/uat_dummy_data.dart';
 import '../../../../features/posts/data/hashtag_repository.dart';
 import '../../../../features/auth/data/repository_providers.dart';
-import '../../../../main.dart';
 
-import '../../../../core/models/draft_model.dart';
 import '../providers/drafts_provider.dart';
-import '../providers/draft_settings_provider.dart';
 
 class PostSettingsScreen extends StatefulHookConsumerWidget {
   const PostSettingsScreen({Key? key}) : super(key: key);
@@ -1141,7 +1135,7 @@ class _PostSettingsScreenState extends ConsumerState<PostSettingsScreen> {
                       ),
                       Switch(
                         value: _isAnonymous,
-                        activeColor: theme.primaryColor,
+                        activeThumbColor: theme.primaryColor,
                         onChanged: (value) =>
                             setState(() => _isAnonymous = value),
                       ),

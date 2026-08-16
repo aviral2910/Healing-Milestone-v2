@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:healing_milestones/core/theme/app_theme.dart';
 import 'package:healing_milestones/core/widgets/shared_headers.dart';
 import 'package:healing_milestones/features/auth/data/auth_provider.dart';
 import 'package:healing_milestones/features/posts/data/story_providers.dart';
@@ -8,7 +7,6 @@ import 'package:healing_milestones/core/models/story_model.dart';
 import 'package:healing_milestones/shared/widgets/swipe_story_card.dart';
 import 'package:go_router/go_router.dart';
 import 'package:healing_milestones/core/router/app_routes.dart';
-import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import '../../../../main.dart';
 
 

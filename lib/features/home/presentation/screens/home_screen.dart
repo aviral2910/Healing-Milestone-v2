@@ -6,13 +6,11 @@ import 'package:healing_milestones/features/journey/presentation/screens/my_path
 import 'package:healing_milestones/features/journey/presentation/screens/together_feed_screen.dart';
 import 'package:healing_milestones/features/profile/presentation/screens/profile_screen.dart';
 
-import '../../../../features/search/presentation/screens/search_screen.dart';
 import '../../../../features/support_chat/presentation/screens/messages_screen.dart';
 import '../../../../features/auth/data/auth_provider.dart';
 import '../../../../features/support_chat/presentation/providers/chat_providers.dart';
 import '../providers/home_tab_provider.dart';
 
-import '../../../../main.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -92,20 +90,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       _tabController.animateTo(currentIndex);
     }
 
-    int unreadCount = 0;
-    if (isAuthenticated) {
-      final chatIdAsync = ref.watch(supportChatIdProvider);
-      final chatId = chatIdAsync.value;
-      if (chatId != null) {
-        final chatAsync = ref.watch(supportChatStreamProvider(chatId));
-        if (chatAsync.value != null) {
-          final currentUser = ref.watch(currentUserProvider);
-          if (currentUser != null) {
-            unreadCount = chatAsync.value!.unreadCount[currentUser.userId] ?? 0;
-          }
-        }
-      }
-    }
+    // unreadCount logic moved to Consumer
 
     return PopScope(
       canPop: currentIndex == 0,

@@ -211,7 +211,7 @@ class AuthNotifier extends Notifier<AsyncValue<AuthState>> {
            linkingPhoneNumber: null, // clear it
          ));
       }
-    } catch (e, st) {
+    } catch (e) {
       if (currentState != null) {
         state = AsyncData(currentState); // Restore state so we don't log out
       }
@@ -231,7 +231,7 @@ class AuthNotifier extends Notifier<AsyncValue<AuthState>> {
          }
          state = AsyncData(currentState.copyWith(authUser: user, userModel: updatedUserModel));
       }
-    } catch (e, st) {
+    } catch (e) {
       print('Link Google Account Error: $e');
       if (currentState != null) {
         state = AsyncData(currentState); // Restore state so we don't log out
@@ -367,7 +367,7 @@ final currentUserProvider = Provider<UserModel?>((ref) {
   if (authState?.status == AuthStatus.authenticated && authState?.authUser != null) {
     // Watch the real-time stream of the user's data
     final userStream = ref.watch(userStreamProvider(authState!.authUser!.uid));
-    return userStream.value ?? authState!.userModel;
+    return userStream.value ?? authState.userModel;
   }
   return null;
 });

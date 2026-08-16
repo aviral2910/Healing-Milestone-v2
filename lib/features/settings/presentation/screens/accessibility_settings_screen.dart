@@ -43,7 +43,7 @@ class AccessibilitySettingsScreen extends ConsumerWidget {
                   return SwitchListTile(
                     title: const Text('Show Reading Mode Floating Icon'),
                     subtitle: const Text('Displays a draggable button when reading mode is active'),
-                    activeColor: theme.colorScheme.primary,
+                    activeThumbColor: theme.colorScheme.primary,
                     value: state.showGreyscaleFloatingIcon,
                     onChanged: (val) {
                       ref.read(accessibilityProvider.notifier).toggleFloatingIcon(val);

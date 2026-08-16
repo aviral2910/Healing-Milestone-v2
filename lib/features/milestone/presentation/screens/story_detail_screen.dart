@@ -1,7 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import '../providers/post_creation_state.dart';
 import 'package:healing_milestones/core/router/app_routes.dart';
-import 'dart:ui';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/material.dart';
@@ -9,7 +8,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shimmer/shimmer.dart';
 import 'immersive_reading_screen.dart';
 import '../../../../core/models/media_attachment.dart';
-import '../../../../core/models/story_model.dart';
 import '../../../../core/models/user_model.dart';
 import '../../../../core/presentation/widgets/user_badge.dart';
 import '../../../../core/presentation/widgets/verified_story_badge.dart';
@@ -18,11 +16,8 @@ import '../widgets/milestone_media_gallery.dart';
 import '../widgets/comments_thread.dart';
 import '../../../accessibility/data/accessibility_providers.dart';
 import '../../../auth/data/auth_provider.dart';
-import '../../../auth/data/repository_providers.dart';
 import '../../../posts/data/story_providers.dart';
 
-import '../../../../core/data/dummy_data.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import '../../../../shared/widgets/interaction_section.dart';
 import 'package:go_router/go_router.dart';
@@ -45,7 +40,7 @@ class StoryDetailScreen extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final storyAsync = ref.watch(storyByIdProvider(milestoneId));
-    final currentUser = ref.watch(currentUserProvider);
+    // Removed currentUser watch
     final theme = Theme.of(context);
     final mainScrollController = useScrollController();
 
@@ -99,7 +94,7 @@ class StoryDetailScreen extends HookConsumerWidget {
                     SliverAppBar(
                       pinned: true,
                       backgroundColor:
-                          theme.scaffoldBackgroundColor.withOpacity(0.9),
+                          theme.scaffoldBackgroundColor.withValues(alpha: 0.9),
                       elevation: 0,
                       leading: IconButton(
                         icon: const Icon(Icons.arrow_back_ios_new),
@@ -144,8 +139,10 @@ class StoryDetailScreen extends HookConsumerWidget {
                             );
                           },
                         ),
-                        if (currentUser != null)
-                          PopupMenuButton<String>(
+                        Consumer(builder: (context, ref, child) {
+                          final currentUser = ref.watch(currentUserProvider);
+                          if (currentUser == null) return const SizedBox.shrink();
+                          return PopupMenuButton<String>(
                             icon: const Icon(Icons.more_vert),
                             onSelected: (value) async {
                               if (value == 'edit') {
@@ -318,6 +315,7 @@ class StoryDetailScreen extends HookConsumerWidget {
                               ];
                             },
                           ),
+                        }),
                       ],
                     ),
                     SliverToBoxAdapter(
@@ -382,6 +380,7 @@ class StoryDetailScreen extends HookConsumerWidget {
                                 GestureDetector(
                                   onTap: story.displayAuthorName
                                       ? () {
+                                          final currentUser = ref.read(currentUserProvider);
                                           if (currentUser?.userId ==
                                               story.authorId) {
                                             context.push(AppRoutes.profile);
@@ -535,7 +534,7 @@ class StoryDetailScreen extends HookConsumerWidget {
                                                             ?.isNotEmpty ??
                                                         false) &&
                                                     (user.displayName
-                                                            ?.isNotEmpty ??
+                                                            .isNotEmpty ??
                                                         false)) {
                                                   return Padding(
                                                     padding:

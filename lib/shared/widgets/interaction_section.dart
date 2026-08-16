@@ -10,7 +10,6 @@ import 'package:healing_milestones/features/posts/data/story_providers.dart';
 import 'package:healing_milestones/shared/widgets/qr_share_preview.dart';
 
 import 'package:healing_milestones/shared/widgets/reaction_picker.dart';
-import 'package:share_plus/share_plus.dart';
 
 class InteractionSection extends HookConsumerWidget {
   final StoryModel story;

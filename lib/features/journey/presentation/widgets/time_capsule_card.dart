@@ -1,9 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:healing_milestones/core/models/time_capsule_model.dart';
-import 'package:healing_milestones/features/journey/presentation/providers/time_capsule_provider.dart';
 
 class TimeCapsuleCard extends ConsumerWidget {
   final TimeCapsuleModel? activeCapsule;
@@ -58,7 +56,7 @@ class TimeCapsuleCard extends ConsumerWidget {
           boxShadow: isReadyToOpen
               ? [
                   BoxShadow(
-                    color: baseColor.withOpacity(0.3),
+                    color: baseColor.withValues(alpha: 0.3),
                     blurRadius: 20,
                     spreadRadius: 2,
                   ),
@@ -82,12 +80,12 @@ class TimeCapsuleCard extends ConsumerWidget {
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           color: isReadyToOpen
-                              ? theme.scaffoldBackgroundColor.withOpacity(0.9)
+                              ? theme.scaffoldBackgroundColor.withValues(alpha: 0.9)
                               : theme.colorScheme.surface,
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
+                              color: Colors.black.withValues(alpha: 0.05),
                               blurRadius: 10,
                               spreadRadius: 1,
                             ),
@@ -134,11 +132,11 @@ class TimeCapsuleCard extends ConsumerWidget {
                               ),
                               style: theme.textTheme.bodyMedium?.copyWith(
                                 color: isReadyToOpen
-                                    ? theme.colorScheme.onPrimary.withOpacity(
-                                        0.8,
+                                    ? theme.colorScheme.onPrimary.withValues(
+                                        alpha: 0.8,
                                       )
-                                    : theme.colorScheme.onSurface.withOpacity(
-                                        0.7,
+                                    : theme.colorScheme.onSurface.withValues(
+                                        alpha: 0.7,
                                       ),
                               ),
                             ),
@@ -149,7 +147,7 @@ class TimeCapsuleCard extends ConsumerWidget {
                         Icon(
                           Icons.chevron_right,
                           color: isReadyToOpen
-                              ? theme.colorScheme.onPrimary.withOpacity(0.8)
+                              ? theme.colorScheme.onPrimary.withValues(alpha: 0.8)
                               : theme.colorScheme.onSurfaceVariant,
                         ),
                     ],

@@ -184,7 +184,7 @@ class _OakTreePainter extends CustomPainter {
 
     // Bark texture lines
     final barkPaint = Paint()
-      ..color = const Color(0xFF4E3524).withOpacity(0.5)
+      ..color = const Color(0xFF4E3524).withValues(alpha: 0.5)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0
       ..strokeCap = StrokeCap.round;
@@ -666,7 +666,7 @@ class _OakTreePainter extends CustomPainter {
         Offset.zero,
         Offset(leafSize * 0.85, 0),
         Paint()
-          ..color = const Color(0xFF1B5E20).withOpacity(0.3)
+          ..color = const Color(0xFF1B5E20).withValues(alpha: 0.3)
           ..strokeWidth = 0.6,
       );
 

@@ -34,8 +34,6 @@ import '../../features/auth/data/auth_provider.dart';
 import '../../features/splash/presentation/screens/splash_screen.dart';
 import '../../logo/healing_milestone_logo.dart';
 import '../../core/models/user_model.dart';
-import '../../core/models/story_model.dart';
-import '../../core/models/draft_model.dart';
 import 'app_routes.dart';
 
 class RouterNotifier extends ChangeNotifier {

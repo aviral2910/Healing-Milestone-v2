@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../main.dart';
-import '../../../../core/theme/app_theme.dart';
 
 class UatScreen extends ConsumerWidget {
   const UatScreen({Key? key}) : super(key: key);
@@ -39,7 +38,7 @@ class UatScreen extends ConsumerWidget {
               title: const Text('Enable UAT Features'),
               subtitle: const Text('Enables dummy data creation and other developer bypasses.'),
               value: isUatMode,
-              activeColor: Theme.of(context).primaryColor,
+              activeThumbColor: Theme.of(context).primaryColor,
               onChanged: (value) {
                 ref.read(uatModeProvider.notifier).state = value;
               },
@@ -49,7 +48,7 @@ class UatScreen extends ConsumerWidget {
               title: const Text('Enable Device Preview'),
               subtitle: const Text('Simulate the app on different device sizes.'),
               value: isDevicePreview,
-              activeColor: Theme.of(context).primaryColor,
+              activeThumbColor: Theme.of(context).primaryColor,
               onChanged: (value) {
                 ref.read(devicePreviewProvider.notifier).state = value;
               },

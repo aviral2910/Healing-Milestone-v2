@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:healing_milestones/core/theme/app_theme.dart';
 import 'package:healing_milestones/features/auth/data/auth_provider.dart';
 import 'package:healing_milestones/core/presentation/widgets/logout_button.dart';
 import 'package:healing_milestones/core/router/app_routes.dart';
 
-import 'package:healing_milestones/features/accessibility/data/accessibility_providers.dart';
 import 'package:healing_milestones/features/milestone/presentation/providers/draft_settings_provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 enum MenuContext { home, profile }
 
@@ -206,7 +203,7 @@ class SettingsScreen extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
+                    color: color.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(icon, color: color, size: 28),
@@ -232,7 +229,7 @@ class SettingsScreen extends ConsumerWidget {
                               .textTheme
                               .bodySmall
                               ?.color
-                              ?.withOpacity(0.6),
+                              ?.withValues(alpha: 0.6),
                           fontSize: 14,
                         ),
                       ),
@@ -241,7 +238,7 @@ class SettingsScreen extends ConsumerWidget {
                 ),
                 trailing ??
                     Icon(Icons.chevron_right_rounded,
-                        color: Theme.of(context).iconTheme.color?.withOpacity(0.4)),
+                        color: Theme.of(context).iconTheme.color?.withValues(alpha: 0.4)),
               ],
             ),
           ),
@@ -271,14 +268,14 @@ class SettingsScreen extends ConsumerWidget {
               elevation: 24,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
-                side: BorderSide(color: theme.colorScheme.error.withOpacity(0.5), width: 1),
+                side: BorderSide(color: theme.colorScheme.error.withValues(alpha: 0.5), width: 1),
               ),
               title: Column(
                 children: [
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: theme.colorScheme.error.withOpacity(0.1),
+                      color: theme.colorScheme.error.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(Icons.warning_rounded, color: theme.colorScheme.error, size: 36),

@@ -76,7 +76,7 @@ class SuspendedScreen extends ConsumerWidget {
                 child: Text(
                   'Log Out',
                   style: TextStyle(
-                    color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
+                    color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.6),
                     fontSize: 16,
                   ),
                 ),

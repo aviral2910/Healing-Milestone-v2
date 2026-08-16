@@ -1,21 +1,13 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:healing_milestones/core/router/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/models/story_model.dart';
 import '../../core/presentation/widgets/user_badge.dart';
 import '../../core/presentation/widgets/verified_story_badge.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:flutter/services.dart';
-import 'package:healing_milestones/core/models/story_model.dart';
 import 'package:healing_milestones/core/models/user_model.dart';
 import 'package:healing_milestones/features/auth/data/auth_provider.dart';
-import 'package:go_router/go_router.dart';
-import 'package:healing_milestones/features/posts/data/story_providers.dart';
-import 'package:healing_milestones/features/auth/data/repository_providers.dart';
-import '../../features/auth/data/auth_provider.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:healing_milestones/shared/widgets/interaction_section.dart';
 
 class StoryCard extends ConsumerStatefulWidget {
@@ -216,7 +208,7 @@ class _StoryCardState extends ConsumerState<StoryCard>
                                   if (widget.story.displayAuthorName &&
                                       user != null &&
                                       (user.username?.isNotEmpty ?? false) &&
-                                      (user.displayName?.isNotEmpty ?? false)) {
+                                      (user.displayName.isNotEmpty ?? false)) {
                                     return Padding(
                                       padding: const EdgeInsets.only(
                                           top: 2.0, bottom: 2.0),

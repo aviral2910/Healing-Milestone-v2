@@ -140,11 +140,11 @@ class _GreyscaleFloatingOverlayState
                   decoration: BoxDecoration(
                     color: _isHoveringClose
                         ? Colors.red
-                        : Colors.red.withOpacity(0.4),
+                        : Colors.red.withValues(alpha: 0.4),
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.3),
+                        color: Colors.black.withValues(alpha: 0.3),
                         blurRadius: 10,
                       )
                     ],
@@ -242,13 +242,13 @@ class _GreyscaleFloatingOverlayState
                           : Theme.of(context)
                               .colorScheme
                               .primary
-                              .withOpacity(0.5),
+                              .withValues(alpha: 0.5),
                       width: 2,
                     ),
                     boxShadow: _isDragging
                         ? [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.3),
+                              color: Colors.black.withValues(alpha: 0.3),
                               blurRadius: 12,
                               offset: const Offset(0, 6),
                             ),

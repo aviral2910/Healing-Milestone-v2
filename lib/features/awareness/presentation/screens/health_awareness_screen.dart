@@ -1,10 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/data/dummy_data.dart';
 import '../../../../core/widgets/shared_headers.dart';
 import '../../../../core/models/educational_content_model.dart';
-import '../../../../logo/healing_milestone_logo.dart';
 import '../../../../features/auth/data/auth_provider.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 

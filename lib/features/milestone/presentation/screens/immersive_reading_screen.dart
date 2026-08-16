@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:healing_milestones/features/posts/presentation/widgets/post_display_widget.dart';
-import 'package:healing_milestones/features/accessibility/data/accessibility_providers.dart';
 import 'package:healing_milestones/features/milestone/presentation/widgets/immersive_reading_edge_panel.dart';
 
 class ImmersiveReadingScreen extends StatefulWidget {
@@ -175,7 +172,7 @@ class _ImmersiveReadingScreenState extends State<ImmersiveReadingScreen> {
                     minHeight: 2,
                     backgroundColor: Colors.transparent,
                     valueColor: AlwaysStoppedAnimation<Color>(
-                        theme.colorScheme.primary.withOpacity(0.7)),
+                        theme.colorScheme.primary.withValues(alpha: 0.7)),
                   );
                 },
               ),

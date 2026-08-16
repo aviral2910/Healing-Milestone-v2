@@ -3,16 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
-import 'package:healing_milestones/core/models/user_model.dart';
 import 'package:healing_milestones/features/auth/data/auth_provider.dart';
 import 'package:healing_milestones/shared/widgets/story_card.dart';
-import '../../../../core/models/category_model.dart';
-import '../../../../core/presentation/widgets/user_badge.dart';
-import '../../../../core/presentation/widgets/verified_story_badge.dart';
 import '../../../../core/widgets/shared_headers.dart';
-import '../../../../core/models/story_model.dart';
 import 'package:healing_milestones/features/posts/data/story_providers.dart';
-import '../../../../logo/healing_milestone_logo.dart';
 import '../../../../main.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 
@@ -26,8 +20,7 @@ class _SliverTagsDelegate extends SliverPersistentHeaderDelegate {
     required this.tags,
     required this.selectedTag,
     required this.onTagSelected,
-    this.height = 56,
-  });
+  }) : height = 56;
 
   @override
   double get minExtent => height;
@@ -161,7 +154,7 @@ class PostScreen extends HookConsumerWidget {
     final categories =
         []; // Replace with actual categories if needed, or keep empty
     final selectedTag = ref.watch(selectedTagProvider);
-    final user = ref.watch(currentUserProvider);
+    // Removed user watch for performance
     final theme = Theme.of(context);
 
     return SafeArea(

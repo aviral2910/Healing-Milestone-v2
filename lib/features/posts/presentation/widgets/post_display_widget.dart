@@ -22,7 +22,7 @@ class PostDisplayWidget extends HookConsumerWidget {
         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
           fontSize: 16 * textScaleFactor,
           fontWeight: FontWeight.w400,
-          color: Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(textOpacity),
+          color: Theme.of(context).textTheme.bodyLarge?.color?.withValues(alpha: textOpacity),
         ),
       ),
     );

@@ -4,7 +4,6 @@ import '../../../../core/widgets/shared_headers.dart';
 import '../../../posts/presentation/screens/post_screen.dart';
 import '../../../posts/presentation/screens/recommended_swipe_screen.dart';
 import '../../../awareness/presentation/screens/health_awareness_screen.dart';
-import '../../../../features/auth/data/auth_provider.dart';
 
 
 

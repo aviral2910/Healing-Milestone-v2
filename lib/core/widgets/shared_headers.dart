@@ -3,13 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:healing_milestones/logo/healing_milestone_logo.dart';
-import '../../main.dart';
-import '../../features/auth/data/auth_provider.dart';
 import 'package:healing_milestones/features/settings/presentation/screens/settings_screen.dart';
 import 'package:healing_milestones/features/accessibility/data/accessibility_providers.dart';
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:healing_milestones/features/posts/data/feed_view_provider.dart';
 
 class CommonSliverAppBar extends ConsumerWidget {
   final bool isHeroEnabled;
@@ -130,12 +126,12 @@ class CommonSearchBarSliver extends StatelessWidget {
                         horizontal: 16, vertical: 12),
                     decoration: BoxDecoration(
                       color: isGreyscale
-                          ? theme.colorScheme.primary.withOpacity(0.12)
-                          : theme.dividerColor.withOpacity(0.3),
+                          ? theme.colorScheme.primary.withValues(alpha: 0.12)
+                          : theme.dividerColor.withValues(alpha: 0.3),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: isGreyscale
-                            ? theme.colorScheme.primary.withOpacity(0.3)
+                            ? theme.colorScheme.primary.withValues(alpha: 0.3)
                             : Colors.transparent,
                         width: 1,
                       ),
@@ -147,7 +143,7 @@ class CommonSearchBarSliver extends StatelessWidget {
                           size: 18,
                           color: isGreyscale
                               ? theme.colorScheme.primary
-                              : theme.iconTheme.color?.withOpacity(0.7),
+                              : theme.iconTheme.color?.withValues(alpha: 0.7),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -158,7 +154,7 @@ class CommonSearchBarSliver extends StatelessWidget {
                                   : 'Want to turn on reading mode? ',
                               style: theme.textTheme.bodyMedium?.copyWith(
                                 color: theme.colorScheme.onSurface
-                                    .withOpacity(0.9),
+                                    .withValues(alpha: 0.9),
                                 fontWeight: FontWeight.w500,
                               ),
                               children: [

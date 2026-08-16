@@ -212,7 +212,7 @@ class _DraftsScreenState extends ConsumerState<DraftsScreen> {
                                     : Icons.circle_outlined,
                                 color: _selectedIds.contains(draft.id)
                                     ? theme.colorScheme.primary
-                                    : theme.colorScheme.onSurface.withOpacity(0.3),
+                                    : theme.colorScheme.onSurface.withValues(alpha: 0.3),
                               ),
                             ),
                           ],

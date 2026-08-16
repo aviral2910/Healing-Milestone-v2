@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:healing_milestones/features/journey/presentation/widgets/create_time_capsule_overlay.dart';
 import 'package:healing_milestones/features/journey/presentation/providers/time_capsule_provider.dart';
 import 'package:healing_milestones/features/journey/presentation/widgets/time_capsule_card.dart';

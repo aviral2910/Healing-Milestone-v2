@@ -6,7 +6,6 @@ import '../widgets/timeline_node.dart';
 import '../widgets/gratitude_tree.dart';
 import '../widgets/time_capsule_card.dart';
 import '../providers/time_capsule_provider.dart';
-import '../../../auth/data/auth_provider.dart';
 
 import '../../../../core/widgets/shared_headers.dart';
 import '../widgets/log_milestone_overlay.dart';

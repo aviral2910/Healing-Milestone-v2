@@ -106,7 +106,7 @@ class _MediaUploadBottomSheetState extends State<MediaUploadBottomSheet> {
               const Text('Mark as Sensitive', style: TextStyle(color: Color(0xFFE0E0E0))),
               Switch(
                 value: _isSensitive,
-                activeColor: Theme.of(context).colorScheme.secondary,
+                activeThumbColor: Theme.of(context).colorScheme.secondary,
                 onChanged: (val) {
                   setState(() => _isSensitive = val);
                 },
