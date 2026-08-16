@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:math' as math;
 
 enum AppLoaderType {
   defaultLoader,
@@ -49,10 +50,12 @@ class AppLoader extends StatelessWidget {
   }
 
   Widget _buildDefault(BuildContext context) {
+    // You can test different loaders by changing this single line to:
+    // _ThreeDotWaveLoader, _DualArcSpinner, or _ZenRippleLoader
     return Center(
-      child: _ZenRippleLoader(
+      child: _ThreeDotWaveLoader(
         color: color ?? Theme.of(context).primaryColor,
-        size: size ?? 45.0,
+        size: size ?? 40.0,
       ),
     );
   }
@@ -97,27 +100,29 @@ class AppLoader extends StatelessWidget {
   }
 }
 
-class _ZenRippleLoader extends StatefulWidget {
+// ---------------------------------------------------------
+// LOADER OPTION 1: Ultra-Clean 3-Dot Wave (Modern/Minimalist)
+// ---------------------------------------------------------
+class _ThreeDotWaveLoader extends StatefulWidget {
   final Color color;
   final double size;
 
-  const _ZenRippleLoader({required this.color, this.size = 45.0});
+  const _ThreeDotWaveLoader({required this.color, this.size = 40.0});
 
   @override
-  State<_ZenRippleLoader> createState() => _ZenRippleLoaderState();
+  State<_ThreeDotWaveLoader> createState() => _ThreeDotWaveLoaderState();
 }
 
-class _ZenRippleLoaderState extends State<_ZenRippleLoader>
+class _ThreeDotWaveLoaderState extends State<_ThreeDotWaveLoader>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
   @override
   void initState() {
     super.initState();
-    // A nice slow 2-second cycle for a calm, breathing ripple
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2000),
+      duration: const Duration(milliseconds: 1200),
     )..repeat();
   }
 
@@ -127,41 +132,51 @@ class _ZenRippleLoaderState extends State<_ZenRippleLoader>
     super.dispose();
   }
 
-  Widget _buildRipple(double delay) {
+  Widget _buildDot(int index) {
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
-        var phase = _controller.value - delay;
-        if (phase < 0) phase += 1.0;
+        final double offset = index * 0.2;
+        double progress = _controller.value - offset;
+        if (progress < 0) progress += 1.0;
 
-        // Easing function for smoother expansion
-        final curve = Curves.easeOutCubic;
-        final scale = curve.transform(phase);
+        double scale = 1.0;
+        double opacity = 0.3;
         
-        // Opacity fades out gently as it expands
-        final opacity = (1.0 - phase) * 0.8;
+        // Scale and fade up for first 30%, down for next 30%
+        if (progress < 0.3) {
+          final t = progress / 0.3;
+          scale = 1.0 + (math.sin(t * math.pi / 2) * 0.4); 
+          opacity = 0.3 + (0.7 * t);
+        } else if (progress < 0.6) {
+          final t = (progress - 0.3) / 0.3;
+          scale = 1.4 - (math.sin(t * math.pi / 2) * 0.4);
+          opacity = 1.0 - (0.7 * t);
+        }
 
-        return Transform.scale(
-          scale: scale,
-          child: Opacity(
-            opacity: opacity,
-            child: Container(
-              width: widget.size,
-              height: widget.size,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: widget.color.withValues(alpha: 0.15),
-                border: Border.all(
+        final dotSize = widget.size * 0.25;
+
+        return Padding(
+          padding: EdgeInsets.symmetric(horizontal: widget.size * 0.06),
+          child: Transform.scale(
+            scale: scale,
+            child: Opacity(
+              opacity: opacity,
+              child: Container(
+                width: dotSize,
+                height: dotSize,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
                   color: widget.color,
-                  width: 1.5,
+                  boxShadow: [
+                    if (opacity > 0.6)
+                      BoxShadow(
+                        color: widget.color.withValues(alpha: 0.5),
+                        blurRadius: 6,
+                        spreadRadius: 1,
+                      ),
+                  ],
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: widget.color.withValues(alpha: opacity * 0.5),
-                    blurRadius: 10,
-                    spreadRadius: 2,
-                  ),
-                ],
               ),
             ),
           ),
@@ -173,32 +188,85 @@ class _ZenRippleLoaderState extends State<_ZenRippleLoader>
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: widget.size,
       height: widget.size,
-      child: Stack(
-        alignment: Alignment.center,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          _buildRipple(0.0),
-          _buildRipple(0.33),
-          _buildRipple(0.66),
-          // Central glowing seed/droplet
-          Container(
-            width: widget.size * 0.2,
-            height: widget.size * 0.2,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: widget.color,
-              boxShadow: [
-                BoxShadow(
-                  color: widget.color.withValues(alpha: 0.8),
-                  blurRadius: 8,
-                  spreadRadius: 1,
-                ),
-              ],
-            ),
-          ),
+          _buildDot(0),
+          _buildDot(1),
+          _buildDot(2),
         ],
       ),
     );
   }
+}
+
+// ---------------------------------------------------------
+// LOADER OPTION 2: Dual Spinning Arcs (Tech/Sleek)
+// ---------------------------------------------------------
+class _DualArcSpinner extends StatefulWidget {
+  final Color color;
+  final double size;
+
+  const _DualArcSpinner({required this.color, this.size = 40.0});
+
+  @override
+  State<_DualArcSpinner> createState() => _DualArcSpinnerState();
+}
+
+class _DualArcSpinnerState extends State<_DualArcSpinner>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return RotationTransition(
+      turns: _controller,
+      child: SizedBox(
+        width: widget.size,
+        height: widget.size,
+        child: CustomPaint(
+          painter: _DualArcPainter(color: widget.color),
+        ),
+      ),
+    );
+  }
+}
+
+class _DualArcPainter extends CustomPainter {
+  final Color color;
+  _DualArcPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rect = Rect.fromLTWH(0, 0, size.width, size.height);
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 3.0;
+
+    // Draw two opposite arcs
+    canvas.drawArc(rect.deflate(2.0), 0, math.pi / 2, false, paint);
+    canvas.drawArc(rect.deflate(2.0), math.pi, math.pi / 2, false, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
