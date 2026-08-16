@@ -4,6 +4,13 @@ import '../../data/models/chat_model.dart';
 import '../../data/models/message_model.dart';
 import '../../../auth/data/auth_provider.dart';
 
+final supportChatStatusProvider = FutureProvider.autoDispose<String?>((ref) async {
+  final userId = ref.watch(currentUserProvider.select((user) => user?.userId));
+  if (userId == null) return null;
+  final repo = ref.watch(chatRepositoryProvider);
+  return repo.checkSupportChatStatus(userId);
+});
+
 final supportChatIdProvider = FutureProvider.autoDispose<String>((ref) async {
   final userId = ref.watch(currentUserProvider.select((user) => user?.userId));
   if (userId == null) throw Exception('User not logged in');

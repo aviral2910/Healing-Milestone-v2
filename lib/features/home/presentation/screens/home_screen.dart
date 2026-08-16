@@ -171,11 +171,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
                     if (isAuthenticated) {
 
-                      final chatIdAsync = ref.watch(supportChatIdProvider);
+                      final chatStatusAsync = ref.watch(supportChatStatusProvider);
 
-                      final chatId = chatIdAsync.value;
+                      final chatId = chatStatusAsync.value;
 
-                      if (chatId != null) {
+                      if (chatId != null && chatId.isNotEmpty) {
 
                         final chatAsync = ref.watch(supportChatStreamProvider(chatId));
 

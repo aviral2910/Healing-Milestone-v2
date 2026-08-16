@@ -34,6 +34,16 @@ class ApiChatRepository {
   final _messagesController = StreamController<List<MessageModel>>.broadcast();
   List<MessageModel> _currentMessages = [];
 
+  Future<String?> checkSupportChatStatus(String userId) async {
+    try {
+      final response = await _dio.get('/api/chat/status');
+      return response.data['chat_id'] as String?;
+    } catch (e) {
+      print('DEBUG: checkSupportChatStatus failed: $e');
+      return null; // Don't crash, just return no chat
+    }
+  }
+
   Future<String> getOrCreateSupportChat(String userId) async {
     try {
       final response = await _dio.post('/api/chat/start');
