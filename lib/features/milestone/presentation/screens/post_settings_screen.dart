@@ -18,6 +18,7 @@ import '../../../../features/posts/data/hashtag_repository.dart';
 import '../../../../features/auth/data/repository_providers.dart';
 
 import '../providers/drafts_provider.dart';
+import 'package:healing_milestones/shared/widgets/app_loader.dart';
 
 part 'post_settings_hashtags.dart';
 part 'post_settings_user_tagging.dart';
@@ -412,7 +413,7 @@ class _PostSettingsScreenState extends ConsumerState<PostSettingsScreen> {
     final theme = Theme.of(context);
     final user = ref.watch(currentUserProvider);
     if (user == null)
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const Scaffold(body: Center(child: const AppLoader()));
     final bool isProOrOrg =
         user.role == UserRole.healthcareProfessional ||
         user.role == UserRole.organization;
@@ -505,10 +506,7 @@ class _PostSettingsScreenState extends ConsumerState<PostSettingsScreen> {
                     ? SizedBox(
                         width: 24,
                         height: 24,
-                        child: CircularProgressIndicator(
-                          color: Colors.black,
-                          strokeWidth: 2,
-                        ),
+                        child: const AppLoader.small(),
                       )
                     : Text(
                         ref.read(postCreationControllerProvider).isEditing

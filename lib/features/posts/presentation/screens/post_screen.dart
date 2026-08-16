@@ -9,6 +9,7 @@ import '../../../../core/widgets/shared_headers.dart';
 import 'package:healing_milestones/features/posts/data/story_providers.dart';
 import '../../../../main.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+import 'package:healing_milestones/shared/widgets/app_loader.dart';
 
 class _SliverTagsDelegate extends SliverPersistentHeaderDelegate {
   final List<String> tags;
@@ -193,7 +194,7 @@ class PostScreen extends HookConsumerWidget {
                 loading: () => const SliverFillRemaining(
                   child: Center(
                       child:
-                          CircularProgressIndicator(color: Color(0xFFD4AF37))),
+                          const AppLoader.small()),
                 ),
                 error: (err, stack) => SliverFillRemaining(
                   child: Center(
@@ -336,8 +337,7 @@ class PostScreen extends HookConsumerWidget {
                           child: Padding(
                             padding: EdgeInsets.symmetric(vertical: 32.0),
                             child: Center(
-                              child: CircularProgressIndicator(
-                                  color: Color(0xFFD4AF37)),
+                              child: const AppLoader.small(),
                             ),
                           ),
                         ),

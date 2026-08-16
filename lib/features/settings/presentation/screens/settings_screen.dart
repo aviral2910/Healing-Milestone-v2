@@ -6,6 +6,7 @@ import 'package:healing_milestones/core/presentation/widgets/logout_button.dart'
 import 'package:healing_milestones/core/router/app_routes.dart';
 
 import 'package:healing_milestones/features/milestone/presentation/providers/draft_settings_provider.dart';
+import 'package:healing_milestones/shared/widgets/app_loader.dart';
 
 enum MenuContext { home, profile }
 
@@ -303,7 +304,7 @@ class SettingsScreen extends ConsumerWidget {
                         showDialog(
                           context: context,
                           barrierDismissible: false,
-                          builder: (context) => const Center(child: CircularProgressIndicator()),
+                          builder: (context) => const Center(child: const AppLoader()),
                         );
                         
                         try {

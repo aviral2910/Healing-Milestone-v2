@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:healing_milestones/core/models/user_model.dart';
 import 'package:healing_milestones/features/auth/data/auth_provider.dart';
 import 'package:healing_milestones/core/presentation/widgets/user_badge.dart';
+import 'package:healing_milestones/shared/widgets/app_loader.dart';
 
 class ProfessionalOnboardingScreen extends ConsumerStatefulWidget {
   final UserRole role;
@@ -223,7 +224,7 @@ class _ProfessionalOnboardingScreenState
         child: SizedBox(
           width: 20,
           height: 20,
-          child: CircularProgressIndicator(strokeWidth: 2),
+          child: const AppLoader.small(),
         ),
       );
     } else if (_isUsernameAvailable == true) {

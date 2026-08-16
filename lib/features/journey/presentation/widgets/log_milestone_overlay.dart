@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/journey_models.dart';
 import '../../data/providers/journey_providers.dart';
+import 'package:healing_milestones/shared/widgets/app_loader.dart';
 
 class LogMilestoneOverlay extends StatefulWidget {
   final String? initialJourneyId;
@@ -680,10 +681,7 @@ class _LogMilestoneOverlayState extends State<LogMilestoneOverlay> {
                                     ? const SizedBox(
                                         height: 24,
                                         width: 24,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          color: Colors.white,
-                                        ),
+                                        child: const AppLoader.small(),
                                       )
                                     : Text(
                                         isEditing

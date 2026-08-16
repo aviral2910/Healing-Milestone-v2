@@ -11,6 +11,7 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 import 'package:healing_milestones/features/posts/data/story_providers.dart';
+import 'package:healing_milestones/shared/widgets/app_loader.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
@@ -347,7 +348,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       return Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: Center(
-            child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary)),
+            child: const AppLoader.small()),
       );
     }
 
@@ -439,9 +440,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                               shape: BoxShape.circle,
                             ),
                             child: Center(
-                              child: CircularProgressIndicator(
-                                color: Theme.of(context).primaryColor,
-                              ),
+                              child: const AppLoader.small(),
                             ),
                           ),
                         ),

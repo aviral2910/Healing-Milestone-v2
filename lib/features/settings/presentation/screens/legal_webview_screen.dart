@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:healing_milestones/shared/widgets/app_loader.dart';
 
 class LegalWebViewScreen extends StatefulWidget {
   final String title;
@@ -72,7 +73,7 @@ class _LegalWebViewScreenState extends State<LegalWebViewScreen> {
           WebViewWidget(controller: _controller),
           if (_isLoading)
             const Center(
-              child: CircularProgressIndicator(),
+              child: const AppLoader(),
             ),
         ],
       ),

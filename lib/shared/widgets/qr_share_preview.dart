@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:healing_milestones/logo/healing_milestone_logo.dart';
 import 'package:gal/gal.dart';
+import 'package:healing_milestones/shared/widgets/app_loader.dart';
 
 class QrSharePreview extends StatefulWidget {
   final String id;
@@ -201,8 +202,7 @@ class _QrSharePreviewState extends State<QrSharePreview> {
                         ? const SizedBox(
                             width: 20,
                             height: 20,
-                            child: CircularProgressIndicator(
-                                strokeWidth: 2, color: Colors.white))
+                            child: const AppLoader.small())
                         : const Icon(Icons.share),
                     label: Text(_isSharing ? 'Sharing...' : 'Share'),
                   ),

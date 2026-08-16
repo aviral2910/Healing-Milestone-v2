@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/providers/journey_providers.dart';
 import '../../data/models/journey_models.dart';
 import 'timeline_node.dart';
+import 'package:healing_milestones/shared/widgets/app_loader.dart';
 
 class PublicJourneyDetailOverlay extends ConsumerStatefulWidget {
   final String journeyId;
@@ -295,7 +296,7 @@ class _PublicJourneyDetailOverlayState extends ConsumerState<PublicJourneyDetail
                                       ? const SizedBox(
                                           width: 16,
                                           height: 16,
-                                          child: CircularProgressIndicator(strokeWidth: 2),
+                                          child: const AppLoader.small(),
                                         )
                                       : Icon(
                                           _isFollowing ? Icons.directions_walk_rounded : Icons.directions_walk_rounded,
@@ -439,7 +440,7 @@ class _PublicJourneyDetailOverlayState extends ConsumerState<PublicJourneyDetail
                     child: Center(
                       child: Padding(
                         padding: EdgeInsets.all(40.0),
-                        child: CircularProgressIndicator(),
+                        child: const AppLoader(),
                       ),
                     ),
                   ),

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:healing_milestones/features/auth/data/auth_provider.dart';
 import 'package:healing_milestones/logo/healing_milestone_logo.dart';
+import 'package:healing_milestones/shared/widgets/app_loader.dart';
 
 class LoginScreen extends ConsumerWidget {
   const LoginScreen({super.key});
@@ -88,9 +89,7 @@ class LoginScreen extends ConsumerWidget {
                   ? const SizedBox(
                       width: 24,
                       height: 24,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                      ),
+                      child: const AppLoader.small(),
                     )
                   : const Icon(Icons.login),
               label: Text(

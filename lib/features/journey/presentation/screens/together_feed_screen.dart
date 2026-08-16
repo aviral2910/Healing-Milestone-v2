@@ -4,6 +4,7 @@ import '../../data/providers/journey_providers.dart';
 import '../widgets/together_feed_card.dart';
 import '../widgets/walking_with_carousel.dart';
 import '../../../../core/widgets/shared_headers.dart';
+import 'package:healing_milestones/shared/widgets/app_loader.dart';
 
 class TogetherFeedScreen extends ConsumerStatefulWidget {
   const TogetherFeedScreen({super.key});
@@ -159,7 +160,7 @@ class _TogetherFeedScreenState extends ConsumerState<TogetherFeedScreen> {
                 child: Center(
                   child: Padding(
                     padding: EdgeInsets.all(40.0),
-                    child: CircularProgressIndicator(),
+                    child: const AppLoader(),
                   ),
                 ),
               ),

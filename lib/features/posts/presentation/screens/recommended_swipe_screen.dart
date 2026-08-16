@@ -8,6 +8,7 @@ import 'package:healing_milestones/shared/widgets/swipe_story_card.dart';
 import 'package:go_router/go_router.dart';
 import 'package:healing_milestones/core/router/app_routes.dart';
 import '../../../../main.dart';
+import 'package:healing_milestones/shared/widgets/app_loader.dart';
 
 class RecommendedSwipeScreen extends ConsumerStatefulWidget {
   final ScrollController? scrollController;
@@ -86,7 +87,7 @@ class _RecommendedSwipeScreenState extends ConsumerState<RecommendedSwipeScreen>
             if (storiesAsync.isLoading)
               const SliverFillRemaining(
                 child: Center(
-                  child: CircularProgressIndicator(color: Color(0xFFD4AF37)),
+                  child: const AppLoader.small(),
                 ),
               )
             else if (storiesAsync.hasError && !storiesAsync.hasValue)
@@ -157,7 +158,7 @@ class _RecommendedSwipeScreenState extends ConsumerState<RecommendedSwipeScreen>
           child: Padding(
             padding: EdgeInsets.all(32.0),
             child: Center(
-              child: CircularProgressIndicator(color: Color(0xFFD4AF37)),
+              child: const AppLoader.small(),
             ),
           ),
         )
@@ -213,7 +214,7 @@ class _RecommendedSwipeScreenState extends ConsumerState<RecommendedSwipeScreen>
                           ),
                         );
                       }
-                      return const Center(child: CircularProgressIndicator(color: Color(0xFFD4AF37)));
+                      return const Center(child: const AppLoader.small());
                     }
                     return _buildCaughtUpCard(theme);
                   }

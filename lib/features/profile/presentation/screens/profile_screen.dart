@@ -12,6 +12,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../features/settings/presentation/screens/settings_screen.dart';
 import '../../../../core/presentation/widgets/user_badge.dart';
 import '../../../../shared/widgets/qr_share_preview.dart';
+import 'package:healing_milestones/shared/widgets/app_loader.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -52,7 +53,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     if (isAuthLoading) {
       return Scaffold(
         backgroundColor: theme.scaffoldBackgroundColor,
-        body: const Center(child: CircularProgressIndicator()),
+        body: const Center(child: const AppLoader()),
       );
     }
 
@@ -436,8 +437,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 return userStoriesAsync.when(
                   skipLoadingOnReload: true,
                   loading: () => Center(
-                      child: CircularProgressIndicator(
-                          color: Theme.of(context).primaryColor)),
+                      child: const AppLoader.small()),
                   error: (err, stack) => const Center(
                       child: Text('Failed to load stories',
                           style: TextStyle(color: Colors.red))),
@@ -451,8 +451,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 return taggedAsync.when(
                   skipLoadingOnReload: true,
                   loading: () => Center(
-                      child: CircularProgressIndicator(
-                          color: Theme.of(context).primaryColor)),
+                      child: const AppLoader.small()),
                   error: (err, stack) => const Center(
                       child: Text('Failed to load tagged stories',
                           style: TextStyle(color: Colors.red))),
@@ -466,8 +465,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 return bookmarkedAsync.when(
                   skipLoadingOnReload: true,
                   loading: () => Center(
-                      child: CircularProgressIndicator(
-                          color: Theme.of(context).primaryColor)),
+                      child: const AppLoader.small()),
                   error: (err, stack) => const Center(
                       child: Text('Failed to load bookmarks',
                           style: TextStyle(color: Colors.red))),

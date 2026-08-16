@@ -11,6 +11,7 @@ import '../widgets/user_profile_card.dart';
 import '../../../../shared/widgets/story_card.dart';
 import '../../../posts/data/hashtag_repository.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+import 'package:healing_milestones/shared/widgets/app_loader.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
   final ScrollController? scrollController;
@@ -230,7 +231,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         ),
         Expanded(
           child: storiesAsync.when(
-            loading: () => const Center(child: CircularProgressIndicator()),
+            loading: () => const Center(child: const AppLoader()),
             error: (err, stack) => Center(
                 child: Text('Error: $err',
                     style: const TextStyle(color: Colors.red))),
@@ -341,7 +342,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           ),
         ),
         trendingAsync.when(
-          loading: () => const SliverToBoxAdapter(child: Center(child: CircularProgressIndicator())),
+          loading: () => const SliverToBoxAdapter(child: Center(child: const AppLoader())),
           error: (err, stack) => SliverToBoxAdapter(
             child: Center(child: Text('Error: $err', style: const TextStyle(color: Colors.red))),
           ),
@@ -369,7 +370,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     final searchAsync = ref.watch(globalSearchProvider);
     
     return searchAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const Center(child: const AppLoader()),
       error: (err, stack) => Center(
           child: Text('Error: $err', style: const TextStyle(color: Colors.red))),
       data: (result) {

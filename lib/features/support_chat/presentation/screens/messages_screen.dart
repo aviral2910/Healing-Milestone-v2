@@ -5,6 +5,7 @@ import 'package:healing_milestones/core/router/app_routes.dart';
 import 'package:healing_milestones/features/auth/data/auth_provider.dart';
 import 'package:healing_milestones/features/support_chat/presentation/providers/chat_providers.dart';
 import 'package:intl/intl.dart';
+import 'package:healing_milestones/shared/widgets/app_loader.dart';
 
 class MessagesScreen extends ConsumerStatefulWidget {
   final ScrollController scrollController;
@@ -268,7 +269,7 @@ class _MessagesScreenState extends ConsumerState<MessagesScreen> {
                       loading: () => const Center(
                           child: Padding(
                         padding: EdgeInsets.all(40.0),
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                        child: const AppLoader.small(),
                       )),
                       error: (e, s) => Center(
                         child: Column(

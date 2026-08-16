@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:healing_milestones/features/journey/presentation/widgets/create_time_capsule_overlay.dart';
 import 'package:healing_milestones/features/journey/presentation/providers/time_capsule_provider.dart';
 import 'package:healing_milestones/features/journey/presentation/widgets/time_capsule_card.dart';
+import 'package:healing_milestones/shared/widgets/app_loader.dart';
 
 class TimeCapsuleListScreen extends ConsumerWidget {
   const TimeCapsuleListScreen({super.key});
@@ -190,7 +191,7 @@ class TimeCapsuleListScreen extends ConsumerWidget {
             },
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: const AppLoader()),
         error: (error, stack) =>
             Center(child: Text('Error loading capsules: $error')),
       ),

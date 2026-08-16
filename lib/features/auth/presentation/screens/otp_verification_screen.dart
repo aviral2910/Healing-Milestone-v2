@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../data/auth_provider.dart';
+import 'package:healing_milestones/shared/widgets/app_loader.dart';
 
 class OtpVerificationScreen extends ConsumerStatefulWidget {
   const OtpVerificationScreen({Key? key}) : super(key: key);
@@ -175,10 +176,7 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
                           ? SizedBox(
                               height: 24,
                               width: 24,
-                              child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color:
-                                      Theme.of(context).colorScheme.onSurface))
+                              child: const AppLoader.small())
                           : const Text('Verify Code'),
                     ),
                   ],

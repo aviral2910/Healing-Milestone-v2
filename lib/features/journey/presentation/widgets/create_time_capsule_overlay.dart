@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:healing_milestones/features/journey/presentation/providers/time_capsule_provider.dart';
+import 'package:healing_milestones/shared/widgets/app_loader.dart';
 
 class CreateTimeCapsuleOverlay extends StatefulWidget {
   const CreateTimeCapsuleOverlay({super.key});
@@ -480,10 +481,7 @@ class _CreateTimeCapsuleOverlayState extends State<CreateTimeCapsuleOverlay> {
                                     ? SizedBox(
                                         height: 24,
                                         width: 24,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          color: theme.colorScheme.onPrimary,
-                                        ),
+                                        child: const AppLoader.small(),
                                       )
                                     : Text(
                                         'Seal Capsule',

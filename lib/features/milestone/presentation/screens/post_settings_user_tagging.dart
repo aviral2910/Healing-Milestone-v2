@@ -1,3 +1,4 @@
+import 'package:healing_milestones/shared/widgets/app_loader.dart';
 part of 'post_settings_screen.dart';
 
 extension PostSettingsUserTagging on _PostSettingsScreenState {
@@ -98,9 +99,7 @@ extension PostSettingsUserTagging on _PostSettingsScreenState {
                                 child: SizedBox(
                                   width: 16,
                                   height: 16,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
+                                  child: const AppLoader.small(),
                                 ),
                               )
                             : null,

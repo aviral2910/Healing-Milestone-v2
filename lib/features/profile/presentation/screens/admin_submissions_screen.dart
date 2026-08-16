@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:healing_milestones/core/network/api_client.dart';
+import 'package:healing_milestones/shared/widgets/app_loader.dart';
 
 final adminSubmissionsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
   final client = ref.watch(apiClientProvider);
@@ -40,7 +41,7 @@ class AdminSubmissionsScreen extends ConsumerWidget {
       ),
       body: SafeArea(
         child: submissionsAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const Center(child: const AppLoader()),
           error: (error, stack) {
             return Center(
               child: Text(

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import '../../../../core/router/app_routes.dart';
 import '../providers/post_creation_state.dart';
+import 'package:healing_milestones/shared/widgets/app_loader.dart';
 
 class PostGuidedScreen extends StatefulHookConsumerWidget {
   final Map<String, dynamic>? prefillData;
@@ -152,12 +153,7 @@ class _PostGuidedScreenState extends ConsumerState<PostGuidedScreen> {
                   tween: Tween(begin: 0, end: 1),
                   duration: const Duration(seconds: 2),
                   builder: (context, value, _) {
-                    return CircularProgressIndicator(
-                      value: null,
-                      strokeWidth: 4,
-                      backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
-                      color: theme.colorScheme.primary,
-                    );
+                    return const AppLoader.small();
                   },
                 ),
               ),

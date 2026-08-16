@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/models/user_model.dart';
 import '../../../auth/data/auth_provider.dart';
 import '../../../auth/data/repository_providers.dart';
+import 'package:healing_milestones/shared/widgets/app_loader.dart';
 
 class UserListScreen extends ConsumerStatefulWidget {
   final String title;
@@ -129,7 +130,7 @@ class _UserListScreenState extends ConsumerState<UserListScreen> {
                   return Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Center(
-                      child: CircularProgressIndicator(color: theme.primaryColor),
+                      child: const AppLoader.small(),
                     ),
                   );
                 }
@@ -185,10 +186,7 @@ ref.invalidate(isFollowingProvider(user.userId));
                               ? SizedBox(
                                   width: 16,
                                   height: 16,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: isFollowing ? theme.textTheme.bodyMedium?.color : (theme.colorScheme.primary.computeLuminance() > 0.25 ? Colors.black : Colors.white),
-                                  ),
+                                  child: const AppLoader.small(),
                                 )
                               : Text(
                                   isFollowing ? 'Following' : 'Follow',

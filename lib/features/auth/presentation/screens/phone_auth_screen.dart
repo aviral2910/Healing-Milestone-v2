@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import '../../data/auth_provider.dart';
+import 'package:healing_milestones/shared/widgets/app_loader.dart';
 
 class PhoneAuthScreen extends ConsumerStatefulWidget {
   const PhoneAuthScreen({Key? key}) : super(key: key);
@@ -173,10 +174,7 @@ class _PhoneAuthScreenState extends ConsumerState<PhoneAuthScreen> {
                           ? SizedBox(
                               height: 24,
                               width: 24,
-                              child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color:
-                                      Theme.of(context).colorScheme.onSurface))
+                              child: const AppLoader.small())
                           : const Text('Send Code'),
                     ),
                   ],

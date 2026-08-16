@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:healing_milestones/core/models/user_model.dart';
 import 'package:healing_milestones/features/auth/data/auth_provider.dart';
 import 'package:healing_milestones/core/presentation/widgets/logout_button.dart';
+import 'package:healing_milestones/shared/widgets/app_loader.dart';
 
 class RoleSelectionScreen extends ConsumerWidget {
   const RoleSelectionScreen({super.key});
@@ -16,7 +17,7 @@ class RoleSelectionScreen extends ConsumerWidget {
 
     if (authState == null || authState.authUser == null) {
       return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+        body: Center(child: const AppLoader()),
       );
     }
 

@@ -9,6 +9,7 @@ import '../../../../core/models/story_model.dart';
 import '../../../../core/presentation/widgets/user_badge.dart';
 import '../../../../shared/widgets/story_card.dart';
 import '../../../../shared/widgets/qr_share_preview.dart';
+import 'package:healing_milestones/shared/widgets/app_loader.dart';
 
 class PublicProfileScreen extends ConsumerStatefulWidget {
   final String userId;
@@ -51,8 +52,7 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen>
     return Scaffold(
       body: userAsync.when(
         loading: () => Center(
-            child: CircularProgressIndicator(
-                color: Theme.of(context).primaryColor)),
+            child: const AppLoader.small()),
         error: (err, stack) => const Center(
             child: Text('Failed to load user profile.',
                 style: TextStyle(color: Colors.red))),
@@ -309,8 +309,7 @@ ref.invalidate(isFollowingProvider(user.userId));
                         ref.watch(userStoriesProvider(widget.userId));
                     return userStoriesAsync.when(
                       loading: () => Center(
-                          child: CircularProgressIndicator(
-                              color: Theme.of(context).primaryColor)),
+                          child: const AppLoader.small()),
                       error: (err, stack) => const Center(
                           child: Text('Failed to load stories',
                               style: TextStyle(color: Colors.red))),
@@ -323,8 +322,7 @@ ref.invalidate(isFollowingProvider(user.userId));
                         ref.watch(userTaggedStoriesProvider(widget.userId));
                     return taggedStoriesAsync.when(
                       loading: () => Center(
-                          child: CircularProgressIndicator(
-                              color: Theme.of(context).primaryColor)),
+                          child: const AppLoader.small()),
                       error: (err, stack) => const Center(
                           child: Text('Failed to load tagged stories',
                               style: TextStyle(color: Colors.red))),

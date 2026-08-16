@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/providers/journey_providers.dart';
 import '../widgets/timeline_node.dart';
 import '../widgets/log_milestone_overlay.dart';
+import 'package:healing_milestones/shared/widgets/app_loader.dart';
 
 class JourneyDetailScreen extends ConsumerWidget {
   final String journeyId;
@@ -181,7 +182,7 @@ class JourneyDetailScreen extends ConsumerWidget {
                   child: Center(
                     child: Padding(
                       padding: EdgeInsets.all(40.0),
-                      child: CircularProgressIndicator(),
+                      child: const AppLoader(),
                     ),
                   ),
                 ),

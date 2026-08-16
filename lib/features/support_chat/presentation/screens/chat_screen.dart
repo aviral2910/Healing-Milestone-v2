@@ -14,6 +14,7 @@ import '../../../auth/data/auth_provider.dart';
 import '../../data/chat_repository.dart';
 import '../../data/models/message_model.dart';
 import '../providers/chat_providers.dart';
+import 'package:healing_milestones/shared/widgets/app_loader.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({Key? key}) : super(key: key);
@@ -237,7 +238,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             ],
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: const AppLoader()),
         error: (e, st) => Center(child: Text('Error loading chat: $e')),
       ),
     );
@@ -581,7 +582,7 @@ class _MessagesListWidget extends ConsumerWidget {
             },
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: const AppLoader()),
         error: (e, st) => Center(child: Text('Error: $e')),
       );
     }

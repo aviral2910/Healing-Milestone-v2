@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:healing_milestones/features/posts/data/story_providers.dart';
 import '../../../auth/data/auth_provider.dart';
+import 'package:healing_milestones/shared/widgets/app_loader.dart';
 
 class ReportScreen extends ConsumerStatefulWidget {
   final String storyId;
@@ -152,8 +153,7 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
                     ? const SizedBox(
                         height: 20,
                         width: 20,
-                        child: CircularProgressIndicator(
-                            color: Colors.white, strokeWidth: 2),
+                        child: const AppLoader.small(),
                       )
                     : const Text('Submit Report',
                         style: TextStyle(
