@@ -50,7 +50,7 @@ final searchHashtagsProvider = FutureProvider<List<String>>((ref) async {
 });
 
 // Provider to fetch stories containing a specific hashtag (real-time stream)
-final hashtagStoriesProvider = StreamProvider.family<List<StoryModel>, String>((ref, hashtag) {
+final hashtagStoriesProvider = StreamProvider.autoDispose.family<List<StoryModel>, String>((ref, hashtag) {
   if (hashtag.isEmpty) return Stream.value([]);
   final repo = ref.watch(storyRepositoryProvider);
   return repo.watchStoriesByHashtag(hashtag);

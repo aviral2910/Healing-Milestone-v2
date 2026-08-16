@@ -362,7 +362,7 @@ final authProvider = NotifierProvider<AuthNotifier, AsyncValue<AuthState>>(() {
   return AuthNotifier();
 });
 
-final userStreamProvider = StreamProvider.family<UserModel?, String>((
+final userStreamProvider = StreamProvider.autoDispose.family<UserModel?, String>((
   ref,
   userId,
 ) {
@@ -387,12 +387,12 @@ final userByIdProvider = userStreamProvider;
 
 // A provider to fetch a list of users by their IDs
 final getUsersByIdsProvider =
-    FutureProvider.family<List<UserModel>, List<String>>((ref, userIds) {
+    FutureProvider.autoDispose.family<List<UserModel>, List<String>>((ref, userIds) {
       final userRepository = ref.watch(userRepositoryProvider);
       return userRepository.getUsersByIds(userIds);
     });
 
-final isFollowingProvider = FutureProvider.family<bool, String>((
+final isFollowingProvider = FutureProvider.autoDispose.family<bool, String>((
   ref,
   targetUid,
 ) async {

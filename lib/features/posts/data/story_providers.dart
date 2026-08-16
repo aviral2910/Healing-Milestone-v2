@@ -33,7 +33,7 @@ final storiesStreamProvider = StreamProvider<List<StoryModel>>((ref) {
 });
 
 final userStoriesProvider =
-    StreamProvider.family<List<StoryModel>, String>((ref, userId) {
+    StreamProvider.autoDispose.family<List<StoryModel>, String>((ref, userId) {
   return ref.watch(storyRepositoryProvider).getUserStories(userId);
 });
 
@@ -79,17 +79,17 @@ final recommendedStoriesProvider = AsyncNotifierProvider<
 });
 
 final storyByIdProvider =
-    StreamProvider.family<StoryModel?, String>((ref, storyId) {
+    StreamProvider.autoDispose.family<StoryModel?, String>((ref, storyId) {
   return ref.watch(storyRepositoryProvider).getStoryById(storyId);
 });
 
 final userTaggedStoriesProvider =
-    StreamProvider.family<List<StoryModel>, String>((ref, userId) {
+    StreamProvider.autoDispose.family<List<StoryModel>, String>((ref, userId) {
   return ref.watch(storyRepositoryProvider).getStoriesTaggedWithUser(userId);
 });
 
 final bookmarkedStoriesProvider =
-    FutureProvider.family<List<StoryModel>, String>((ref, userId) async {
+    FutureProvider.autoDispose.family<List<StoryModel>, String>((ref, userId) async {
   final user = await ref.watch(userStreamProvider(userId).future);
   if (user == null || user.bookmarkedStories.isEmpty) return [];
   return ref
@@ -102,7 +102,7 @@ final commentRepositoryProvider = Provider<CommentRepository>((ref) {
 });
 
 final storyCommentsProvider =
-    StreamProvider.family<List<CommentModel>, String>((ref, storyId) {
+    StreamProvider.autoDispose.family<List<CommentModel>, String>((ref, storyId) {
   return ref.watch(commentRepositoryProvider).getComments(storyId);
 });
 
