@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:healing_milestones/core/models/comment_model.dart';
 import 'package:healing_milestones/core/models/story_model.dart';
 import 'package:healing_milestones/features/auth/data/auth_provider.dart';
+import 'package:healing_milestones/features/posts/data/paginated_comments_provider.dart';
 import 'package:healing_milestones/features/posts/data/story_providers.dart';
 
 class CommentsThread extends ConsumerStatefulWidget {

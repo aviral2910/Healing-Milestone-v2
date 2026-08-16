@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:healing_milestones/features/posts/data/paginated_comments_provider.dart';
 import '../providers/post_creation_state.dart';
 import 'package:healing_milestones/core/router/app_routes.dart';
 import 'package:flutter/services.dart';
@@ -27,7 +28,7 @@ class StoryDetailScreen extends HookConsumerWidget {
   final String milestoneId;
 
   const StoryDetailScreen({Key? key, required this.milestoneId})
-      : super(key: key);
+    : super(key: key);
 
   String _formatDate(DateTime date) {
     final difference = DateTime.now().difference(date);
@@ -45,43 +46,43 @@ class StoryDetailScreen extends HookConsumerWidget {
     final mainScrollController = useScrollController();
 
     return storyAsync.when(
-      loading: () => const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      ),
-      error: (error, stack) => Scaffold(
-        body: Center(child: Text('Error loading story: $error')),
-      ),
+      loading: () =>
+          const Scaffold(body: Center(child: CircularProgressIndicator())),
+      error: (error, stack) =>
+          Scaffold(body: Center(child: Text('Error loading story: $error'))),
       data: (story) {
         if (story == null) {
-          return const Scaffold(
-            body: Center(child: Text('Story not found')),
-          );
+          return const Scaffold(body: Center(child: Text('Story not found')));
         }
 
-        final userAsync = story.author != null 
+        final userAsync = story.author != null
             ? AsyncData<UserModel?>(story.author)
             : ref.watch(userByIdProvider(story.authorId));
 
         final List<MediaAttachment> actualMedia = [];
         if (story.mainImage.isNotEmpty) {
-          actualMedia.add(MediaAttachment(
-            mediaId: 'main',
-            url: story.mainImage,
-            title: 'Cover Image',
-            description: '',
-            isSensitive: false,
-            uploadedAt: story.publishedAt,
-          ));
+          actualMedia.add(
+            MediaAttachment(
+              mediaId: 'main',
+              url: story.mainImage,
+              title: 'Cover Image',
+              description: '',
+              isSensitive: false,
+              uploadedAt: story.publishedAt,
+            ),
+          );
         }
         for (var i = 0; i < story.imageAssets.length; i++) {
-          actualMedia.add(MediaAttachment(
-            mediaId: 'asset_$i',
-            url: story.imageAssets[i],
-            title: 'Image ${i + 1}',
-            description: '',
-            isSensitive: false,
-            uploadedAt: story.publishedAt,
-          ));
+          actualMedia.add(
+            MediaAttachment(
+              mediaId: 'asset_$i',
+              url: story.imageAssets[i],
+              title: 'Image ${i + 1}',
+              description: '',
+              isSensitive: false,
+              uploadedAt: story.publishedAt,
+            ),
+          );
         }
 
         return Scaffold(
@@ -99,634 +100,820 @@ class StoryDetailScreen extends HookConsumerWidget {
                     return false;
                   },
                   child: CustomScrollView(
-                  controller: mainScrollController,
-                  slivers: [
-                    SliverAppBar(
-                      pinned: true,
-                      backgroundColor:
-                          theme.scaffoldBackgroundColor.withValues(alpha: 0.9),
-                      elevation: 0,
-                      leading: IconButton(
-                        icon: const Icon(Icons.arrow_back_ios_new),
-                        onPressed: () => Navigator.of(context).pop(),
-                      ),
-                      actions: [
-                        Consumer(
-                          builder: (context, ref, child) {
-                            final accessibilityState =
-                                ref.watch(accessibilityProvider);
-                            final isGreyscale =
-                                accessibilityState.isGreyscaleMode;
-
-                            // Only show in AppBar if the floating icon is disabled
-                            if (accessibilityState.showGreyscaleFloatingIcon) {
-                              return const SizedBox.shrink();
-                            }
-
-                            return IconButton(
-                              icon: Icon(
-                                isGreyscale
-                                    ? Icons.auto_stories_rounded
-                                    : Icons.auto_stories_outlined,
-                                color: isGreyscale
-                                    ? theme.colorScheme.primary
-                                    : theme.iconTheme.color,
-                              ),
-                              tooltip: 'Toggle Reading Mode (Greyscale)',
-                              onPressed: () {
-                                ref
-                                    .read(accessibilityProvider.notifier)
-                                    .toggleGreyscaleMode();
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(isGreyscale
-                                        ? 'Reading Mode Off'
-                                        : 'Reading Mode On (Eye-friendly Greyscale)'),
-                                    duration: const Duration(seconds: 2),
-                                  ),
-                                );
-                              },
-                            );
-                          },
+                    controller: mainScrollController,
+                    slivers: [
+                      SliverAppBar(
+                        pinned: true,
+                        backgroundColor: theme.scaffoldBackgroundColor
+                            .withValues(alpha: 0.9),
+                        elevation: 0,
+                        leading: IconButton(
+                          icon: const Icon(Icons.arrow_back_ios_new),
+                          onPressed: () => Navigator.of(context).pop(),
                         ),
-                        Consumer(builder: (context, ref, child) {
-                          final currentUser = ref.watch(currentUserProvider);
-                          if (currentUser == null) return const SizedBox.shrink();
-                          return PopupMenuButton<String>(
-                            icon: const Icon(Icons.more_vert),
-                            onSelected: (value) async {
-                              if (value == 'edit') {
-                                ref
-                                    .read(
-                                        postCreationControllerProvider.notifier)
-                                    .initializeWithStory(story);
-                                context.push(AppRoutes.createPostManual);
-                              } else if (value == 'delete') {
-                                final confirm = await showDialog<bool>(
-                                  context: context,
-                                  builder: (context) => AlertDialog(
-                                    title: const Text('Delete Story'),
-                                    content: const Text(
-                                        'Are you sure you want to delete this story? This action cannot be undone.'),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () =>
-                                            Navigator.pop(context, false),
-                                        child: const Text('Cancel'),
-                                      ),
-                                      TextButton(
-                                        onPressed: () =>
-                                            Navigator.pop(context, true),
-                                        style: TextButton.styleFrom(
-                                            foregroundColor: Colors.red),
-                                        child: const Text('Delete'),
-                                      ),
-                                    ],
-                                  ),
-                                );
+                        actions: [
+                          Consumer(
+                            builder: (context, ref, child) {
+                              final accessibilityState = ref.watch(
+                                accessibilityProvider,
+                              );
+                              final isGreyscale =
+                                  accessibilityState.isGreyscaleMode;
 
-                                if (confirm == true) {
-                                  try {
-                                    if (story.mainImage.isNotEmpty) {
-                                      await ref
-                                          .read(storageRepositoryProvider)
-                                          .deleteImageFromUrl(story.mainImage);
-                                    }
-                                    for (final asset in story.imageAssets) {
-                                      if (asset.isNotEmpty) {
-                                        await ref
-                                            .read(storageRepositoryProvider)
-                                            .deleteImageFromUrl(asset);
-                                      }
-                                    }
-
-                                    await ref
-                                        .read(storyRepositoryProvider)
-                                        .deleteStory(story.storyId);
-                                    final updatedUser = currentUser.copyWith(
-                                      ownStories: currentUser.ownStories
-                                          .where((id) => id != story.storyId)
-                                          .toList(),
-                                    );
-                                    await ref
-                                        .read(authProvider.notifier)
-                                        .updateProfile(updatedUser);
-
-                                    // Invalidate providers to refresh UI
-                                    ref.invalidate(paginatedStoriesProvider);
-                                    ref.invalidate(userStoriesProvider(
-                                        currentUser.userId));
-
-                                    if (context.mounted) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        const SnackBar(
-                                            content: Text(
-                                                'Story deleted successfully')),
-                                      );
-                                      context.pop();
-                                    }
-                                  } catch (e) {
-                                    if (context.mounted) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        SnackBar(
-                                            content:
-                                                Text('Failed to delete: $e')),
-                                      );
-                                    }
-                                  }
-                                }
-                              } else if (value == 'request_verification') {
-                                try {
-                                  final updatedStory = story.copyWith(
-                                    verificationStatus: 'pending',
-                                  );
-                                  await ref
-                                      .read(storyRepositoryProvider)
-                                      .updateStory(updatedStory);
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                          content: Text(
-                                              'Verification request submitted')),
-                                    );
-                                  }
-                                } catch (e) {
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                          content: Text(
-                                              'Failed to request verification: $e')),
-                                    );
-                                  }
-                                }
-                              } else if (value == 'report') {
-                                context
-                                    .push(AppRoutes.reportStory(story.storyId));
+                              // Only show in AppBar if the floating icon is disabled
+                              if (accessibilityState
+                                  .showGreyscaleFloatingIcon) {
+                                return const SizedBox.shrink();
                               }
+
+                              return IconButton(
+                                icon: Icon(
+                                  isGreyscale
+                                      ? Icons.auto_stories_rounded
+                                      : Icons.auto_stories_outlined,
+                                  color: isGreyscale
+                                      ? theme.colorScheme.primary
+                                      : theme.iconTheme.color,
+                                ),
+                                tooltip: 'Toggle Reading Mode (Greyscale)',
+                                onPressed: () {
+                                  ref
+                                      .read(accessibilityProvider.notifier)
+                                      .toggleGreyscaleMode();
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        isGreyscale
+                                            ? 'Reading Mode Off'
+                                            : 'Reading Mode On (Eye-friendly Greyscale)',
+                                      ),
+                                      duration: const Duration(seconds: 2),
+                                    ),
+                                  );
+                                },
+                              );
                             },
-                            itemBuilder: (context) {
-                              final isAuthor =
-                                  currentUser.userId == story.authorId;
-                              return [
-                                if (isAuthor) ...[
-                                  const PopupMenuItem(
-                                    value: 'edit',
-                                    child: Row(
-                                      children: [
-                                        Icon(Icons.edit_outlined, size: 20),
-                                        SizedBox(width: 8),
-                                        Text('Edit Story'),
-                                      ],
-                                    ),
-                                  ),
-                                  const PopupMenuItem(
-                                    value: 'delete',
-                                    child: Row(
-                                      children: [
-                                        Icon(Icons.delete_outline,
-                                            size: 20, color: Colors.red),
-                                        SizedBox(width: 8),
-                                        Text('Delete Story',
-                                            style:
-                                                TextStyle(color: Colors.red)),
-                                      ],
-                                    ),
-                                  ),
-                                  if (story.verificationStatus == 'none' ||
-                                      story.verificationStatus == 'rejected')
-                                    const PopupMenuItem(
-                                      value: 'request_verification',
-                                      child: Row(
-                                        children: [
-                                          Icon(Icons.verified_outlined,
-                                              size: 20),
-                                          SizedBox(width: 8),
-                                          Text('Request Verification'),
+                          ),
+                          Consumer(
+                            builder: (context, ref, child) {
+                              final currentUser = ref.watch(
+                                currentUserProvider,
+                              );
+                              if (currentUser == null)
+                                return const SizedBox.shrink();
+                              return PopupMenuButton<String>(
+                                icon: const Icon(Icons.more_vert),
+                                onSelected: (value) async {
+                                  if (value == 'edit') {
+                                    ref
+                                        .read(
+                                          postCreationControllerProvider
+                                              .notifier,
+                                        )
+                                        .initializeWithStory(story);
+                                    context.push(AppRoutes.createPostManual);
+                                  } else if (value == 'delete') {
+                                    final confirm = await showDialog<bool>(
+                                      context: context,
+                                      builder: (context) => AlertDialog(
+                                        title: const Text('Delete Story'),
+                                        content: const Text(
+                                          'Are you sure you want to delete this story? This action cannot be undone.',
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.pop(context, false),
+                                            child: const Text('Cancel'),
+                                          ),
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.pop(context, true),
+                                            style: TextButton.styleFrom(
+                                              foregroundColor: Colors.red,
+                                            ),
+                                            child: const Text('Delete'),
+                                          ),
                                         ],
                                       ),
-                                    ),
-                                ] else ...[
-                                  const PopupMenuItem(
-                                    value: 'report',
-                                    child: Row(
-                                      children: [
-                                        Icon(Icons.flag_outlined,
-                                            size: 20, color: Colors.orange),
-                                        SizedBox(width: 8),
-                                        Text('Report Content',
-                                            style: TextStyle(
-                                                color: Colors.orange)),
-                                      ],
-                                    ),
-                                  ),
-                                ]
-                              ];
-                            },
-                          );
-                        }),
-                      ],
-                    ),
-                    SliverToBoxAdapter(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (story.isHidden)
-                            GestureDetector(
-                              onTap: () async {
-                                final url = Uri.parse(
-                                    'mailto:support@healingmilestones.in?subject=Hidden%20Story%20Appeal');
-                                if (await canLaunchUrl(url)) {
-                                  await launchUrl(url);
-                                }
-                              },
-                              child: Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 12, horizontal: 24),
-                                color: Colors.orange.withValues(alpha: 0.9),
-                                child: const Text(
-                                  '⚠️ Hidden by admin. Visible only to you. Tap here to email support@healingmilestones.in to unhide.',
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                            ),
-                          // Massive Editorial Typography Header
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 24.0, vertical: 16.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  story.heading.isNotEmpty
-                                      ? story.heading
-                                      : 'A Healing Journey',
-                                  style:
-                                      theme.textTheme.headlineLarge?.copyWith(
-                                    fontSize: 32, // Massive scale
-                                    height: 1.1,
-                                    letterSpacing: 1.1,
-                                    fontWeight: FontWeight.w900,
-                                    color: theme
-                                        .colorScheme.onSurface, // Frost white
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                if (story.isVerifiedStory)
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      const VerifiedStoryBadge(),
-                                    ],
-                                  ),
-                                const SizedBox(height: 24),
+                                    );
 
-                                // Author Metadata Row
-                                GestureDetector(
-                                  onTap: story.displayAuthorName
-                                      ? () {
-                                          final currentUser = ref.read(currentUserProvider);
-                                          if (currentUser?.userId ==
-                                              story.authorId) {
-                                            context.push(AppRoutes.profile);
-                                          } else {
-                                            context.push(
-                                                '/user/${story.authorId}');
+                                    if (confirm == true) {
+                                      try {
+                                        if (story.mainImage.isNotEmpty) {
+                                          await ref
+                                              .read(storageRepositoryProvider)
+                                              .deleteImageFromUrl(
+                                                story.mainImage,
+                                              );
+                                        }
+                                        for (final asset in story.imageAssets) {
+                                          if (asset.isNotEmpty) {
+                                            await ref
+                                                .read(storageRepositoryProvider)
+                                                .deleteImageFromUrl(asset);
                                           }
                                         }
-                                      : null,
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: theme.colorScheme.primary
-                                                .withValues(alpha: 0.5),
-                                            width: 1.5,
+
+                                        await ref
+                                            .read(storyRepositoryProvider)
+                                            .deleteStory(story.storyId);
+                                        final updatedUser = currentUser
+                                            .copyWith(
+                                              ownStories: currentUser.ownStories
+                                                  .where(
+                                                    (id) => id != story.storyId,
+                                                  )
+                                                  .toList(),
+                                            );
+                                        await ref
+                                            .read(authProvider.notifier)
+                                            .updateProfile(updatedUser);
+
+                                        // Invalidate providers to refresh UI
+                                        ref.invalidate(
+                                          paginatedStoriesProvider,
+                                        );
+                                        ref.invalidate(
+                                          userStoriesProvider(
+                                            currentUser.userId,
+                                          ),
+                                        );
+
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                'Story deleted successfully',
+                                              ),
+                                            ),
+                                          );
+                                          context.pop();
+                                        }
+                                      } catch (e) {
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                'Failed to delete: $e',
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                      }
+                                    }
+                                  } else if (value == 'request_verification') {
+                                    try {
+                                      final updatedStory = story.copyWith(
+                                        verificationStatus: 'pending',
+                                      );
+                                      await ref
+                                          .read(storyRepositoryProvider)
+                                          .updateStory(updatedStory);
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              'Verification request submitted',
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    } catch (e) {
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              'Failed to request verification: $e',
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    }
+                                  } else if (value == 'report') {
+                                    context.push(
+                                      AppRoutes.reportStory(story.storyId),
+                                    );
+                                  }
+                                },
+                                itemBuilder: (context) {
+                                  final isAuthor =
+                                      currentUser.userId == story.authorId;
+                                  return [
+                                    if (isAuthor) ...[
+                                      const PopupMenuItem(
+                                        value: 'edit',
+                                        child: Row(
+                                          children: [
+                                            Icon(Icons.edit_outlined, size: 20),
+                                            SizedBox(width: 8),
+                                            Text('Edit Story'),
+                                          ],
+                                        ),
+                                      ),
+                                      const PopupMenuItem(
+                                        value: 'delete',
+                                        child: Row(
+                                          children: [
+                                            Icon(
+                                              Icons.delete_outline,
+                                              size: 20,
+                                              color: Colors.red,
+                                            ),
+                                            SizedBox(width: 8),
+                                            Text(
+                                              'Delete Story',
+                                              style: TextStyle(
+                                                color: Colors.red,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      if (story.verificationStatus == 'none' ||
+                                          story.verificationStatus ==
+                                              'rejected')
+                                        const PopupMenuItem(
+                                          value: 'request_verification',
+                                          child: Row(
+                                            children: [
+                                              Icon(
+                                                Icons.verified_outlined,
+                                                size: 20,
+                                              ),
+                                              SizedBox(width: 8),
+                                              Text('Request Verification'),
+                                            ],
                                           ),
                                         ),
-                                        child: !story.displayAuthorName
-                                            ? CircleAvatar(
-                                                radius: 22,
-                                                backgroundColor:
-                                                    theme.colorScheme.surface,
-                                                child: Icon(Icons.person,
-                                                    color: theme
-                                                        .colorScheme.onSurface),
-                                              )
-                                            : ClipOval(
-                                                child: CachedNetworkImage(imageUrl: userAsync.value
-                                                          ?.profilePicture ??
-                                                      'https://api.dicebear.com/7.x/avataaars/png?seed=${story.authorId}', width: 44,
-                                                  height: 44,
-                                                  fit: BoxFit.cover,
-                                                  placeholder: (context, url) => Shimmer.fromColors(
-                                                      baseColor: theme
-                                                          .colorScheme.primary
-                                                          .withValues(
-                                                              alpha: 0.1),
-                                                      highlightColor: theme
-                                                          .colorScheme.primary
-                                                          .withValues(
-                                                              alpha: 0.25),
-                                                      child: Container(
-                                                        width: 44,
-                                                        height: 44,
-                                                        color: Colors.white,
-                                                      ),
-                                                    ),
-                                                  errorWidget: (context, url, error) =>
-                                                      CircleAvatar(
-                                                    radius: 22,
-                                                    backgroundColor: theme
-                                                        .scaffoldBackgroundColor,
-                                                    child: Icon(Icons.person,
-                                                        color: theme.colorScheme
-                                                            .onSurface),
-                                                  ),),
-                                              ),
-                                      ),
-                                      const SizedBox(width: 16),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
+                                    ] else ...[
+                                      const PopupMenuItem(
+                                        value: 'report',
+                                        child: Row(
                                           children: [
-                                            Row(
-                                              children: [
-                                                userAsync.when(
-                                                  data: (user) {
-                                                    final displayName =
-                                                        user?.displayName;
-                                                    final username =
-                                                        user?.username;
-
-                                                    String authorText =
-                                                        'Author ${story.authorId}';
-                                                    if (!story
-                                                        .displayAuthorName) {
-                                                      authorText = 'Anonymous';
-                                                    } else if (displayName !=
-                                                            null &&
-                                                        displayName
-                                                            .isNotEmpty) {
-                                                      authorText = displayName;
-                                                    } else if (username !=
-                                                            null &&
-                                                        username.isNotEmpty) {
-                                                      authorText = '@$username';
-                                                    }
-
-                                                    return Text(
-                                                      authorText,
-                                                      style: theme
-                                                          .textTheme.titleMedium
-                                                          ?.copyWith(
-                                                        fontSize: 16,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        color: theme.colorScheme
-                                                            .onSurface,
-                                                      ),
-                                                    );
-                                                  },
-                                                  loading: () => Text(
-                                                    !story.displayAuthorName
-                                                        ? 'Anonymous'
-                                                        : 'Loading...',
-                                                    style: theme
-                                                        .textTheme.titleMedium
-                                                        ?.copyWith(
-                                                      fontSize: 16,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      color: theme.colorScheme
-                                                          .onSurface,
-                                                    ),
-                                                  ),
-                                                  error: (_, __) => Text(
-                                                    !story.displayAuthorName
-                                                        ? 'Anonymous'
-                                                        : 'Author',
-                                                    style: theme
-                                                        .textTheme.titleMedium
-                                                        ?.copyWith(
-                                                      fontSize: 16,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      color: theme.colorScheme
-                                                          .onSurface,
-                                                    ),
-                                                  ),
-                                                ),
-                                                const SizedBox(width: 4),
-                                                UserBadge(
-                                                  role: userAsync.value?.role ??
-                                                      story.authorRole,
-                                                  isVerified: userAsync
-                                                          .value?.isVerified ??
-                                                      story.isAuthorVerified,
-                                                  iconSize: 16,
-                                                ),
-                                              ],
+                                            Icon(
+                                              Icons.flag_outlined,
+                                              size: 20,
+                                              color: Colors.orange,
                                             ),
-                                            userAsync.maybeWhen(
-                                              data: (user) {
-                                                if (story.displayAuthorName &&
-                                                    user != null &&
-                                                    (user.username
-                                                            ?.isNotEmpty ??
-                                                        false) &&
-                                                    (user.displayName
-                                                            .isNotEmpty ??
-                                                        false)) {
-                                                  return Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            top: 2.0,
-                                                            bottom: 2.0),
-                                                    child: Text(
-                                                      '@${user.username}',
-                                                      style: theme
-                                                          .textTheme.bodySmall
-                                                          ?.copyWith(
-                                                        color: theme.colorScheme
-                                                            .primary,
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                      ),
-                                                    ),
-                                                  );
-                                                }
-                                                return const SizedBox.shrink();
-                                              },
-                                              orElse: () =>
-                                                  const SizedBox.shrink(),
-                                            ),
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.end,
-                                              children: [
-                                                Text(
-                                                  'Published ${_formatDate(story.publishedAt)} • ${story.readingTime > 0 ? story.readingTime : 1} min read',
-                                                  style: theme
-                                                      .textTheme.bodySmall
-                                                      ?.copyWith(
-                                                    color:
-                                                        const Color(0xFFA1A1A6),
-                                                    fontWeight: FontWeight.w500,
-                                                    letterSpacing: 0.5,
-                                                  ),
-                                                ),
-                                              ],
+                                            SizedBox(width: 8),
+                                            Text(
+                                              'Report Content',
+                                              style: TextStyle(
+                                                color: Colors.orange,
+                                              ),
                                             ),
                                           ],
                                         ),
                                       ),
                                     ],
-                                  ),
-                                ),
-                              ],
-                            ),
+                                  ];
+                                },
+                              );
+                            },
                           ),
-                          // Hashtags
-                          if (story.hashtagsList.isNotEmpty) ...[
-                            const SizedBox(height: 8),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 24.0),
-                              child:
-                                  _ExpandableTagsList(tags: story.hashtagsList),
-                            ),
-                          ],
-
-                          // Tagged People
-                          if (story.taggedUsers.isNotEmpty) ...[
-                            const SizedBox(height: 16),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 24.0),
-                              child: _TaggedPeopleList(
-                                  taggedUsers: story.taggedUsers),
-                            ),
-                          ],
-                          const SizedBox(height: 32),
-
-                          // The Immutable Post Widget Template - NO DIVIDERS
-                          // Encased in a beautiful midnight matte if it's minimal
-                          Builder(builder: (context) {
-                            return GestureDetector(
-                              onTap: () async {
-                                final renderBox =
-                                    context.findRenderObject() as RenderBox?;
-                                if (renderBox != null) {
-                                  final position =
-                                      renderBox.localToGlobal(Offset.zero);
-
-                                  // Instantly request the OS to hide the status bar
-                                  SystemChrome.setEnabledSystemUIMode(
-                                      SystemUiMode.manual,
-                                      overlays: [SystemUiOverlay.bottom]);
-
-                                  if (!context.mounted) return;
-
-                                  final delta =
-                                      await Navigator.of(context).push<double>(
-                                    PageRouteBuilder(
-                                      opaque: false,
-                                      transitionDuration:
-                                          const Duration(milliseconds: 300),
-                                      pageBuilder: (context, animation,
-                                              secondaryAnimation) =>
-                                          FadeTransition(
-                                        opacity: animation,
-                                        child: ImmersiveReadingScreen(
-                                          content: story.description,
-                                          initialDy: position.dy,
+                        ],
+                      ),
+                      SliverToBoxAdapter(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children:
+                              [
+                                    if (story.isHidden)
+                                      GestureDetector(
+                                        onTap: () async {
+                                          final url = Uri.parse(
+                                            'mailto:support@healingmilestones.in?subject=Hidden%20Story%20Appeal',
+                                          );
+                                          if (await canLaunchUrl(url)) {
+                                            await launchUrl(url);
+                                          }
+                                        },
+                                        child: Container(
+                                          width: double.infinity,
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 12,
+                                            horizontal: 24,
+                                          ),
+                                          color: Colors.orange.withValues(
+                                            alpha: 0.9,
+                                          ),
+                                          child: const Text(
+                                            '⚠️ Hidden by admin. Visible only to you. Tap here to email support@healingmilestones.in to unhide.',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
                                         ),
                                       ),
+                                    // Massive Editorial Typography Header
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 24.0,
+                                        vertical: 16.0,
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            story.heading.isNotEmpty
+                                                ? story.heading
+                                                : 'A Healing Journey',
+                                            style: theme.textTheme.headlineLarge
+                                                ?.copyWith(
+                                                  fontSize: 32, // Massive scale
+                                                  height: 1.1,
+                                                  letterSpacing: 1.1,
+                                                  fontWeight: FontWeight.w900,
+                                                  color: theme
+                                                      .colorScheme
+                                                      .onSurface, // Frost white
+                                                ),
+                                          ),
+                                          const SizedBox(height: 12),
+                                          if (story.isVerifiedStory)
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.end,
+                                              children: [
+                                                const VerifiedStoryBadge(),
+                                              ],
+                                            ),
+                                          const SizedBox(height: 24),
+
+                                          // Author Metadata Row
+                                          GestureDetector(
+                                            onTap: story.displayAuthorName
+                                                ? () {
+                                                    final currentUser = ref
+                                                        .read(
+                                                          currentUserProvider,
+                                                        );
+                                                    if (currentUser?.userId ==
+                                                        story.authorId) {
+                                                      context.push(
+                                                        AppRoutes.profile,
+                                                      );
+                                                    } else {
+                                                      context.push(
+                                                        '/user/${story.authorId}',
+                                                      );
+                                                    }
+                                                  }
+                                                : null,
+                                            child: Row(
+                                              children: [
+                                                Container(
+                                                  decoration: BoxDecoration(
+                                                    shape: BoxShape.circle,
+                                                    border: Border.all(
+                                                      color: theme
+                                                          .colorScheme
+                                                          .primary
+                                                          .withValues(
+                                                            alpha: 0.5,
+                                                          ),
+                                                      width: 1.5,
+                                                    ),
+                                                  ),
+                                                  child:
+                                                      !story.displayAuthorName
+                                                      ? CircleAvatar(
+                                                          radius: 22,
+                                                          backgroundColor: theme
+                                                              .colorScheme
+                                                              .surface,
+                                                          child: Icon(
+                                                            Icons.person,
+                                                            color: theme
+                                                                .colorScheme
+                                                                .onSurface,
+                                                          ),
+                                                        )
+                                                      : ClipOval(
+                                                          child: CachedNetworkImage(
+                                                            imageUrl:
+                                                                userAsync
+                                                                    .value
+                                                                    ?.profilePicture ??
+                                                                'https://api.dicebear.com/7.x/avataaars/png?seed=${story.authorId}',
+                                                            width: 44,
+                                                            height: 44,
+                                                            fit: BoxFit.cover,
+                                                            placeholder:
+                                                                (
+                                                                  context,
+                                                                  url,
+                                                                ) => Shimmer.fromColors(
+                                                                  baseColor: theme
+                                                                      .colorScheme
+                                                                      .primary
+                                                                      .withValues(
+                                                                        alpha:
+                                                                            0.1,
+                                                                      ),
+                                                                  highlightColor: theme
+                                                                      .colorScheme
+                                                                      .primary
+                                                                      .withValues(
+                                                                        alpha:
+                                                                            0.25,
+                                                                      ),
+                                                                  child: Container(
+                                                                    width: 44,
+                                                                    height: 44,
+                                                                    color: Colors
+                                                                        .white,
+                                                                  ),
+                                                                ),
+                                                            errorWidget:
+                                                                (
+                                                                  context,
+                                                                  url,
+                                                                  error,
+                                                                ) => CircleAvatar(
+                                                                  radius: 22,
+                                                                  backgroundColor:
+                                                                      theme
+                                                                          .scaffoldBackgroundColor,
+                                                                  child: Icon(
+                                                                    Icons
+                                                                        .person,
+                                                                    color: theme
+                                                                        .colorScheme
+                                                                        .onSurface,
+                                                                  ),
+                                                                ),
+                                                          ),
+                                                        ),
+                                                ),
+                                                const SizedBox(width: 16),
+                                                Expanded(
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Row(
+                                                        children: [
+                                                          userAsync.when(
+                                                            data: (user) {
+                                                              final displayName =
+                                                                  user?.displayName;
+                                                              final username =
+                                                                  user?.username;
+
+                                                              String
+                                                              authorText =
+                                                                  'Author ${story.authorId}';
+                                                              if (!story
+                                                                  .displayAuthorName) {
+                                                                authorText =
+                                                                    'Anonymous';
+                                                              } else if (displayName !=
+                                                                      null &&
+                                                                  displayName
+                                                                      .isNotEmpty) {
+                                                                authorText =
+                                                                    displayName;
+                                                              } else if (username !=
+                                                                      null &&
+                                                                  username
+                                                                      .isNotEmpty) {
+                                                                authorText =
+                                                                    '@$username';
+                                                              }
+
+                                                              return Text(
+                                                                authorText,
+                                                                style: theme
+                                                                    .textTheme
+                                                                    .titleMedium
+                                                                    ?.copyWith(
+                                                                      fontSize:
+                                                                          16,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .bold,
+                                                                      color: theme
+                                                                          .colorScheme
+                                                                          .onSurface,
+                                                                    ),
+                                                              );
+                                                            },
+                                                            loading: () => Text(
+                                                              !story.displayAuthorName
+                                                                  ? 'Anonymous'
+                                                                  : 'Loading...',
+                                                              style: theme
+                                                                  .textTheme
+                                                                  .titleMedium
+                                                                  ?.copyWith(
+                                                                    fontSize:
+                                                                        16,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                    color: theme
+                                                                        .colorScheme
+                                                                        .onSurface,
+                                                                  ),
+                                                            ),
+                                                            error: (_, __) => Text(
+                                                              !story.displayAuthorName
+                                                                  ? 'Anonymous'
+                                                                  : 'Author',
+                                                              style: theme
+                                                                  .textTheme
+                                                                  .titleMedium
+                                                                  ?.copyWith(
+                                                                    fontSize:
+                                                                        16,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                    color: theme
+                                                                        .colorScheme
+                                                                        .onSurface,
+                                                                  ),
+                                                            ),
+                                                          ),
+                                                          const SizedBox(
+                                                            width: 4,
+                                                          ),
+                                                          UserBadge(
+                                                            role:
+                                                                userAsync
+                                                                    .value
+                                                                    ?.role ??
+                                                                story
+                                                                    .authorRole,
+                                                            isVerified:
+                                                                userAsync
+                                                                    .value
+                                                                    ?.isVerified ??
+                                                                story
+                                                                    .isAuthorVerified,
+                                                            iconSize: 16,
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      userAsync.maybeWhen(
+                                                        data: (user) {
+                                                          if (story
+                                                                  .displayAuthorName &&
+                                                              user != null &&
+                                                              (user
+                                                                      .username
+                                                                      ?.isNotEmpty ??
+                                                                  false) &&
+                                                              (user
+                                                                      .displayName
+                                                                      .isNotEmpty ??
+                                                                  false)) {
+                                                            return Padding(
+                                                              padding:
+                                                                  const EdgeInsets.only(
+                                                                    top: 2.0,
+                                                                    bottom: 2.0,
+                                                                  ),
+                                                              child: Text(
+                                                                '@${user.username}',
+                                                                style: theme
+                                                                    .textTheme
+                                                                    .bodySmall
+                                                                    ?.copyWith(
+                                                                      color: theme
+                                                                          .colorScheme
+                                                                          .primary,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .w500,
+                                                                    ),
+                                                              ),
+                                                            );
+                                                          }
+                                                          return const SizedBox.shrink();
+                                                        },
+                                                        orElse: () =>
+                                                            const SizedBox.shrink(),
+                                                      ),
+                                                      Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .end,
+                                                        children: [
+                                                          Text(
+                                                            'Published ${_formatDate(story.publishedAt)} • ${story.readingTime > 0 ? story.readingTime : 1} min read',
+                                                            style: theme
+                                                                .textTheme
+                                                                .bodySmall
+                                                                ?.copyWith(
+                                                                  color: const Color(
+                                                                    0xFFA1A1A6,
+                                                                  ),
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w500,
+                                                                  letterSpacing:
+                                                                      0.5,
+                                                                ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                  );
+                                    // Hashtags
+                                    if (story.hashtagsList.isNotEmpty) ...[
+                                      const SizedBox(height: 8),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 24.0,
+                                        ),
+                                        child: _ExpandableTagsList(
+                                          tags: story.hashtagsList,
+                                        ),
+                                      ),
+                                    ],
 
-                                  // Restore status bar
-                                  SystemChrome.setEnabledSystemUIMode(
-                                      SystemUiMode.edgeToEdge);
+                                    // Tagged People
+                                    if (story.taggedUsers.isNotEmpty) ...[
+                                      const SizedBox(height: 16),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 24.0,
+                                        ),
+                                        child: _TaggedPeopleList(
+                                          taggedUsers: story.taggedUsers,
+                                        ),
+                                      ),
+                                    ],
+                                    const SizedBox(height: 32),
 
-                                  if (delta != null && delta != 0) {
-                                    mainScrollController.jumpTo(
-                                        mainScrollController.offset + delta);
-                                  }
-                                }
-                              },
-                              child: Container(
-                                color: theme.colorScheme.surface,
-                                width: double.infinity,
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: 20.0, horizontal: 8.0),
-                                  child: PostDisplayWidget(
-                                    content: story.description,
-                                  ),
-                                ),
-                              ),
-                            );
-                          }),
+                                    // The Immutable Post Widget Template - NO DIVIDERS
+                                    // Encased in a beautiful midnight matte if it's minimal
+                                    Builder(
+                                      builder: (context) {
+                                        return GestureDetector(
+                                          onTap: () async {
+                                            final renderBox =
+                                                context.findRenderObject()
+                                                    as RenderBox?;
+                                            if (renderBox != null) {
+                                              final position = renderBox
+                                                  .localToGlobal(Offset.zero);
 
-                          const SizedBox(height: 16),
-                          InteractionSection(story: story, showLabels: true),
-                          const SizedBox(height: 32),
+                                              // Instantly request the OS to hide the status bar
+                                              SystemChrome.setEnabledSystemUIMode(
+                                                SystemUiMode.manual,
+                                                overlays: [
+                                                  SystemUiOverlay.bottom,
+                                                ],
+                                              );
 
-                          Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 24.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                if (actualMedia.isNotEmpty) ...[
-                                  Text(
-                                    'Journey Media',
-                                    style: theme.textTheme.headlineLarge
-                                        ?.copyWith(fontSize: 28),
-                                  ),
-                                  const SizedBox(height: 24),
-                                  MilestoneMediaGallery(media: actualMedia),
-                                  const SizedBox(height: 64),
-                                ],
-                                Text(
-                                  'Comments',
-                                  style: theme.textTheme.headlineLarge
-                                      ?.copyWith(fontSize: 28),
-                                ),
-                                const SizedBox(height: 24),
-                                CommentsThread(milestone: story),
-                                const SizedBox(height: 40), // Normal padding
-                              ],
-                            ),
-                          ),
-                        ]
-                            .asMap()
-                            .entries
-                            .map((entry) =>
-                                AnimationConfiguration.staggeredList(
-                                  position: entry.key,
-                                  duration: const Duration(milliseconds: 600),
-                                  child: SlideAnimation(
-                                    verticalOffset: 100.0,
-                                    child: FadeInAnimation(
-                                      child: entry.value,
+                                              if (!context.mounted) return;
+
+                                              final delta =
+                                                  await Navigator.of(
+                                                    context,
+                                                  ).push<double>(
+                                                    PageRouteBuilder(
+                                                      opaque: false,
+                                                      transitionDuration:
+                                                          const Duration(
+                                                            milliseconds: 300,
+                                                          ),
+                                                      pageBuilder:
+                                                          (
+                                                            context,
+                                                            animation,
+                                                            secondaryAnimation,
+                                                          ) => FadeTransition(
+                                                            opacity: animation,
+                                                            child: ImmersiveReadingScreen(
+                                                              content: story
+                                                                  .description,
+                                                              initialDy:
+                                                                  position.dy,
+                                                            ),
+                                                          ),
+                                                    ),
+                                                  );
+
+                                              // Restore status bar
+                                              SystemChrome.setEnabledSystemUIMode(
+                                                SystemUiMode.edgeToEdge,
+                                              );
+
+                                              if (delta != null && delta != 0) {
+                                                mainScrollController.jumpTo(
+                                                  mainScrollController.offset +
+                                                      delta,
+                                                );
+                                              }
+                                            }
+                                          },
+                                          child: Container(
+                                            color: theme.colorScheme.surface,
+                                            width: double.infinity,
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    vertical: 20.0,
+                                                    horizontal: 8.0,
+                                                  ),
+                                              child: PostDisplayWidget(
+                                                content: story.description,
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      },
                                     ),
-                                  ),
-                                ))
-                            .toList(),
+
+                                    const SizedBox(height: 16),
+                                    InteractionSection(
+                                      story: story,
+                                      showLabels: true,
+                                    ),
+                                    const SizedBox(height: 32),
+
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 24.0,
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          if (actualMedia.isNotEmpty) ...[
+                                            Text(
+                                              'Journey Media',
+                                              style: theme
+                                                  .textTheme
+                                                  .headlineLarge
+                                                  ?.copyWith(fontSize: 28),
+                                            ),
+                                            const SizedBox(height: 24),
+                                            MilestoneMediaGallery(
+                                              media: actualMedia,
+                                            ),
+                                            const SizedBox(height: 64),
+                                          ],
+                                          Text(
+                                            'Comments',
+                                            style: theme.textTheme.headlineLarge
+                                                ?.copyWith(fontSize: 28),
+                                          ),
+                                          const SizedBox(height: 24),
+                                          CommentsThread(milestone: story),
+                                          const SizedBox(
+                                            height: 40,
+                                          ), // Normal padding
+                                        ],
+                                      ),
+                                    ),
+                                  ]
+                                  .asMap()
+                                  .entries
+                                  .map(
+                                    (entry) =>
+                                        AnimationConfiguration.staggeredList(
+                                          position: entry.key,
+                                          duration: const Duration(
+                                            milliseconds: 600,
+                                          ),
+                                          child: SlideAnimation(
+                                            verticalOffset: 100.0,
+                                            child: FadeInAnimation(
+                                              child: entry.value,
+                                            ),
+                                          ),
+                                        ),
+                                  )
+                                  .toList(),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -813,7 +1000,7 @@ class _ExpandableTagsListState extends State<_ExpandableTagsList> {
 class _TaggedPeopleList extends ConsumerWidget {
   final List<UserModel> taggedUsers;
   const _TaggedPeopleList({Key? key, required this.taggedUsers})
-      : super(key: key);
+    : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -843,48 +1030,51 @@ class _TaggedPeopleList extends ConsumerWidget {
                 }
               },
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: Theme.of(context).cardColor,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: Theme.of(context).dividerColor,
-                  ),
+                  border: Border.all(color: Theme.of(context).dividerColor),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     ClipOval(
-                      child: CachedNetworkImage(imageUrl: user.profilePicture ??
-                            'https://api.dicebear.com/7.x/avataaars/png?seed=${user.userId}', width: 20,
+                      child: CachedNetworkImage(
+                        imageUrl:
+                            user.profilePicture ??
+                            'https://api.dicebear.com/7.x/avataaars/png?seed=${user.userId}',
+                        width: 20,
                         height: 20,
                         fit: BoxFit.cover,
                         placeholder: (context, url) => Shimmer.fromColors(
-                            baseColor: Theme.of(context)
-                                .colorScheme
-                                .primary
-                                .withValues(alpha: 0.1),
-                            highlightColor: Theme.of(context)
-                                .colorScheme
-                                .primary
-                                .withValues(alpha: 0.25),
-                            child: Container(
-                              width: 20,
-                              height: 20,
-                              color: Colors.white,
-                            ),
+                          baseColor: Theme.of(
+                            context,
+                          ).colorScheme.primary.withValues(alpha: 0.1),
+                          highlightColor: Theme.of(
+                            context,
+                          ).colorScheme.primary.withValues(alpha: 0.25),
+                          child: Container(
+                            width: 20,
+                            height: 20,
+                            color: Colors.white,
                           ),
-                        errorWidget: (context, url, error) =>
-                            CircleAvatar(
+                        ),
+                        errorWidget: (context, url, error) => CircleAvatar(
                           radius: 10,
-                          backgroundColor:
-                              Theme.of(context).scaffoldBackgroundColor,
-                          child: Icon(Icons.person,
-                              size: 12,
-                              color:
-                                  Theme.of(context).colorScheme.onSurface),
-                        ),),
+                          backgroundColor: Theme.of(
+                            context,
+                          ).scaffoldBackgroundColor,
+                          child: Icon(
+                            Icons.person,
+                            size: 12,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
+                        ),
+                      ),
                     ),
                     const SizedBox(width: 8),
                     Text(
