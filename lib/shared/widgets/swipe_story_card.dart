@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:healing_milestones/core/models/story_model.dart';
@@ -98,15 +99,9 @@ class _SwipeStoryCardState extends ConsumerState<SwipeStoryCard>
             children: [
               // 1. Background (Image or Gradient)
               if (hasImage && backgroundImageUrl != null)
-                Image.network(
-                  backgroundImageUrl,
-                  fit: BoxFit.cover,
-                  frameBuilder:
-                      (context, child, frame, wasSynchronouslyLoaded) {
-                    if (wasSynchronouslyLoaded || frame != null) return child;
-                    return Container(color: theme.colorScheme.surface);
-                  },
-                  errorBuilder: (context, error, stackTrace) => Container(
+                CachedNetworkImage(imageUrl: backgroundImageUrl, memCacheWidth: 800, fit: BoxFit.cover,
+                  placeholder: (context, url) => Container(color: theme.colorScheme.surface),
+                  errorWidget: (context, url, error) => Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: _getConstantGradient(),
@@ -114,8 +109,7 @@ class _SwipeStoryCardState extends ConsumerState<SwipeStoryCard>
                         end: Alignment.bottomCenter,
                       ),
                     ),
-                  ),
-                )
+                  ),)
               else
                 Container(
                   color: Colors.black, // Pure black for text-only
@@ -381,21 +375,18 @@ class _SwipeStoryCardState extends ConsumerState<SwipeStoryCard>
                 child: const Icon(Icons.person, color: Colors.white, size: 20),
               )
             : ClipOval(
-                child: Image.network(
-                  (userAsync.value?.profilePicture != null &&
+                child: CachedNetworkImage(imageUrl: (userAsync.value?.profilePicture != null &&
                           userAsync.value!.profilePicture!.startsWith('http'))
                       ? userAsync.value!.profilePicture!
-                      : 'https://api.dicebear.com/7.x/avataaars/png?seed=${widget.story.authorId}',
-                  width: 36,
+                      : 'https://api.dicebear.com/7.x/avataaars/png?seed=${widget.story.authorId}', width: 36,
                   height: 36,
                   fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => CircleAvatar(
+                  errorWidget: (context, url, error) => CircleAvatar(
                     radius: 18,
                     backgroundColor: Colors.white.withValues(alpha: 0.2),
                     child: const Icon(Icons.person,
                         color: Colors.white, size: 20),
-                  ),
-                ),
+                  ),),
               ),
         const SizedBox(width: 10),
         Expanded(

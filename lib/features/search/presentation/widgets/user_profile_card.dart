@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/models/user_model.dart';
 import '../../../../core/presentation/widgets/user_badge.dart';
@@ -35,7 +36,7 @@ class UserProfileCard extends StatelessWidget {
               radius: 40,
               backgroundColor: Theme.of(context).dividerColor,
               backgroundImage: (user.profilePicture != null && user.profilePicture!.isNotEmpty)
-                  ? NetworkImage(user.profilePicture!)
+                  ? CachedNetworkImageProvider(user.profilePicture!, maxHeight: 200)
                   : null,
               child: (user.profilePicture == null || user.profilePicture!.isEmpty)
                   ? Text(

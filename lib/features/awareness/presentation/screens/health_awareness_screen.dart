@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/data/dummy_data.dart';
@@ -118,12 +119,9 @@ class _EduContentCard extends StatelessWidget {
             ClipRRect(
               borderRadius:
                   const BorderRadius.horizontal(left: Radius.circular(16)),
-              child: Image.network(
-                content.thumbnailUrl!,
-                width: 120,
+              child: CachedNetworkImage(imageUrl: content.thumbnailUrl!, width: 120,
                 height: 120,
-                fit: BoxFit.cover,
-              ),
+                fit: BoxFit.cover,),
             ),
 
           // Details

@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:healing_milestones/core/router/app_routes.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
@@ -417,7 +418,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                         radius: 50,
                         backgroundColor: Theme.of(context).cardColor,
                         backgroundImage: user.profilePicture != null
-                            ? NetworkImage(user.profilePicture!)
+                            ? CachedNetworkImageProvider(user.profilePicture!, maxHeight: 200)
                             : null,
                         child: user.profilePicture == null
                             ? Icon(Icons.person,

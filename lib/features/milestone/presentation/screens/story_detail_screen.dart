@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import '../providers/post_creation_state.dart';
 import 'package:healing_milestones/core/router/app_routes.dart';
 import 'dart:ui';
@@ -411,21 +412,12 @@ class StoryDetailScreen extends HookConsumerWidget {
                                                         .colorScheme.onSurface),
                                               )
                                             : ClipOval(
-                                                child: Image.network(
-                                                  userAsync.value
+                                                child: CachedNetworkImage(imageUrl: userAsync.value
                                                           ?.profilePicture ??
-                                                      'https://api.dicebear.com/7.x/avataaars/png?seed=${story.authorId}',
-                                                  width: 44,
+                                                      'https://api.dicebear.com/7.x/avataaars/png?seed=${story.authorId}', width: 44,
                                                   height: 44,
                                                   fit: BoxFit.cover,
-                                                  frameBuilder: (context,
-                                                      child,
-                                                      frame,
-                                                      wasSynchronouslyLoaded) {
-                                                    if (wasSynchronouslyLoaded ||
-                                                        frame != null)
-                                                      return child;
-                                                    return Shimmer.fromColors(
+                                                  placeholder: (context, url) => Shimmer.fromColors(
                                                       baseColor: theme
                                                           .colorScheme.primary
                                                           .withValues(
@@ -439,10 +431,8 @@ class StoryDetailScreen extends HookConsumerWidget {
                                                         height: 44,
                                                         color: Colors.white,
                                                       ),
-                                                    );
-                                                  },
-                                                  errorBuilder: (context, error,
-                                                          stackTrace) =>
+                                                    ),
+                                                  errorWidget: (context, url, error) =>
                                                       CircleAvatar(
                                                     radius: 22,
                                                     backgroundColor: theme
@@ -450,8 +440,7 @@ class StoryDetailScreen extends HookConsumerWidget {
                                                     child: Icon(Icons.person,
                                                         color: theme.colorScheme
                                                             .onSurface),
-                                                  ),
-                                                ),
+                                                  ),),
                                               ),
                                       ),
                                       const SizedBox(width: 16),
@@ -858,17 +847,11 @@ class _TaggedPeopleList extends ConsumerWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     ClipOval(
-                      child: Image.network(
-                        user.profilePicture ??
-                            'https://api.dicebear.com/7.x/avataaars/png?seed=${user.userId}',
-                        width: 20,
+                      child: CachedNetworkImage(imageUrl: user.profilePicture ??
+                            'https://api.dicebear.com/7.x/avataaars/png?seed=${user.userId}', width: 20,
                         height: 20,
                         fit: BoxFit.cover,
-                        frameBuilder: (context, child, frame,
-                            wasSynchronouslyLoaded) {
-                          if (wasSynchronouslyLoaded || frame != null)
-                            return child;
-                          return Shimmer.fromColors(
+                        placeholder: (context, url) => Shimmer.fromColors(
                             baseColor: Theme.of(context)
                                 .colorScheme
                                 .primary
@@ -882,9 +865,8 @@ class _TaggedPeopleList extends ConsumerWidget {
                               height: 20,
                               color: Colors.white,
                             ),
-                          );
-                        },
-                        errorBuilder: (context, error, stackTrace) =>
+                          ),
+                        errorWidget: (context, url, error) =>
                             CircleAvatar(
                           radius: 10,
                           backgroundColor:
@@ -893,8 +875,7 @@ class _TaggedPeopleList extends ConsumerWidget {
                               size: 12,
                               color:
                                   Theme.of(context).colorScheme.onSurface),
-                        ),
-                      ),
+                        ),),
                     ),
                     const SizedBox(width: 8),
                     Text(

@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -235,7 +236,7 @@ class _PublicJourneyDetailOverlayState extends ConsumerState<PublicJourneyDetail
                                       widget.authorAvatar != null &&
                                           widget.visibility ==
                                               MilestoneVisibility.public
-                                      ? NetworkImage(widget.authorAvatar!)
+                                      ? CachedNetworkImageProvider(widget.authorAvatar!, maxHeight: 200)
                                       : null,
                                   child:
                                       (widget.authorAvatar == null ||

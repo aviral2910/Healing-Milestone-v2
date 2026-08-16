@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../features/milestone/presentation/providers/post_creation_state.dart';
 import 'package:healing_milestones/core/router/app_routes.dart';
 import 'package:flutter/material.dart';
@@ -209,10 +210,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                 radius: 50,
                                 backgroundColor:
                                     theme.scaffoldBackgroundColor,
-                                backgroundImage: NetworkImage(
+                                backgroundImage: CachedNetworkImageProvider(
                                   user.profilePicture ??
                                       'https://api.dicebear.com/7.x/avataaars/png?seed=${user.userId}',
-                                ),
+                                , maxHeight: 200),
                               ),
                             ),
                             const SizedBox(height: 16),

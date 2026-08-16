@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -213,7 +214,7 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
                                 widget.milestone.authorAvatar != null &&
                                     widget.milestone.visibility ==
                                         MilestoneVisibility.public
-                                ? NetworkImage(widget.milestone.authorAvatar!)
+                                ? CachedNetworkImageProvider(widget.milestone.authorAvatar!, maxHeight: 200)
                                 : null,
                             child:
                                 (widget.milestone.authorAvatar == null ||

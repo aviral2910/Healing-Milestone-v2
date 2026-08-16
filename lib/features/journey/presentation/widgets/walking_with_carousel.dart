@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -125,7 +126,7 @@ class _WalkingWithItem extends StatelessWidget {
                   child: CircleAvatar(
                     radius: 12,
                     backgroundImage: journey.authorAvatar != null
-                        ? NetworkImage(journey.authorAvatar!)
+                        ? CachedNetworkImageProvider(journey.authorAvatar!, maxHeight: 200)
                         : null,
                     backgroundColor: glowColor.withValues(alpha: 0.1),
                     child: journey.authorAvatar == null

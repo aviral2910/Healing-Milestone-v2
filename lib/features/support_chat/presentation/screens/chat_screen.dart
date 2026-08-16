@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:async';
 import 'dart:io';
 
@@ -326,10 +327,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         if (msg.messageType == 'image' && msg.fileUrl != null) ...[
                           ClipRRect(
                             borderRadius: BorderRadius.circular(12),
-                            child: Image.network(
-                              msg.fileUrl!,
-                              fit: BoxFit.cover,
-                            ),
+                            child: CachedNetworkImage(imageUrl: msg.fileUrl!, memCacheWidth: 800, fit: BoxFit.cover,),
                           ),
                           if (msg.text.isNotEmpty) const SizedBox(height: 8),
                         ],

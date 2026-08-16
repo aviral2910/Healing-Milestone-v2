@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../../../core/models/media_attachment.dart';
@@ -55,24 +56,18 @@ class MilestoneMediaGallery extends StatelessWidget {
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    Image.network(
-                      attachment.url,
-                      fit: BoxFit.cover,
-                      frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-                        if (wasSynchronouslyLoaded || frame != null) return child;
-                        return Shimmer.fromColors(
+                    CachedNetworkImage(imageUrl: attachment.url, memCacheWidth: 800, fit: BoxFit.cover,
+                      placeholder: (context, url) => Shimmer.fromColors(
                           baseColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
                           highlightColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.25),
                           child: Container(color: Colors.white),
-                        );
-                      },
-                      errorBuilder: (context, error, stackTrace) => Container(
+                        ),
+                      errorWidget: (context, url, error) => Container(
                         color: const Color(0xFF1E1E1E),
                         child: const Center(
                           child: Icon(Icons.image_not_supported_outlined, color: Colors.grey, size: 32),
                         ),
-                      ),
-                    ),
+                      ),),
                     if (attachment.isSensitive)
                       BackdropFilter(
                         filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
@@ -117,18 +112,13 @@ class FullScreenMediaViewer extends StatelessWidget {
               minScale: 0.5,
               maxScale: 4,
               child: Center(
-                child: Image.network(
-                  media.url,
-                  fit: BoxFit.contain,
-                  frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-                    if (wasSynchronouslyLoaded || frame != null) return child;
-                    return Shimmer.fromColors(
+                child: CachedNetworkImage(imageUrl: media.url, memCacheWidth: 800, fit: BoxFit.contain,
+                  placeholder: (context, url) => Shimmer.fromColors(
                       baseColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
                       highlightColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.25),
                       child: Container(color: Colors.white),
-                    );
-                  },
-                  errorBuilder: (context, error, stackTrace) => const Center(
+                    ),
+                  errorWidget: (context, url, error) => const Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -137,8 +127,7 @@ class FullScreenMediaViewer extends StatelessWidget {
                         Text('Failed to load image', style: TextStyle(color: Colors.grey)),
                       ],
                     ),
-                  ),
-                ),
+                  ),),
               ),
             ),
           ),

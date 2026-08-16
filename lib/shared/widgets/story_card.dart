@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:healing_milestones/core/router/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -126,18 +127,12 @@ class _StoryCardState extends ConsumerState<StoryCard>
                                 color: theme.colorScheme.onSurface),
                           )
                         : ClipOval(
-                            child: Image.network(
-                              (userAsync.value?.profilePicture != null && userAsync.value!.profilePicture!.startsWith('http'))
+                            child: CachedNetworkImage(imageUrl: (userAsync.value?.profilePicture != null && userAsync.value!.profilePicture!.startsWith('http'))
                                   ? userAsync.value!.profilePicture!
-                                  : 'https://api.dicebear.com/7.x/avataaars/png?seed=${widget.story.authorId}',
-                              width: 48,
+                                  : 'https://api.dicebear.com/7.x/avataaars/png?seed=${widget.story.authorId}', width: 48,
                               height: 48,
                               fit: BoxFit.cover,
-                              frameBuilder: (context, child, frame,
-                                  wasSynchronouslyLoaded) {
-                                if (wasSynchronouslyLoaded || frame != null)
-                                  return child;
-                                return Shimmer.fromColors(
+                              placeholder: (context, url) => Shimmer.fromColors(
                                   baseColor: theme.colorScheme.primary
                                       .withValues(alpha: 0.1),
                                   highlightColor: theme.colorScheme.primary
@@ -147,16 +142,14 @@ class _StoryCardState extends ConsumerState<StoryCard>
                                     height: 48,
                                     color: Colors.white,
                                   ),
-                                );
-                              },
-                              errorBuilder: (context, error, stackTrace) =>
+                                ),
+                              errorWidget: (context, url, error) =>
                                   CircleAvatar(
                                 radius: 24,
                                 backgroundColor: theme.scaffoldBackgroundColor,
                                 child: Icon(Icons.person,
                                     color: theme.colorScheme.onSurface),
-                              ),
-                            ),
+                              ),),
                           ),
                     const SizedBox(width: 16),
                     Expanded(
@@ -292,20 +285,14 @@ class _StoryCardState extends ConsumerState<StoryCard>
                         widget.story.imageAssets.isNotEmpty) ...[
                       ClipRRect(
                         borderRadius: BorderRadius.circular(16),
-                        child: Image.network(
-                          (widget.story.mainImage.isNotEmpty && widget.story.mainImage.startsWith('http'))
+                        child: CachedNetworkImage(imageUrl: (widget.story.mainImage.isNotEmpty && widget.story.mainImage.startsWith('http'))
                               ? widget.story.mainImage
                               : ((widget.story.imageAssets.isNotEmpty && widget.story.imageAssets.first.startsWith('http'))
                                   ? widget.story.imageAssets.first
-                                  : 'https://placehold.co/400x250/png?text=No+Image'),
-                          width: double.infinity,
+                                  : 'https://placehold.co/400x250/png?text=No+Image'), width: double.infinity,
                           height: 250,
                           fit: BoxFit.cover,
-                          frameBuilder:
-                              (context, child, frame, wasSynchronouslyLoaded) {
-                            if (wasSynchronouslyLoaded || frame != null)
-                              return child;
-                            return Shimmer.fromColors(
+                          placeholder: (context, url) => Shimmer.fromColors(
                               baseColor: theme.colorScheme.primary
                                   .withValues(alpha: 0.1),
                               highlightColor: theme.colorScheme.primary
@@ -315,9 +302,8 @@ class _StoryCardState extends ConsumerState<StoryCard>
                                 height: 250,
                                 color: Colors.white,
                               ),
-                            );
-                          },
-                          errorBuilder: (context, error, stackTrace) {
+                            ),
+                          errorWidget: (context, url, error) {
                             return Container(
                               width: double.infinity,
                               height: 250,
@@ -330,8 +316,7 @@ class _StoryCardState extends ConsumerState<StoryCard>
                                 ),
                               ),
                             );
-                          },
-                        ),
+                          },),
                       ),
                       const SizedBox(height: 12),
                       Text(

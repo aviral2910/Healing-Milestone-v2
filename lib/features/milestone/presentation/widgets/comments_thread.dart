@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:healing_milestones/core/models/user_model.dart';
 import 'package:healing_milestones/core/router/app_routes.dart';
 import 'package:flutter/material.dart';
@@ -195,9 +196,9 @@ class _CommentBubble extends ConsumerWidget {
               backgroundColor:
                   Theme.of(context).colorScheme.surfaceContainerHighest,
               backgroundImage: user?.profilePicture != null
-                  ? NetworkImage(user!.profilePicture!)
-                  : NetworkImage(
-                      'https://api.dicebear.com/7.x/avataaars/png?seed=${comment.userId}'),
+                  ? CachedNetworkImageProvider(user!.profilePicture!, maxHeight: 200)
+                  : CachedNetworkImageProvider(
+                      'https://api.dicebear.com/7.x/avataaars/png?seed=${comment.userId}', maxHeight: 200),
               radius: 18,
             );
           },

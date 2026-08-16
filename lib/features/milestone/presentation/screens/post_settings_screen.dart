@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:healing_milestones/core/router/app_routes.dart';
 
 import '../providers/post_creation_state.dart';
@@ -572,12 +573,12 @@ class _PostSettingsScreenState extends ConsumerState<PostSettingsScreen> {
                                 .startsWith('http') &&
                             !_removeExistingImage)
                       ? DecorationImage(
-                          image: NetworkImage(
+                          image: CachedNetworkImageProvider(
                             (ref
                                     .read(postCreationControllerProvider)
                                     .imagePath ??
                                 ""),
-                          ),
+                          , maxHeight: 200),
                           fit: BoxFit.cover,
                           colorFilter: ColorFilter.mode(
                             Theme.of(
@@ -867,10 +868,10 @@ class _PostSettingsScreenState extends ConsumerState<PostSettingsScreen> {
                       children: _selectedUsers.map((u) {
                         return Chip(
                           avatar: CircleAvatar(
-                            backgroundImage: NetworkImage(
+                            backgroundImage: CachedNetworkImageProvider(
                               u.profilePicture ??
                                   'https://api.dicebear.com/7.x/avataaars/png?seed=${u.userId}',
-                            ),
+                            , maxHeight: 200),
                           ),
                           label: Text(
                             '@${u.username ?? u.displayName}',
@@ -969,10 +970,10 @@ class _PostSettingsScreenState extends ConsumerState<PostSettingsScreen> {
                               dense: true,
                               leading: CircleAvatar(
                                 radius: 16,
-                                backgroundImage: NetworkImage(
+                                backgroundImage: CachedNetworkImageProvider(
                                   u.profilePicture ??
                                       'https://api.dicebear.com/7.x/avataaars/png?seed=${u.userId}',
-                                ),
+                                , maxHeight: 200),
                               ),
                               title: Text(
                                 u.displayName,
