@@ -116,8 +116,7 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen>
                                           theme.scaffoldBackgroundColor,
                                       backgroundImage: CachedNetworkImageProvider(
                                         user.profilePicture ??
-                                            'https://api.dicebear.com/7.x/avataaars/png?seed=${user.userId}',
-                                      , maxHeight: 200),
+                                            'https://api.dicebear.com/7.x/avataaars/png?seed=${user.userId}', maxHeight: 200),
                                     ),
                                   ),
                                 ),

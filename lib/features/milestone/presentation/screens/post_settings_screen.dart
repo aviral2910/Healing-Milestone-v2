@@ -577,8 +577,7 @@ class _PostSettingsScreenState extends ConsumerState<PostSettingsScreen> {
                             (ref
                                     .read(postCreationControllerProvider)
                                     .imagePath ??
-                                ""),
-                          , maxHeight: 200),
+                                ""), maxHeight: 200),
                           fit: BoxFit.cover,
                           colorFilter: ColorFilter.mode(
                             Theme.of(
@@ -870,8 +869,7 @@ class _PostSettingsScreenState extends ConsumerState<PostSettingsScreen> {
                           avatar: CircleAvatar(
                             backgroundImage: CachedNetworkImageProvider(
                               u.profilePicture ??
-                                  'https://api.dicebear.com/7.x/avataaars/png?seed=${u.userId}',
-                            , maxHeight: 200),
+                                  'https://api.dicebear.com/7.x/avataaars/png?seed=${u.userId}', maxHeight: 200),
                           ),
                           label: Text(
                             '@${u.username ?? u.displayName}',
@@ -972,8 +970,7 @@ class _PostSettingsScreenState extends ConsumerState<PostSettingsScreen> {
                                 radius: 16,
                                 backgroundImage: CachedNetworkImageProvider(
                                   u.profilePicture ??
-                                      'https://api.dicebear.com/7.x/avataaars/png?seed=${u.userId}',
-                                , maxHeight: 200),
+                                      'https://api.dicebear.com/7.x/avataaars/png?seed=${u.userId}', maxHeight: 200),
                               ),
                               title: Text(
                                 u.displayName,

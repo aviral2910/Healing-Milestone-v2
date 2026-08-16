@@ -143,8 +143,7 @@ class _UserListScreenState extends ConsumerState<UserListScreen> {
                     radius: 24,
                     backgroundColor: theme.scaffoldBackgroundColor,
                     backgroundImage: CachedNetworkImageProvider(
-                      user.profilePicture ?? 'https://api.dicebear.com/7.x/avataaars/png?seed=${user.userId}',
-                    , maxHeight: 200),
+                      user.profilePicture ?? 'https://api.dicebear.com/7.x/avataaars/png?seed=${user.userId}', maxHeight: 200),
                   ),
                   title: Text(
                     user.displayName,

@@ -212,8 +212,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                     theme.scaffoldBackgroundColor,
                                 backgroundImage: CachedNetworkImageProvider(
                                   user.profilePicture ??
-                                      'https://api.dicebear.com/7.x/avataaars/png?seed=${user.userId}',
-                                , maxHeight: 200),
+                                      'https://api.dicebear.com/7.x/avataaars/png?seed=${user.userId}', maxHeight: 200),
                               ),
                             ),
                             const SizedBox(height: 16),
