@@ -29,6 +29,7 @@ class _UserListScreenState extends ConsumerState<UserListScreen> {
   final List<UserModel> _users = [];
   bool _isLoading = false;
   int _currentOffset = 0;
+  final Set<String> _loadingFollowIds = {};
   final int _chunkSize = 20;
 
   @override
@@ -154,11 +155,19 @@ class _UserListScreenState extends ConsumerState<UserListScreen> {
                   trailing: isCurrentUser
                       ? null
                       : ElevatedButton(
-                          onPressed: () {
+                          onPressed: _loadingFollowIds.contains(user.userId) ? null : () async {
                             if (currentUser == null) {
                               context.push(AppRoutes.login);
                             } else {
-                              ref.read(authProvider.notifier).toggleFollow(user.userId);
+                              setState(() {
+                                _loadingFollowIds.add(user.userId);
+                              });
+                              await ref.read(authProvider.notifier).toggleFollow(user.userId);
+                              if (mounted) {
+                                setState(() {
+                                  _loadingFollowIds.remove(user.userId);
+                                });
+                              }
                             }
                           },
                           style: ElevatedButton.styleFrom(
@@ -170,10 +179,19 @@ class _UserListScreenState extends ConsumerState<UserListScreen> {
                             ),
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           ),
-                          child: Text(
-                            isFollowing ? 'Following' : 'Follow',
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                          ),
+                          child: _loadingFollowIds.contains(user.userId)
+                              ? SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: isFollowing ? theme.textTheme.bodyMedium?.color : (theme.colorScheme.primary.computeLuminance() > 0.25 ? Colors.black : Colors.white),
+                                  ),
+                                )
+                              : Text(
+                                  isFollowing ? 'Following' : 'Follow',
+                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                ),
                         ),
                   onTap: () {
                     if (isCurrentUser) {

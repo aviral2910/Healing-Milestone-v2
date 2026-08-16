@@ -27,6 +27,7 @@ class PublicProfileScreen extends ConsumerStatefulWidget {
 class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  bool _isFollowLoading = false;
 
   @override
   void initState() {
