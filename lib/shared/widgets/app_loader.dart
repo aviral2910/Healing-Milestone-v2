@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:math' as math;
 
 enum AppLoaderType {
   defaultLoader,
@@ -51,9 +50,9 @@ class AppLoader extends StatelessWidget {
 
   Widget _buildDefault(BuildContext context) {
     return Center(
-      child: _GlowingRingLoader(
+      child: _ZenRippleLoader(
         color: color ?? Theme.of(context).primaryColor,
-        size: size ?? 40.0,
+        size: size ?? 45.0,
       ),
     );
   }
@@ -80,14 +79,14 @@ class AppLoader extends StatelessWidget {
           children: [
             _buildDefault(context),
             if (text != null) ...[
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
               Text(
                 text!,
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
-                  letterSpacing: 0.5,
+                  letterSpacing: 1.0,
                 ),
               ),
             ],
@@ -98,26 +97,27 @@ class AppLoader extends StatelessWidget {
   }
 }
 
-class _GlowingRingLoader extends StatefulWidget {
+class _ZenRippleLoader extends StatefulWidget {
   final Color color;
   final double size;
 
-  const _GlowingRingLoader({required this.color, this.size = 40.0});
+  const _ZenRippleLoader({required this.color, this.size = 45.0});
 
   @override
-  State<_GlowingRingLoader> createState() => _GlowingRingLoaderState();
+  State<_ZenRippleLoader> createState() => _ZenRippleLoaderState();
 }
 
-class _GlowingRingLoaderState extends State<_GlowingRingLoader>
+class _ZenRippleLoaderState extends State<_ZenRippleLoader>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
   @override
   void initState() {
     super.initState();
+    // A nice slow 2-second cycle for a calm, breathing ripple
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1200),
+      duration: const Duration(milliseconds: 2000),
     )..repeat();
   }
 
@@ -127,67 +127,78 @@ class _GlowingRingLoaderState extends State<_GlowingRingLoader>
     super.dispose();
   }
 
+  Widget _buildRipple(double delay) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        var phase = _controller.value - delay;
+        if (phase < 0) phase += 1.0;
+
+        // Easing function for smoother expansion
+        final curve = Curves.easeOutCubic;
+        final scale = curve.transform(phase);
+        
+        // Opacity fades out gently as it expands
+        final opacity = (1.0 - phase) * 0.8;
+
+        return Transform.scale(
+          scale: scale,
+          child: Opacity(
+            opacity: opacity,
+            child: Container(
+              width: widget.size,
+              height: widget.size,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: widget.color.withValues(alpha: 0.15),
+                border: Border.all(
+                  color: widget.color,
+                  width: 1.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: widget.color.withValues(alpha: opacity * 0.5),
+                    blurRadius: 10,
+                    spreadRadius: 2,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return RotationTransition(
-      turns: _controller,
-      child: SizedBox(
-        width: widget.size,
-        height: widget.size,
-        child: CustomPaint(
-          painter: _GlowingRingPainter(color: widget.color),
-        ),
+    return SizedBox(
+      width: widget.size,
+      height: widget.size,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          _buildRipple(0.0),
+          _buildRipple(0.33),
+          _buildRipple(0.66),
+          // Central glowing seed/droplet
+          Container(
+            width: widget.size * 0.2,
+            height: widget.size * 0.2,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: widget.color,
+              boxShadow: [
+                BoxShadow(
+                  color: widget.color.withValues(alpha: 0.8),
+                  blurRadius: 8,
+                  spreadRadius: 1,
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
-}
-
-class _GlowingRingPainter extends CustomPainter {
-  final Color color;
-
-  _GlowingRingPainter({required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final rect = Rect.fromLTWH(0, 0, size.width, size.height);
-    
-    // Base ring (faint)
-    final bgPaint = Paint()
-      ..color = color.withValues(alpha: 0.1)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 3.0;
-    canvas.drawCircle(rect.center, size.width / 2 - 2, bgPaint);
-
-    // Glowing animated arc
-    final gradient = SweepGradient(
-      colors: [
-        color.withValues(alpha: 0.0),
-        color,
-      ],
-      stops: const [0.0, 1.0],
-      transform: const GradientRotation(-math.pi / 2),
-    );
-
-    final paint = Paint()
-      ..shader = gradient.createShader(rect)
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round
-      ..strokeWidth = 3.0;
-
-    // Add glow using mask filter
-    final glowPaint = Paint()
-      ..shader = gradient.createShader(rect)
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round
-      ..strokeWidth = 3.0
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6.0); // The glow
-
-    final arcRect = rect.deflate(2.0);
-    // Draw glow first, then the actual arc on top
-    canvas.drawArc(arcRect, -math.pi / 2, math.pi * 1.5, false, glowPaint);
-    canvas.drawArc(arcRect, -math.pi / 2, math.pi * 1.5, false, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
