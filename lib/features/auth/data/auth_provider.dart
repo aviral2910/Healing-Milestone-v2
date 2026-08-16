@@ -299,6 +299,9 @@ class AuthNotifier extends Notifier<AsyncValue<AuthState>> {
       // Invalidate to refresh target user's data
       ref.invalidate(userStreamProvider(targetUserId));
       ref.invalidate(userByIdProvider(targetUserId));
+      // Invalidate current user to refresh following list and count
+      ref.invalidate(userStreamProvider(userModel.userId));
+      ref.invalidate(userByIdProvider(userModel.userId));
     } catch (e) {
       // Revert on error
       if (currentState != null) {
