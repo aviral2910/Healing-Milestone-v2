@@ -109,9 +109,8 @@ class _RecommendedSwipeScreenState extends ConsumerState<RecommendedSwipeScreen>
                       ),
                       const SizedBox(height: 24),
                       ElevatedButton.icon(
-                        onPressed: () => ref
-                            .read(recommendedStoriesProvider.notifier)
-                            .refresh(),
+                        onPressed: () =>
+                            ref.invalidate(recommendedStoriesProvider),
                         icon: const Icon(Icons.refresh),
                         label: const Text('Try Again'),
                         style: ElevatedButton.styleFrom(
