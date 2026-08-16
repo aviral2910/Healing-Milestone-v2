@@ -3,9 +3,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
+import '../config/env.dart';
 
 final apiClientProvider = Provider<ApiClient>((ref) {
-  return ApiClient(baseUrl: 'https://healing-milestones-api.onrender.com');
+  return ApiClient(baseUrl: Env.apiUrl);
 });
 
 class ApiClient {

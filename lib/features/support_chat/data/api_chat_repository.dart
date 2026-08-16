@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+import '../../../core/config/env.dart';
 import 'package:healing_milestones/core/network/api_client.dart';
 import 'models/chat_model.dart';
 import 'models/message_model.dart';
@@ -26,7 +27,7 @@ class ApiChatRepository {
   Dio get _dio => _apiClient.dio;
   
   String get _wsBaseUrl {
-    return 'wss://healing-milestones-api.onrender.com';
+    return Env.wsUrl;
   }
 
   WebSocketChannel? _channel;
