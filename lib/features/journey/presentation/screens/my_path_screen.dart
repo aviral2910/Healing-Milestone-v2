@@ -189,6 +189,7 @@ class MyPathScreen extends ConsumerWidget {
                                   journeyId: journey.id,
                                   title: journey.title,
                                   category: journey.category,
+                visibility: journey.visibility,
                                 ),
                               ),
                             );

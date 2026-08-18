@@ -177,6 +177,7 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
                     journeyId: widget.milestone.journeyId!,
                     title: widget.milestone.journeyTitle ?? 'Journey',
                     category: widget.milestone.journeyCategory,
+                    visibility: widget.milestone.visibility,
                   ),
                 ),
               );
@@ -186,6 +187,7 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
                 journeyId: widget.milestone.journeyId!,
                 title: widget.milestone.journeyTitle ?? 'Journey',
                 category: widget.milestone.journeyCategory,
+                    visibility: widget.milestone.visibility,
                 authorName: widget.milestone.authorName,
                 authorAvatar: widget.milestone.authorAvatar,
                 authorId: widget.milestone.authorUid ?? widget.milestone.userId,

@@ -1,3 +1,4 @@
+import 'package:healing_milestones/shared/widgets/qr_share_preview.dart';
 import 'package:healing_milestones/core/router/app_routes.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -203,6 +204,32 @@ class _PublicJourneyDetailOverlayState
                     ),
                   ),
                 ),
+                  actions: [
+                    if (widget.visibility != MilestoneVisibility.private && widget.visibility != MilestoneVisibility.anonymous)
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: theme.colorScheme.surface,
+                            border: Border.all(
+                              color: theme.dividerColor.withValues(alpha: 0.2),
+                            ),
+                          ),
+                          child: IconButton(
+                            onPressed: () {
+                              showJourneyShareOptions(
+                                context,
+                                widget.journeyId,
+                                widget.title,
+                              );
+                            },
+                            icon: const Icon(Icons.ios_share_rounded, size: 22),
+                            padding: EdgeInsets.zero,
+                          ),
+                        ),
+                      ),
+                  ],
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(

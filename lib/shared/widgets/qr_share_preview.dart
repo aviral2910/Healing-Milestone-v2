@@ -334,3 +334,78 @@ void showProfileShareOptions(BuildContext context, String userId) {
     },
   );
 }
+
+void showJourneyShareOptions(BuildContext context, String journeyId, String journeyTitle) {
+  final shareUrl = 'https://healingmilestones.in/journey/$journeyId';
+
+  showModalBottomSheet(
+    context: context,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (context) {
+      return SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 12),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 16),
+            ListTile(
+              leading: const Icon(Icons.link),
+              title: const Text('Share Link'),
+              onTap: () {
+                Navigator.of(context).pop();
+                Share.share(
+                    'Follow my journey: $journeyTitle on Healing Milestones:\n\n$shareUrl',
+                    subject: 'Healing Milestones Journey');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.qr_code),
+              title: const Text('Share QR Code'),
+              onTap: () {
+                Navigator.of(context).pop();
+                showGeneralDialog(
+                  context: context,
+                  barrierDismissible: true,
+                  barrierLabel: 'Dismiss',
+                  barrierColor: Colors.black87,
+                  transitionDuration: const Duration(milliseconds: 300),
+                  pageBuilder: (context, animation, secondaryAnimation) {
+                    return QrSharePreview(
+                      id: journeyId,
+                      shareUrl: shareUrl,
+                      shareText: 'Scan to follow my journey on Healing Milestones.',
+                      qrBottomText: 'HEALING MILESTONES',
+                    );
+                  },
+                  transitionBuilder: (context, animation, secondaryAnimation, child) {
+                    return FadeTransition(
+                      opacity: animation,
+                      child: SlideTransition(
+                        position: Tween<Offset>(
+                          begin: const Offset(0, 0.05),
+                          end: Offset.zero,
+                        ).animate(animation),
+                        child: child,
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      );
+    },
+  );
+}

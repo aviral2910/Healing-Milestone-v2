@@ -1,3 +1,5 @@
+import '../../data/models/journey_models.dart';
+import 'package:healing_milestones/shared/widgets/qr_share_preview.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/providers/journey_providers.dart';
@@ -11,12 +13,14 @@ class JourneyDetailScreen extends ConsumerWidget {
   final String journeyId;
   final String title;
   final String? category;
+  final MilestoneVisibility? visibility;
 
   const JourneyDetailScreen({
     Key? key,
     required this.journeyId,
     required this.title,
     this.category,
+    this.visibility,
   }) : super(key: key);
 
   @override
@@ -37,6 +41,14 @@ class JourneyDetailScreen extends ConsumerWidget {
               alpha: 0.8,
             ),
             actions: [
+              if (visibility == MilestoneVisibility.public)
+                IconButton(
+                  icon: const Icon(Icons.ios_share_rounded),
+                  tooltip: 'Share Journey',
+                  onPressed: () {
+                    showJourneyShareOptions(context, journeyId, title);
+                  },
+                ),
               Consumer(
                 builder: (context, ref, child) {
                   final milestonesAsync = ref.watch(journeyMilestonesProvider(journeyId));
