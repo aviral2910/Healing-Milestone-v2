@@ -115,7 +115,7 @@ class _StoryCardState extends ConsumerState<StoryCard>
                     AppAvatar(
                       imageUrl: userAsync.value?.profilePicture,
                       radius: 24,
-                      role: widget.story.authorRole,
+                      role: userAsync.value?.role ?? widget.story.authorRole,
                       isAnonymous: !widget.story.displayAuthorName,
                       showRing: true,
                     ),

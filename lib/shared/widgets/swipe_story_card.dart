@@ -372,7 +372,7 @@ class _SwipeStoryCardState extends ConsumerState<SwipeStoryCard>
         AppAvatar(
           imageUrl: userAsync.value?.profilePicture,
           radius: 18,
-          role: widget.story.authorRole,
+          role: userAsync.value?.role ?? widget.story.authorRole,
           isAnonymous: !widget.story.displayAuthorName,
           showRing: true,
           ringColor: Colors.white.withValues(alpha: 0.5),

@@ -480,7 +480,7 @@ class StoryDetailScreen extends HookConsumerWidget {
                                                 AppAvatar(
                                                   imageUrl: userAsync.value?.profilePicture,
                                                   radius: 22,
-                                                  role: story.authorRole,
+                                                  role: userAsync.value?.role ?? story.authorRole,
                                                   isAnonymous: !story.displayAuthorName,
                                                   showRing: true,
                                                 ),
