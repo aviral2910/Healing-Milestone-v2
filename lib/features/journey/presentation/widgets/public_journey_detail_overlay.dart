@@ -368,11 +368,11 @@ class _PublicJourneyDetailOverlayState
                                     ),
                                     style: FilledButton.styleFrom(
                                       backgroundColor: _isFollowing
-                                          ? theme.colorScheme.primaryContainer
+                                          ? theme.dividerColor
                                           : theme.colorScheme.primary,
                                       foregroundColor: _isFollowing
-                                          ? theme.colorScheme.onPrimaryContainer
-                                          : theme.colorScheme.onPrimary,
+                                          ? theme.textTheme.bodyMedium?.color
+                                          : (theme.colorScheme.primary.computeLuminance() > 0.25 ? Colors.black : Colors.white),
                                       elevation: 0,
                                       padding: const EdgeInsets.symmetric(
                                         horizontal: 16,
