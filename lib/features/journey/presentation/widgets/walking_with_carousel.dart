@@ -25,16 +25,28 @@ class WalkingWithCarousel extends ConsumerWidget {
           children: [
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-              child: Text(
-                'Walking With...',
-                style: theme.textTheme.titleSmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                  fontWeight: FontWeight.w600,
-                ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Walking with...',
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Text(
+                    'View all',
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: theme.colorScheme.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
             ),
             SizedBox(
-              height: 130,
+              height: 136,
               child: ListView.builder(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 scrollDirection: Axis.horizontal,
@@ -62,16 +74,7 @@ class _WalkingWithItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
-    Color getGlowColor(String category) {
-      return const Color(0xFFFFC107); // Amber/Yellow color matching screenshot
-    }
-
-    IconData getIconForCategory(String category) {
-      return Icons.folder_rounded;
-    }
-
-    final glowColor = getGlowColor(journey.category);
+    final primaryColor = theme.colorScheme.primary;
 
     return GestureDetector(
       onTap: () {
@@ -88,96 +91,101 @@ class _WalkingWithItem extends StatelessWidget {
         );
       },
       child: Container(
-        width: 190,
-        margin: const EdgeInsets.only(right: 12, bottom: 8),
-        padding: const EdgeInsets.all(16.0),
+        width: 170, // Slightly wider for the content
+        margin: const EdgeInsets.only(right: 12, bottom: 4, top: 4),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: theme.colorScheme.surfaceContainerHighest.withValues(
-            alpha: 0.8,
-          ),
-          borderRadius: BorderRadius.circular(24),
+          color: const Color(0xFF161616), // Very dark background matching image
+          borderRadius: BorderRadius.circular(24), // Highly rounded corners
           border: Border.all(
-            color: glowColor.withValues(alpha: 0.5),
+            color: primaryColor.withValues(alpha: 0.4), // Golden border
             width: 1.0,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: glowColor.withValues(alpha: 0.08),
-              blurRadius: 16,
-              offset: const Offset(0, 4),
-            ),
-          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // --- 1. Avatar & Name ---
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(2),
+                  padding: const EdgeInsets.all(
+                    3,
+                  ), // Gap between outer ring and avatar
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: glowColor.withValues(alpha: 0.6),
-                      width: 1,
+                      color: primaryColor.withValues(alpha: 0.8),
+                      width: 1.5,
                     ),
                   ),
                   child: CircleAvatar(
                     radius: 12,
+                    backgroundColor: Colors.transparent,
                     backgroundImage: journey.authorAvatar != null
-                        ? CachedNetworkImageProvider(journey.authorAvatar!, maxHeight: 200)
+                        ? CachedNetworkImageProvider(
+                            journey.authorAvatar!,
+                            maxHeight: 100,
+                          )
                         : null,
-                    backgroundColor: glowColor.withValues(alpha: 0.1),
                     child: journey.authorAvatar == null
-                        ? Icon(Icons.person_rounded, size: 14, color: glowColor)
+                        ? Icon(
+                            Icons.person_rounded,
+                            size: 16,
+                            color: primaryColor,
+                          )
                         : null,
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Text(
                     journey.authorName ?? 'Anonymous',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.labelMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: theme.colorScheme.onSurface,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
                     ),
                   ),
                 ),
               ],
             ),
+
             const Spacer(),
+
+            // --- 2. Journey Title ---
             Text(
               journey.title,
-              maxLines: 3,
+              maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w800,
-                color: theme.colorScheme.onSurface,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
                 height: 1.2,
-                letterSpacing: -0.3,
               ),
             ),
+
             const SizedBox(height: 12),
+
+            // --- 3. Category ---
             Row(
               children: [
                 Icon(
-                  getIconForCategory(journey.category),
-                  color: glowColor,
+                  Icons.folder_rounded,
                   size: 14,
-                ),
+                  color: primaryColor,
+                ), // Filled folder
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
                     journey.category.toUpperCase(),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: glowColor,
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: primaryColor,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 0.5,
-                      fontSize: 9,
                     ),
                   ),
                 ),
