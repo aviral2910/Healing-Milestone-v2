@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:healing_milestones/core/router/app_routes.dart';
 import 'package:flutter/material.dart';
+import 'package:healing_milestones/shared/widgets/app_avatar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:healing_milestones/features/auth/data/auth_provider.dart';
@@ -51,11 +52,13 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen>
 
     return Scaffold(
       body: userAsync.when(
-        loading: () => Center(
-            child: const AppLoader.small()),
+        loading: () => Center(child: const AppLoader.small()),
         error: (err, stack) => const Center(
-            child: Text('Failed to load user profile.',
-                style: TextStyle(color: Colors.red))),
+          child: Text(
+            'Failed to load user profile.',
+            style: TextStyle(color: Colors.red),
+          ),
+        ),
         data: (user) {
           if (user == null) {
             return const Center(child: Text('User not found.'));
@@ -99,20 +102,11 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen>
                               children: [
                                 Hero(
                                   tag: 'profile-avatar-${user.userId}',
-                                  child: Container(
-                                    padding: const EdgeInsets.all(1),
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: theme.colorScheme.primary,
-                                    ),
-                                    child: CircleAvatar(
-                                      radius: 50,
-                                      backgroundColor:
-                                          theme.scaffoldBackgroundColor,
-                                      backgroundImage: CachedNetworkImageProvider(
-                                        user.profilePicture ??
-                                            'https://api.dicebear.com/7.x/avataaars/png?seed=${user.userId}', maxHeight: 200),
-                                    ),
+                                  child: AppAvatar(
+                                    imageUrl: user.profilePicture,
+                                    radius: 50,
+                                    role: user.role,
+                                    showRing: true,
                                   ),
                                 ),
                                 const SizedBox(height: 16),
@@ -121,9 +115,11 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen>
                                   children: [
                                     Text(
                                       user.displayName,
-                                      style: theme.textTheme.titleLarge?.copyWith(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 22),
+                                      style: theme.textTheme.titleLarge
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 22,
+                                          ),
                                     ),
                                     const SizedBox(width: 4),
                                     UserBadge(
@@ -139,27 +135,39 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen>
                                   Text(
                                     '@${user.username}',
                                     style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600,
-                                        color: theme.colorScheme.primary),
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: theme.colorScheme.primary,
+                                    ),
                                   ),
                                 ],
-                                if (user.specialty != null && user.specialty!.isNotEmpty) ...[
+                                if (user.specialty != null &&
+                                    user.specialty!.isNotEmpty) ...[
                                   const SizedBox(height: 6),
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 4,
+                                    ),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFF00B4D8).withValues(alpha: 0.1),
+                                      color: const Color(
+                                        0xFF00B4D8,
+                                      ).withValues(alpha: 0.1),
                                       borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(color: const Color(0xFF00B4D8).withValues(alpha: 0.2)),
+                                      border: Border.all(
+                                        color: const Color(
+                                          0xFF00B4D8,
+                                        ).withValues(alpha: 0.2),
+                                      ),
                                     ),
                                     child: Text(
                                       user.specialty!.toUpperCase(),
-                                      style: theme.textTheme.labelSmall?.copyWith(
-                                        color: const Color(0xFF00B4D8),
-                                        fontWeight: FontWeight.w800,
-                                        letterSpacing: 1.0,
-                                      ),
+                                      style: theme.textTheme.labelSmall
+                                          ?.copyWith(
+                                            color: const Color(0xFF00B4D8),
+                                            fontWeight: FontWeight.w800,
+                                            letterSpacing: 1.0,
+                                          ),
                                     ),
                                   ),
                                 ],
@@ -189,8 +197,9 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen>
                               border: Border.all(color: theme.dividerColor),
                               boxShadow: [
                                 BoxShadow(
-                                  color:
-                                      theme.shadowColor.withValues(alpha: 0.5),
+                                  color: theme.shadowColor.withValues(
+                                    alpha: 0.5,
+                                  ),
                                   blurRadius: 10,
                                   offset: const Offset(0, 4),
                                 ),
@@ -200,89 +209,118 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen>
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
                                 _StatColumn(
-                                    label: 'Stories',
-                                    count: user.ownStories.length.toString()),
+                                  label: 'Stories',
+                                  count: user.ownStories.length.toString(),
+                                ),
                                 Container(
-                                    width: 1,
-                                    height: 40,
-                                    color: theme.dividerColor),
+                                  width: 1,
+                                  height: 40,
+                                  color: theme.dividerColor,
+                                ),
                                 _StatColumn(
-                                    label: 'Followers',
-                                    count: _formatCount(user.followersCount),
-                                    onTap: () {
-                                      context.push(AppRoutes.userList, extra: {
+                                  label: 'Followers',
+                                  count: _formatCount(user.followersCount),
+                                  onTap: () {
+                                    context.push(
+                                      AppRoutes.userList,
+                                      extra: {
                                         'title': 'Followers',
                                         'targetUserId': user.userId,
                                         'listType': 'followers',
-                                      });
-                                    }),
+                                      },
+                                    );
+                                  },
+                                ),
                                 Container(
-                                    width: 1,
-                                    height: 40,
-                                    color: theme.dividerColor),
+                                  width: 1,
+                                  height: 40,
+                                  color: theme.dividerColor,
+                                ),
                                 _StatColumn(
-                                    label: 'Following',
-                                    count: _formatCount(user.followingCount),
-                                    onTap: () {
-                                      context.push(AppRoutes.userList, extra: {
+                                  label: 'Following',
+                                  count: _formatCount(user.followingCount),
+                                  onTap: () {
+                                    context.push(
+                                      AppRoutes.userList,
+                                      extra: {
                                         'title': 'Following',
                                         'targetUserId': user.userId,
                                         'listType': 'following',
-                                      });
-                                    }),
+                                      },
+                                    );
+                                  },
+                                ),
                               ],
                             ),
                           ),
                           const SizedBox(height: 24),
                           // Action Buttons
-                          Consumer(builder: (context, ref, child) {
-                            final currentUser = ref.watch(currentUserProvider);
-                            final isFollowing = ref.watch(isFollowingProvider(user.userId)).value ?? false;
+                          Consumer(
+                            builder: (context, ref, child) {
+                              final currentUser = ref.watch(
+                                currentUserProvider,
+                              );
+                              final isFollowing =
+                                  ref
+                                      .watch(isFollowingProvider(user.userId))
+                                      .value ??
+                                  false;
 
-                            return SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton(
-                                onPressed: () async {
-                                  if (currentUser == null) {
-                                    context.push(AppRoutes.login);
-                                  } else {
+                              return SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton(
+                                  onPressed: () async {
+                                    if (currentUser == null) {
+                                      context.push(AppRoutes.login);
+                                    } else {
+                                      await ref
+                                          .read(authProvider.notifier)
+                                          .toggleFollow(user.userId);
+                                      ref.invalidate(
+                                        isFollowingProvider(user.userId),
+                                      );
 
-                                    
-                                    await ref.read(authProvider.notifier).toggleFollow(user.userId);
-ref.invalidate(isFollowingProvider(user.userId));
-                                    
-                                    // Await the refresh to prevent UI flickering
-                                    await ref.refresh(userStreamProvider(currentUser.userId).future);
-                                    ref.invalidate(userByIdProvider(user.userId));
-                                  }
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: isFollowing
-                                      ? theme.dividerColor
-                                      : theme.colorScheme.primary,
-                                  foregroundColor: isFollowing
-                                      ? theme.textTheme.bodyMedium?.color
-                                      : (theme.colorScheme.primary
-                                                  .computeLuminance() >
-                                              0.25
-                                          ? Colors.black
-                                          : Colors.white),
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                                      // Await the refresh to prevent UI flickering
+                                      await ref.refresh(
+                                        userStreamProvider(
+                                          currentUser.userId,
+                                        ).future,
+                                      );
+                                      ref.invalidate(
+                                        userByIdProvider(user.userId),
+                                      );
+                                    }
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: isFollowing
+                                        ? theme.dividerColor
+                                        : theme.colorScheme.primary,
+                                    foregroundColor: isFollowing
+                                        ? theme.textTheme.bodyMedium?.color
+                                        : (theme.colorScheme.primary
+                                                      .computeLuminance() >
+                                                  0.25
+                                              ? Colors.black
+                                              : Colors.white),
+                                    elevation: 0,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 14,
+                                    ),
                                   ),
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 14),
-                                ),
-                                child: Text(
-                                  isFollowing ? 'Following' : 'Follow',
-                                  style: const TextStyle(
+                                  child: Text(
+                                    isFollowing ? 'Following' : 'Follow',
+                                    style: const TextStyle(
                                       fontWeight: FontWeight.bold,
-                                      fontSize: 16),
+                                      fontSize: 16,
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            );
-                          }),
+                              );
+                            },
+                          ),
                           const SizedBox(height: 16),
                         ],
                       ),
@@ -294,12 +332,15 @@ ref.invalidate(isFollowingProvider(user.userId));
                       TabBar(
                         controller: _tabController,
                         indicator: BoxDecoration(
-                          color:
-                              theme.colorScheme.primary.withValues(alpha: 0.15),
+                          color: theme.colorScheme.primary.withValues(
+                            alpha: 0.15,
+                          ),
                           borderRadius: BorderRadius.circular(100),
                         ),
                         indicatorPadding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 4),
+                          horizontal: 16,
+                          vertical: 4,
+                        ),
                         indicatorSize: TabBarIndicatorSize.tab,
                         labelColor: theme.colorScheme.primary,
                         unselectedLabelColor: theme.unselectedWidgetColor,
@@ -307,12 +348,12 @@ ref.invalidate(isFollowingProvider(user.userId));
                             Colors.transparent, // Remove the ugly default line
                         tabs: const [
                           Tab(
-                            icon: Icon(Icons.auto_awesome_mosaic_rounded,
-                                size: 24),
+                            icon: Icon(
+                              Icons.auto_awesome_mosaic_rounded,
+                              size: 24,
+                            ),
                           ),
-                          Tab(
-                            icon: Icon(Icons.person_pin_rounded, size: 24),
-                          ),
+                          Tab(icon: Icon(Icons.person_pin_rounded, size: 24)),
                         ],
                       ),
                     ),
@@ -323,31 +364,41 @@ ref.invalidate(isFollowingProvider(user.userId));
                 controller: _tabController,
                 children: [
                   // Stories Tab
-                  Consumer(builder: (context, ref, child) {
-                    final userStoriesAsync =
-                        ref.watch(userStoriesProvider(widget.userId));
-                    return userStoriesAsync.when(
-                      loading: () => Center(
-                          child: const AppLoader.small()),
-                      error: (err, stack) => const Center(
-                          child: Text('Failed to load stories',
-                              style: TextStyle(color: Colors.red))),
-                      data: (stories) => _StoryList(stories: stories),
-                    );
-                  }),
+                  Consumer(
+                    builder: (context, ref, child) {
+                      final userStoriesAsync = ref.watch(
+                        userStoriesProvider(widget.userId),
+                      );
+                      return userStoriesAsync.when(
+                        loading: () => Center(child: const AppLoader.small()),
+                        error: (err, stack) => const Center(
+                          child: Text(
+                            'Failed to load stories',
+                            style: TextStyle(color: Colors.red),
+                          ),
+                        ),
+                        data: (stories) => _StoryList(stories: stories),
+                      );
+                    },
+                  ),
                   // Tagged Tab
-                  Consumer(builder: (context, ref, child) {
-                    final taggedStoriesAsync =
-                        ref.watch(userTaggedStoriesProvider(widget.userId));
-                    return taggedStoriesAsync.when(
-                      loading: () => Center(
-                          child: const AppLoader.small()),
-                      error: (err, stack) => const Center(
-                          child: Text('Failed to load tagged stories',
-                              style: TextStyle(color: Colors.red))),
-                      data: (stories) => _StoryList(stories: stories),
-                    );
-                  }),
+                  Consumer(
+                    builder: (context, ref, child) {
+                      final taggedStoriesAsync = ref.watch(
+                        userTaggedStoriesProvider(widget.userId),
+                      );
+                      return taggedStoriesAsync.when(
+                        loading: () => Center(child: const AppLoader.small()),
+                        error: (err, stack) => const Center(
+                          child: Text(
+                            'Failed to load tagged stories',
+                            style: TextStyle(color: Colors.red),
+                          ),
+                        ),
+                        data: (stories) => _StoryList(stories: stories),
+                      );
+                    },
+                  ),
                 ],
               ),
             ),
@@ -376,8 +427,9 @@ class _StoryList extends StatelessWidget {
           ),
           child: Text(
             'No stories found.',
-            style:
-                TextStyle(color: Theme.of(context).textTheme.bodySmall?.color),
+            style: TextStyle(
+              color: Theme.of(context).textTheme.bodySmall?.color,
+            ),
           ),
         ),
       );
@@ -396,8 +448,7 @@ class _StoryList extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 24.0),
               child: StoryCard(
                 story: story,
-                onTap: () =>
-                    context.push(AppRoutes.storyDetail(story.storyId)),
+                onTap: () => context.push(AppRoutes.storyDetail(story.storyId)),
                 content: story.shortDescription,
               ),
             ),
@@ -405,9 +456,9 @@ class _StoryList extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(bottom: 24.0),
                 child: Divider(
-                    color: theme.colorScheme.primary
-                        .withValues(alpha: 0.2),
-                    thickness: 1),
+                  color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                  thickness: 1,
+                ),
               ),
           ],
         );
@@ -421,9 +472,12 @@ class _StatColumn extends StatelessWidget {
   final String count;
   final VoidCallback? onTap;
 
-  const _StatColumn(
-      {Key? key, required this.label, required this.count, this.onTap})
-      : super(key: key);
+  const _StatColumn({
+    Key? key,
+    required this.label,
+    required this.count,
+    this.onTap,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -467,7 +521,10 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
     return Container(
       color: Theme.of(context).scaffoldBackgroundColor,
       child: _tabBar,

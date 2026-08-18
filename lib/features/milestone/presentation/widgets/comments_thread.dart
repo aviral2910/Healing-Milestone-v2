@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:healing_milestones/core/models/user_model.dart';
 import 'package:healing_milestones/core/router/app_routes.dart';
 import 'package:flutter/material.dart';
+import 'package:healing_milestones/shared/widgets/app_avatar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:go_router/go_router.dart';
@@ -208,35 +209,19 @@ class _CommentBubble extends ConsumerWidget {
       children: [
         userAsync.when(
           data: (user) {
-            return CircleAvatar(
-              backgroundColor: Theme.of(
-                context,
-              ).colorScheme.surfaceContainerHighest,
-              backgroundImage: user?.profilePicture != null
-                  ? CachedNetworkImageProvider(
-                      user!.profilePicture!,
-                      maxHeight: 200,
-                    )
-                  : CachedNetworkImageProvider(
-                      'https://api.dicebear.com/7.x/avataaars/png?seed=${comment.userId}',
-                      maxHeight: 200,
-                    ),
+            return AppAvatar(
+              imageUrl: user?.profilePicture,
               radius: 18,
+              role: user?.role,
+              isAnonymous: false,
             );
           },
-          loading: () => CircleAvatar(
-            backgroundColor: Theme.of(
-              context,
-            ).colorScheme.surfaceContainerHighest,
-            radius: 18,
+          loading: () => const SizedBox(
+            width: 36,
+            height: 36,
+            child: CircularProgressIndicator(strokeWidth: 2),
           ),
-          error: (_, __) => CircleAvatar(
-            backgroundColor: Theme.of(
-              context,
-            ).colorScheme.surfaceContainerHighest,
-            radius: 18,
-            child: const Icon(Icons.error, size: 16),
-          ),
+          error: (_, __) => AppAvatar(radius: 18, isAnonymous: true),
         ),
         const SizedBox(width: 12),
         Expanded(

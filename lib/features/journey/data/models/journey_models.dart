@@ -98,6 +98,9 @@ class JourneyModel {
   final bool isFollowing;
   final String? authorName;
   final String? authorAvatar;
+  final String? authorRole;
+  final String? authorTitle;
+  final bool authorIsVerified;
 
   JourneyModel({
     required this.id,
@@ -112,6 +115,9 @@ class JourneyModel {
     this.isFollowing = false,
     this.authorName,
     this.authorAvatar,
+    this.authorRole,
+    this.authorTitle,
+    this.authorIsVerified = false,
   });
 
   factory JourneyModel.fromJson(Map<String, dynamic> json) {
@@ -128,6 +134,9 @@ class JourneyModel {
       isFollowing: json['is_following'] as bool? ?? false,
       authorName: json['author_name'] as String?,
       authorAvatar: json['author_avatar'] as String?,
+      authorRole: json['author_role'] as String?,
+      authorTitle: json['author_title'] as String?,
+      authorIsVerified: json['author_is_verified'] as bool? ?? false,
     );
   }
 

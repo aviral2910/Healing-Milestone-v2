@@ -5,6 +5,7 @@ import 'package:healing_milestones/core/router/app_routes.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/material.dart';
+import 'package:healing_milestones/shared/widgets/app_avatar.dart';
 import '../../../../shared/widgets/app_loader.dart';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -476,89 +477,12 @@ class StoryDetailScreen extends HookConsumerWidget {
                                                 : null,
                                             child: Row(
                                               children: [
-                                                Container(
-                                                  decoration: BoxDecoration(
-                                                    shape: BoxShape.circle,
-                                                    border: Border.all(
-                                                      color: theme
-                                                          .colorScheme
-                                                          .primary
-                                                          .withValues(
-                                                            alpha: 0.5,
-                                                          ),
-                                                      width: 1.5,
-                                                    ),
-                                                  ),
-                                                  child:
-                                                      !story.displayAuthorName
-                                                      ? CircleAvatar(
-                                                          radius: 22,
-                                                          backgroundColor: theme
-                                                              .colorScheme
-                                                              .surface,
-                                                          child: Icon(
-                                                            Icons.person,
-                                                            color: theme
-                                                                .colorScheme
-                                                                .onSurface,
-                                                          ),
-                                                        )
-                                                      : ClipOval(
-                                                          child: CachedNetworkImage(
-                                                            imageUrl:
-                                                                userAsync
-                                                                    .value
-                                                                    ?.profilePicture ??
-                                                                'https://api.dicebear.com/7.x/avataaars/png?seed=${story.authorId}',
-                                                            width: 44,
-                                                            height: 44,
-                                                            fit: BoxFit.cover,
-                                                            placeholder:
-                                                                (
-                                                                  context,
-                                                                  url,
-                                                                ) => Shimmer.fromColors(
-                                                                  baseColor: theme
-                                                                      .colorScheme
-                                                                      .primary
-                                                                      .withValues(
-                                                                        alpha:
-                                                                            0.1,
-                                                                      ),
-                                                                  highlightColor: theme
-                                                                      .colorScheme
-                                                                      .primary
-                                                                      .withValues(
-                                                                        alpha:
-                                                                            0.25,
-                                                                      ),
-                                                                  child: Container(
-                                                                    width: 44,
-                                                                    height: 44,
-                                                                    color: Colors
-                                                                        .white,
-                                                                  ),
-                                                                ),
-                                                            errorWidget:
-                                                                (
-                                                                  context,
-                                                                  url,
-                                                                  error,
-                                                                ) => CircleAvatar(
-                                                                  radius: 22,
-                                                                  backgroundColor:
-                                                                      theme
-                                                                          .scaffoldBackgroundColor,
-                                                                  child: Icon(
-                                                                    Icons
-                                                                        .person,
-                                                                    color: theme
-                                                                        .colorScheme
-                                                                        .onSurface,
-                                                                  ),
-                                                                ),
-                                                          ),
-                                                        ),
+                                                AppAvatar(
+                                                  imageUrl: userAsync.value?.profilePicture,
+                                                  radius: 22,
+                                                  role: story.authorRole,
+                                                  isAnonymous: !story.displayAuthorName,
+                                                  showRing: true,
                                                 ),
                                                 const SizedBox(width: 16),
                                                 Expanded(

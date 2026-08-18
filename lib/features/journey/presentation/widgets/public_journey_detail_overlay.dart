@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:healing_milestones/shared/widgets/app_avatar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/providers/journey_providers.dart';
 import '../../data/models/journey_models.dart';
@@ -30,7 +31,8 @@ class PublicJourneyDetailOverlay extends ConsumerStatefulWidget {
   }) : super(key: key);
 
   @override
-  ConsumerState<PublicJourneyDetailOverlay> createState() => _PublicJourneyDetailOverlayState();
+  ConsumerState<PublicJourneyDetailOverlay> createState() =>
+      _PublicJourneyDetailOverlayState();
 
   static Future<void> show(
     BuildContext context, {
@@ -86,7 +88,8 @@ class PublicJourneyDetailOverlay extends ConsumerStatefulWidget {
   }
 }
 
-class _PublicJourneyDetailOverlayState extends ConsumerState<PublicJourneyDetailOverlay> {
+class _PublicJourneyDetailOverlayState
+    extends ConsumerState<PublicJourneyDetailOverlay> {
   late bool _isFollowing;
   bool _isLoadingFollow = false;
 
@@ -116,9 +119,9 @@ class _PublicJourneyDetailOverlayState extends ConsumerState<PublicJourneyDetail
     } catch (e) {
       setState(() => _isLoadingFollow = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to update: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to update: $e')));
       }
     }
   }
@@ -129,10 +132,27 @@ class _PublicJourneyDetailOverlayState extends ConsumerState<PublicJourneyDetail
     final milestonesAsync = ref.watch(
       publicJourneyMilestonesProvider(widget.journeyId),
     );
-    
-    final bool isMyAnonymousJourney = widget.visibility == MilestoneVisibility.anonymous && widget.isMine;
 
-    final String displayAuthor = widget.visibility == MilestoneVisibility.anonymous
+    final milestonesList = milestonesAsync.value ?? [];
+    final firstMilestone = milestonesList.isNotEmpty
+        ? milestonesList.first
+        : null;
+
+    final bool isDoctor =
+        firstMilestone != null &&
+        (firstMilestone.authorRole == 'healthcareProfessional' ||
+            (firstMilestone.authorRole?.toLowerCase().contains('organi') ??
+                false));
+    final bool isOrganization =
+        firstMilestone?.authorRole?.toLowerCase().contains('organi') ?? false;
+    final bool isVerified = firstMilestone?.authorIsVerified ?? false;
+    final String? authorTitle = firstMilestone?.authorTitle;
+
+    final bool isMyAnonymousJourney =
+        widget.visibility == MilestoneVisibility.anonymous && widget.isMine;
+
+    final String displayAuthor =
+        widget.visibility == MilestoneVisibility.anonymous
         ? (isMyAnonymousJourney ? 'Anonymous (You)' : 'Anonymous')
         : (widget.authorName ?? 'Anonymous');
 
@@ -206,56 +226,12 @@ class _PublicJourneyDetailOverlayState extends ConsumerState<PublicJourneyDetail
                         children: [
                           Row(
                             children: [
-                              Container(
-                                padding: const EdgeInsets.all(3),
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: isMyAnonymousJourney
-                                      ? theme.colorScheme.primary.withValues(
-                                          alpha: 0.2,
-                                        )
-                                      : theme.colorScheme.surface.withValues(
-                                          alpha: 0.5,
-                                        ),
-                                  border: Border.all(
-                                    color: isMyAnonymousJourney
-                                        ? theme.colorScheme.primary
-                                        : theme.colorScheme.primary.withValues(
-                                            alpha: 0.3,
-                                          ),
-                                  ),
-                                ),
-                                child: CircleAvatar(
-                                  radius: 20,
-                                  backgroundColor: isMyAnonymousJourney
-                                      ? theme.colorScheme.primary.withValues(
-                                          alpha: 0.1,
-                                        )
-                                      : theme.colorScheme.surface,
-                                  backgroundImage:
-                                      widget.authorAvatar != null &&
-                                          widget.visibility ==
-                                              MilestoneVisibility.public
-                                      ? CachedNetworkImageProvider(widget.authorAvatar!, maxHeight: 200)
-                                      : null,
-                                  child:
-                                      (widget.authorAvatar == null ||
-                                          widget.visibility ==
-                                              MilestoneVisibility.anonymous)
-                                      ? Icon(
-                                          widget.visibility ==
-                                                  MilestoneVisibility.anonymous
-                                              ? Icons.visibility_off_rounded
-                                              : Icons.person_rounded,
-                                          color: isMyAnonymousJourney
-                                              ? theme.colorScheme.primary
-                                              : theme
-                                                    .colorScheme
-                                                    .onSurfaceVariant,
-                                          size: 20,
-                                        )
-                                      : null,
-                                ),
+                              AppAvatar(
+                                imageUrl: widget.authorAvatar,
+                                radius: 20,
+                                role: milestonesAsync.value?.first.authorRole,
+                                isAnonymous: widget.visibility == MilestoneVisibility.anonymous,
+                                showRing: true,
                               ),
                               const SizedBox(width: 12),
                               Expanded(
@@ -274,16 +250,42 @@ class _PublicJourneyDetailOverlayState extends ConsumerState<PublicJourneyDetail
                                             letterSpacing: 0.5,
                                           ),
                                     ),
-                                    Text(
-                                      displayAuthor,
-                                      style: theme.textTheme.titleMedium
-                                          ?.copyWith(
-                                            fontWeight: FontWeight.w700,
-                                            letterSpacing: -0.3,
+                                    Row(
+                                      children: [
+                                        Flexible(
+                                          child: Text(
+                                            displayAuthor,
+                                            style: theme.textTheme.titleMedium
+                                                ?.copyWith(
+                                                  fontWeight: FontWeight.w700,
+                                                  letterSpacing: -0.3,
+                                                ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
                                           ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
+                                        ),
+                                        if (isVerified) ...[
+                                          const SizedBox(width: 4),
+                                          Icon(
+                                            Icons.verified,
+                                            color: theme.colorScheme.primary,
+                                            size: 16,
+                                          ),
+                                        ],
+                                      ],
                                     ),
+                                    if (authorTitle != null &&
+                                        authorTitle.isNotEmpty)
+                                      Text(
+                                        authorTitle,
+                                        style: theme.textTheme.labelSmall
+                                            ?.copyWith(
+                                              color: theme.colorScheme.primary,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                   ],
                                 ),
                               ),
@@ -291,30 +293,41 @@ class _PublicJourneyDetailOverlayState extends ConsumerState<PublicJourneyDetail
                                 SizedBox(
                                   height: 36,
                                   child: FilledButton.icon(
-                                    onPressed: _isLoadingFollow ? null : _toggleFollow,
+                                    onPressed: _isLoadingFollow
+                                        ? null
+                                        : _toggleFollow,
                                     icon: _isLoadingFollow
-                                      ? const SizedBox(
-                                          width: 16,
-                                          height: 16,
-                                          child: const AppLoader.small(),
-                                        )
-                                      : Icon(
-                                          _isFollowing ? Icons.directions_walk_rounded : Icons.directions_walk_rounded,
-                                          size: 16,
-                                        ),
+                                        ? const SizedBox(
+                                            width: 16,
+                                            height: 16,
+                                            child: const AppLoader.small(),
+                                          )
+                                        : Icon(
+                                            _isFollowing
+                                                ? Icons.directions_walk_rounded
+                                                : Icons.directions_walk_rounded,
+                                            size: 16,
+                                          ),
                                     label: Text(
-                                      _isFollowing ? 'Walking together' : 'Walk with them',
-                                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                                      _isFollowing
+                                          ? 'Walking together'
+                                          : 'Walk with them',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 13,
+                                      ),
                                     ),
                                     style: FilledButton.styleFrom(
-                                      backgroundColor: _isFollowing 
-                                          ? theme.colorScheme.primaryContainer 
+                                      backgroundColor: _isFollowing
+                                          ? theme.colorScheme.primaryContainer
                                           : theme.colorScheme.primary,
-                                      foregroundColor: _isFollowing 
-                                          ? theme.colorScheme.onPrimaryContainer 
+                                      foregroundColor: _isFollowing
+                                          ? theme.colorScheme.onPrimaryContainer
                                           : theme.colorScheme.onPrimary,
                                       elevation: 0,
-                                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                      ),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(20),
                                       ),

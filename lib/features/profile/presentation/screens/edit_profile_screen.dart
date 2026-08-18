@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:healing_milestones/core/router/app_routes.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:healing_milestones/shared/widgets/app_avatar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:healing_milestones/core/models/user_model.dart';
@@ -421,23 +422,19 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   onTap: _isUploadingProfilePic ? null : _pickAndUploadImage,
                   child: Stack(
                     children: [
-                      CircleAvatar(
+                      AppAvatar(
+                        imageUrl: user.profilePicture,
                         radius: 50,
-                        backgroundColor: Theme.of(context).cardColor,
-                        backgroundImage: user.profilePicture != null
-                            ? CachedNetworkImageProvider(user.profilePicture!, maxHeight: 200)
-                            : null,
-                        child: user.profilePicture == null
-                            ? Icon(Icons.person,
-                                size: 50, color: Theme.of(context).textTheme.bodySmall?.color)
-                            : null,
+                        role: user.role,
+                        showRing: true,
                       ),
                       if (_isUploadingProfilePic)
                         Positioned.fill(
                           child: Container(
                             decoration: BoxDecoration(
                               color: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.5),
-                              shape: BoxShape.circle,
+                              shape: (user.role.toString().toLowerCase().contains('healthcareprofessional') || user.role.toString().toLowerCase().contains('organi')) ? BoxShape.rectangle : BoxShape.circle,
+                              borderRadius: (user.role.toString().toLowerCase().contains('healthcareprofessional') || user.role.toString().toLowerCase().contains('organi')) ? BorderRadius.circular(20) : null,
                             ),
                             child: Center(
                               child: const AppLoader.small(),

@@ -1,9 +1,11 @@
+import 'package:healing_milestones/shared/widgets/app_avatar.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/providers/journey_providers.dart';
 import '../../data/models/journey_models.dart';
 import 'public_journey_detail_overlay.dart';
+import '../screens/walking_with_screen.dart';
 
 class WalkingWithCarousel extends ConsumerWidget {
   const WalkingWithCarousel({super.key});
@@ -35,11 +37,26 @@ class WalkingWithCarousel extends ConsumerWidget {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  Text(
-                    'View all',
-                    style: theme.textTheme.labelMedium?.copyWith(
-                      color: theme.colorScheme.primary,
-                      fontWeight: FontWeight.w600,
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const WalkingWithScreen(),
+                        ),
+                      );
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 4.0,
+                        horizontal: 8.0,
+                      ),
+                      child: Text(
+                        'View all',
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          color: theme.colorScheme.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -108,34 +125,13 @@ class _WalkingWithItem extends StatelessWidget {
             // --- 1. Avatar & Name ---
             Row(
               children: [
-                Container(
-                  padding: const EdgeInsets.all(
-                    3,
-                  ), // Gap between outer ring and avatar
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: primaryColor.withValues(alpha: 0.8),
-                      width: 1.5,
-                    ),
-                  ),
-                  child: CircleAvatar(
-                    radius: 12,
-                    backgroundColor: Colors.transparent,
-                    backgroundImage: journey.authorAvatar != null
-                        ? CachedNetworkImageProvider(
-                            journey.authorAvatar!,
-                            maxHeight: 100,
-                          )
-                        : null,
-                    child: journey.authorAvatar == null
-                        ? Icon(
-                            Icons.person_rounded,
-                            size: 16,
-                            color: primaryColor,
-                          )
-                        : null,
-                  ),
+                AppAvatar(
+                  imageUrl: journey.authorAvatar,
+                  radius: 12,
+                  role: journey.authorRole,
+                  isAnonymous: journey.authorAvatar == null,
+                  showRing: true,
+                  ringColor: primaryColor.withValues(alpha: 0.8),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -157,9 +153,9 @@ class _WalkingWithItem extends StatelessWidget {
             // --- 2. Journey Title ---
             Text(
               journey.title,
-              maxLines: 2,
+              maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.titleMedium?.copyWith(
+              style: theme.textTheme.titleSmall?.copyWith(
                 fontWeight: FontWeight.w700,
                 color: Colors.white,
                 height: 1.2,

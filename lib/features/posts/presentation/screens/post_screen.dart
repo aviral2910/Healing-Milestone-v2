@@ -30,7 +30,10 @@ class _SliverTagsDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
     final theme = Theme.of(context);
     return Container(
       color: theme.scaffoldBackgroundColor, // matches background
@@ -54,7 +57,9 @@ class _SliverTagsDelegate extends SliverPersistentHeaderDelegate {
                     onTap: () => onTagSelected(tag),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 6),
+                        horizontal: 16,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: isSelected
                             ? theme.colorScheme.primary
@@ -72,14 +77,15 @@ class _SliverTagsDelegate extends SliverPersistentHeaderDelegate {
                           isAll ? 'All' : '#$tag',
                           style: TextStyle(
                             fontSize: 12,
-                            fontWeight:
-                                isSelected ? FontWeight.bold : FontWeight.w600,
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.w600,
                             color: isSelected
                                 ? (theme.colorScheme.primary
-                                            .computeLuminance() >
-                                        0.25
-                                    ? Colors.black
-                                    : Colors.white)
+                                              .computeLuminance() >
+                                          0.25
+                                      ? Colors.black
+                                      : Colors.white)
                                 : const Color(0xFFA1A1A6),
                           ),
                         ),
@@ -126,8 +132,9 @@ class PostScreen extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     useAutomaticKeepAlive();
     final storiesAsync = ref.watch(paginatedStoriesProvider);
-    final isPaginating =
-        ref.watch(paginatedStoriesProvider.notifier).isLoadingMore;
+    final isPaginating = ref
+        .watch(paginatedStoriesProvider.notifier)
+        .isLoadingMore;
     final hasMore = ref.watch(paginatedStoriesProvider.notifier).hasMore;
 
     final targetController =
@@ -173,36 +180,35 @@ class PostScreen extends HookConsumerWidget {
             controller:
                 scrollController, // If null, inherits PrimaryScrollController
             slivers: [
-              Consumer(builder: (context, ref, child) {
+              Consumer(
+                builder: (context, ref, child) {
+                  final user = ref.watch(currentUserProvider);
 
-                final user = ref.watch(currentUserProvider);
+                  return CommonSearchBarSliver(
+                    includeWelcomeText: false,
 
-                return CommonSearchBarSliver(
+                    displayName: user?.displayName ?? 'Guest',
 
-                  includeWelcomeText: false,
+                    hintText: 'Search stories, topics, people...',
 
-                  displayName: user?.displayName ?? 'Guest',
-
-                  hintText: 'Search stories, topics, people...',
-
-                  onTap: onSearchTapped,
-
-                );
-
-              }),
+                    onTap: onSearchTapped,
+                  );
+                },
+              ),
               storiesAsync.when(
                 loading: () => const SliverFillRemaining(
-                  child: Center(
-                      child:
-                          const AppLoader.small()),
+                  child: Center(child: const AppLoader.small()),
                 ),
                 error: (err, stack) => SliverFillRemaining(
                   child: Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.error_outline,
-                            size: 48, color: Theme.of(context).dividerColor),
+                        Icon(
+                          Icons.error_outline,
+                          size: 48,
+                          color: Theme.of(context).dividerColor,
+                        ),
                         const SizedBox(height: 16),
                         Text(
                           'Unable to load stories',
@@ -226,7 +232,8 @@ class PostScreen extends HookConsumerWidget {
 
                     final sortedTags = tagFrequency.keys.toList()
                       ..sort(
-                          (a, b) => tagFrequency[b]!.compareTo(tagFrequency[a]!));
+                        (a, b) => tagFrequency[b]!.compareTo(tagFrequency[a]!),
+                      );
 
                     return ['All', ...sortedTags.take(9)];
                   }, [allStories]);
@@ -235,8 +242,8 @@ class PostScreen extends HookConsumerWidget {
                   final filteredStories = selectedTag == 'All'
                       ? allStories
                       : allStories
-                          .where((s) => s.hashtagsList.contains(selectedTag))
-                          .toList();
+                            .where((s) => s.hashtagsList.contains(selectedTag))
+                            .toList();
 
                   if (allStories.isEmpty) {
                     return SliverFillRemaining(
@@ -244,9 +251,11 @@ class PostScreen extends HookConsumerWidget {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.auto_awesome_mosaic_outlined,
-                                size: 64,
-                                color: Theme.of(context).dividerColor),
+                            Icon(
+                              Icons.auto_awesome_mosaic_outlined,
+                              size: 64,
+                              color: Theme.of(context).dividerColor,
+                            ),
                             const SizedBox(height: 16),
                             Text(
                               'No stories yet',
@@ -259,8 +268,9 @@ class PostScreen extends HookConsumerWidget {
                             Text(
                               'Be the first to share a milestone.',
                               style: theme.textTheme.bodyMedium?.copyWith(
-                                color: const Color(0xFFA1A1A6)
-                                    .withValues(alpha: 0.7),
+                                color: const Color(
+                                  0xFFA1A1A6,
+                                ).withValues(alpha: 0.7),
                               ),
                             ),
                           ],
@@ -278,9 +288,9 @@ class PostScreen extends HookConsumerWidget {
                           delegate: _SliverTagsDelegate(
                             tags: topTags,
                             selectedTag: selectedTag,
-                            onTagSelected: (tag) => ref
-                                .read(selectedTagProvider.notifier)
-                                .state = tag,
+                            onTagSelected: (tag) =>
+                                ref.read(selectedTagProvider.notifier).state =
+                                    tag,
                           ),
                         ),
 
@@ -291,8 +301,9 @@ class PostScreen extends HookConsumerWidget {
                             child: Center(
                               child: Text(
                                 'No stories found for #$selectedTag',
-                                style: theme.textTheme.bodyLarge
-                                    ?.copyWith(color: const Color(0xFFA1A1A6)),
+                                style: theme.textTheme.bodyLarge?.copyWith(
+                                  color: const Color(0xFFA1A1A6),
+                                ),
                               ),
                             ),
                           ),
@@ -300,45 +311,52 @@ class PostScreen extends HookConsumerWidget {
                       else
                         // Vertical Feed of Posts
                         SliverPadding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16.0,
+                            vertical: 16,
+                          ),
                           sliver: SliverList(
-                            delegate: SliverChildBuilderDelegate(
-                              (context, index) {
-                                final story = filteredStories[index];
-                                return AnimationConfiguration.staggeredList(
-                                  position: index,
-                                  duration: const Duration(milliseconds: 375),
-                                  child: SlideAnimation(
-                                    verticalOffset: 50.0,
-                                    child: FadeInAnimation(
-                                      child: Padding(
-                                        padding:
-                                            const EdgeInsets.only(bottom: 32.0),
-                                        child: StoryCard(
-                                          story: story,
-                                          content: _truncateContent(
-                                              story.description, 180),
-                                          onTap: () {
-                                            context.push(AppRoutes.storyDetail(
-                                                story.storyId));
-                                          },
+                            delegate: SliverChildBuilderDelegate((
+                              context,
+                              index,
+                            ) {
+                              final story = filteredStories[index];
+                              return AnimationConfiguration.staggeredList(
+                                position: index,
+                                duration: const Duration(milliseconds: 375),
+                                child: SlideAnimation(
+                                  verticalOffset: 50.0,
+                                  child: FadeInAnimation(
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(
+                                        bottom: 32.0,
+                                      ),
+                                      child: StoryCard(
+                                        story: story,
+                                        content: _truncateContent(
+                                          story.description,
+                                          180,
                                         ),
+                                        onTap: () {
+                                          context.push(
+                                            AppRoutes.storyDetail(
+                                              story.storyId,
+                                            ),
+                                          );
+                                        },
                                       ),
                                     ),
                                   ),
-                                );
-                              },
-                              childCount: filteredStories.length,
-                            ),
+                                ),
+                              );
+                            }, childCount: filteredStories.length),
                           ),
                         ),
                       if (isPaginating)
                         const SliverToBoxAdapter(
                           child: Padding(
                             padding: EdgeInsets.symmetric(vertical: 32.0),
-                            child: Center(
-                              child: const AppLoader.small(),
-                            ),
+                            child: Center(child: const AppLoader.small()),
                           ),
                         ),
                       if (!hasMore && allStories.isNotEmpty)

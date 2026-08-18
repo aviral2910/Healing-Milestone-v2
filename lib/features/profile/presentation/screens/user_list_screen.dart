@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:healing_milestones/core/router/app_routes.dart';
 import 'package:flutter/material.dart';
+import 'package:healing_milestones/shared/widgets/app_avatar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/models/user_model.dart';
@@ -141,11 +142,10 @@ class _UserListScreenState extends ConsumerState<UserListScreen> {
 
                 return ListTile(
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  leading: CircleAvatar(
+                  leading: AppAvatar(
+                    imageUrl: user.profilePicture,
                     radius: 24,
-                    backgroundColor: theme.scaffoldBackgroundColor,
-                    backgroundImage: CachedNetworkImageProvider(
-                      user.profilePicture ?? 'https://api.dicebear.com/7.x/avataaars/png?seed=${user.userId}', maxHeight: 200),
+                    role: user.role,
                   ),
                   title: Text(
                     user.displayName,

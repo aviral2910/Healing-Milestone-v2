@@ -1,3 +1,4 @@
+import 'package:healing_milestones/shared/widgets/app_avatar.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -368,26 +369,14 @@ class _SwipeStoryCardState extends ConsumerState<SwipeStoryCard>
       AsyncValue<UserModel?> userAsync, bool hasImage) {
     return Row(
       children: [
-        !widget.story.displayAuthorName
-            ? CircleAvatar(
-                radius: 18,
-                backgroundColor: Colors.white.withValues(alpha: 0.2),
-                child: const Icon(Icons.person, color: Colors.white, size: 20),
-              )
-            : ClipOval(
-                child: CachedNetworkImage(imageUrl: (userAsync.value?.profilePicture != null &&
-                          userAsync.value!.profilePicture!.startsWith('http'))
-                      ? userAsync.value!.profilePicture!
-                      : 'https://api.dicebear.com/7.x/avataaars/png?seed=${widget.story.authorId}', width: 36,
-                  height: 36,
-                  fit: BoxFit.cover,
-                  errorWidget: (context, url, error) => CircleAvatar(
-                    radius: 18,
-                    backgroundColor: Colors.white.withValues(alpha: 0.2),
-                    child: const Icon(Icons.person,
-                        color: Colors.white, size: 20),
-                  ),),
-              ),
+        AppAvatar(
+          imageUrl: userAsync.value?.profilePicture,
+          radius: 18,
+          role: widget.story.authorRole,
+          isAnonymous: !widget.story.displayAuthorName,
+          showRing: true,
+          ringColor: Colors.white.withValues(alpha: 0.5),
+        ),
         const SizedBox(width: 10),
         Expanded(
           child: Column(

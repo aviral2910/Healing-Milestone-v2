@@ -190,10 +190,10 @@ class StoryModel {
           : [],
       author: map['author'] != null ? UserModel.fromMap(map['author'] as Map<String, dynamic>) : null,
       authorRole: UserRole.values.firstWhere(
-        (e) => e.name == (map['authorRole'] ?? map['author_role']),
+        (e) => e.name == (map['authorRole'] ?? map['author_role'] ?? (map['author'] != null ? map['author']['role'] : null)),
         orElse: () => UserRole.member,
       ),
-      isAuthorVerified: map['isAuthorVerified'] ?? map['is_author_verified'] ?? false,
+      isAuthorVerified: map['isAuthorVerified'] ?? map['is_author_verified'] ?? (map['author'] != null ? map['author']['is_verified'] : false) ?? false,
       type: StoryType.values.firstWhere(
         (e) => e.name == map['type'],
         orElse: () => StoryType.story,

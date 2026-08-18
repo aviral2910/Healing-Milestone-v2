@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../features/milestone/presentation/providers/post_creation_state.dart';
 import 'package:healing_milestones/core/router/app_routes.dart';
 import 'package:flutter/material.dart';
+import 'package:healing_milestones/shared/widgets/app_avatar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:healing_milestones/features/auth/data/auth_provider.dart';
 import 'package:healing_milestones/features/posts/data/story_providers.dart';
@@ -46,9 +47,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isAuthLoading = ref.watch(authProvider.select((state) => state.isLoading));
-    final isLoggedIn = ref.watch(currentUserProvider.select((user) => user != null));
-    final userId = ref.watch(currentUserProvider.select((user) => user?.userId));
+    final isAuthLoading = ref.watch(
+      authProvider.select((state) => state.isLoading),
+    );
+    final isLoggedIn = ref.watch(
+      currentUserProvider.select((user) => user != null),
+    );
+    final userId = ref.watch(
+      currentUserProvider.select((user) => user?.userId),
+    );
 
     if (isAuthLoading) {
       return Scaffold(
@@ -61,7 +68,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       return Scaffold(
         backgroundColor: theme.scaffoldBackgroundColor,
         appBar: AppBar(
-          title: const Text('Vault', style: TextStyle(fontWeight: FontWeight.bold)),
+          title: const Text(
+            'Vault',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
           centerTitle: true,
           backgroundColor: Colors.transparent,
           elevation: 0,
@@ -109,7 +119,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                     onPressed: () => context.push(AppRoutes.login),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: theme.colorScheme.primary,
-                      foregroundColor: theme.colorScheme.primary.computeLuminance() > 0.25 ? Colors.black : Colors.white,
+                      foregroundColor:
+                          theme.colorScheme.primary.computeLuminance() > 0.25
+                          ? Colors.black
+                          : Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
@@ -117,7 +130,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                     ),
                     child: const Text(
                       'Sign In or Create Account',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
@@ -152,13 +168,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                         backgroundColor: theme.colorScheme.primary,
                         foregroundColor:
                             theme.colorScheme.primary.computeLuminance() > 0.25
-                                ? Colors.black
-                                : Colors.white,
+                            ? Colors.black
+                            : Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(6),
                         ),
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 4),
+                          horizontal: 12,
+                          vertical: 4,
+                        ),
                       ),
                       onPressed: () {
                         ref
@@ -171,8 +189,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                         children: [
                           Icon(Icons.add, size: 16),
                           SizedBox(width: 4),
-                          Text('Create',
-                              style: TextStyle(fontWeight: FontWeight.bold)),
+                          Text(
+                            'Create',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
                         ],
                       ),
                     ),
@@ -180,8 +200,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                   IconButton(
                     icon: const Icon(Icons.more_vert),
                     onPressed: () {
-                      context.push(AppRoutes.settings,
-                          extra: MenuContext.profile);
+                      context.push(
+                        AppRoutes.settings,
+                        extra: MenuContext.profile,
+                      );
                     },
                   ),
                 ],
@@ -200,198 +222,215 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                           // Centered Profile Header
                           Center(
                             child: Column(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(2),
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: theme.colorScheme.primary,
-                              ),
-                              child: CircleAvatar(
-                                radius: 50,
-                                backgroundColor:
-                                    theme.scaffoldBackgroundColor,
-                                backgroundImage: CachedNetworkImageProvider(
-                                  user.profilePicture ??
-                                      'https://api.dicebear.com/7.x/avataaars/png?seed=${user.userId}', maxHeight: 200),
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
                               children: [
-                                Text(
-                                  user.displayName,
-                                  style: theme.textTheme.titleLarge?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 22),
-                                ),
-                                const SizedBox(width: 4),
-                                UserBadge(
+                                AppAvatar(
+                                  imageUrl: user.profilePicture,
+                                  radius: 50,
                                   role: user.role,
-                                  isVerified: user.isVerified,
-                                  iconSize: 20,
+                                  showRing: true,
+                                ),
+                                const SizedBox(height: 16),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      user.displayName,
+                                      style: theme.textTheme.titleLarge
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 22,
+                                          ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    UserBadge(
+                                      role: user.role,
+                                      isVerified: user.isVerified,
+                                      iconSize: 20,
+                                    ),
+                                  ],
+                                ),
+                                if (user.username != null &&
+                                    user.username!.isNotEmpty) ...[
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    '@${user.username}',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: theme.colorScheme.primary,
+                                    ),
+                                  ),
+                                ],
+                                if (user.bio != null &&
+                                    user.bio!.trim().isNotEmpty) ...[
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    user.bio!,
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      height: 1.4,
+                                      color: theme.textTheme.bodyMedium?.color,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          // Stats Row
+                          Container(
+                            padding: const EdgeInsets.symmetric(vertical: 20),
+                            decoration: BoxDecoration(
+                              color: theme.cardColor,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: theme.dividerColor),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: theme.shadowColor.withValues(
+                                    alpha: 0.5,
+                                  ),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
                                 ),
                               ],
                             ),
-                            if (user.username != null &&
-                                user.username!.isNotEmpty) ...[
-                              const SizedBox(height: 2),
-                              Text(
-                                '@${user.username}',
-                                style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                    color: theme.colorScheme.primary),
-                              ),
-                            ],
-                            if (user.bio != null &&
-                                user.bio!.trim().isNotEmpty) ...[
-                              const SizedBox(height: 12),
-                              Text(
-                                user.bio!,
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  height: 1.4,
-                                  color: theme.textTheme.bodyMedium?.color,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                _StatColumn(
+                                  label: 'Stories',
+                                  count: user.ownStories.length.toString(),
                                 ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      // Stats Row
-                      Container(
-                        padding: const EdgeInsets.symmetric(vertical: 20),
-                        decoration: BoxDecoration(
-                          color: theme.cardColor,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: theme.dividerColor),
-                          boxShadow: [
-                            BoxShadow(
-                              color: theme.shadowColor.withValues(alpha: 0.5),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            _StatColumn(
-                                label: 'Stories',
-                                count: user.ownStories.length.toString()),
-                            Container(
-                                width: 1,
-                                height: 40,
-                                color: Theme.of(context).dividerColor),
-                            _StatColumn(
-                                label: 'Followers',
-                                count: _formatCount(user.followersCount),
-                                onTap: () {
-                                  context.push(AppRoutes.userList, extra: {
-                                    'title': 'Followers',
-                                    'targetUserId': user.userId,
-                                    'listType': 'followers',
-                                  });
-                                }),
-                            Container(
-                                width: 1,
-                                height: 40,
-                                color: Theme.of(context).dividerColor),
-                            _StatColumn(
-                                label: 'Following',
-                                count: _formatCount(user.followingCount),
-                                onTap: () {
-                                  context.push(AppRoutes.userList, extra: {
-                                    'title': 'Following',
-                                    'targetUserId': user.userId,
-                                    'listType': 'following',
-                                  });
-                                }),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      // Action Buttons
-                      if (user.username?.toLowerCase() == 'healingmilestones') ...[
-                        SizedBox(
-                          height: 52,
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              context.push(AppRoutes.adminSubmissions);
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.amber.shade700,
-                              foregroundColor: Colors.black,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            child: const Text(
-                              'Admin: Review Web Submissions',
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                Container(
+                                  width: 1,
+                                  height: 40,
+                                  color: Theme.of(context).dividerColor,
+                                ),
+                                _StatColumn(
+                                  label: 'Followers',
+                                  count: _formatCount(user.followersCount),
+                                  onTap: () {
+                                    context.push(
+                                      AppRoutes.userList,
+                                      extra: {
+                                        'title': 'Followers',
+                                        'targetUserId': user.userId,
+                                        'listType': 'followers',
+                                      },
+                                    );
+                                  },
+                                ),
+                                Container(
+                                  width: 1,
+                                  height: 40,
+                                  color: Theme.of(context).dividerColor,
+                                ),
+                                _StatColumn(
+                                  label: 'Following',
+                                  count: _formatCount(user.followingCount),
+                                  onTap: () {
+                                    context.push(
+                                      AppRoutes.userList,
+                                      extra: {
+                                        'title': 'Following',
+                                        'targetUserId': user.userId,
+                                        'listType': 'following',
+                                      },
+                                    );
+                                  },
+                                ),
+                              ],
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 12),
-                      ],
-                      SizedBox(
-                        height: 52,
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Expanded(
+                          const SizedBox(height: 24),
+                          // Action Buttons
+                          if (user.username?.toLowerCase() ==
+                              'healingmilestones') ...[
+                            SizedBox(
+                              height: 52,
+                              width: double.infinity,
                               child: ElevatedButton(
                                 onPressed: () {
-                                  context.push(AppRoutes.editProfile);
+                                  context.push(AppRoutes.adminSubmissions);
                                 },
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: theme.colorScheme.primary
-                                      .withValues(alpha: 0.15),
-                                  foregroundColor: theme.colorScheme.primary,
-                                  elevation: 0,
+                                  backgroundColor: Colors.amber.shade700,
+                                  foregroundColor: Colors.black,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),
-                                  padding: EdgeInsets.zero,
                                 ),
                                 child: const Text(
-                                  'Edit Profile',
+                                  'Admin: Review Web Submissions',
                                   style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            AspectRatio(
-                              aspectRatio: 1,
-                              child: IconButton(
-                                onPressed: () {
-                                  showProfileShareOptions(context, user.userId);
-                                },
-                                style: IconButton.styleFrom(
-                                  backgroundColor: theme.colorScheme.primary
-                                      .withValues(alpha: 0.15),
-                                  foregroundColor: theme.colorScheme.primary,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
                                   ),
                                 ),
-                                icon: const Icon(Icons.share),
                               ),
                             ),
+                            const SizedBox(height: 12),
                           ],
-                        ),
+                          SizedBox(
+                            height: 52,
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Expanded(
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      context.push(AppRoutes.editProfile);
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: theme.colorScheme.primary
+                                          .withValues(alpha: 0.15),
+                                      foregroundColor:
+                                          theme.colorScheme.primary,
+                                      elevation: 0,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      padding: EdgeInsets.zero,
+                                    ),
+                                    child: const Text(
+                                      'Edit Profile',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                AspectRatio(
+                                  aspectRatio: 1,
+                                  child: IconButton(
+                                    onPressed: () {
+                                      showProfileShareOptions(
+                                        context,
+                                        user.userId,
+                                      );
+                                    },
+                                    style: IconButton.styleFrom(
+                                      backgroundColor: theme.colorScheme.primary
+                                          .withValues(alpha: 0.15),
+                                      foregroundColor:
+                                          theme.colorScheme.primary,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                    icon: const Icon(Icons.share),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
                       ),
-                      const SizedBox(height: 16),
-                    ],
-                  ),
-                );
+                    );
                   },
                 ),
               ),
@@ -404,8 +443,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       color: theme.colorScheme.primary.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(100),
                     ),
-                    indicatorPadding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    indicatorPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
+                    ),
                     indicatorSize: TabBarIndicatorSize.tab,
                     labelColor: theme.colorScheme.primary,
                     unselectedLabelColor: theme.unselectedWidgetColor,
@@ -415,12 +456,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       Tab(
                         icon: Icon(Icons.auto_awesome_mosaic_rounded, size: 24),
                       ),
-                      Tab(
-                        icon: Icon(Icons.person_pin_rounded, size: 24),
-                      ),
-                      Tab(
-                        icon: Icon(Icons.bookmark_rounded, size: 24),
-                      ),
+                      Tab(icon: Icon(Icons.person_pin_rounded, size: 24)),
+                      Tab(icon: Icon(Icons.bookmark_rounded, size: 24)),
                     ],
                   ),
                 ),
@@ -431,47 +468,62 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             controller: _tabController,
             children: [
               // Own Stories
-              Consumer(builder: (context, ref, child) {
-                final userStoriesAsync =
-                    ref.watch(userStoriesProvider(userId));
-                return userStoriesAsync.when(
-                  skipLoadingOnReload: true,
-                  loading: () => Center(
-                      child: const AppLoader.small()),
-                  error: (err, stack) => const Center(
-                      child: Text('Failed to load stories',
-                          style: TextStyle(color: Colors.red))),
-                  data: (stories) => _StoryList(stories: stories),
-                );
-              }),
+              Consumer(
+                builder: (context, ref, child) {
+                  final userStoriesAsync = ref.watch(
+                    userStoriesProvider(userId),
+                  );
+                  return userStoriesAsync.when(
+                    skipLoadingOnReload: true,
+                    loading: () => Center(child: const AppLoader.small()),
+                    error: (err, stack) => const Center(
+                      child: Text(
+                        'Failed to load stories',
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    ),
+                    data: (stories) => _StoryList(stories: stories),
+                  );
+                },
+              ),
               // Tagged Stories
-              Consumer(builder: (context, ref, child) {
-                final taggedAsync =
-                    ref.watch(userTaggedStoriesProvider(userId));
-                return taggedAsync.when(
-                  skipLoadingOnReload: true,
-                  loading: () => Center(
-                      child: const AppLoader.small()),
-                  error: (err, stack) => const Center(
-                      child: Text('Failed to load tagged stories',
-                          style: TextStyle(color: Colors.red))),
-                  data: (stories) => _StoryList(stories: stories),
-                );
-              }),
+              Consumer(
+                builder: (context, ref, child) {
+                  final taggedAsync = ref.watch(
+                    userTaggedStoriesProvider(userId),
+                  );
+                  return taggedAsync.when(
+                    skipLoadingOnReload: true,
+                    loading: () => Center(child: const AppLoader.small()),
+                    error: (err, stack) => const Center(
+                      child: Text(
+                        'Failed to load tagged stories',
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    ),
+                    data: (stories) => _StoryList(stories: stories),
+                  );
+                },
+              ),
               // Bookmarks
-              Consumer(builder: (context, ref, child) {
-                final bookmarkedAsync = ref
-                    .watch(bookmarkedStoriesProvider(userId));
-                return bookmarkedAsync.when(
-                  skipLoadingOnReload: true,
-                  loading: () => Center(
-                      child: const AppLoader.small()),
-                  error: (err, stack) => const Center(
-                      child: Text('Failed to load bookmarks',
-                          style: TextStyle(color: Colors.red))),
-                  data: (stories) => _StoryList(stories: stories),
-                );
-              }),
+              Consumer(
+                builder: (context, ref, child) {
+                  final bookmarkedAsync = ref.watch(
+                    bookmarkedStoriesProvider(userId),
+                  );
+                  return bookmarkedAsync.when(
+                    skipLoadingOnReload: true,
+                    loading: () => Center(child: const AppLoader.small()),
+                    error: (err, stack) => const Center(
+                      child: Text(
+                        'Failed to load bookmarks',
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    ),
+                    data: (stories) => _StoryList(stories: stories),
+                  );
+                },
+              ),
             ],
           ),
         ),
@@ -498,8 +550,9 @@ class _StoryList extends StatelessWidget {
           ),
           child: Text(
             'No stories found.',
-            style:
-                TextStyle(color: Theme.of(context).textTheme.bodySmall?.color),
+            style: TextStyle(
+              color: Theme.of(context).textTheme.bodySmall?.color,
+            ),
           ),
         ),
       );
@@ -517,8 +570,7 @@ class _StoryList extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 24.0),
               child: StoryCard(
                 story: story,
-                onTap: () =>
-                    context.push(AppRoutes.storyDetail(story.storyId)),
+                onTap: () => context.push(AppRoutes.storyDetail(story.storyId)),
                 content: story.shortDescription,
               ),
             ),
@@ -526,9 +578,9 @@ class _StoryList extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(bottom: 24.0),
                 child: Divider(
-                    color: theme.colorScheme.primary
-                        .withValues(alpha: 0.2),
-                    thickness: 1),
+                  color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                  thickness: 1,
+                ),
               ),
           ],
         );
@@ -542,9 +594,12 @@ class _StatColumn extends StatelessWidget {
   final String count;
   final VoidCallback? onTap;
 
-  const _StatColumn(
-      {Key? key, required this.label, required this.count, this.onTap})
-      : super(key: key);
+  const _StatColumn({
+    Key? key,
+    required this.label,
+    required this.count,
+    this.onTap,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -588,7 +643,10 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
     return Container(
       color: Theme.of(context).scaffoldBackgroundColor,
       child: _tabBar,

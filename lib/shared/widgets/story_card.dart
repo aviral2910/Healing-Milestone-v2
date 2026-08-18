@@ -1,3 +1,4 @@
+import 'package:healing_milestones/shared/widgets/app_avatar.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -111,38 +112,13 @@ class _StoryCardState extends ConsumerState<StoryCard>
                     left: 20.0, right: 20.0, top: 20.0, bottom: 20),
                 child: Row(
                   children: [
-                    !widget.story.displayAuthorName
-                        ? CircleAvatar(
-                            radius: 24,
-                            backgroundColor: theme.colorScheme.surface,
-                            child: Icon(Icons.person,
-                                color: theme.colorScheme.onSurface),
-                          )
-                        : ClipOval(
-                            child: CachedNetworkImage(imageUrl: (userAsync.value?.profilePicture != null && userAsync.value!.profilePicture!.startsWith('http'))
-                                  ? userAsync.value!.profilePicture!
-                                  : 'https://api.dicebear.com/7.x/avataaars/png?seed=${widget.story.authorId}', width: 48,
-                              height: 48,
-                              fit: BoxFit.cover,
-                              placeholder: (context, url) => Shimmer.fromColors(
-                                  baseColor: theme.colorScheme.primary
-                                      .withValues(alpha: 0.1),
-                                  highlightColor: theme.colorScheme.primary
-                                      .withValues(alpha: 0.25),
-                                  child: Container(
-                                    width: 48,
-                                    height: 48,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              errorWidget: (context, url, error) =>
-                                  CircleAvatar(
-                                radius: 24,
-                                backgroundColor: theme.scaffoldBackgroundColor,
-                                child: Icon(Icons.person,
-                                    color: theme.colorScheme.onSurface),
-                              ),),
-                          ),
+                    AppAvatar(
+                      imageUrl: userAsync.value?.profilePicture,
+                      radius: 24,
+                      role: widget.story.authorRole,
+                      isAnonymous: !widget.story.displayAuthorName,
+                      showRing: true,
+                    ),
                     const SizedBox(width: 16),
                     Expanded(
                       child: Column(

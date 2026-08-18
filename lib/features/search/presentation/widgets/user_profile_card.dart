@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:healing_milestones/shared/widgets/app_avatar.dart';
 import '../../../../core/models/user_model.dart';
 import '../../../../core/presentation/widgets/user_badge.dart';
 

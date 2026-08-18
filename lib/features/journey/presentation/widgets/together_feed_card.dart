@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:healing_milestones/shared/widgets/app_avatar.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -100,13 +101,15 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    final isDoctor = widget.milestone.authorRole == 'healthcareProfessional' || widget.milestone.authorRole == 'organization';
-    final authorityColor = const Color(0xFF00B4D8);
+    final isDoctor =
+        widget.milestone.authorRole == 'healthcareProfessional' ||
+        (widget.milestone.authorRole?.toLowerCase().contains('organi') ??
+            false);
 
     // Map emotion to color for the tiny badge
     Color emotionColor;
     if (isDoctor) {
-      emotionColor = authorityColor;
+      emotionColor = theme.colorScheme.primary;
     } else {
       switch (widget.milestone.emotionStatus) {
         case EmotionStatus.proud:
@@ -186,7 +189,7 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
           builder: (context, child) =>
               Transform.scale(scale: _scaleAnimation.value, child: child),
           child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               color: isClosure ? null : const Color(0xFF141414),
@@ -227,61 +230,57 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(3),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: theme.colorScheme.primary.withValues(
-                            alpha: 0.5,
-                          ),
-                          width: 1.5,
-                        ),
-                      ),
-                      child: CircleAvatar(
-                        radius:
-                            17, // Adjusted radius to fit inside the ring beautifully
-                        backgroundColor: Colors.transparent,
-                        backgroundImage:
-                            widget.milestone.authorAvatar != null &&
-                                widget.milestone.visibility ==
-                                    MilestoneVisibility.public
-                            ? CachedNetworkImageProvider(
-                                widget.milestone.authorAvatar!,
-                              )
-                            : null,
-                        child:
-                            (widget.milestone.authorAvatar == null ||
-                                widget.milestone.visibility ==
-                                    MilestoneVisibility.anonymous)
-                            ? Icon(
-                                widget.milestone.visibility ==
-                                        MilestoneVisibility.anonymous
-                                    ? Icons.visibility_off_rounded
-                                    : Icons.person_rounded,
-                                size: 18,
-                                color: theme
-                                    .colorScheme
-                                    .primary, // Thematic gold icon
-                              )
-                            : null,
-                      ),
+                    AppAvatar(
+                      imageUrl: widget.milestone.authorAvatar,
+                      radius: 17,
+                      role: widget.milestone.authorRole,
+                      isAnonymous: widget.milestone.visibility == MilestoneVisibility.anonymous,
+                      showRing: true,
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            displayAuthor,
-                            style: theme.textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.w700,
-                              color: theme.colorScheme.onSurface,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                          Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  displayAuthor,
+                                  style: theme.textTheme.titleSmall?.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                    color: theme.colorScheme.onSurface,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              if (widget.milestone.authorIsVerified) ...[
+                                const SizedBox(width: 4),
+                                Icon(
+                                  Icons.verified,
+                                  color: theme.colorScheme.primary,
+                                  size: 14,
+                                ),
+                              ],
+                            ],
                           ),
-                          const SizedBox(height: 2),
+                          if (widget.milestone.authorTitle != null &&
+                              widget.milestone.authorTitle!.isNotEmpty) ...[
+                            const SizedBox(height: 1),
+                            Text(
+                              widget.milestone.authorTitle!,
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                color: theme.colorScheme.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 2),
+                          ] else ...[
+                            const SizedBox(height: 2),
+                          ],
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
@@ -359,16 +358,27 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
                         vertical: 3,
                       ),
                       decoration: BoxDecoration(
-                        color: emotionColor.withValues(alpha: 0.1),
+                        color: isDoctor
+                            ? theme.colorScheme.primary
+                            : emotionColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(6),
-                        border: Border.all(
-                          color: emotionColor.withValues(alpha: 0.2),
-                        ),
+                        border: isDoctor
+                            ? null
+                            : Border.all(
+                                color: emotionColor.withValues(alpha: 0.2),
+                              ),
                       ),
                       child: Text(
-                        (isDoctor && widget.milestone.professionalTag != null) ? widget.milestone.professionalTag!.name.toUpperCase() : (widget.milestone.emotionStatus?.name.toUpperCase() ?? "UPDATE"),
+                        (isDoctor && widget.milestone.professionalTag != null)
+                            ? widget.milestone.professionalTag!.name
+                                  .toUpperCase()
+                            : (widget.milestone.emotionStatus?.name
+                                      .toUpperCase() ??
+                                  "UPDATE"),
                         style: theme.textTheme.labelSmall?.copyWith(
-                          color: emotionColor,
+                          color: isDoctor
+                              ? theme.colorScheme.onPrimary
+                              : emotionColor,
                           fontSize: 9, // Very small to match height of the name
                           fontWeight: FontWeight.w800,
                           letterSpacing: 0.5,
