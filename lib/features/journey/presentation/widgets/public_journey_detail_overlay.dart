@@ -353,14 +353,14 @@ class _PublicJourneyDetailOverlayState
                                           )
                                         : Icon(
                                             _isFollowing
-                                                ? Icons.directions_walk_rounded
-                                                : Icons.directions_walk_rounded,
+                                                ? Icons.check_rounded
+                                                : Icons.add_rounded,
                                             size: 16,
                                           ),
                                     label: Text(
                                       _isFollowing
-                                          ? 'Walking together'
-                                          : 'Walk with them',
+                                          ? 'Following'
+                                          : 'Follow Journey',
                                       style: const TextStyle(
                                         fontWeight: FontWeight.w600,
                                         fontSize: 13,

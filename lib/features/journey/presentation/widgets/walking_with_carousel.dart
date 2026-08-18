@@ -33,7 +33,7 @@ class WalkingWithCarousel extends ConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Walking with...',
+                    'Following',
                     style: theme.textTheme.titleSmall?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                       fontWeight: FontWeight.w600,

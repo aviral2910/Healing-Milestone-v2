@@ -29,7 +29,7 @@ class WalkingWithScreen extends ConsumerWidget {
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
-          'Walking With',
+          'Following',
           style: theme.textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.bold,
             color: theme.colorScheme.onSurface,
@@ -48,7 +48,7 @@ class WalkingWithScreen extends ConsumerWidget {
           if (journeys.isEmpty) {
             return Center(
               child: Text(
-                'Not walking with anyone yet.',
+                'Not following any journeys yet.',
                 style: theme.textTheme.bodyLarge?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
