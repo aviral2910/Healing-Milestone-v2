@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/journey_models.dart';
 import '../../data/providers/journey_providers.dart';
@@ -16,6 +17,100 @@ class TimelineNode extends ConsumerWidget {
     this.isReversed = false,
     this.isHistoricalClosure = false,
   });
+
+  
+  void _showReactionOverlay(BuildContext context, WidgetRef ref) {
+    HapticFeedback.selectionClick();
+    final theme = Theme.of(context);
+    final reactions = [
+      {'icon': '❤️', 'label': 'love'},
+      {'icon': '🙏', 'label': 'support'},
+      {'icon': '💪', 'label': 'strength'},
+      {'icon': '✨', 'label': 'spark'},
+    ];
+
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'Dismiss',
+      barrierColor: Colors.transparent,
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return Stack(
+          children: [
+            Positioned.fill(
+              child: GestureDetector(
+                onTap: () => Navigator.of(context).pop(),
+                behavior: HitTestBehavior.opaque,
+                child: Container(color: Colors.transparent),
+              ),
+            ),
+            Center(
+              child: Material(
+                color: Colors.transparent,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surface,
+                    borderRadius: BorderRadius.circular(30),
+                    boxShadow: [
+                      BoxShadow(
+                        color: theme.colorScheme.shadow.withValues(alpha: 0.1),
+                        blurRadius: 20,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: reactions.map((r) {
+                      return GestureDetector(
+                        onTap: () async {
+                          Navigator.of(context).pop();
+                          HapticFeedback.mediumImpact();
+                          final scaffoldMessenger = ScaffoldMessenger.of(context);
+                          try {
+                            await ref.read(journeyRepositoryProvider).reactToMilestone(
+                              milestone.id,
+                              r['label']!,
+                            );
+                            ref.invalidate(journeyMilestonesProvider(milestone.journeyId!));
+                            ref.invalidate(togetherFeedProvider);
+                          } catch (e) {
+                            scaffoldMessenger.showSnackBar(
+                              const SnackBar(content: Text('Failed to update reaction')),
+                            );
+                          }
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: Text(
+                            r['icon']!,
+                            style: const TextStyle(fontSize: 28),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        return FadeTransition(
+          opacity: animation,
+          child: ScaleTransition(
+            scale: Tween<double>(begin: 0.9, end: 1.0).animate(CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeOutBack,
+            )),
+            child: child,
+          ),
+        );
+      },
+    );
+  }
 
   Color _getEmotionColor(BuildContext context, EmotionStatus status) {
     switch (status) {
@@ -256,6 +351,125 @@ class TimelineNode extends ConsumerWidget {
                   color: theme.colorScheme.onSurface,
                 ),
               ),
+
+            if (milestone.content != null) const SizedBox(height: 16),
+            Row(
+              children: [
+                if (milestone.reactionCounts.isNotEmpty)
+                  ...milestone.reactionCounts.entries.map((entry) {
+                    String emoji = '❤️';
+                    switch (entry.key) {
+                      case 'spark': emoji = '✨'; break;
+                      case 'strength': emoji = '💪'; break;
+                      case 'love': emoji = '❤️'; break;
+                      case 'support': emoji = '🙏'; break;
+                    }
+                    return Container(
+                      margin: const EdgeInsets.only(right: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.surface,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.2)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(emoji, style: const TextStyle(fontSize: 12)),
+                          const SizedBox(width: 4),
+                          Text('${entry.value}',
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: theme.colorScheme.primary,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
+                if (milestone.reactionCounts.isEmpty && milestone.reactionCount > 0)
+                  Container(
+                    margin: const EdgeInsets.only(right: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surface,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.2)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.favorite_rounded, size: 12, color: theme.colorScheme.primary),
+                        const SizedBox(width: 6),
+                        Text('${milestone.reactionCount}',
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: theme.colorScheme.primary,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                const Spacer(),
+                Consumer(
+                  builder: (context, ref, child) {
+                    String reactEmoji = '♡';
+                    Color reactColor = theme.colorScheme.onSurfaceVariant;
+                    bool isReacted = milestone.userReaction != null;
+                    if (isReacted) {
+                      switch (milestone.userReaction) {
+                        case 'spark': reactEmoji = '✨'; break;
+                        case 'strength': reactEmoji = '💪'; break;
+                        case 'love': reactEmoji = '❤️'; break;
+                        case 'support': reactEmoji = '🙏'; break;
+                        default: reactEmoji = '❤️';
+                      }
+                      reactColor = theme.colorScheme.primary;
+                    }
+
+                    return GestureDetector(
+                      onTap: () async {
+                        final scaffoldMessenger = ScaffoldMessenger.of(context);
+                        HapticFeedback.selectionClick();
+                        try {
+                          if (isReacted) {
+                            await ref.read(journeyRepositoryProvider).removeReaction(milestone.id);
+                          } else {
+                            await ref.read(journeyRepositoryProvider).reactToMilestone(milestone.id, 'love');
+                          }
+                          ref.invalidate(journeyMilestonesProvider(milestone.journeyId!));
+                          ref.invalidate(togetherFeedProvider);
+                        } catch (e) {
+                          scaffoldMessenger.showSnackBar(const SnackBar(content: Text('Failed to update reaction')));
+                        }
+                      },
+                      onLongPress: () => _showReactionOverlay(context, ref),
+                      behavior: HitTestBehavior.opaque,
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: isReacted ? reactColor.withValues(alpha: 0.08) : theme.colorScheme.surface,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: isReacted ? reactColor.withValues(alpha: 0.4) : theme.dividerColor.withValues(alpha: 0.1),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            isReacted
+                                ? Text(reactEmoji, style: const TextStyle(fontSize: 12))
+                                : Icon(Icons.favorite_border_rounded, size: 14, color: reactColor),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+                ),
+              ],
+            ),
+
           ],
         ),
       ),
