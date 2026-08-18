@@ -181,14 +181,36 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: theme.colorScheme.surface,
-              borderRadius: BorderRadius.circular(20),
+              color: isClosure ? null : const Color(0xFF141414),
+              gradient: isClosure
+                  ? LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        theme.colorScheme.primary.withValues(alpha: 0.1),
+                        const Color(0xFF141414),
+                        const Color(0xFF141414),
+                      ],
+                      stops: const [0.0, 0.4, 1.0],
+                    )
+                  : null,
+              borderRadius: BorderRadius.circular(24),
               border: Border.all(
-                color: theme.colorScheme.primary.withValues(
-                  alpha: 0.3,
-                ), // Themic border
-                width: 1.0,
+                color: isClosure
+                    ? theme.colorScheme.primary.withValues(alpha: 0.6)
+                    : theme.colorScheme.primary.withValues(alpha: 0.2),
+                width: isClosure ? 1.5 : 1.0,
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: isClosure
+                      ? theme.colorScheme.primary.withValues(alpha: 0.15)
+                      : theme.colorScheme.primary.withValues(alpha: 0.02),
+                  blurRadius: isClosure ? 24 : 12,
+                  spreadRadius: isClosure ? -5 : 0,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -261,7 +283,8 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
                                   color: theme.colorScheme.onSurfaceVariant,
                                 ),
                               ),
-                              if (widget.milestone.journeyTitle != null) ...[
+                              if (widget.milestone.journeyTitle != null &&
+                                  !isClosure) ...[
                                 const SizedBox(width: 8),
                                 Flexible(
                                   child: Container(
@@ -279,45 +302,33 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
                                         width: 0.5,
                                       ),
                                     ),
-                                    child: ShaderMask(
-                                      blendMode: BlendMode.srcIn,
-                                      shaderCallback: (bounds) =>
-                                          const LinearGradient(
-                                            colors: [
-                                              Color(0xFFFFDF73),
-                                              Color(0xFFD4AF37),
-                                              Color(0xFF997A15),
-                                            ],
-                                            stops: [0.0, 0.5, 1.0],
-                                            begin: Alignment.topLeft,
-                                            end: Alignment.bottomRight,
-                                          ).createShader(bounds),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          const Icon(
-                                            Icons.folder_rounded,
-                                            size: 10,
-                                            color: Colors
-                                                .white, // Will be masked by gradient
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.folder_rounded,
+                                          size: 10,
+                                          color: theme
+                                              .colorScheme
+                                              .primary, // Solid gold color
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Flexible(
+                                          child: Text(
+                                            widget.milestone.journeyTitle!,
+                                            style: theme.textTheme.labelSmall
+                                                ?.copyWith(
+                                                  color: theme
+                                                      .colorScheme
+                                                      .primary, // Solid gold color
+                                                  fontWeight: FontWeight.w800,
+                                                  height: 1.1,
+                                                ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
                                           ),
-                                          const SizedBox(width: 4),
-                                          Flexible(
-                                            child: Text(
-                                              widget.milestone.journeyTitle!,
-                                              style: theme.textTheme.labelSmall
-                                                  ?.copyWith(
-                                                    color: Colors
-                                                        .white, // Will be masked by gradient
-                                                    fontWeight: FontWeight.w800,
-                                                    height: 1.1,
-                                                  ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ),
@@ -368,38 +379,78 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
                     // Event Markers inside the content (as drawn in sketch)
                     if (isClosure) ...[
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        margin: const EdgeInsets.only(bottom: 12),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.primary.withValues(
-                            alpha: 0.05,
-                          ),
-                          border: Border.all(
-                            color: theme.colorScheme.primary.withValues(
-                              alpha: 0.2,
-                            ),
-                          ),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
+                        width: double.infinity,
+                        margin: const EdgeInsets.only(bottom: 24, top: 8),
+                        child: Column(
                           children: [
                             Icon(
-                              Icons.flag_rounded,
+                              Icons.emoji_events_rounded,
                               color: theme.colorScheme.primary,
-                              size: 16,
+                              size: 48,
+                              shadows: [
+                                Shadow(
+                                  color: theme.colorScheme.primary.withValues(
+                                    alpha: 0.5,
+                                  ),
+                                  blurRadius: 16,
+                                ),
+                              ],
                             ),
-                            const SizedBox(width: 8),
+                            const SizedBox(height: 12),
                             Text(
-                              'Journey Completed',
-                              style: theme.textTheme.labelMedium?.copyWith(
+                              'JOURNEY COMPLETED',
+                              style: theme.textTheme.titleMedium?.copyWith(
                                 color: theme.colorScheme.primary,
-                                fontWeight: FontWeight.w700,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 2.0,
                               ),
+                              textAlign: TextAlign.center,
                             ),
+                            if (widget.milestone.journeyTitle != null) ...[
+                              const SizedBox(height: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.primary.withValues(
+                                    alpha: 0.1,
+                                  ),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color: theme.colorScheme.primary.withValues(
+                                      alpha: 0.2,
+                                    ),
+                                    width: 1.0,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.folder_rounded,
+                                      size: 14,
+                                      color: theme.colorScheme.primary,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Flexible(
+                                      child: Text(
+                                        widget.milestone.journeyTitle!,
+                                        style: theme.textTheme.labelMedium
+                                            ?.copyWith(
+                                              color: theme.colorScheme.primary,
+                                              fontWeight: FontWeight.w800,
+                                              letterSpacing: 0.5,
+                                            ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ],
                         ),
                       ),
@@ -652,6 +703,7 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
                                     : Icon(
                                         Icons.favorite_border_rounded,
                                         size: 14,
+
                                         color: reactColor,
                                       ),
                               ],
