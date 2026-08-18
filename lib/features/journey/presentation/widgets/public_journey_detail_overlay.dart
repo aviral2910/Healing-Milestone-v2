@@ -203,7 +203,6 @@ class _PublicJourneyDetailOverlayState
                       ),
                     ),
                   ),
-                ),
                   actions: [
                     if (widget.visibility != MilestoneVisibility.private && widget.visibility != MilestoneVisibility.anonymous)
                       Padding(
@@ -230,6 +229,8 @@ class _PublicJourneyDetailOverlayState
                         ),
                       ),
                   ],
+                ),
+                  
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
