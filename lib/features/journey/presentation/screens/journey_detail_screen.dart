@@ -43,7 +43,7 @@ class JourneyDetailScreen extends ConsumerWidget {
             actions: [
               if (visibility == MilestoneVisibility.public)
                 IconButton(
-                  icon: const Icon(Icons.ios_share_rounded),
+                  icon: const Icon(Icons.share),
                   tooltip: 'Share Journey',
                   onPressed: () {
                     showJourneyShareOptions(context, journeyId, title);

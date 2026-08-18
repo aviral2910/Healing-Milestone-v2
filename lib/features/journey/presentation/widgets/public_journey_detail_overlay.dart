@@ -223,7 +223,7 @@ class _PublicJourneyDetailOverlayState
                                 widget.title,
                               );
                             },
-                            icon: const Icon(Icons.ios_share_rounded, size: 22),
+                            icon: const Icon(Icons.share, size: 22),
                             padding: EdgeInsets.zero,
                           ),
                         ),
