@@ -172,30 +172,37 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundColor: theme.colorScheme.surface,
-                    backgroundImage:
-                        widget.milestone.authorAvatar != null &&
-                            widget.milestone.visibility ==
-                                MilestoneVisibility.public
-                        ? CachedNetworkImageProvider(
-                            widget.milestone.authorAvatar!,
-                          )
-                        : null,
-                    child:
-                        (widget.milestone.authorAvatar == null ||
-                            widget.milestone.visibility ==
-                                MilestoneVisibility.anonymous)
-                        ? Icon(
-                            widget.milestone.visibility ==
-                                    MilestoneVisibility.anonymous
-                                ? Icons.visibility_off_rounded
-                                : Icons.person_rounded,
-                            size: 20,
-                            color: theme.colorScheme.onSurfaceVariant,
-                          )
-                        : null,
+                  Container(
+                    padding: const EdgeInsets.all(3),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.5), width: 1.5),
+                    ),
+                    child: CircleAvatar(
+                      radius: 17, // Adjusted radius to fit inside the ring beautifully
+                      backgroundColor: Colors.transparent,
+                      backgroundImage:
+                          widget.milestone.authorAvatar != null &&
+                              widget.milestone.visibility ==
+                                  MilestoneVisibility.public
+                          ? CachedNetworkImageProvider(
+                              widget.milestone.authorAvatar!,
+                            )
+                          : null,
+                      child:
+                          (widget.milestone.authorAvatar == null ||
+                              widget.milestone.visibility ==
+                                  MilestoneVisibility.anonymous)
+                          ? Icon(
+                              widget.milestone.visibility ==
+                                      MilestoneVisibility.anonymous
+                                  ? Icons.visibility_off_rounded
+                                  : Icons.person_rounded,
+                              size: 18,
+                              color: theme.colorScheme.primary, // Thematic gold icon
+                            )
+                          : null,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -305,12 +312,13 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
                               ),
                               margin: const EdgeInsets.only(bottom: 12),
                               decoration: BoxDecoration(
+                                color: theme.colorScheme.primary.withValues(alpha: 0.05),
                                 border: Border.all(
                                   color: theme.colorScheme.primary.withValues(
-                                    alpha: 0.3,
+                                    alpha: 0.2,
                                   ),
                                 ),
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(12),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
@@ -340,12 +348,13 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
                               ),
                               margin: const EdgeInsets.only(bottom: 12),
                               decoration: BoxDecoration(
+                                color: theme.colorScheme.primary.withValues(alpha: 0.05),
                                 border: Border.all(
                                   color: theme.colorScheme.primary.withValues(
-                                    alpha: 0.3,
+                                    alpha: 0.2,
                                   ),
                                 ),
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(12),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
