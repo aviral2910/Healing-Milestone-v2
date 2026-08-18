@@ -19,7 +19,7 @@ class TimelineNode extends ConsumerWidget {
   });
 
   
-  void _showReactionOverlay(BuildContext context, WidgetRef ref) {
+  void _showReactionOverlay(BuildContext context, WidgetRef ref, Offset position) {
     HapticFeedback.selectionClick();
     final theme = Theme.of(context);
     final reactions = [
@@ -44,7 +44,9 @@ class TimelineNode extends ConsumerWidget {
                 child: Container(color: Colors.transparent),
               ),
             ),
-            Center(
+            Positioned(
+              left: (position.dx - 100).clamp(16.0, MediaQuery.of(context).size.width - 250.0),
+              top: (position.dy - 80).clamp(kToolbarHeight, MediaQuery.of(context).size.height - 100.0),
               child: Material(
                 color: Colors.transparent,
                 child: Container(
@@ -443,7 +445,7 @@ class TimelineNode extends ConsumerWidget {
                           scaffoldMessenger.showSnackBar(const SnackBar(content: Text('Failed to update reaction')));
                         }
                       },
-                      onLongPress: () => _showReactionOverlay(context, ref),
+                      onLongPressStart: (details) => _showReactionOverlay(context, ref, details.globalPosition),
                       behavior: HitTestBehavior.opaque,
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 200),

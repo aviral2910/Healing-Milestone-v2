@@ -61,7 +61,7 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
     }
   }
 
-  void _showReactionOverlay(BuildContext context) {
+  void _showReactionOverlay(BuildContext context, Offset position) {
     HapticFeedback.heavyImpact();
     final container = ProviderScope.containerOf(context);
 
@@ -197,9 +197,9 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
             }
           }
         },
-        onLongPress: () {
+        onLongPressStart: (details) {
           _animController.reverse();
-          _showReactionOverlay(context);
+          _showReactionOverlay(context, details.globalPosition);
         },
         child: AnimatedBuilder(
           animation: _scaleAnimation,
@@ -708,7 +708,7 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
                               );
                             }
                           },
-                          onLongPress: () => _showReactionOverlay(context),
+                          onLongPressStart: (details) => _showReactionOverlay(context, details.globalPosition),
                           behavior: HitTestBehavior.opaque,
                           child: AnimatedContainer(
                             duration: const Duration(milliseconds: 200),
