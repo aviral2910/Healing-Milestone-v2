@@ -1,3 +1,5 @@
+import '../screens/journey_detail_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:healing_milestones/shared/widgets/app_avatar.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -95,18 +97,31 @@ class _WalkingWithItem extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
-        PublicJourneyDetailOverlay.show(
-          context,
-          journeyId: journey.id,
-          title: journey.title,
-          category: journey.category,
-          authorName: journey.authorName,
-          authorAvatar: journey.authorAvatar,
-          authorId: journey.authorUid,
-          isMine: false,
-          visibility: journey.visibility,
-          initialIsFollowing: true,
-        );
+        if (journey.authorUid != null && journey.authorUid == FirebaseAuth.instance.currentUser?.uid) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => JourneyDetailScreen(
+                journeyId: journey.id,
+                title: journey.title,
+                category: journey.category,
+              ),
+            ),
+          );
+        } else {
+          PublicJourneyDetailOverlay.show(
+            context,
+            journeyId: journey.id,
+            title: journey.title,
+            category: journey.category,
+            authorName: journey.authorName,
+            authorAvatar: journey.authorAvatar,
+            authorId: journey.authorUid,
+            isMine: false,
+            visibility: journey.visibility,
+            initialIsFollowing: true,
+          );
+        }
       },
       child: Container(
         width: 170, // Slightly wider for the content

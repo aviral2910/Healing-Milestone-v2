@@ -1,3 +1,5 @@
+import '../screens/journey_detail_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
@@ -167,18 +169,31 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
           _animController.reverse();
           if (widget.milestone.journeyId != null &&
               widget.milestone.journeyTitle != null) {
-            PublicJourneyDetailOverlay.show(
-              context,
-              journeyId: widget.milestone.journeyId!,
-              title: widget.milestone.journeyTitle ?? 'Journey',
-              category: widget.milestone.journeyCategory,
-              authorName: widget.milestone.authorName,
-              authorAvatar: widget.milestone.authorAvatar,
-              authorId: widget.milestone.authorUid ?? widget.milestone.userId,
-              isMine: widget.milestone.isMine,
-              visibility: widget.milestone.visibility,
-              initialIsFollowing: widget.milestone.isFollowing,
-            );
+            if (widget.milestone.authorUid != null && widget.milestone.authorUid == FirebaseAuth.instance.currentUser?.uid) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => JourneyDetailScreen(
+                    journeyId: widget.milestone.journeyId!,
+                    title: widget.milestone.journeyTitle ?? 'Journey',
+                    category: widget.milestone.journeyCategory,
+                  ),
+                ),
+              );
+            } else {
+              PublicJourneyDetailOverlay.show(
+                context,
+                journeyId: widget.milestone.journeyId!,
+                title: widget.milestone.journeyTitle ?? 'Journey',
+                category: widget.milestone.journeyCategory,
+                authorName: widget.milestone.authorName,
+                authorAvatar: widget.milestone.authorAvatar,
+                authorId: widget.milestone.authorUid ?? widget.milestone.userId,
+                isMine: widget.milestone.isMine,
+                visibility: widget.milestone.visibility,
+                initialIsFollowing: widget.milestone.isFollowing,
+              );
+            }
           }
         },
         onLongPress: () {
