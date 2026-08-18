@@ -96,6 +96,7 @@ class JourneyModel {
   final JourneyStatus status;
   final DateTime createdAt;
   final bool isFollowing;
+  final String? authorUid;
   final String? authorName;
   final String? authorAvatar;
   final String? authorRole;
@@ -113,6 +114,7 @@ class JourneyModel {
     this.status = JourneyStatus.active,
     required this.createdAt,
     this.isFollowing = false,
+    this.authorUid,
     this.authorName,
     this.authorAvatar,
     this.authorRole,
@@ -132,6 +134,7 @@ class JourneyModel {
       status: JourneyStatus.fromString(json['status'] as String? ?? 'active'),
       createdAt: DateTime.parse(json['created_at'] as String).toLocal(),
       isFollowing: json['is_following'] as bool? ?? false,
+      authorUid: json['author_uid'] as String?,
       authorName: json['author_name'] as String?,
       authorAvatar: json['author_avatar'] as String?,
       authorRole: json['author_role'] as String?,

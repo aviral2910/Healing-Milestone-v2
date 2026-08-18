@@ -5,19 +5,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/providers/journey_providers.dart';
 import '../../data/models/journey_models.dart';
 import 'public_journey_detail_overlay.dart';
-import '../screens/walking_with_screen.dart';
 
-class WalkingWithCarousel extends ConsumerWidget {
-  const WalkingWithCarousel({super.key});
+class PublicJourneyCarousel extends ConsumerWidget {
+  final String userId;
+  final String userName;
+  
+  const PublicJourneyCarousel({super.key, required this.userId, required this.userName});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final followingAsync = ref.watch(followingJourneysProvider);
+    final journeysAsync = ref.watch(userJourneysProvider(userId));
 
-    return followingAsync.when(
+    return journeysAsync.when(
       data: (journeys) {
         if (journeys.isEmpty) {
-          return const SizedBox.shrink(); // Hide if not following anyone
+          return const SizedBox.shrink(); // Hide if no journeys
         }
 
         final theme = Theme.of(context);
@@ -27,39 +29,12 @@ class WalkingWithCarousel extends ConsumerWidget {
           children: [
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Walking with...',
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => const WalkingWithScreen(),
-                        ),
-                      );
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 4.0,
-                        horizontal: 8.0,
-                      ),
-                      child: Text(
-                        'View all',
-                        style: theme.textTheme.labelMedium?.copyWith(
-                          color: theme.colorScheme.primary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+              child: Text(
+                'Journeys',
+                style: theme.textTheme.titleSmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
             SizedBox(
@@ -70,7 +45,7 @@ class WalkingWithCarousel extends ConsumerWidget {
                 itemCount: journeys.length,
                 itemBuilder: (context, index) {
                   final journey = journeys[index];
-                  return _WalkingWithItem(journey: journey);
+                  return _PublicJourneyItem(journey: journey);
                 },
               ),
             ),
@@ -83,10 +58,10 @@ class WalkingWithCarousel extends ConsumerWidget {
   }
 }
 
-class _WalkingWithItem extends StatelessWidget {
+class _PublicJourneyItem extends StatelessWidget {
   final JourneyModel journey;
 
-  const _WalkingWithItem({required this.journey});
+  const _PublicJourneyItem({required this.journey});
 
   @override
   Widget build(BuildContext context) {
@@ -105,7 +80,7 @@ class _WalkingWithItem extends StatelessWidget {
           authorId: journey.authorUid,
           isMine: false,
           visibility: journey.visibility,
-          initialIsFollowing: true,
+          initialIsFollowing: journey.isFollowing,
         );
       },
       child: Container(

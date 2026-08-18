@@ -6,6 +6,16 @@ class JourneyRepository {
 
   JourneyRepository(this._apiClient);
 
+  Future<List<JourneyModel>> getUserJourneys(String userId, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _apiClient.dio.get('/api/journeys/user/$userId', queryParameters: {'skip': skip, 'limit': limit});
+      final data = response.data as List;
+      return data.map((json) => JourneyModel.fromJson(json)).toList();
+    } catch (e) {
+      throw Exception('Failed to load user journeys: $e');
+    }
+  }
+
   Future<List<JourneyModel>> getJourneys({int skip = 0, int limit = 20}) async {
     try {
       final response = await _apiClient.dio.get('/api/journeys/', queryParameters: {'skip': skip, 'limit': limit});

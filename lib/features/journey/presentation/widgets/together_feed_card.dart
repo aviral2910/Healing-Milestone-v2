@@ -174,6 +174,7 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
               category: widget.milestone.journeyCategory,
               authorName: widget.milestone.authorName,
               authorAvatar: widget.milestone.authorAvatar,
+              authorId: widget.milestone.authorUid ?? widget.milestone.userId,
               isMine: widget.milestone.isMine,
               visibility: widget.milestone.visibility,
               initialIsFollowing: widget.milestone.isFollowing,

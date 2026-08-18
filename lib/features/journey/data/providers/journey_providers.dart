@@ -11,6 +11,11 @@ final journeyRepositoryProvider = Provider<JourneyRepository>((ref) {
   return JourneyRepository(apiClient);
 });
 
+final userJourneysProvider = FutureProvider.autoDispose.family<List<JourneyModel>, String>((ref, userId) async {
+  final repository = ref.watch(journeyRepositoryProvider);
+  return repository.getUserJourneys(userId);
+});
+
 final myJourneysProvider = FutureProvider.autoDispose<List<JourneyModel>>((ref) async {
   final auth = ref.watch(authProvider).value;
   if (auth?.status != AuthStatus.authenticated) return [];

@@ -1,3 +1,5 @@
+import 'package:healing_milestones/core/router/app_routes.dart';
+import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
@@ -14,6 +16,7 @@ class PublicJourneyDetailOverlay extends ConsumerStatefulWidget {
   final String? category;
   final String? authorName;
   final String? authorAvatar;
+  final String? authorId;
   final bool isMine;
   final MilestoneVisibility visibility;
   final bool initialIsFollowing;
@@ -25,6 +28,7 @@ class PublicJourneyDetailOverlay extends ConsumerStatefulWidget {
     this.category,
     this.authorName,
     this.authorAvatar,
+    this.authorId,
     required this.isMine,
     required this.visibility,
     this.initialIsFollowing = false,
@@ -41,6 +45,7 @@ class PublicJourneyDetailOverlay extends ConsumerStatefulWidget {
     String? category,
     String? authorName,
     String? authorAvatar,
+    String? authorId,
     required bool isMine,
     required MilestoneVisibility visibility,
     bool initialIsFollowing = false,
@@ -58,6 +63,7 @@ class PublicJourneyDetailOverlay extends ConsumerStatefulWidget {
           category: category,
           authorName: authorName,
           authorAvatar: authorAvatar,
+          authorId: authorId,
           isMine: isMine,
           visibility: visibility,
           initialIsFollowing: initialIsFollowing,
@@ -226,67 +232,82 @@ class _PublicJourneyDetailOverlayState
                         children: [
                           Row(
                             children: [
-                              AppAvatar(
-                                imageUrl: widget.authorAvatar,
-                                radius: 20,
-                                role: milestonesAsync.value?.first.authorRole,
-                                isAnonymous: widget.visibility == MilestoneVisibility.anonymous,
-                                showRing: true,
-                              ),
-                              const SizedBox(width: 12),
                               Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Journey by',
-                                      style: theme.textTheme.labelSmall
-                                          ?.copyWith(
-                                            color: theme
-                                                .colorScheme
-                                                .onSurfaceVariant
-                                                .withValues(alpha: 0.8),
-                                            fontWeight: FontWeight.w600,
-                                            letterSpacing: 0.5,
-                                          ),
-                                    ),
-                                    Row(
-                                      children: [
-                                        Flexible(
-                                          child: Text(
-                                            displayAuthor,
-                                            style: theme.textTheme.titleMedium
-                                                ?.copyWith(
-                                                  fontWeight: FontWeight.w700,
-                                                  letterSpacing: -0.3,
-                                                ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                        if (isVerified) ...[
-                                          const SizedBox(width: 4),
-                                          Icon(
-                                            Icons.verified,
-                                            color: theme.colorScheme.primary,
-                                            size: 16,
-                                          ),
-                                        ],
-                                      ],
-                                    ),
-                                    if (authorTitle != null &&
-                                        authorTitle.isNotEmpty)
-                                      Text(
-                                        authorTitle,
-                                        style: theme.textTheme.labelSmall
-                                            ?.copyWith(
-                                              color: theme.colorScheme.primary,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
+                                child: GestureDetector(
+                                  behavior: HitTestBehavior.opaque,
+                                  onTap: () {
+                                    if (widget.visibility != MilestoneVisibility.anonymous && widget.authorId != null) {
+                                      Navigator.of(context).pop();
+                                      context.push(AppRoutes.publicProfile(widget.authorId!));
+                                    }
+                                  },
+                                  child: Row(
+                                    children: [
+                                      AppAvatar(
+                                        imageUrl: widget.authorAvatar,
+                                        radius: 20,
+                                        role: milestonesAsync.value?.first.authorRole,
+                                        isAnonymous: widget.visibility == MilestoneVisibility.anonymous,
+                                        showRing: true,
                                       ),
-                                  ],
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'Journey by',
+                                              style: theme.textTheme.labelSmall
+                                                  ?.copyWith(
+                                                    color: theme
+                                                        .colorScheme
+                                                        .onSurfaceVariant
+                                                        .withValues(alpha: 0.8),
+                                                    fontWeight: FontWeight.w600,
+                                                    letterSpacing: 0.5,
+                                                  ),
+                                            ),
+                                            Row(
+                                              children: [
+                                                Flexible(
+                                                  child: Text(
+                                                    displayAuthor,
+                                                    style: theme.textTheme.titleMedium
+                                                        ?.copyWith(
+                                                          fontWeight: FontWeight.w700,
+                                                          letterSpacing: -0.3,
+                                                        ),
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
+                                                  ),
+                                                ),
+                                                if (isVerified) ...[
+                                                  const SizedBox(width: 4),
+                                                  Icon(
+                                                    Icons.verified,
+                                                    color: theme.colorScheme.primary,
+                                                    size: 16,
+                                                  ),
+                                                ],
+                                              ],
+                                            ),
+                                            if (authorTitle != null &&
+                                                authorTitle.isNotEmpty)
+                                              Text(
+                                                authorTitle,
+                                                style: theme.textTheme.labelSmall
+                                                    ?.copyWith(
+                                                      color: theme.colorScheme.primary,
+                                                      fontWeight: FontWeight.w600,
+                                                    ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                               if (!widget.isMine)

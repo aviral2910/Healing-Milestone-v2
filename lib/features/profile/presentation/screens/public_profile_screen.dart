@@ -11,6 +11,7 @@ import '../../../../core/presentation/widgets/user_badge.dart';
 import '../../../../shared/widgets/story_card.dart';
 import '../../../../shared/widgets/qr_share_preview.dart';
 import 'package:healing_milestones/shared/widgets/app_loader.dart';
+import '../../../../features/journey/presentation/widgets/public_journey_carousel.dart';
 
 class PublicProfileScreen extends ConsumerStatefulWidget {
   final String userId;
@@ -324,6 +325,12 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen>
                           const SizedBox(height: 16),
                         ],
                       ),
+                    ),
+                  ),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 24.0),
+                      child: PublicJourneyCarousel(userId: user.userId, userName: user.displayName),
                     ),
                   ),
                   SliverPersistentHeader(
