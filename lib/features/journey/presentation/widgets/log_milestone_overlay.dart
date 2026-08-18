@@ -2,10 +2,12 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/journey_models.dart';
+import '../../../auth/data/auth_provider.dart';
+import '../../../../core/models/user_model.dart';
 import '../../data/providers/journey_providers.dart';
 import 'package:healing_milestones/shared/widgets/app_loader.dart';
 
-class LogMilestoneOverlay extends StatefulWidget {
+class LogMilestoneOverlay extends ConsumerStatefulWidget {
   final String? initialJourneyId;
   final JourneyMilestoneModel? initialMilestone;
 
@@ -57,10 +59,10 @@ class LogMilestoneOverlay extends StatefulWidget {
   }
 
   @override
-  State<LogMilestoneOverlay> createState() => _LogMilestoneOverlayState();
+  ConsumerState<LogMilestoneOverlay> createState() => _LogMilestoneOverlayState();
 }
 
-class _LogMilestoneOverlayState extends State<LogMilestoneOverlay> {
+class _LogMilestoneOverlayState extends ConsumerState<LogMilestoneOverlay> {
   EmotionStatus? _selectedEmotion;
   MilestoneVisibility _selectedVisibility = MilestoneVisibility.private;
   final _contentController = TextEditingController();
@@ -72,6 +74,7 @@ class _LogMilestoneOverlayState extends State<LogMilestoneOverlay> {
     if (widget.initialMilestone != null) {
       _selectedEmotion = widget.initialMilestone!.emotionStatus;
       _selectedVisibility = widget.initialMilestone!.visibility;
+      _selectedTag = widget.initialMilestone!.professionalTag;
       if (widget.initialMilestone!.content != null) {
         _contentController.text = widget.initialMilestone!.content!;
       }
@@ -134,6 +137,62 @@ class _LogMilestoneOverlayState extends State<LogMilestoneOverlay> {
     }
   }
 
+  Widget _buildProfessionalTagChip(ProfessionalTag tag) {
+    final isSelected = _selectedTag == tag;
+    final theme = Theme.of(context);
+    final tagColor = const Color(0xFF00B4D8);
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeOutCubic,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => setState(() => _selectedTag = tag),
+          borderRadius: BorderRadius.circular(24),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: isSelected ? tagColor.withValues(alpha: 0.15) : theme.colorScheme.surface,
+              border: Border.all(
+                color: isSelected ? tagColor : theme.dividerColor.withValues(alpha: 0.2),
+                width: isSelected ? 1.5 : 1,
+              ),
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: isSelected
+                  ? [
+                      BoxShadow(
+                        color: tagColor.withValues(alpha: 0.2),
+                        blurRadius: 12,
+                        spreadRadius: -2,
+                      )
+                    ]
+                  : null,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.local_offer_rounded,
+                  size: 16,
+                  color: isSelected ? tagColor : theme.colorScheme.onSurfaceVariant,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  tag.name.toUpperCase(),
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: isSelected ? tagColor : theme.colorScheme.onSurfaceVariant,
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildEmotionChip(EmotionStatus status) {
     final isSelected = _selectedEmotion == status;
     final theme = Theme.of(context);
@@ -190,8 +249,14 @@ class _LogMilestoneOverlayState extends State<LogMilestoneOverlay> {
     );
   }
 
+  ProfessionalTag? _selectedTag;
+
   @override
   Widget build(BuildContext context) {
+    final user = ref.watch(currentUserProvider);
+    final isDoctor = user?.role == UserRole.healthcareProfessional || user?.role == UserRole.organization;
+    final Color authorityColor = const Color(0xFF00B4D8);
+
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final isEditing = widget.initialMilestone != null;
@@ -314,31 +379,60 @@ class _LogMilestoneOverlayState extends State<LogMilestoneOverlay> {
                         ),
                         const SizedBox(height: 40),
 
-                        // Emotion Selection
-                        Text(
-                          'Emotion',
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w500,
+                        // Selection (Emotion vs Tag)
+                        if (isDoctor) ...[
+                          Text(
+                            'Update Type',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 16),
-                        SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          clipBehavior: Clip.none,
-                          child: Row(
-                            children: [
-                              _buildEmotionChip(EmotionStatus.hopeful),
-                              const SizedBox(width: 12),
-                              _buildEmotionChip(EmotionStatus.proud),
-                              const SizedBox(width: 12),
-                              _buildEmotionChip(EmotionStatus.neutral),
-                              const SizedBox(width: 12),
-                              _buildEmotionChip(EmotionStatus.anxious),
-                              const SizedBox(width: 12),
-                              _buildEmotionChip(EmotionStatus.grieving),
-                            ],
+                          const SizedBox(height: 16),
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            clipBehavior: Clip.none,
+                            child: Row(
+                              children: [
+                                _buildProfessionalTagChip(ProfessionalTag.healthTip),
+                                const SizedBox(width: 12),
+                                _buildProfessionalTagChip(ProfessionalTag.protocol),
+                                const SizedBox(width: 12),
+                                _buildProfessionalTagChip(ProfessionalTag.caseStudy),
+                                const SizedBox(width: 12),
+                                _buildProfessionalTagChip(ProfessionalTag.findings),
+                                const SizedBox(width: 12),
+                                _buildProfessionalTagChip(ProfessionalTag.research),
+                                const SizedBox(width: 12),
+                                _buildProfessionalTagChip(ProfessionalTag.announcement),
+                              ],
+                            ),
                           ),
-                        ),
+                        ] else ...[
+                          Text(
+                            'Emotion',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            clipBehavior: Clip.none,
+                            child: Row(
+                              children: [
+                                _buildEmotionChip(EmotionStatus.hopeful),
+                                const SizedBox(width: 12),
+                                _buildEmotionChip(EmotionStatus.proud),
+                                const SizedBox(width: 12),
+                                _buildEmotionChip(EmotionStatus.neutral),
+                                const SizedBox(width: 12),
+                                _buildEmotionChip(EmotionStatus.anxious),
+                                const SizedBox(width: 12),
+                                _buildEmotionChip(EmotionStatus.grieving),
+                              ],
+                            ),
+                          ),
+                        ],
                         const SizedBox(height: 32),
 
                         // Text Input
@@ -581,7 +675,7 @@ class _LogMilestoneOverlayState extends State<LogMilestoneOverlay> {
                             builder: (context, ref, child) {
                               return FilledButton(
                                 onPressed:
-                                    _selectedEmotion == null || _isSubmitting
+                                    (isDoctor ? _selectedTag == null : _selectedEmotion == null) || _isSubmitting || _contentController.text.trim().isEmpty
                                     ? null
                                     : () async {
                                         setState(() => _isSubmitting = true);
@@ -594,7 +688,8 @@ class _LogMilestoneOverlayState extends State<LogMilestoneOverlay> {
                                             await repo.updateMilestone(
                                               milestoneId:
                                                   widget.initialMilestone!.id,
-                                              emotionStatus: _selectedEmotion!,
+                                              emotionStatus: isDoctor ? null : _selectedEmotion,
+                                              professionalTag: isDoctor ? _selectedTag : null,
                                               content:
                                                   _contentController.text
                                                       .trim()
@@ -610,7 +705,8 @@ class _LogMilestoneOverlayState extends State<LogMilestoneOverlay> {
                                             await repo.createMilestone(
                                               journeyId:
                                                   widget.initialJourneyId,
-                                              emotionStatus: _selectedEmotion!,
+                                              emotionStatus: isDoctor ? null : _selectedEmotion,
+                                              professionalTag: isDoctor ? _selectedTag : null,
                                               content:
                                                   _contentController.text
                                                       .trim()

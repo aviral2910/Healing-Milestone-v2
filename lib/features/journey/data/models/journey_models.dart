@@ -46,6 +46,32 @@ enum MilestoneVisibility {
 }
 
 
+
+enum JourneyType {
+  @JsonValue('personal') personal,
+  @JsonValue('guided_protocol') guidedProtocol,
+  @JsonValue('research_trial') researchTrial,
+  @JsonValue('case_study') caseStudy;
+
+  static JourneyType fromString(String value) {
+    return JourneyType.values.firstWhere((e) => e.name == value || e.toString().split('.').last == value, orElse: () => JourneyType.personal);
+  }
+}
+
+enum ProfessionalTag {
+  @JsonValue('health_tip') healthTip,
+  @JsonValue('protocol') protocol,
+  @JsonValue('research') research,
+  @JsonValue('case_study') caseStudy,
+  @JsonValue('findings') findings,
+  @JsonValue('announcement') announcement;
+
+  static ProfessionalTag? fromString(String? value) {
+    if (value == null) return null;
+    return ProfessionalTag.values.firstWhere((e) => e.name == value || e.toString().split('.').last == value, orElse: () => ProfessionalTag.healthTip);
+  }
+}
+
 enum JourneyStatus {
   @JsonValue('active')
   active,
@@ -66,6 +92,7 @@ class JourneyModel {
   final String category;
   final MilestoneVisibility visibility;
   final bool isActive;
+  final JourneyType type;
   final JourneyStatus status;
   final DateTime createdAt;
   final bool isFollowing;
@@ -79,6 +106,7 @@ class JourneyModel {
     required this.category,
     this.visibility = MilestoneVisibility.public,
     this.isActive = true,
+    this.type = JourneyType.personal,
     this.status = JourneyStatus.active,
     required this.createdAt,
     this.isFollowing = false,
@@ -93,6 +121,7 @@ class JourneyModel {
       title: json['title'] as String,
       category: json['category'] as String? ?? 'General',
       visibility: MilestoneVisibility.fromString(json['visibility'] as String? ?? 'public'),
+      type: JourneyType.fromString(json['type'] as String? ?? 'personal'),
       isActive: json['is_active'] as bool? ?? true,
       status: JourneyStatus.fromString(json['status'] as String? ?? 'active'),
       createdAt: DateTime.parse(json['created_at'] as String).toLocal(),
@@ -108,6 +137,7 @@ class JourneyModel {
       'user_id': userId,
       'title': title,
       'category': category,
+      'type': type.name,
       'visibility': visibility.name,
       'is_active': isActive,
       'status': status.name,
@@ -124,7 +154,8 @@ class JourneyMilestoneModel {
   final String? journeyTitle;
   final String? journeyCategory;
   final TimelinePosition timelinePosition;
-  final EmotionStatus emotionStatus;
+  final EmotionStatus? emotionStatus; // Nullable for doctors
+  final ProfessionalTag? professionalTag;
   final String? content;
   final bool isReopening;
   final bool isClosure;
@@ -135,6 +166,9 @@ class JourneyMilestoneModel {
   final String? authorAvatar;
   final String? authorUsername;
   final String? authorUid;
+  final String? authorRole;
+  final String? authorTitle;
+  final bool authorIsVerified;
   final bool isMine;
   final int reactionCount;
   final Map<String, int> reactionCounts;
@@ -148,7 +182,8 @@ class JourneyMilestoneModel {
     this.journeyTitle,
     this.journeyCategory,
     this.timelinePosition = TimelinePosition.standalone,
-    required this.emotionStatus,
+    this.emotionStatus,
+    this.professionalTag,
     this.content,
     this.isReopening = false,
     this.isClosure = false,
@@ -159,6 +194,9 @@ class JourneyMilestoneModel {
     this.authorAvatar,
     this.authorUsername,
     this.authorUid,
+    this.authorRole,
+    this.authorTitle,
+    this.authorIsVerified = false,
     this.isMine = false,
     this.reactionCount = 0,
     this.reactionCounts = const {},
@@ -174,7 +212,8 @@ class JourneyMilestoneModel {
       journeyTitle: json['journey_title'] as String?,
       journeyCategory: json['journey_category'] as String?,
       timelinePosition: TimelinePosition.fromString(json['timeline_position'] as String? ?? 'standalone'),
-      emotionStatus: EmotionStatus.fromString(json['emotion_status'] as String? ?? 'neutral'),
+      emotionStatus: json['emotion_status'] != null ? EmotionStatus.fromString(json['emotion_status'] as String) : null,
+      professionalTag: ProfessionalTag.fromString(json['professional_tag'] as String?),
       content: json['content'] as String?,
       isReopening: json['is_reopening'] as bool? ?? false,
       isClosure: json['is_closure'] as bool? ?? false,
@@ -185,6 +224,9 @@ class JourneyMilestoneModel {
       authorAvatar: json['author_avatar'] as String?,
       authorUsername: json['author_username'] as String?,
       authorUid: json['author_uid'] as String?,
+      authorRole: json['author_role'] as String?,
+      authorTitle: json['author_title'] as String?,
+      authorIsVerified: json['author_is_verified'] as bool? ?? false,
       isMine: json['is_mine'] as bool? ?? false,
       reactionCount: json['reaction_count'] as int? ?? 0,
       reactionCounts: (json['reaction_counts'] as Map<String, dynamic>?)?.map((k, v) => MapEntry(k, v as int)) ?? {},
@@ -200,7 +242,8 @@ class JourneyMilestoneModel {
       'user_id': userId,
       'journey_id': journeyId,
       'timeline_position': timelinePosition.name,
-      'emotion_status': emotionStatus.name,
+      'emotion_status': emotionStatus?.name,
+      'professional_tag': professionalTag?.name,
       'content': content,
       'is_reopening': isReopening,
       'is_closure': isClosure,

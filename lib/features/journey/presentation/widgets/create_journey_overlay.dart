@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/providers/journey_providers.dart';
 import '../../data/models/journey_models.dart';
+import '../../../auth/data/auth_provider.dart';
+import '../../../../core/models/user_model.dart';
 import 'package:healing_milestones/shared/widgets/app_loader.dart';
 
-class CreateJourneyOverlay extends StatefulWidget {
+class CreateJourneyOverlay extends ConsumerStatefulWidget {
   final JourneyModel? initialJourney;
 
   const CreateJourneyOverlay({Key? key, this.initialJourney}) : super(key: key);
@@ -45,10 +47,10 @@ class CreateJourneyOverlay extends StatefulWidget {
   }
 
   @override
-  State<CreateJourneyOverlay> createState() => _CreateJourneyOverlayState();
+  ConsumerState<CreateJourneyOverlay> createState() => _CreateJourneyOverlayState();
 }
 
-class _CreateJourneyOverlayState extends State<CreateJourneyOverlay> {
+class _CreateJourneyOverlayState extends ConsumerState<CreateJourneyOverlay> {
   final _titleController = TextEditingController();
   final _categoryController = TextEditingController();
   MilestoneVisibility _visibility = MilestoneVisibility.public;
@@ -71,8 +73,14 @@ class _CreateJourneyOverlayState extends State<CreateJourneyOverlay> {
     super.dispose();
   }
 
+  JourneyType _selectedType = JourneyType.personal;
+
   @override
   Widget build(BuildContext context) {
+    final user = ref.watch(currentUserProvider);
+    final isDoctor = user?.role == UserRole.healthcareProfessional || user?.role == UserRole.organization;
+    final Color authorityColor = const Color(0xFF00B4D8);
+
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final isEditing = widget.initialJourney != null;

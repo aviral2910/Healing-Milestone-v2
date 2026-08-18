@@ -164,7 +164,7 @@ class TimelineNode extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    milestone.emotionStatus.name.toUpperCase(),
+                    (milestone.professionalTag?.name ?? milestone.emotionStatus?.name ?? "UPDATE").toUpperCase(),
                     style: theme.textTheme.labelSmall?.copyWith(
                       color: emotionColor,
                       fontWeight: FontWeight.w600,
@@ -264,7 +264,7 @@ class TimelineNode extends ConsumerWidget {
 @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final emotionColor = _getEmotionColor(context, milestone.emotionStatus);
+    final emotionColor = _getEmotionColor(context, milestone.emotionStatus ?? EmotionStatus.neutral);
 
     return IntrinsicHeight(
       child: Row(

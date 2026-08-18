@@ -144,6 +144,25 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen>
                                         color: theme.colorScheme.primary),
                                   ),
                                 ],
+                                if (user.specialty != null && user.specialty!.isNotEmpty) ...[
+                                  const SizedBox(height: 6),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF00B4D8).withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(color: const Color(0xFF00B4D8).withValues(alpha: 0.2)),
+                                    ),
+                                    child: Text(
+                                      user.specialty!.toUpperCase(),
+                                      style: theme.textTheme.labelSmall?.copyWith(
+                                        color: const Color(0xFF00B4D8),
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 1.0,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                                 if (user.bio != null &&
                                     user.bio!.trim().isNotEmpty) ...[
                                   const SizedBox(height: 12),

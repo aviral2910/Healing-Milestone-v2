@@ -100,24 +100,32 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
+    final isDoctor = widget.milestone.authorRole == 'healthcareProfessional' || widget.milestone.authorRole == 'organization';
+    final authorityColor = const Color(0xFF00B4D8);
+
     // Map emotion to color for the tiny badge
     Color emotionColor;
-    switch (widget.milestone.emotionStatus) {
-      case EmotionStatus.proud:
-        emotionColor = Colors.orange;
-        break;
-      case EmotionStatus.hopeful:
-        emotionColor = Colors.green;
-        break;
-      case EmotionStatus.anxious:
-        emotionColor = Colors.purple;
-        break;
-      case EmotionStatus.grieving:
-        emotionColor = Colors.blueGrey;
-        break;
-      case EmotionStatus.neutral:
-        emotionColor = Colors.grey;
-        break;
+    if (isDoctor) {
+      emotionColor = authorityColor;
+    } else {
+      switch (widget.milestone.emotionStatus) {
+        case EmotionStatus.proud:
+          emotionColor = Colors.orange;
+          break;
+        case EmotionStatus.hopeful:
+          emotionColor = Colors.green;
+          break;
+        case EmotionStatus.anxious:
+          emotionColor = Colors.purple;
+          break;
+        case EmotionStatus.grieving:
+          emotionColor = Colors.blueGrey;
+          break;
+        case EmotionStatus.neutral:
+        default:
+          emotionColor = Colors.grey;
+          break;
+      }
     }
 
     final bool isClosure = widget.milestone.isClosure;
@@ -358,7 +366,7 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
                         ),
                       ),
                       child: Text(
-                        widget.milestone.emotionStatus.name.toUpperCase(),
+                        (isDoctor && widget.milestone.professionalTag != null) ? widget.milestone.professionalTag!.name.toUpperCase() : (widget.milestone.emotionStatus?.name.toUpperCase() ?? "UPDATE"),
                         style: theme.textTheme.labelSmall?.copyWith(
                           color: emotionColor,
                           fontSize: 9, // Very small to match height of the name

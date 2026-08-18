@@ -16,13 +16,14 @@ class JourneyRepository {
     }
   }
 
-  Future<JourneyModel> createJourney(String title, String category, MilestoneVisibility visibility) async {
+  Future<JourneyModel> createJourney(String title, String category, MilestoneVisibility visibility, {JourneyType type = JourneyType.personal}) async {
     try {
       final response = await _apiClient.dio.post(
         '/api/journeys/',
         data: {
           'title': title,
           'category': category,
+          'type': type.name,
           'visibility': visibility.name,
         },
       );
@@ -32,13 +33,14 @@ class JourneyRepository {
     }
   }
 
-  Future<JourneyModel> updateJourney(String id, String title, String category, MilestoneVisibility visibility) async {
+  Future<JourneyModel> updateJourney(String id, String title, String category, MilestoneVisibility visibility, {JourneyType type = JourneyType.personal}) async {
     try {
       final response = await _apiClient.dio.put(
         '/api/journeys/$id',
         data: {
           'title': title,
           'category': category,
+          'type': type.name,
           'visibility': visibility.name,
         },
       );
@@ -146,7 +148,8 @@ class JourneyRepository {
 
   Future<JourneyMilestoneModel> createMilestone({
     String? journeyId,
-    required EmotionStatus emotionStatus,
+    EmotionStatus? emotionStatus,
+    ProfessionalTag? professionalTag,
     String? content,
     MilestoneVisibility visibility = MilestoneVisibility.public,
   }) async {
@@ -155,7 +158,8 @@ class JourneyRepository {
         '/api/milestones/',
         data: {
           'journey_id': journeyId,
-          'emotion_status': emotionStatus.name,
+          'emotion_status': emotionStatus?.name,
+          'professional_tag': professionalTag?.name,
           'content': content,
           'visibility': visibility.name,
         },
@@ -168,13 +172,15 @@ class JourneyRepository {
 
   Future<JourneyMilestoneModel> updateMilestone({
     required String milestoneId,
-    required EmotionStatus emotionStatus,
+    EmotionStatus? emotionStatus,
+    ProfessionalTag? professionalTag,
     String? content,
     MilestoneVisibility? visibility,
   }) async {
     try {
       final data = <String, dynamic>{
-        'emotion_status': emotionStatus.name,
+        'emotion_status': emotionStatus?.name,
+        'professional_tag': professionalTag?.name,
         'content': content,
       };
       if (visibility != null) {
