@@ -277,7 +277,7 @@ class TimelineNode extends ConsumerWidget {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                Theme(
+                if (milestone.isMine) Theme(
                   data: Theme.of(context).copyWith(
                     splashColor: Colors.transparent,
                     highlightColor: Colors.transparent,
