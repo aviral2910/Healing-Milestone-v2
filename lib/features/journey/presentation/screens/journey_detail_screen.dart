@@ -1,6 +1,7 @@
 import '../../data/models/journey_models.dart';
 import 'package:healing_milestones/shared/widgets/qr_share_preview.dart';
 import 'package:flutter/material.dart';
+import '../../../../core/presentation/widgets/healing_error_view.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/providers/journey_providers.dart';
 import '../widgets/timeline_node.dart';
@@ -241,7 +242,10 @@ class JourneyDetailScreen extends ConsumerWidget {
                   ),
                 ),
                 error: (err, stack) => SliverToBoxAdapter(
-                  child: Center(child: Text('Error: $err')),
+                  child: HealingErrorView(
+                    error: err,
+                    onRetry: () => ref.invalidate(journeyMilestonesProvider(widget.journeyId)),
+                  ),
                 ),
               );
             },

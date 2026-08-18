@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../../../../core/presentation/widgets/healing_snackbar.dart';
 import 'package:healing_milestones/shared/widgets/app_avatar.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/services.dart';
@@ -120,9 +121,7 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
                             );
                             container.invalidate(togetherFeedProvider);
                           } catch (e) {
-                            scaffoldMessenger.showSnackBar(
-                              const SnackBar(content: Text('Failed to update reaction')),
-                            );
+                            HealingSnackbar.showError(context, e);
                           }
                         },
                         child: Padding(

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../../../../core/presentation/widgets/healing_error_view.dart';
 import 'package:healing_milestones/shared/widgets/app_avatar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/providers/journey_providers.dart';
@@ -204,7 +205,8 @@ class _PublicJourneyDetailOverlayState
                     ),
                   ),
                   actions: [
-                    if (widget.visibility != MilestoneVisibility.private && widget.visibility != MilestoneVisibility.anonymous)
+                    if (widget.visibility != MilestoneVisibility.private &&
+                        widget.visibility != MilestoneVisibility.anonymous)
                       Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Container(
@@ -230,7 +232,7 @@ class _PublicJourneyDetailOverlayState
                       ),
                   ],
                 ),
-                  
+
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
@@ -264,9 +266,15 @@ class _PublicJourneyDetailOverlayState
                                 child: GestureDetector(
                                   behavior: HitTestBehavior.opaque,
                                   onTap: () {
-                                    if (widget.visibility != MilestoneVisibility.anonymous && widget.authorId != null) {
+                                    if (widget.visibility !=
+                                            MilestoneVisibility.anonymous &&
+                                        widget.authorId != null) {
                                       Navigator.of(context).pop();
-                                      context.push(AppRoutes.publicProfile(widget.authorId!));
+                                      context.push(
+                                        AppRoutes.publicProfile(
+                                          widget.authorId!,
+                                        ),
+                                      );
                                     }
                                   },
                                   child: Row(
@@ -274,14 +282,20 @@ class _PublicJourneyDetailOverlayState
                                       AppAvatar(
                                         imageUrl: widget.authorAvatar,
                                         radius: 20,
-                                        role: milestonesAsync.value?.first.authorRole,
-                                        isAnonymous: widget.visibility == MilestoneVisibility.anonymous,
+                                        role: milestonesAsync
+                                            .value
+                                            ?.first
+                                            .authorRole,
+                                        isAnonymous:
+                                            widget.visibility ==
+                                            MilestoneVisibility.anonymous,
                                         showRing: true,
                                       ),
                                       const SizedBox(width: 12),
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Text(
                                               'Journey by',
@@ -300,20 +314,26 @@ class _PublicJourneyDetailOverlayState
                                                 Flexible(
                                                   child: Text(
                                                     displayAuthor,
-                                                    style: theme.textTheme.titleMedium
+                                                    style: theme
+                                                        .textTheme
+                                                        .titleMedium
                                                         ?.copyWith(
-                                                          fontWeight: FontWeight.w700,
+                                                          fontWeight:
+                                                              FontWeight.w700,
                                                           letterSpacing: -0.3,
                                                         ),
                                                     maxLines: 1,
-                                                    overflow: TextOverflow.ellipsis,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
                                                   ),
                                                 ),
                                                 if (isVerified) ...[
                                                   const SizedBox(width: 4),
                                                   Icon(
                                                     Icons.verified,
-                                                    color: theme.colorScheme.primary,
+                                                    color: theme
+                                                        .colorScheme
+                                                        .primary,
                                                     size: 16,
                                                   ),
                                                 ],
@@ -323,10 +343,15 @@ class _PublicJourneyDetailOverlayState
                                                 authorTitle.isNotEmpty)
                                               Text(
                                                 authorTitle,
-                                                style: theme.textTheme.labelSmall
+                                                style: theme
+                                                    .textTheme
+                                                    .labelSmall
                                                     ?.copyWith(
-                                                      color: theme.colorScheme.primary,
-                                                      fontWeight: FontWeight.w600,
+                                                      color: theme
+                                                          .colorScheme
+                                                          .primary,
+                                                      fontWeight:
+                                                          FontWeight.w600,
                                                     ),
                                                 maxLines: 1,
                                                 overflow: TextOverflow.ellipsis,
@@ -394,7 +419,9 @@ class _PublicJourneyDetailOverlayState
                               width: double.infinity,
                               height: 48,
                               child: FilledButton.icon(
-                                onPressed: _isLoadingFollow ? null : _toggleFollow,
+                                onPressed: _isLoadingFollow
+                                    ? null
+                                    : _toggleFollow,
                                 icon: _isLoadingFollow
                                     ? const SizedBox(
                                         width: 16,
@@ -402,7 +429,9 @@ class _PublicJourneyDetailOverlayState
                                         child: const AppLoader.small(),
                                       )
                                     : Icon(
-                                        _isFollowing ? Icons.check_rounded : Icons.add_rounded,
+                                        _isFollowing
+                                            ? Icons.check_rounded
+                                            : Icons.add_rounded,
                                         size: 18,
                                       ),
                                 label: Text(
@@ -415,10 +444,16 @@ class _PublicJourneyDetailOverlayState
                                 style: FilledButton.styleFrom(
                                   backgroundColor: _isFollowing
                                       ? theme.dividerColor
-                                      : theme.colorScheme.primary,
+                                      : theme.colorScheme.primary.withValues(
+                                          alpha: 1,
+                                        ),
                                   foregroundColor: _isFollowing
                                       ? theme.textTheme.bodyMedium?.color
-                                      : (theme.colorScheme.primary.computeLuminance() > 0.25 ? Colors.black : Colors.white),
+                                      : (theme.colorScheme.primary
+                                                    .computeLuminance() >
+                                                0.25
+                                            ? Colors.black
+                                            : Colors.white),
                                   elevation: 0,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(24),
@@ -501,7 +536,10 @@ class _PublicJourneyDetailOverlayState
                     ),
                   ),
                   error: (err, stack) => SliverToBoxAdapter(
-                    child: Center(child: Text('Error: $err')),
+                    child: HealingErrorView(
+                      error: err,
+                      onRetry: () => ref.invalidate(journeyMilestonesProvider(widget.journeyId)),
+                    ),
                   ),
                 ),
               ],

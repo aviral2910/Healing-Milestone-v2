@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/presentation/widgets/healing_error_view.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/providers/journey_providers.dart';
 import '../widgets/together_feed_card.dart';
@@ -114,7 +115,10 @@ class _TogetherFeedScreenState extends ConsumerState<TogetherFeedScreen> {
                   ),
                 ),
                 error: (err, stack) => SliverToBoxAdapter(
-                  child: Center(child: Text('Error: $err')),
+                  child: HealingErrorView(
+                    error: err,
+                    onRetry: () => ref.invalidate(togetherFeedProvider),
+                  ),
                 ),
               ),
             ],

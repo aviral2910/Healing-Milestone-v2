@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/presentation/widgets/healing_snackbar.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/journey_models.dart';
@@ -78,9 +79,7 @@ class TimelineNode extends ConsumerWidget {
                             ref.invalidate(journeyMilestonesProvider(milestone.journeyId!));
                             ref.invalidate(togetherFeedProvider);
                           } catch (e) {
-                            scaffoldMessenger.showSnackBar(
-                              const SnackBar(content: Text('Failed to update reaction')),
-                            );
+                            HealingSnackbar.showError(context, e);
                           }
                         },
                         child: Padding(
@@ -320,9 +319,7 @@ class TimelineNode extends ConsumerWidget {
                                 ref.invalidate(togetherFeedProvider);
                               } catch (e) {
                                 if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('Failed to delete check-in: $e')),
-                                  );
+                                  HealingSnackbar.showError(context, e);
                                 }
                               }
                             }
