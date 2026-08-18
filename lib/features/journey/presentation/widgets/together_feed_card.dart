@@ -62,7 +62,14 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
   }
 
   void _showReactionOverlay(BuildContext context, Offset position) {
-    HapticFeedback.heavyImpact();
+    HapticFeedback.selectionClick();
+    final theme = Theme.of(context);
+    final reactions = [
+      {'icon': '❤️', 'label': 'love'},
+      {'icon': '🙏', 'label': 'support'},
+      {'icon': '💪', 'label': 'strength'},
+      {'icon': '✨', 'label': 'spark'},
+    ];
     final container = ProviderScope.containerOf(context);
 
     showGeneralDialog(
@@ -70,28 +77,78 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
       barrierDismissible: true,
       barrierLabel: 'Dismiss',
       barrierColor: Colors.transparent,
-      transitionDuration: const Duration(milliseconds: 400),
       pageBuilder: (context, animation, secondaryAnimation) {
-        return _ReactionOverlay(
-          milestoneId: widget.milestone.id,
-          currentReaction: widget.milestone.userReaction,
-          container: container,
+        return Stack(
+          children: [
+            Positioned.fill(
+              child: GestureDetector(
+                onTap: () => Navigator.of(context).pop(),
+                behavior: HitTestBehavior.opaque,
+                child: Container(color: Colors.transparent),
+              ),
+            ),
+            Positioned(
+              left: (position.dx - 100).clamp(16.0, MediaQuery.of(context).size.width - 250.0),
+              top: (position.dy - 80).clamp(kToolbarHeight, MediaQuery.of(context).size.height - 100.0),
+              child: Material(
+                color: Colors.transparent,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surface,
+                    borderRadius: BorderRadius.circular(30),
+                    boxShadow: [
+                      BoxShadow(
+                        color: theme.colorScheme.shadow.withValues(alpha: 0.1),
+                        blurRadius: 20,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: reactions.map((r) {
+                      return GestureDetector(
+                        onTap: () async {
+                          Navigator.of(context).pop();
+                          HapticFeedback.mediumImpact();
+                          final scaffoldMessenger = ScaffoldMessenger.of(context);
+                          try {
+                            await container.read(journeyRepositoryProvider).reactToMilestone(
+                              widget.milestone.id,
+                              r['label']!,
+                            );
+                            container.invalidate(togetherFeedProvider);
+                          } catch (e) {
+                            scaffoldMessenger.showSnackBar(
+                              const SnackBar(content: Text('Failed to update reaction')),
+                            );
+                          }
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: Text(
+                            r['icon']!,
+                            style: const TextStyle(fontSize: 28),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+            ),
+          ],
         );
       },
       transitionBuilder: (context, animation, secondaryAnimation, child) {
         return FadeTransition(
           opacity: animation,
-          child: SlideTransition(
-            position:
-                Tween<Offset>(
-                  begin: const Offset(0, 0.05),
-                  end: Offset.zero,
-                ).animate(
-                  CurvedAnimation(
-                    parent: animation,
-                    curve: Curves.easeOutCubic,
-                  ),
-                ),
+          child: ScaleTransition(
+            scale: Tween<double>(begin: 0.9, end: 1.0).animate(CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeOutBack,
+            )),
             child: child,
           ),
         );
@@ -766,198 +823,3 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
   }
 }
 
-class _ReactionOverlay extends StatelessWidget {
-  final String milestoneId;
-  final String? currentReaction;
-  final ProviderContainer container;
-
-  const _ReactionOverlay({
-    Key? key,
-    required this.milestoneId,
-    required this.container,
-    this.currentReaction,
-  }) : super(key: key);
-
-  Widget _buildReactionOption(
-    BuildContext context,
-    String emoji,
-    String label,
-    Color color,
-    String typeValue,
-  ) {
-    final theme = Theme.of(context);
-    final isSelected = currentReaction == typeValue;
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () async {
-          final scaffoldMessenger = ScaffoldMessenger.of(context);
-          HapticFeedback.selectionClick();
-          Navigator.pop(context);
-
-          try {
-            if (isSelected) {
-              await container
-                  .read(journeyRepositoryProvider)
-                  .removeReaction(milestoneId);
-            } else {
-              await container
-                  .read(journeyRepositoryProvider)
-                  .reactToMilestone(milestoneId, typeValue);
-            }
-            // Invalidate the public milestones feed to trigger a refresh
-            container.invalidate(togetherFeedProvider);
-          } catch (e) {
-            scaffoldMessenger.showSnackBar(
-              const SnackBar(content: Text('Failed to send reaction')),
-            );
-          }
-        },
-        borderRadius: BorderRadius.circular(24),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 16.0),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? color.withValues(alpha: 0.2)
-                : theme.colorScheme.surface.withValues(alpha: 0.5),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: isSelected ? color : color.withValues(alpha: 0.2),
-              width: isSelected ? 2 : 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: color.withValues(alpha: 0.1),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(emoji, style: const TextStyle(fontSize: 40)),
-              const SizedBox(height: 12),
-              Text(
-                label,
-                style: theme.textTheme.labelMedium?.copyWith(
-                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                  color: color,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Stack(
-        children: [
-          // Glassmorphism background
-          BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-            child: Container(
-              color: (isDark ? Colors.black : Colors.white).withValues(
-                alpha: 0.5,
-              ),
-            ),
-          ),
-
-          // Tap to dismiss
-          Positioned.fill(
-            child: GestureDetector(
-              onTap: () => Navigator.of(context).pop(),
-              behavior: HitTestBehavior.opaque,
-              child: Container(),
-            ),
-          ),
-
-          // Center content
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Send a Spark',
-                    style: theme.textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: -0.5,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Let them know you are here with them.',
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                  const SizedBox(height: 48),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Expanded(
-                        child: _buildReactionOption(
-                          context,
-                          '✨',
-                          'Spark',
-                          theme.colorScheme.primary,
-                          'spark',
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _buildReactionOption(
-                          context,
-                          '💪',
-                          'Strength',
-                          theme.colorScheme.secondary,
-                          'strength',
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _buildReactionOption(
-                          context,
-                          '❤️',
-                          'Love',
-                          theme.colorScheme.tertiary,
-                          'love',
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _buildReactionOption(
-                          context,
-                          '🙏',
-                          'Support',
-                          Color.lerp(
-                                theme.colorScheme.primary,
-                                theme.colorScheme.secondary,
-                                0.5,
-                              ) ??
-                              theme.colorScheme.primary,
-                          'support',
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
