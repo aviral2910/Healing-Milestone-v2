@@ -341,45 +341,6 @@ class _PublicJourneyDetailOverlayState
                             ],
                           ),
                           const SizedBox(height: 24),
-                          if (!widget.isMine) ...[
-                            const SizedBox(height: 16),
-                            SizedBox(
-                              width: double.infinity,
-                              height: 48,
-                              child: FilledButton.icon(
-                                onPressed: _isLoadingFollow ? null : _toggleFollow,
-                                icon: _isLoadingFollow
-                                    ? const SizedBox(
-                                        width: 16,
-                                        height: 16,
-                                        child: const AppLoader.small(),
-                                      )
-                                    : Icon(
-                                        _isFollowing ? Icons.check_rounded : Icons.add_rounded,
-                                        size: 18,
-                                      ),
-                                label: Text(
-                                  _isFollowing ? 'Following' : 'Follow Journey',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                                style: FilledButton.styleFrom(
-                                  backgroundColor: _isFollowing
-                                      ? theme.dividerColor
-                                      : theme.colorScheme.primary,
-                                  foregroundColor: _isFollowing
-                                      ? theme.textTheme.bodyMedium?.color
-                                      : (theme.colorScheme.primary.computeLuminance() > 0.25 ? Colors.black : Colors.white),
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(24),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
                           Text(
                             widget.title,
                             style: theme.textTheme.headlineSmall?.copyWith(
@@ -424,6 +385,45 @@ class _PublicJourneyDetailOverlayState
                                     ),
                                   ),
                                 ],
+                              ),
+                            ),
+                          ],
+                          if (!widget.isMine) ...[
+                            const SizedBox(height: 24),
+                            SizedBox(
+                              width: double.infinity,
+                              height: 48,
+                              child: FilledButton.icon(
+                                onPressed: _isLoadingFollow ? null : _toggleFollow,
+                                icon: _isLoadingFollow
+                                    ? const SizedBox(
+                                        width: 16,
+                                        height: 16,
+                                        child: const AppLoader.small(),
+                                      )
+                                    : Icon(
+                                        _isFollowing ? Icons.check_rounded : Icons.add_rounded,
+                                        size: 18,
+                                      ),
+                                label: Text(
+                                  _isFollowing ? 'Following' : 'Follow Journey',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: _isFollowing
+                                      ? theme.dividerColor
+                                      : theme.colorScheme.primary,
+                                  foregroundColor: _isFollowing
+                                      ? theme.textTheme.bodyMedium?.color
+                                      : (theme.colorScheme.primary.computeLuminance() > 0.25 ? Colors.black : Colors.white),
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(24),
+                                  ),
+                                ),
                               ),
                             ),
                           ],
