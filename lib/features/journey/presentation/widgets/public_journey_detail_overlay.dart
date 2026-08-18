@@ -393,38 +393,59 @@ class _PublicJourneyDetailOverlayState
                             SizedBox(
                               width: double.infinity,
                               height: 48,
-                              child: FilledButton.icon(
-                                onPressed: _isLoadingFollow ? null : _toggleFollow,
-                                icon: _isLoadingFollow
-                                    ? const SizedBox(
-                                        width: 16,
-                                        height: 16,
-                                        child: const AppLoader.small(),
-                                      )
-                                    : Icon(
-                                        _isFollowing ? Icons.check_rounded : Icons.add_rounded,
-                                        size: 18,
+                              child: _isFollowing
+                                  ? FilledButton.icon(
+                                      onPressed: _isLoadingFollow ? null : _toggleFollow,
+                                      icon: _isLoadingFollow
+                                          ? const SizedBox(
+                                              width: 16,
+                                              height: 16,
+                                              child: AppLoader.small(),
+                                            )
+                                          : const Icon(Icons.check_rounded, size: 18),
+                                      label: const Text(
+                                        'Following',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 15,
+                                        ),
                                       ),
-                                label: Text(
-                                  _isFollowing ? 'Following' : 'Follow Journey',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                                style: FilledButton.styleFrom(
-                                  backgroundColor: _isFollowing
-                                      ? theme.dividerColor
-                                      : theme.colorScheme.primary,
-                                  foregroundColor: _isFollowing
-                                      ? theme.textTheme.bodyMedium?.color
-                                      : (theme.colorScheme.primary.computeLuminance() > 0.25 ? Colors.black : Colors.white),
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(24),
-                                  ),
-                                ),
-                              ),
+                                      style: FilledButton.styleFrom(
+                                        backgroundColor: theme.dividerColor,
+                                        foregroundColor: theme.textTheme.bodyMedium?.color,
+                                        elevation: 0,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(24),
+                                        ),
+                                      ),
+                                    )
+                                  : OutlinedButton.icon(
+                                      onPressed: _isLoadingFollow ? null : _toggleFollow,
+                                      icon: _isLoadingFollow
+                                          ? const SizedBox(
+                                              width: 16,
+                                              height: 16,
+                                              child: AppLoader.small(),
+                                            )
+                                          : const Icon(Icons.add_rounded, size: 18),
+                                      label: const Text(
+                                        'Follow Journey',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 15,
+                                        ),
+                                      ),
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor: theme.colorScheme.primary,
+                                        side: BorderSide(
+                                          color: theme.colorScheme.primary,
+                                          width: 1.5,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(24),
+                                        ),
+                                      ),
+                                    ),
                             ),
                           ],
                         ],
