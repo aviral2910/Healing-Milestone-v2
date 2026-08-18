@@ -222,29 +222,41 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
                               ),
                             ),
                             if (widget.milestone.journeyTitle != null) ...[
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 6),
-                                child: Icon(
-                                  Icons.circle,
-                                  size: 3,
-                                  color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
-                                ),
-                              ),
-                              Icon(
-                                Icons.folder_rounded,
-                                size: 10,
-                                color: theme.colorScheme.primary,
-                              ),
-                              const SizedBox(width: 4),
-                              Expanded(
-                                child: Text(
-                                  widget.milestone.journeyTitle!,
-                                  style: theme.textTheme.labelSmall?.copyWith(
-                                    color: theme.colorScheme.primary,
-                                    fontWeight: FontWeight.w700,
+                              const SizedBox(width: 8),
+                              Flexible(
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(
+                                      color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                                      width: 0.5,
+                                    ),
                                   ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.folder_rounded,
+                                        size: 10,
+                                        color: theme.colorScheme.primary,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Flexible(
+                                        child: Text(
+                                          widget.milestone.journeyTitle!,
+                                          style: theme.textTheme.labelSmall?.copyWith(
+                                            color: theme.colorScheme.primary,
+                                            fontWeight: FontWeight.w700,
+                                            height: 1.1,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ],
