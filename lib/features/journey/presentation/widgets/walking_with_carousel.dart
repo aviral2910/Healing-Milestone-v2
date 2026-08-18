@@ -115,7 +115,6 @@ class _WalkingWithItem extends StatelessWidget {
             journeyId: journey.id,
             title: journey.title,
             category: journey.category,
-                visibility: journey.visibility,
             authorName: journey.authorName,
             authorAvatar: journey.authorAvatar,
             authorId: journey.authorUid,
