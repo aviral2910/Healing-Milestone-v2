@@ -100,7 +100,8 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
             button = IconButton(
               icon: const Icon(Icons.play_circle),
               iconSize: 36.0,
-              color: theme.colorScheme.primary.withValues(alpha: 0.3),
+              color: theme.colorScheme.primary,
+              disabledColor: theme.colorScheme.primary,
               onPressed: null,
             );
           } else if (playing != true) {
