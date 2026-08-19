@@ -5,6 +5,7 @@ import '../../data/models/journey_models.dart';
 import '../../../auth/data/auth_provider.dart';
 import '../../../../core/models/user_model.dart';
 import '../../data/providers/journey_providers.dart';
+import '../../data/providers/paginated_journey_milestones_provider.dart';
 import 'package:healing_milestones/shared/widgets/app_loader.dart';
 
 class LogMilestoneOverlay extends ConsumerStatefulWidget {
@@ -728,7 +729,7 @@ class _LogMilestoneOverlayState extends ConsumerState<LogMilestoneOverlay> {
                                                   ?.journeyId;
                                           if (targetJourneyId != null) {
                                             ref.invalidate(
-                                              journeyMilestonesProvider(
+                                              paginatedJourneyMilestonesProvider(
                                                 targetJourneyId,
                                               ),
                                             );

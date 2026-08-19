@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/journey_models.dart';
 import '../../data/providers/journey_providers.dart';
+import '../../data/providers/paginated_journey_milestones_provider.dart';
 import 'package:intl/intl.dart';
 import 'log_milestone_overlay.dart';
 
@@ -76,7 +77,7 @@ class TimelineNode extends ConsumerWidget {
                               milestone.id,
                               r['label']!,
                             );
-                            ref.invalidate(journeyMilestonesProvider(milestone.journeyId!));
+                            ref.invalidate(paginatedJourneyMilestonesProvider(milestone.journeyId!));
                             ref.invalidate(togetherFeedProvider);
                           } catch (e) {
                             HealingSnackbar.showError(context, e);
@@ -312,7 +313,7 @@ class TimelineNode extends ConsumerWidget {
                               try {
                                 await ref.read(journeyRepositoryProvider).deleteMilestone(milestone.id);
                                 if (milestone.journeyId != null) {
-                                  ref.invalidate(journeyMilestonesProvider(milestone.journeyId!));
+                                  ref.invalidate(paginatedJourneyMilestonesProvider(milestone.journeyId!));
                                 } else {
                                   ref.invalidate(myFloatingMilestonesProvider);
                                 }
@@ -436,7 +437,7 @@ class TimelineNode extends ConsumerWidget {
                           } else {
                             await ref.read(journeyRepositoryProvider).reactToMilestone(milestone.id, 'love');
                           }
-                          ref.invalidate(journeyMilestonesProvider(milestone.journeyId!));
+                          ref.invalidate(paginatedJourneyMilestonesProvider(milestone.journeyId!));
                           ref.invalidate(togetherFeedProvider);
                         } catch (e) {
                           scaffoldMessenger.showSnackBar(const SnackBar(content: Text('Failed to update reaction')));

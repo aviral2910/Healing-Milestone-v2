@@ -548,7 +548,7 @@ class _PublicJourneyDetailOverlayState
                   error: (err, stack) => SliverToBoxAdapter(
                     child: HealingErrorView(
                       error: err,
-                      onRetry: () => ref.invalidate(journeyMilestonesProvider(widget.journeyId)),
+                      onRetry: () => ref.invalidate(paginatedJourneyMilestonesProvider(widget.journeyId, isPublic: true)),
                     ),
                   ),
                 ),

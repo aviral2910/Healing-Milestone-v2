@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:healing_milestones/shared/widgets/app_loader.dart';
 import '../../data/providers/journey_providers.dart';
+import '../../data/providers/paginated_journey_milestones_provider.dart';
 
 class ReopenJourneyOverlay extends ConsumerStatefulWidget {
   final String journeyId;
@@ -70,7 +71,7 @@ class _ReopenJourneyOverlayState extends ConsumerState<ReopenJourneyOverlay> {
       final repo = ref.read(journeyRepositoryProvider);
       await repo.reopenJourney(widget.journeyId, text);
       
-      ref.invalidate(journeyMilestonesProvider(widget.journeyId));
+      ref.invalidate(paginatedJourneyMilestonesProvider(widget.journeyId));
       ref.invalidate(myJourneysProvider);
       ref.invalidate(togetherFeedProvider);
       

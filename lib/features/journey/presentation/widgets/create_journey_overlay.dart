@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/providers/journey_providers.dart';
+import '../../data/providers/paginated_journey_milestones_provider.dart';
 import '../../data/models/journey_models.dart';
 import '../../../auth/data/auth_provider.dart';
 import '../../../../core/models/user_model.dart';
@@ -381,7 +382,7 @@ class _CreateJourneyOverlayState extends ConsumerState<CreateJourneyOverlay> {
                                           }
                                           ref.invalidate(myJourneysProvider);
                                           ref.invalidate(
-                                            journeyMilestonesProvider,
+                                            paginatedJourneyMilestonesProvider,
                                           );
                                           ref.invalidate(togetherFeedProvider);
                                           ref.invalidate(
