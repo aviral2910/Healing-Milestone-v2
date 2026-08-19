@@ -1,3 +1,4 @@
+import 'package:healing_milestones/features/journey/presentation/widgets/audio_player_widget.dart';
 import 'dart:ui';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
@@ -77,7 +78,6 @@ class _LogMilestoneOverlayState extends ConsumerState<LogMilestoneOverlay> {
   bool _isSubmitting = false;
 
   final AudioRecorder _audioRecorder = AudioRecorder();
-  final AudioPlayer _audioPlayer = AudioPlayer();
   bool _isRecording = false;
   String? _audioPath;
 
@@ -102,14 +102,7 @@ class _LogMilestoneOverlayState extends ConsumerState<LogMilestoneOverlay> {
     
     if (widget.initialMilestone?.audioUrl != null && widget.initialMilestone!.audioUrl!.isNotEmpty) {
       _audioPath = widget.initialMilestone!.audioUrl;
-      _audioPlayer.setUrl(_audioPath!).catchError((e) {
-        debugPrint('Error loading audio: $e');
-        return null;
-      });
     }
-    _audioPlayer.playerStateStream.listen((state) {
-      if (mounted) setState(() {});
-    });
 
   }
 
@@ -117,7 +110,6 @@ class _LogMilestoneOverlayState extends ConsumerState<LogMilestoneOverlay> {
   void dispose() {
     _contentController.dispose();
     _audioRecorder.dispose();
-    _audioPlayer.dispose();
     super.dispose();
   }
 
@@ -148,9 +140,7 @@ class _LogMilestoneOverlayState extends ConsumerState<LogMilestoneOverlay> {
         _isRecording = false;
         _audioPath = path;
       });
-      if (path != null) {
-        await _audioPlayer.setFilePath(path);
-      }
+
     } catch (e) {
       debugPrint('Error stopping record: $e');
     }
@@ -162,19 +152,7 @@ class _LogMilestoneOverlayState extends ConsumerState<LogMilestoneOverlay> {
     });
   }
 
-  Future<void> _playPause() async {
-    if (_audioPlayer.playing) {
-      await _audioPlayer.pause();
-    } else {
-      await _audioPlayer.play();
-      // Reset to start if finished
-      if (_audioPlayer.processingState == ProcessingState.completed) {
-        await _audioPlayer.seek(Duration.zero);
-        await _audioPlayer.play();
-      }
-    }
-    setState(() {});
-  }
+
 
   Color _getEmotionColor(EmotionStatus status) {
     switch (status) {
@@ -490,35 +468,19 @@ class _LogMilestoneOverlayState extends ConsumerState<LogMilestoneOverlay> {
                             ),
                           )
                         else if (_audioPath != null)
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: theme.colorScheme.surface,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: theme.dividerColor),
-                            ),
-                            child: Row(
-                              children: [
-                                IconButton(
-                                  icon: Icon(
-                                    _audioPlayer.playing ? Icons.pause_circle : Icons.play_circle,
-                                    color: theme.colorScheme.primary,
-                                    size: 32,
-                                  ),
-                                  onPressed: _playPause,
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              AudioPlayerWidget(audioUrl: _audioPath!),
+                              TextButton.icon(
+                                onPressed: _deleteRecording,
+                                icon: const Icon(Icons.delete, size: 20),
+                                label: const Text('Delete Recording'),
+                                style: TextButton.styleFrom(
+                                  foregroundColor: theme.colorScheme.error,
                                 ),
-                                Expanded(
-                                  child: Text(
-                                    'Voice Note',
-                                    style: TextStyle(color: theme.colorScheme.onSurface, fontWeight: FontWeight.w500),
-                                  ),
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete, color: Colors.grey),
-                                  onPressed: _deleteRecording,
-                                ),
-                              ],
-                            ),
+                              ),
+                            ],
                           )
                         else
                           Row(

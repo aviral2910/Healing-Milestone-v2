@@ -20,18 +20,26 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
   void initState() {
     super.initState();
     _audioPlayer = AudioPlayer();
-    _audioPlayer.setUrl(widget.audioUrl).catchError((e) {
-      debugPrint('Error loading audio: $e');
-      return null;
-    });
+    _initPlayer(widget.audioUrl);
   }
 
   @override
   void didUpdateWidget(AudioPlayerWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.audioUrl != widget.audioUrl) {
-      _audioPlayer.setUrl(widget.audioUrl).catchError((e) {
-        debugPrint('Error loading audio: $e');
+      _initPlayer(widget.audioUrl);
+    }
+  }
+  
+  void _initPlayer(String urlOrPath) {
+    if (urlOrPath.startsWith('http')) {
+      _audioPlayer.setUrl(urlOrPath).catchError((e) {
+        debugPrint('Error loading remote audio: $e');
+        return null;
+      });
+    } else {
+      _audioPlayer.setFilePath(urlOrPath).catchError((e) {
+        debugPrint('Error loading local audio: $e');
         return null;
       });
     }
