@@ -167,7 +167,18 @@ class ApiStoryRepository implements StoryRepository {
   }
 
   @override
-  Future<void> updateStory(StoryModel story) async {}
+  Future<void> updateStory(StoryModel story) async {
+    try {
+      final data = story.toMap();
+      // Remove id from payload
+      data.remove('storyId');
+      data.remove('id');
+      await _dio.put('/api/stories/${story.storyId}', data: data);
+    } catch (e) {
+      print('Error updating story: $e');
+      rethrow;
+    }
+  }
 
   @override
   Future<void> deleteStory(String storyId) async {
