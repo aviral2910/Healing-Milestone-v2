@@ -131,7 +131,11 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
                     Padding(
                       padding: const EdgeInsets.only(right: 12.0),
                       child: Text(
-                        _formatDuration(position),
+                        (position.inMilliseconds == 0 && duration.inMilliseconds > 0)
+                            ? _formatDuration(duration)
+                            : (duration.inMilliseconds > 0)
+                                ? '${_formatDuration(position)} / ${_formatDuration(duration)}'
+                                : _formatDuration(position),
                         style: theme.textTheme.labelSmall?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
                           fontWeight: FontWeight.w500,
