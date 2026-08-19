@@ -107,29 +107,29 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
                 final position = positionData?.position ?? Duration.zero;
                 final duration = positionData?.duration ?? Duration.zero;
                 
-                return Row(
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Expanded(
-                      child: SliderTheme(
-                        data: SliderTheme.of(context).copyWith(
-                          trackHeight: 4,
-                          thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-                          overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
-                          activeTrackColor: theme.colorScheme.primary,
-                          inactiveTrackColor: theme.colorScheme.primary.withValues(alpha: 0.2),
-                          thumbColor: theme.colorScheme.primary,
-                        ),
-                        child: Slider(
-                          value: min(position.inMilliseconds.toDouble(), duration.inMilliseconds.toDouble()),
-                          max: duration.inMilliseconds.toDouble() > 0 ? duration.inMilliseconds.toDouble() : 1.0,
-                          onChanged: (value) {
-                            _audioPlayer.seek(Duration(milliseconds: value.round()));
-                          },
-                        ),
+                    SliderTheme(
+                      data: SliderTheme.of(context).copyWith(
+                        trackHeight: 4,
+                        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                        overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
+                        activeTrackColor: theme.colorScheme.primary,
+                        inactiveTrackColor: theme.colorScheme.primary.withValues(alpha: 0.2),
+                        thumbColor: theme.colorScheme.primary,
+                      ),
+                      child: Slider(
+                        value: min(position.inMilliseconds.toDouble(), duration.inMilliseconds.toDouble()),
+                        max: duration.inMilliseconds.toDouble() > 0 ? duration.inMilliseconds.toDouble() : 1.0,
+                        onChanged: (value) {
+                          _audioPlayer.seek(Duration(milliseconds: value.round()));
+                        },
                       ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.only(right: 12.0),
+                      padding: const EdgeInsets.only(right: 24.0, bottom: 4.0),
                       child: Text(
                         (position.inMilliseconds == 0 && duration.inMilliseconds > 0)
                             ? _formatDuration(duration)
