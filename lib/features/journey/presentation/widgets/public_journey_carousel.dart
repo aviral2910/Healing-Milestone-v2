@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/providers/journey_providers.dart';
 import '../../data/models/journey_models.dart';
 import 'public_journey_detail_overlay.dart';
+import '../screens/public_user_journeys_screen.dart';
 
 class PublicJourneyCarousel extends ConsumerWidget {
   final String userId;
@@ -30,13 +31,38 @@ class PublicJourneyCarousel extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-              child: Text(
-                'Journeys',
-                style: theme.textTheme.titleSmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                  fontWeight: FontWeight.w600,
-                ),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Journeys',
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => PublicUserJourneysScreen(
+                            userId: userId,
+                            userName: userName,
+                          ),
+                        ),
+                      );
+                    },
+                    child: Text(
+                      'View All',
+                      style: TextStyle(
+                        color: theme.colorScheme.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
             SizedBox(
@@ -47,7 +73,7 @@ class PublicJourneyCarousel extends ConsumerWidget {
                 itemCount: journeys.length,
                 itemBuilder: (context, index) {
                   final journey = journeys[index];
-                  return _PublicJourneyItem(journey: journey);
+                  return PublicJourneyItem(journey: journey);
                 },
               ),
             ),
@@ -60,10 +86,10 @@ class PublicJourneyCarousel extends ConsumerWidget {
   }
 }
 
-class _PublicJourneyItem extends StatelessWidget {
+class PublicJourneyItem extends StatelessWidget {
   final JourneyModel journey;
 
-  const _PublicJourneyItem({required this.journey});
+  const PublicJourneyItem({required this.journey});
 
   @override
   Widget build(BuildContext context) {
