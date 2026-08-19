@@ -5,8 +5,13 @@ import 'dart:math';
 
 class AudioPlayerWidget extends StatefulWidget {
   final String audioUrl;
+  final bool isMini;
 
-  const AudioPlayerWidget({Key? key, required this.audioUrl}) : super(key: key);
+  const AudioPlayerWidget({
+    Key? key, 
+    required this.audioUrl,
+    this.isMini = false,
+  }) : super(key: key);
 
   @override
   State<AudioPlayerWidget> createState() => _AudioPlayerWidgetState();
@@ -74,9 +79,9 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
     final theme = Theme.of(context);
     
     return Container(
-      margin: const EdgeInsets.only(top: 12),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-      decoration: BoxDecoration(
+      margin: widget.isMini ? EdgeInsets.zero : const EdgeInsets.only(top: 12),
+      padding: widget.isMini ? const EdgeInsets.symmetric(vertical: 4) : const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      decoration: widget.isMini ? null : BoxDecoration(
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: theme.dividerColor.withValues(alpha: 0.5)),

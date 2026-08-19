@@ -468,19 +468,28 @@ class _LogMilestoneOverlayState extends ConsumerState<LogMilestoneOverlay> {
                             ),
                           )
                         else if (_audioPath != null)
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              AudioPlayerWidget(audioUrl: _audioPath!),
-                              TextButton.icon(
-                                onPressed: _deleteRecording,
-                                icon: const Icon(Icons.delete, size: 20),
-                                label: const Text('Delete Recording'),
-                                style: TextButton.styleFrom(
-                                  foregroundColor: theme.colorScheme.error,
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.surface,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: theme.dividerColor.withValues(alpha: 0.3)),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                AudioPlayerWidget(audioUrl: _audioPath!, isMini: true),
+                                const SizedBox(height: 8),
+                                TextButton.icon(
+                                  onPressed: _deleteRecording,
+                                  icon: const Icon(Icons.delete, size: 20),
+                                  label: const Text('Delete Recording'),
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: theme.colorScheme.error,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           )
                         else
                           Row(
