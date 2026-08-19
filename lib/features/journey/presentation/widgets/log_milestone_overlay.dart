@@ -553,7 +553,6 @@ class _LogMilestoneOverlayState extends ConsumerState<LogMilestoneOverlay> {
                             fillColor: theme.colorScheme.surface,
                           ),
                         ),
-                        const SizedBox(height: 20),
                         const SizedBox(height: 16),
                         // Audio Recorder Section
                         if (_isRecording)
@@ -617,6 +616,7 @@ class _LogMilestoneOverlayState extends ConsumerState<LogMilestoneOverlay> {
                           ),
 
 
+                        const SizedBox(height: 24),
                         // Voice Note & Visibility
                         if (isFloating) ...[
                           Text(
