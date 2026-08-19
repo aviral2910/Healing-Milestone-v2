@@ -356,8 +356,11 @@ class TimelineNode extends ConsumerWidget {
                   color: theme.colorScheme.onSurface,
                 ),
               ),
+              
+            if (milestone.audioUrl != null && milestone.audioUrl!.isNotEmpty)
+              AudioPlayerWidget(audioUrl: milestone.audioUrl!),
 
-            if (milestone.content != null) const SizedBox(height: 16),
+            if (milestone.content != null || (milestone.audioUrl != null && milestone.audioUrl!.isNotEmpty)) const SizedBox(height: 16),
             Row(
               children: [
                 if (milestone.reactionCounts.isNotEmpty)
