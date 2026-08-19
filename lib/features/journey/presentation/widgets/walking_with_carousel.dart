@@ -146,7 +146,7 @@ class _WalkingWithItem extends StatelessWidget {
                   imageUrl: journey.authorAvatar,
                   radius: 12,
                   role: journey.authorRole,
-                  isAnonymous: journey.authorAvatar == null,
+                  isAnonymous: journey.visibility == MilestoneVisibility.anonymous,
                   showRing: true,
                   ringColor: primaryColor.withValues(alpha: 0.8),
                 ),
