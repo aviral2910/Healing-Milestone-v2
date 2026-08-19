@@ -100,7 +100,7 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
             button = IconButton(
               icon: const Icon(Icons.play_circle),
               iconSize: 36.0,
-              color: theme.colorScheme.primary,
+              color: theme.colorScheme.primary.withValues(alpha: 0.3),
               onPressed: null,
             );
           } else if (playing != true) {
@@ -157,23 +157,43 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
                     return Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        SliderTheme(
-                          data: SliderTheme.of(context).copyWith(
-                            trackHeight: 4,
-                            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-                            overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
-                            activeTrackColor: theme.colorScheme.primary,
-                            inactiveTrackColor: theme.colorScheme.primary.withValues(alpha: 0.2),
-                            thumbColor: theme.colorScheme.primary,
-                          ),
-                          child: Slider(
-                            value: min(position.inMilliseconds.toDouble(), duration.inMilliseconds.toDouble()),
-                            max: duration.inMilliseconds.toDouble() > 0 ? duration.inMilliseconds.toDouble() : 1.0,
-                            onChanged: isLoading ? null : (value) {
-                              _audioPlayer.seek(Duration(milliseconds: value.round()));
-                            },
-                          ),
-                        ),
+                        isLoading
+                            ? Shimmer.fromColors(
+                                baseColor: theme.colorScheme.onSurface.withValues(alpha: 0.1),
+                                highlightColor: theme.colorScheme.onSurface.withValues(alpha: 0.3),
+                                child: SliderTheme(
+                                  data: SliderTheme.of(context).copyWith(
+                                    trackHeight: 4,
+                                    thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                                    overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
+                                    activeTrackColor: theme.colorScheme.primary,
+                                    inactiveTrackColor: theme.colorScheme.primary.withValues(alpha: 0.2),
+                                    thumbColor: theme.colorScheme.primary,
+                                  ),
+                                  child: Slider(
+                                    value: 0.0,
+                                    max: 1.0,
+                                    onChanged: null,
+                                  ),
+                                ),
+                              )
+                            : SliderTheme(
+                                data: SliderTheme.of(context).copyWith(
+                                  trackHeight: 4,
+                                  thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                                  overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
+                                  activeTrackColor: theme.colorScheme.primary,
+                                  inactiveTrackColor: theme.colorScheme.primary.withValues(alpha: 0.2),
+                                  thumbColor: theme.colorScheme.primary,
+                                ),
+                                child: Slider(
+                                  value: min(position.inMilliseconds.toDouble(), duration.inMilliseconds.toDouble()),
+                                  max: duration.inMilliseconds.toDouble() > 0 ? duration.inMilliseconds.toDouble() : 1.0,
+                                  onChanged: (value) {
+                                    _audioPlayer.seek(Duration(milliseconds: value.round()));
+                                  },
+                                ),
+                              ),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16.0),
                           child: Row(
@@ -210,13 +230,6 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
             ],
           );
 
-          if (isLoading) {
-            return Shimmer.fromColors(
-              baseColor: theme.colorScheme.onSurface.withValues(alpha: 0.1),
-              highlightColor: theme.colorScheme.onSurface.withValues(alpha: 0.3),
-              child: content,
-            );
-          }
           return content;
         },
       ),
