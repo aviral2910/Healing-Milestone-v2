@@ -443,68 +443,6 @@ class _LogMilestoneOverlayState extends ConsumerState<LogMilestoneOverlay> {
                           ],
                         ),
 
-                        const SizedBox(height: 16),
-                        // Audio Recorder Section
-                        if (_isRecording)
-                          Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Colors.red.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: Colors.red.withOpacity(0.3)),
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(Icons.mic, color: Colors.red),
-                                const SizedBox(width: 12),
-                                const Expanded(
-                                  child: Text('Recording...', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.stop_circle, color: Colors.red, size: 32),
-                                  onPressed: _stopRecording,
-                                ),
-                              ],
-                            ),
-                          )
-                        else if (_audioPath != null)
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: theme.colorScheme.surface,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: theme.dividerColor.withValues(alpha: 0.3)),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                AudioPlayerWidget(audioUrl: _audioPath!, isMini: true),
-                                const SizedBox(height: 8),
-                                TextButton.icon(
-                                  onPressed: _deleteRecording,
-                                  icon: const Icon(Icons.delete, size: 20),
-                                  label: const Text('Delete Recording'),
-                                  style: TextButton.styleFrom(
-                                    foregroundColor: theme.colorScheme.error,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          )
-                        else
-                          Row(
-                            children: [
-                              TextButton.icon(
-                                onPressed: _startRecording,
-                                icon: const Icon(Icons.mic),
-                                label: const Text('Add Voice Note'),
-                                style: TextButton.styleFrom(
-                                  foregroundColor: theme.colorScheme.primary,
-                                ),
-                              ),
-                            ],
-                          ),
-
                         const SizedBox(height: 24),
 
                         // Selection (Emotion vs Tag)
@@ -616,6 +554,68 @@ class _LogMilestoneOverlayState extends ConsumerState<LogMilestoneOverlay> {
                           ),
                         ),
                         const SizedBox(height: 20),
+                        const SizedBox(height: 16),
+                        // Audio Recorder Section
+                        if (_isRecording)
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.red.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: Colors.red.withOpacity(0.3)),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.mic, color: Colors.red),
+                                const SizedBox(width: 12),
+                                const Expanded(
+                                  child: Text('Recording...', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.stop_circle, color: Colors.red, size: 32),
+                                  onPressed: _stopRecording,
+                                ),
+                              ],
+                            ),
+                          )
+                        else if (_audioPath != null)
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.surface,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: theme.dividerColor.withValues(alpha: 0.3)),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                AudioPlayerWidget(audioUrl: _audioPath!, isMini: true),
+                                const SizedBox(height: 8),
+                                TextButton.icon(
+                                  onPressed: _deleteRecording,
+                                  icon: const Icon(Icons.delete, size: 20),
+                                  label: const Text('Delete Recording'),
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: theme.colorScheme.error,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        else
+                          Row(
+                            children: [
+                              TextButton.icon(
+                                onPressed: _startRecording,
+                                icon: const Icon(Icons.mic),
+                                label: const Text('Add Voice Note'),
+                                style: TextButton.styleFrom(
+                                  foregroundColor: theme.colorScheme.primary,
+                                ),
+                              ),
+                            ],
+                          ),
+
 
                         // Voice Note & Visibility
                         if (isFloating) ...[
@@ -747,50 +747,6 @@ class _LogMilestoneOverlayState extends ConsumerState<LogMilestoneOverlay> {
                                   ),
                                 ),
                             ],
-                          ),
-                        ] else ...[
-                          // Voice Note (Only if not floating, as we use the space for visibility on floating)
-                          Container(
-                            decoration: BoxDecoration(
-                              color: theme.colorScheme.surface,
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: theme.colorScheme.outlineVariant
-                                    .withValues(alpha: 0.5),
-                              ),
-                            ),
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(20),
-                                onTap: () {
-                                  // TODO: Implement voice notes
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 20,
-                                    vertical: 16,
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        Icons.mic_none_rounded,
-                                        color: theme.colorScheme.primary,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        'Add Voice Note',
-                                        style: TextStyle(
-                                          color: theme.colorScheme.primary,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
                           ),
                         ],
 
