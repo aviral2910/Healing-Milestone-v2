@@ -15,22 +15,34 @@ class R2StorageRepository implements StorageRepository {
     // 1. Compress the image before uploading
     final compressedBytes = await FlutterImageCompress.compressWithFile(
       file.absolute.path,
-      minWidth: 1080,
-      minHeight: 1080,
+      minWidth: 1920,
+      minHeight: 1920,
       quality: 100,
-      format: CompressFormat.webp,
+      format: CompressFormat.jpeg,
     );
 
     final bytesToUpload = compressedBytes ?? await file.readAsBytes();
-    final extension = file.path.split('.').last.toLowerCase();
-    final contentType = compressedBytes != null
-        ? 'image/webp'
-        : (extension == 'png'
-              ? 'image/png'
-              : (extension == 'jpg' || extension == 'jpeg'
-                    ? 'image/jpeg'
-                    : 'application/octet-stream'));
-    final finalExtension = compressedBytes != null ? 'webp' : extension;
+    final originalExtension = file.path.split('.').last.toLowerCase();
+    
+    // Dynamically set content type based on compression result
+    final String contentType;
+    final String finalExtension;
+    
+    if (compressedBytes != null) {
+      contentType = 'image/jpeg';
+      finalExtension = 'jpg';
+    } else {
+      if (originalExtension == 'png') {
+        contentType = 'image/png';
+      } else if (originalExtension == 'jpg' || originalExtension == 'jpeg') {
+        contentType = 'image/jpeg';
+      } else if (originalExtension == 'webp') {
+        contentType = 'image/webp';
+      } else {
+        contentType = 'application/octet-stream';
+      }
+      finalExtension = originalExtension;
+    }
 
     // 2. Ask backend for a presigned URL
     final response = await _apiClient.dio.get(
