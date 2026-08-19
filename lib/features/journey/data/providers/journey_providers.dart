@@ -35,67 +35,6 @@ final myFloatingMilestonesProvider = FutureProvider.autoDispose<List<JourneyMile
 
 
 
-class PaginatedMilestonesNotifier extends StateNotifier<AsyncValue<OffsetPaginatedState<JourneyMilestoneModel>>> {
-  final Ref ref;
-  final String journeyId;
-  final bool isPublic;
-  static const int _limit = 20;
-  bool _isFetchingMore = false;
-
-  PaginatedMilestonesNotifier(this.ref, this.journeyId, {this.isPublic = false}) : super(const AsyncValue.loading()) {
-    _fetchInitial();
-  }
-
-  Future<void> _fetchInitial() async {
-    try {
-      final repository = ref.read(journeyRepositoryProvider);
-      final items = await repository.getMilestones(journeyId: journeyId, isPublic: isPublic, skip: 0, limit: _limit);
-      state = AsyncValue.data(OffsetPaginatedState(
-        items: items,
-        skip: _limit,
-        isEnd: items.length < _limit,
-      ));
-    } catch (e, st) {
-      state = AsyncValue.error(e, st);
-    }
-  }
-
-  Future<void> fetchNextPage() async {
-    if (_isFetchingMore) return;
-    final currentState = state.value;
-    if (currentState == null || currentState.isEnd) return;
-
-    _isFetchingMore = true;
-    try {
-      final repository = ref.read(journeyRepositoryProvider);
-      final newItems = await repository.getMilestones(
-        journeyId: journeyId,
-        isPublic: isPublic,
-        skip: currentState.skip,
-        limit: _limit,
-      );
-
-      state = AsyncValue.data(currentState.copyWith(
-        items: [...currentState.items, ...newItems],
-        skip: currentState.skip + _limit,
-        isEnd: newItems.length < _limit,
-      ));
-    } catch (e) {
-      print('Error fetching next page: $e');
-    } finally {
-      _isFetchingMore = false;
-    }
-  }
-}
-
-final journeyMilestonesProvider = StateNotifierProvider.autoDispose.family<PaginatedMilestonesNotifier, AsyncValue<OffsetPaginatedState<JourneyMilestoneModel>>, String>((ref, journeyId) {
-  return PaginatedMilestonesNotifier(ref, journeyId, isPublic: false);
-});
-
-final publicJourneyMilestonesProvider = StateNotifierProvider.autoDispose.family<PaginatedMilestonesNotifier, AsyncValue<OffsetPaginatedState<JourneyMilestoneModel>>, String>((ref, journeyId) {
-  return PaginatedMilestonesNotifier(ref, journeyId, isPublic: true);
-});
-
 class TogetherFeedNotifier extends AsyncNotifier<OffsetPaginatedState<JourneyMilestoneModel>> {
   bool _isFetchingMore = false;
   static const int _limit = 20;
