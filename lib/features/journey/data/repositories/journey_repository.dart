@@ -171,7 +171,7 @@ class JourneyRepository {
         data: {
           'journey_id': journeyId,
           'emotion_status': emotionStatus?.name,
-          'professional_tag': professionalTag?.name,
+          'professional_tag': professionalTag?.apiValue,
           'content': content,
           'audio_url': audioUrl,
           'media_url': mediaUrl,
@@ -196,7 +196,7 @@ class JourneyRepository {
     try {
       final data = <String, dynamic>{
         'emotion_status': emotionStatus?.name,
-        'professional_tag': professionalTag?.name,
+        'professional_tag': professionalTag?.apiValue,
         'content': content,
       };
       if (visibility != null) {

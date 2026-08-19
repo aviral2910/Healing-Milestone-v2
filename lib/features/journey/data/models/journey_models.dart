@@ -70,6 +70,17 @@ enum ProfessionalTag {
     if (value == null) return null;
     return ProfessionalTag.values.firstWhere((e) => e.name == value || e.toString().split('.').last == value, orElse: () => ProfessionalTag.healthTip);
   }
+
+  String get apiValue {
+    switch (this) {
+      case ProfessionalTag.healthTip: return 'health_tip';
+      case ProfessionalTag.protocol: return 'protocol';
+      case ProfessionalTag.research: return 'research';
+      case ProfessionalTag.caseStudy: return 'case_study';
+      case ProfessionalTag.findings: return 'findings';
+      case ProfessionalTag.announcement: return 'announcement';
+    }
+  }
 }
 
 enum JourneyStatus {
