@@ -82,7 +82,7 @@ class R2StorageRepository implements StorageRepository {
 
   @override
   Future<void> deleteImageFromUrl(String url) async {
-    if (url.isEmpty || !url.contains('r2.dev')) return;
+    if (url.isEmpty || (!url.contains('r2.dev') && !url.contains('healingmilestones.com') && !url.contains('pub-'))) return;
     try {
       await _apiClient.dio.delete(
         '/api/media/delete',
