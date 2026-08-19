@@ -139,7 +139,7 @@ class _WalkingWithListItem extends StatelessWidget {
               imageUrl: journey.authorAvatar,
               radius: 24,
               role: journey.authorRole,
-              isAnonymous: journey.authorAvatar == null,
+              isAnonymous: journey.visibility == MilestoneVisibility.anonymous,
               showRing: true,
             ),
             const SizedBox(width: 16),
