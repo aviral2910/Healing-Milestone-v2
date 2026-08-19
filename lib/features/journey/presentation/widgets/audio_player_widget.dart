@@ -14,6 +14,7 @@ class AudioPlayerWidget extends StatefulWidget {
 
 class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
   late AudioPlayer _audioPlayer;
+  static AudioPlayer? _currentlyPlaying;
 
   @override
   void initState() {
@@ -26,7 +27,21 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
   }
 
   @override
+  void didUpdateWidget(AudioPlayerWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.audioUrl != widget.audioUrl) {
+      _audioPlayer.setUrl(widget.audioUrl).catchError((e) {
+        debugPrint('Error loading audio: $e');
+        return null;
+      });
+    }
+  }
+
+  @override
   void dispose() {
+    if (_currentlyPlaying == _audioPlayer) {
+      _currentlyPlaying = null;
+    }
     _audioPlayer.dispose();
     super.dispose();
   }
@@ -84,7 +99,13 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
                       icon: const Icon(Icons.play_circle),
                       iconSize: 36.0,
                       color: theme.colorScheme.primary,
-                      onPressed: _audioPlayer.play,
+                      onPressed: () {
+                        if (_currentlyPlaying != null && _currentlyPlaying != _audioPlayer) {
+                          _currentlyPlaying!.pause();
+                        }
+                        _currentlyPlaying = _audioPlayer;
+                        _audioPlayer.play();
+                      },
                     );
                   } else if (processingState != ProcessingState.completed) {
                     button = IconButton(
@@ -98,7 +119,14 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
                       icon: const Icon(Icons.replay_circle_filled),
                       iconSize: 36.0,
                       color: theme.colorScheme.primary,
-                      onPressed: () => _audioPlayer.seek(Duration.zero),
+                      onPressed: () {
+                        if (_currentlyPlaying != null && _currentlyPlaying != _audioPlayer) {
+                          _currentlyPlaying!.pause();
+                        }
+                        _currentlyPlaying = _audioPlayer;
+                        _audioPlayer.seek(Duration.zero);
+                        _audioPlayer.play();
+                      },
                     );
                   }
                   
