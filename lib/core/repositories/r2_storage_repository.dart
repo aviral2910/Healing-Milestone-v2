@@ -4,7 +4,6 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'storage_repository.dart';
 import '../network/api_client.dart';
 
-
 class R2StorageRepository implements StorageRepository {
   final ApiClient _apiClient;
   final Dio _dio = Dio(); // Clean Dio instance for external S3 uploads
@@ -16,15 +15,21 @@ class R2StorageRepository implements StorageRepository {
     // 1. Compress the image before uploading
     final compressedBytes = await FlutterImageCompress.compressWithFile(
       file.absolute.path,
-      minWidth: 1920,
-      minHeight: 1920,
+      minWidth: 1080,
+      minHeight: 1080,
       quality: 100,
       format: CompressFormat.webp,
     );
 
     final bytesToUpload = compressedBytes ?? await file.readAsBytes();
     final extension = file.path.split('.').last.toLowerCase();
-    final contentType = compressedBytes != null ? 'image/webp' : (extension == 'png' ? 'image/png' : (extension == 'jpg' || extension == 'jpeg' ? 'image/jpeg' : 'application/octet-stream'));
+    final contentType = compressedBytes != null
+        ? 'image/webp'
+        : (extension == 'png'
+              ? 'image/png'
+              : (extension == 'jpg' || extension == 'jpeg'
+                    ? 'image/jpeg'
+                    : 'application/octet-stream'));
     final finalExtension = compressedBytes != null ? 'webp' : extension;
 
     // 2. Ask backend for a presigned URL
@@ -65,6 +70,14 @@ class R2StorageRepository implements StorageRepository {
 
   @override
   Future<void> deleteImageFromUrl(String url) async {
-    // Same as above
+    if (url.isEmpty || !url.contains('r2.dev')) return;
+    try {
+      await _apiClient.dio.delete(
+        '/api/media/delete',
+        queryParameters: {'url': url},
+      );
+    } catch (e) {
+      print('Failed to delete old image from R2: $e');
+    }
   }
 }
