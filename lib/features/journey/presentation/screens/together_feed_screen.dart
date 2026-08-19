@@ -94,6 +94,13 @@ class _TogetherFeedScreenState extends ConsumerState<TogetherFeedScreen> {
                     ),
                     sliver: SliverList(
                       delegate: SliverChildBuilderDelegate((context, index) {
+                        if (index == feed.length) {
+                          return const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 32.0),
+                            child: Center(child: AppLoader.small()),
+                          );
+                        }
+                        
                         final milestone = feed[index];
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 16.0),
@@ -102,7 +109,7 @@ class _TogetherFeedScreenState extends ConsumerState<TogetherFeedScreen> {
                             index: index,
                           ),
                         );
-                      }, childCount: feed.length),
+                      }, childCount: feed.length + (state.isEnd ? 0 : 1)),
                     ),
                   );
                 },
