@@ -13,15 +13,15 @@ class R2StorageRepository implements StorageRepository {
       
       final fileName = '${DateTime.now().millisecondsSinceEpoch}_${const Uuid().v4()}.m4a';
       
-      final urlResponse = await _apiClient.dio.post(
-        '/api/upload/presigned-url',
-        data: {
-          'file_name': fileName,
+      final urlResponse = await _apiClient.dio.get(
+        '/api/media/presigned-url',
+        queryParameters: {
+          'file_type': 'm4a',
           'content_type': 'audio/m4a',
         },
       );
       
-      final presignedUrl = urlResponse.data['url'] as String;
+      final presignedUrl = urlResponse.data['upload_url'] as String;
       final publicUrl = urlResponse.data['public_url'] as String;
       
       final dio = Dio();
