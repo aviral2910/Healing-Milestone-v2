@@ -4,6 +4,7 @@ import '../../../core/network/api_client.dart';
 import '../../../core/models/user_model.dart';
 import '../../../core/models/story_model.dart';
 import '../../../core/models/global_search_result.dart';
+import '../../../features/journey/data/models/journey_models.dart';
 
 final apiSearchRepositoryProvider = Provider<ApiSearchRepository>((ref) {
   return ApiSearchRepository(apiClient: ref.watch(apiClientProvider));
@@ -33,14 +34,19 @@ class ApiSearchRepository {
           ?.map((e) => _mapApiToStoryModel(e))
           .toList() ?? [];
 
+      final journeys = (data['journeys'] as List<dynamic>?)
+          ?.map((e) => JourneyModel.fromJson(e))
+          .toList() ?? [];
+
       return GlobalSearchResult(
         people: people,
         tags: tags,
         stories: stories,
+        journeys: journeys,
       );
     } catch (e) {
       print('Error in global search: $e');
-      return GlobalSearchResult(people: [], tags: [], stories: []);
+      return GlobalSearchResult(people: [], tags: [], stories: [], journeys: []);
     }
   }
 

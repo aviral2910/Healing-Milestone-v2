@@ -9,6 +9,7 @@ import '../../data/search_providers.dart';
 import '../../../auth/data/auth_provider.dart';
 import '../widgets/user_profile_card.dart';
 import '../../../../shared/widgets/story_card.dart';
+import '../../../../features/journey/presentation/widgets/public_journey_carousel.dart';
 import '../../../posts/data/hashtag_repository.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:healing_milestones/shared/widgets/app_loader.dart';
@@ -374,7 +375,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       error: (err, stack) => Center(
           child: Text('Error: $err', style: const TextStyle(color: Colors.red))),
       data: (result) {
-        if (result == null || (result.people.isEmpty && result.tags.isEmpty && result.stories.isEmpty)) {
+        if (result == null || (result.people.isEmpty && result.tags.isEmpty && result.stories.isEmpty && result.journeys.isEmpty)) {
           return const Center(
               child: Text('No results found.', style: TextStyle(color: Colors.grey)));
         }
@@ -446,6 +447,37 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: _buildHashtagWrap(result.tags),
+                  ),
+                ),
+              ],
+
+              
+              if (result.journeys.isNotEmpty) ...[
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+                    child: Text('Journeys',
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurface,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold)),
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: SizedBox(
+                    height: 160,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: result.journeys.length,
+                      itemBuilder: (context, index) {
+                        final journey = result.journeys[index];
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 12.0),
+                          child: PublicJourneyItem(journey: journey),
+                        );
+                      },
+                    ),
                   ),
                 ),
               ],

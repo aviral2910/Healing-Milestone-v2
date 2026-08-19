@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:healing_milestones/core/router/app_routes.dart';
 import '../../../../core/presentation/widgets/healing_error_view.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/providers/journey_providers.dart';
@@ -44,7 +46,9 @@ class _TogetherFeedScreenState extends ConsumerState<TogetherFeedScreen> {
               parent: BouncingScrollPhysics(),
             ),
             slivers: [
-              const CommonSliverAppBar(),
+              CommonSliverAppBar(
+                onSearchTapped: () => context.push(AppRoutes.search),
+              ),
 
               // Horizontal Carousel of Walking With / Followed Journeys
               const SliverToBoxAdapter(

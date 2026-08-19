@@ -37,19 +37,19 @@ class CommonSliverAppBar extends ConsumerWidget {
         if (onSearchTapped != null)
           IconButton(
             icon: const Icon(Icons.search),
-            color: Colors.white,
+            color: theme.colorScheme.onSurface,
             onPressed: onSearchTapped,
           ),
         // IconButton(
         //   icon: const Icon(Icons.bug_report_outlined),
-        //   color: Colors.white,
+        //   color: theme.colorScheme.onSurface,
         //   onPressed: () {
         //     context.push(AppRoutes.uat);
         //   },
         // ),
         IconButton(
           icon: const Icon(Icons.more_vert),
-          color: Colors.white,
+          color: theme.colorScheme.onSurface,
           onPressed: () {
             context.push(AppRoutes.settings, extra: MenuContext.home);
           },
