@@ -51,23 +51,17 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
     final theme = Theme.of(context);
     
     return Container(
-      margin: const EdgeInsets.only(top: 16),
-      padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
+      margin: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       decoration: BoxDecoration(
-        color: theme.colorScheme.primary.withValues(alpha: 0.08),
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: theme.colorScheme.primary.withValues(alpha: 0.15),
-          width: 1,
-        ),
+        border: Border.all(color: theme.dividerColor.withValues(alpha: 0.5)),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.end,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Row(
-            children: [
-              StreamBuilder<PlayerState>(
+          StreamBuilder<PlayerState>(
                 stream: _audioPlayer.playerStateStream,
                 builder: (context, snapshot) {
                   final playerState = snapshot.data;
@@ -81,28 +75,28 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
                       width: 32.0,
                       height: 32.0,
                       child: CircularProgressIndicator(
-                        strokeWidth: 3, 
+                        strokeWidth: 2, 
                         color: theme.colorScheme.primary,
                       ),
                     );
                   } else if (playing != true) {
                     button = IconButton(
                       icon: const Icon(Icons.play_circle),
-                      iconSize: 42.0,
+                      iconSize: 36.0,
                       color: theme.colorScheme.primary,
                       onPressed: _audioPlayer.play,
                     );
                   } else if (processingState != ProcessingState.completed) {
                     button = IconButton(
                       icon: const Icon(Icons.pause_circle),
-                      iconSize: 42.0,
+                      iconSize: 36.0,
                       color: theme.colorScheme.primary,
                       onPressed: _audioPlayer.pause,
                     );
                   } else {
                     button = IconButton(
                       icon: const Icon(Icons.replay_circle_filled),
-                      iconSize: 42.0,
+                      iconSize: 36.0,
                       color: theme.colorScheme.primary,
                       onPressed: () => _audioPlayer.seek(Duration.zero),
                     );
@@ -122,53 +116,59 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
                     final position = positionData?.position ?? Duration.zero;
                     final duration = positionData?.duration ?? Duration.zero;
                     
-                    return SliderTheme(
-                      data: SliderTheme.of(context).copyWith(
-                        trackHeight: 6,
-                        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
-                        overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
-                        activeTrackColor: theme.colorScheme.primary,
-                        inactiveTrackColor: theme.colorScheme.primary.withValues(alpha: 0.2),
-                        thumbColor: theme.colorScheme.primary,
-                      ),
-                      child: Slider(
-                        value: min(position.inMilliseconds.toDouble(), duration.inMilliseconds.toDouble()),
-                        max: duration.inMilliseconds.toDouble() > 0 ? duration.inMilliseconds.toDouble() : 1.0,
-                        onChanged: (value) {
-                          _audioPlayer.seek(Duration(milliseconds: value.round()));
-                        },
-                      ),
+                    return Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SliderTheme(
+                          data: SliderTheme.of(context).copyWith(
+                            trackHeight: 4,
+                            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                            overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
+                            activeTrackColor: theme.colorScheme.primary,
+                            inactiveTrackColor: theme.colorScheme.primary.withValues(alpha: 0.2),
+                            thumbColor: theme.colorScheme.primary,
+                          ),
+                          child: Slider(
+                            value: min(position.inMilliseconds.toDouble(), duration.inMilliseconds.toDouble()),
+                            max: duration.inMilliseconds.toDouble() > 0 ? duration.inMilliseconds.toDouble() : 1.0,
+                            onChanged: (value) {
+                              _audioPlayer.seek(Duration(milliseconds: value.round()));
+                            },
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Voice Note',
+                                style: theme.textTheme.labelSmall?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              Text(
+                                (position.inMilliseconds == 0 && duration.inMilliseconds > 0)
+                                    ? _formatDuration(duration)
+                                    : (duration.inMilliseconds > 0)
+                                        ? '${_formatDuration(position)} / ${_formatDuration(duration)}'
+                                        : _formatDuration(position),
+                                style: theme.textTheme.labelSmall?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     );
                   },
                 ),
               ),
             ],
           ),
-          StreamBuilder<PositionData>(
-            stream: _positionDataStream,
-            builder: (context, snapshot) {
-              final positionData = snapshot.data;
-              final position = positionData?.position ?? Duration.zero;
-              final duration = positionData?.duration ?? Duration.zero;
-              
-              return Padding(
-                padding: const EdgeInsets.only(right: 24.0, bottom: 4.0),
-                child: Text(
-                  (position.inMilliseconds == 0 && duration.inMilliseconds > 0)
-                      ? _formatDuration(duration)
-                      : (duration.inMilliseconds > 0)
-                          ? '${_formatDuration(position)} / ${_formatDuration(duration)}'
-                          : _formatDuration(position),
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
     );
   }
 }
