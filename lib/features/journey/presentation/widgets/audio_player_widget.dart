@@ -51,12 +51,15 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
     final theme = Theme.of(context);
     
     return Container(
-      margin: const EdgeInsets.only(top: 12),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      margin: const EdgeInsets.only(top: 16),
+      padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
+        color: theme.colorScheme.primary.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: theme.dividerColor.withValues(alpha: 0.5)),
+        border: Border.all(
+          color: theme.colorScheme.primary.withValues(alpha: 0.15),
+          width: 1,
+        ),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -70,36 +73,45 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
                   final playerState = snapshot.data;
                   final processingState = playerState?.processingState;
                   final playing = playerState?.playing;
+                  Widget button;
                   if (processingState == ProcessingState.loading ||
                       processingState == ProcessingState.buffering) {
-                    return Container(
+                    button = Container(
                       margin: const EdgeInsets.all(8.0),
                       width: 32.0,
                       height: 32.0,
-                      child: const CircularProgressIndicator(strokeWidth: 2),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 3, 
+                        color: theme.colorScheme.primary,
+                      ),
                     );
                   } else if (playing != true) {
-                    return IconButton(
+                    button = IconButton(
                       icon: const Icon(Icons.play_circle),
-                      iconSize: 36.0,
+                      iconSize: 42.0,
                       color: theme.colorScheme.primary,
                       onPressed: _audioPlayer.play,
                     );
                   } else if (processingState != ProcessingState.completed) {
-                    return IconButton(
+                    button = IconButton(
                       icon: const Icon(Icons.pause_circle),
-                      iconSize: 36.0,
+                      iconSize: 42.0,
                       color: theme.colorScheme.primary,
                       onPressed: _audioPlayer.pause,
                     );
                   } else {
-                    return IconButton(
+                    button = IconButton(
                       icon: const Icon(Icons.replay_circle_filled),
-                      iconSize: 36.0,
+                      iconSize: 42.0,
                       color: theme.colorScheme.primary,
                       onPressed: () => _audioPlayer.seek(Duration.zero),
                     );
                   }
+                  
+                  return Padding(
+                    padding: const EdgeInsets.only(left: 4.0, right: 4.0),
+                    child: button,
+                  );
                 },
               ),
               Expanded(
@@ -112,9 +124,9 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
                     
                     return SliderTheme(
                       data: SliderTheme.of(context).copyWith(
-                        trackHeight: 4,
-                        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-                        overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
+                        trackHeight: 6,
+                        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
+                        overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
                         activeTrackColor: theme.colorScheme.primary,
                         inactiveTrackColor: theme.colorScheme.primary.withValues(alpha: 0.2),
                         thumbColor: theme.colorScheme.primary,
