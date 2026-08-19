@@ -198,6 +198,8 @@ class JourneyRepository {
         'emotion_status': emotionStatus?.name,
         'professional_tag': professionalTag?.apiValue,
         'content': content,
+        'audio_url': audioUrl,
+        'media_url': mediaUrl,
       };
       if (visibility != null) {
         data['visibility'] = visibility.name;

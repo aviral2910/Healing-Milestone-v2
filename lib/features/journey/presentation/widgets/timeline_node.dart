@@ -1,3 +1,4 @@
+import 'package:healing_milestones/features/posts/data/story_providers.dart';
 import 'audio_player_widget.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/presentation/widgets/healing_snackbar.dart';
@@ -316,6 +317,20 @@ class TimelineNode extends ConsumerWidget {
                             
                             if (confirm == true) {
                               try {
+                                if (milestone.audioUrl != null && milestone.audioUrl!.isNotEmpty) {
+                                  try {
+                                    await ref.read(storageRepositoryProvider).deleteImageFromUrl(milestone.audioUrl!);
+                                  } catch (e) {
+                                    debugPrint('Failed to delete audio from R2: $e');
+                                  }
+                                }
+                                if (milestone.mediaUrl != null && milestone.mediaUrl!.isNotEmpty) {
+                                  try {
+                                    await ref.read(storageRepositoryProvider).deleteImageFromUrl(milestone.mediaUrl!);
+                                  } catch (e) {
+                                    debugPrint('Failed to delete media from R2: $e');
+                                  }
+                                }
                                 await ref.read(journeyRepositoryProvider).deleteMilestone(milestone.id);
                                 if (milestone.journeyId != null) {
                                   ref.invalidate(paginatedJourneyMilestonesProvider(milestone.journeyId!));
