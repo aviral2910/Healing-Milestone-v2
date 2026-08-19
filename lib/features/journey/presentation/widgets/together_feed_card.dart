@@ -91,12 +91,21 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
               ),
             ),
             Positioned(
-              left: (position.dx - 100).clamp(16.0, MediaQuery.of(context).size.width - 250.0),
-              top: (position.dy - 80).clamp(kToolbarHeight, MediaQuery.of(context).size.height - 100.0),
+              left: (position.dx - 100).clamp(
+                16.0,
+                MediaQuery.of(context).size.width - 250.0,
+              ),
+              top: (position.dy - 80).clamp(
+                kToolbarHeight,
+                MediaQuery.of(context).size.height - 100.0,
+              ),
               child: Material(
                 color: Colors.transparent,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   decoration: BoxDecoration(
                     color: theme.colorScheme.surface,
                     borderRadius: BorderRadius.circular(30),
@@ -115,12 +124,16 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
                         onTap: () async {
                           Navigator.of(context).pop();
                           HapticFeedback.mediumImpact();
-                          final scaffoldMessenger = ScaffoldMessenger.of(context);
+                          final scaffoldMessenger = ScaffoldMessenger.of(
+                            context,
+                          );
                           try {
-                            await container.read(journeyRepositoryProvider).reactToMilestone(
-                              widget.milestone.id,
-                              r['label']!,
-                            );
+                            await container
+                                .read(journeyRepositoryProvider)
+                                .reactToMilestone(
+                                  widget.milestone.id,
+                                  r['label']!,
+                                );
                             container.invalidate(togetherFeedProvider);
                           } catch (e) {
                             HealingSnackbar.showError(context, e);
@@ -146,10 +159,9 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
         return FadeTransition(
           opacity: animation,
           child: ScaleTransition(
-            scale: Tween<double>(begin: 0.9, end: 1.0).animate(CurvedAnimation(
-              parent: animation,
-              curve: Curves.easeOutBack,
-            )),
+            scale: Tween<double>(begin: 0.9, end: 1.0).animate(
+              CurvedAnimation(parent: animation, curve: Curves.easeOutBack),
+            ),
             child: child,
           ),
         );
@@ -227,7 +239,9 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
           _animController.reverse();
           if (widget.milestone.journeyId != null &&
               widget.milestone.journeyTitle != null) {
-            if (widget.milestone.authorUid != null && widget.milestone.authorUid == FirebaseAuth.instance.currentUser?.uid) {
+            if (widget.milestone.authorUid != null &&
+                widget.milestone.authorUid ==
+                    FirebaseAuth.instance.currentUser?.uid) {
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -267,7 +281,9 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
             margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: isClosure ? null : const Color(0xFF141414),
+              color: isClosure
+                  ? null
+                  : const Color(0xFF141414).withValues(alpha: 0.8),
               gradient: isClosure
                   ? LinearGradient(
                       begin: Alignment.topLeft,
@@ -285,7 +301,7 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
                 color: isClosure
                     ? theme.colorScheme.primary.withValues(alpha: 0.6)
                     : theme.colorScheme.primary.withValues(alpha: 0.2),
-                width: isClosure ? 1.5 : 1.0,
+                width: isClosure ? 1 : .5,
               ),
               boxShadow: [
                 BoxShadow(
@@ -309,7 +325,9 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
                       imageUrl: widget.milestone.authorAvatar,
                       radius: 17,
                       role: widget.milestone.authorRole,
-                      isAnonymous: widget.milestone.visibility == MilestoneVisibility.anonymous,
+                      isAnonymous:
+                          widget.milestone.visibility ==
+                          MilestoneVisibility.anonymous,
                       showRing: true,
                     ),
                     const SizedBox(width: 12),
@@ -598,7 +616,8 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
                           ),
                         ),
                       ),
-                    if (widget.milestone.audioUrl != null && widget.milestone.audioUrl!.isNotEmpty)
+                    if (widget.milestone.audioUrl != null &&
+                        widget.milestone.audioUrl!.isNotEmpty)
                       AudioPlayerWidget(audioUrl: widget.milestone.audioUrl!),
                   ],
                 ),
@@ -768,7 +787,10 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
                               );
                             }
                           },
-                          onLongPressStart: (details) => _showReactionOverlay(context, details.globalPosition),
+                          onLongPressStart: (details) => _showReactionOverlay(
+                            context,
+                            details.globalPosition,
+                          ),
                           behavior: HitTestBehavior.opaque,
                           child: AnimatedContainer(
                             duration: const Duration(milliseconds: 200),
@@ -825,4 +847,3 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
     return 'Now';
   }
 }
-

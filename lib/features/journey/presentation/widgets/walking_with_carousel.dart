@@ -97,7 +97,8 @@ class _WalkingWithItem extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
-        if (journey.authorUid != null && journey.authorUid == FirebaseAuth.instance.currentUser?.uid) {
+        if (journey.authorUid != null &&
+            journey.authorUid == FirebaseAuth.instance.currentUser?.uid) {
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -129,11 +130,13 @@ class _WalkingWithItem extends StatelessWidget {
         margin: const EdgeInsets.only(right: 12, bottom: 4, top: 4),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xFF161616), // Very dark background matching image
+          color: const Color(
+            0xFF161616,
+          ).withValues(alpha: 0.4), // Very dark background matching image
           borderRadius: BorderRadius.circular(24), // Highly rounded corners
           border: Border.all(
-            color: primaryColor.withValues(alpha: 0.4), // Golden border
-            width: 1.0,
+            color: primaryColor.withValues(alpha: 0.2), // Golden border
+            width: .5,
           ),
         ),
         child: Column(
@@ -146,9 +149,10 @@ class _WalkingWithItem extends StatelessWidget {
                   imageUrl: journey.authorAvatar,
                   radius: 12,
                   role: journey.authorRole,
-                  isAnonymous: journey.visibility == MilestoneVisibility.anonymous,
+                  isAnonymous:
+                      journey.visibility == MilestoneVisibility.anonymous,
                   showRing: true,
-                  ringColor: primaryColor.withValues(alpha: 0.8),
+                  // ringColor: primaryColor.withValues(alpha: 0.4),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
