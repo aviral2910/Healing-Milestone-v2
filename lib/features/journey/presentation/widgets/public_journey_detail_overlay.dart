@@ -8,6 +8,7 @@ import '../../../../core/presentation/widgets/healing_error_view.dart';
 import 'package:healing_milestones/shared/widgets/app_avatar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/providers/journey_providers.dart';
+import '../../data/providers/paginated_journey_milestones_provider.dart';
 import '../../data/models/journey_models.dart';
 import 'timeline_node.dart';
 import 'package:healing_milestones/shared/widgets/app_loader.dart';
@@ -138,10 +139,10 @@ class _PublicJourneyDetailOverlayState
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final milestonesAsync = ref.watch(
-      publicJourneyMilestonesProvider(widget.journeyId),
+      paginatedJourneyMilestonesProvider(widget.journeyId, isPublic: true),
     );
 
-    final milestonesList = milestonesAsync.value ?? [];
+    final milestonesList = milestonesAsync.value?.items ?? [];
     final firstMilestone = milestonesList.isNotEmpty
         ? milestonesList.first
         : null;
@@ -179,7 +180,14 @@ class _PublicJourneyDetailOverlayState
 
           SafeArea(
             bottom: false,
-            child: CustomScrollView(
+            child: NotificationListener<ScrollNotification>(
+              onNotification: (ScrollNotification scrollInfo) {
+                if (scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent - 200) {
+                  ref.read(paginatedJourneyMilestonesProvider(widget.journeyId, isPublic: true).notifier).fetchNextPage();
+                }
+                return false;
+              },
+              child: CustomScrollView(
               physics: const BouncingScrollPhysics(),
               slivers: [
                 SliverAppBar(
@@ -284,7 +292,8 @@ class _PublicJourneyDetailOverlayState
                                         radius: 20,
                                         role: milestonesAsync
                                             .value
-                                            ?.first
+                                            ?.items
+                                            .first
                                             .authorRole,
                                         isAnonymous:
                                             widget.visibility ==
@@ -469,7 +478,8 @@ class _PublicJourneyDetailOverlayState
                 ),
 
                 milestonesAsync.when(
-                  data: (milestones) {
+                  data: (state) {
+                        final milestones = state.items;
                     if (milestones.isEmpty) {
                       return SliverToBoxAdapter(
                         child: Center(
@@ -543,6 +553,7 @@ class _PublicJourneyDetailOverlayState
                   ),
                 ),
               ],
+            ),
             ),
           ),
         ],

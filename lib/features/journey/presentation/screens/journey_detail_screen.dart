@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/presentation/widgets/healing_error_view.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/providers/journey_providers.dart';
+import '../../data/providers/paginated_journey_milestones_provider.dart';
 import '../widgets/timeline_node.dart';
 import '../widgets/log_milestone_overlay.dart';
 import '../widgets/complete_journey_overlay.dart';
@@ -32,7 +33,14 @@ class JourneyDetailScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       extendBodyBehindAppBar: true,
-      body: CustomScrollView(
+      body: NotificationListener<ScrollNotification>(
+        onNotification: (ScrollNotification scrollInfo) {
+          if (scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent - 200) {
+            ref.read(paginatedJourneyMilestonesProvider(journeyId).notifier).fetchNextPage();
+          }
+          return false;
+        },
+        child: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
           SliverAppBar(
@@ -52,8 +60,8 @@ class JourneyDetailScreen extends ConsumerWidget {
                 ),
               Consumer(
                 builder: (context, ref, child) {
-                  final milestonesAsync = ref.watch(journeyMilestonesProvider(journeyId));
-                  final milestones = milestonesAsync.value ?? [];
+                  final milestonesAsync = ref.watch(paginatedJourneyMilestonesProvider(journeyId));
+                  final milestones = milestonesAsync.value?.items ?? [];
                   final isCompleted = milestones.isNotEmpty && milestones.first.isClosure;
                   if (isCompleted) {
                     return Padding(
@@ -171,10 +179,11 @@ class JourneyDetailScreen extends ConsumerWidget {
           Consumer(
             builder: (context, ref, child) {
               final milestonesAsync = ref.watch(
-                journeyMilestonesProvider(journeyId),
+                paginatedJourneyMilestonesProvider(journeyId),
               );
               return milestonesAsync.when(
-                data: (milestones) {
+                data: (state) {
+                        final milestones = state.items;
                   if (milestones.isEmpty) {
                     return SliverToBoxAdapter(
                       child: Center(
@@ -244,7 +253,7 @@ class JourneyDetailScreen extends ConsumerWidget {
                 error: (err, stack) => SliverToBoxAdapter(
                   child: HealingErrorView(
                     error: err,
-                    onRetry: () => ref.invalidate(journeyMilestonesProvider(journeyId)),
+                    onRetry: () => ref.invalidate(paginatedJourneyMilestonesProvider(journeyId)),
                   ),
                 ),
               );
@@ -252,10 +261,11 @@ class JourneyDetailScreen extends ConsumerWidget {
           ),
         ],
       ),
+      ),
       floatingActionButton: Consumer(
         builder: (context, ref, child) {
-          final milestonesAsync = ref.watch(journeyMilestonesProvider(journeyId));
-          final milestones = milestonesAsync.value ?? [];
+          final milestonesAsync = ref.watch(paginatedJourneyMilestonesProvider(journeyId));
+          final milestones = milestonesAsync.value?.items ?? [];
           final isCompleted = milestones.isNotEmpty && milestones.first.isClosure;
           
           if (isCompleted) {
