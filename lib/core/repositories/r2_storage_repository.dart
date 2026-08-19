@@ -15,9 +15,9 @@ class R2StorageRepository implements StorageRepository {
     // 1. Compress the image before uploading
     final compressedBytes = await FlutterImageCompress.compressWithFile(
       file.absolute.path,
-      minWidth: 1920,
-      minHeight: 1920,
-      quality: 100,
+      minWidth: 1440,
+      minHeight: 1440,
+      quality: 90,
       format: CompressFormat.jpeg,
     );
 

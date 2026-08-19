@@ -31,6 +31,7 @@ abstract class PostCreationState with _$PostCreationState {
       title: story.heading,
       content: story.description,
       tags: List.from(story.hashtagsList),
+      selectedUsers: List.from(story.taggedUsers),
       isAnonymous: !story.displayAuthorName,
       type: story.type,
       isEditing: true,
