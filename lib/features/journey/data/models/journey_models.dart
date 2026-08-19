@@ -172,6 +172,7 @@ class JourneyMilestoneModel {
   final bool isReopening;
   final bool isClosure;
   final String? mediaUrl;
+  final String? audioUrl;
   final MilestoneVisibility visibility;
   final DateTime createdAt;
   final String? authorName;
@@ -200,6 +201,7 @@ class JourneyMilestoneModel {
     this.isReopening = false,
     this.isClosure = false,
     this.mediaUrl,
+    this.audioUrl,
     this.visibility = MilestoneVisibility.private,
     required this.createdAt,
     this.authorName,
@@ -230,6 +232,7 @@ class JourneyMilestoneModel {
       isReopening: json['is_reopening'] as bool? ?? false,
       isClosure: json['is_closure'] as bool? ?? false,
       mediaUrl: json['media_url'] as String?,
+      audioUrl: json['audio_url'] as String?,
       visibility: MilestoneVisibility.fromString(json['visibility'] as String? ?? 'private'),
       createdAt: DateTime.parse(json['created_at'] as String).toLocal(),
       authorName: json['author_name'] as String?,
@@ -260,6 +263,7 @@ class JourneyMilestoneModel {
       'is_reopening': isReopening,
       'is_closure': isClosure,
       'media_url': mediaUrl,
+      'audio_url': audioUrl,
       'visibility': visibility.name,
       'created_at': createdAt.toIso8601String(),
     };

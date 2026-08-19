@@ -161,6 +161,8 @@ class JourneyRepository {
     EmotionStatus? emotionStatus,
     ProfessionalTag? professionalTag,
     String? content,
+    String? audioUrl,
+    String? mediaUrl,
     MilestoneVisibility visibility = MilestoneVisibility.public,
   }) async {
     try {
@@ -171,6 +173,8 @@ class JourneyRepository {
           'emotion_status': emotionStatus?.name,
           'professional_tag': professionalTag?.name,
           'content': content,
+          'audio_url': audioUrl,
+          'media_url': mediaUrl,
           'visibility': visibility.name,
         },
       );
@@ -185,6 +189,8 @@ class JourneyRepository {
     EmotionStatus? emotionStatus,
     ProfessionalTag? professionalTag,
     String? content,
+    String? audioUrl,
+    String? mediaUrl,
     MilestoneVisibility? visibility,
   }) async {
     try {

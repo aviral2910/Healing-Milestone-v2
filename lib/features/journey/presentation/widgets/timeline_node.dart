@@ -1,3 +1,4 @@
+import 'audio_player_widget.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/presentation/widgets/healing_snackbar.dart';
 import 'package:flutter/services.dart';
@@ -161,6 +162,8 @@ class TimelineNode extends ConsumerWidget {
                 ),
               ),
             ],
+            if (milestone.audioUrl != null && milestone.audioUrl!.isNotEmpty)
+              AudioPlayerWidget(audioUrl: milestone.audioUrl!),
             const SizedBox(height: 8),
             Text(
               DateFormat('MMM d').format(milestone.createdAt),
@@ -216,6 +219,8 @@ class TimelineNode extends ConsumerWidget {
                 ),
               ),
             ],
+            if (milestone.audioUrl != null && milestone.audioUrl!.isNotEmpty)
+              AudioPlayerWidget(audioUrl: milestone.audioUrl!),
             const SizedBox(height: 8),
             Text(
               DateFormat('MMM d').format(milestone.createdAt),

@@ -1,4 +1,10 @@
 import 'dart:ui';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+import 'package:record/record.dart';
+import 'package:just_audio/just_audio.dart';
+import '../../../posts/data/story_providers.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/journey_models.dart';
@@ -7,6 +13,7 @@ import '../../../../core/models/user_model.dart';
 import '../../data/providers/journey_providers.dart';
 import '../../data/providers/paginated_journey_milestones_provider.dart';
 import 'package:healing_milestones/shared/widgets/app_loader.dart';
+import '../../../posts/data/story_providers.dart';
 
 class LogMilestoneOverlay extends ConsumerStatefulWidget {
   final String? initialJourneyId;
@@ -69,6 +76,12 @@ class _LogMilestoneOverlayState extends ConsumerState<LogMilestoneOverlay> {
   final _contentController = TextEditingController();
   bool _isSubmitting = false;
 
+  final AudioRecorder _audioRecorder = AudioRecorder();
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  bool _isRecording = false;
+  String? _audioPath;
+
+
   @override
   void initState() {
     super.initState();
@@ -82,12 +95,77 @@ class _LogMilestoneOverlayState extends ConsumerState<LogMilestoneOverlay> {
     } else {
       _selectedVisibility = MilestoneVisibility.public;
     }
+
+    if (widget.initialMilestone?.mediaUrl != null) {
+      // Handle media later
+    }
+    _audioPlayer.playerStateStream.listen((state) {
+      if (mounted) setState(() {});
+    });
+
   }
 
   @override
   void dispose() {
     _contentController.dispose();
+    _audioRecorder.dispose();
+    _audioPlayer.dispose();
     super.dispose();
+  }
+
+
+  Future<void> _startRecording() async {
+    try {
+      if (await _audioRecorder.hasPermission()) {
+        final dir = await getTemporaryDirectory();
+        final path = '${dir.path}/audio_${DateTime.now().millisecondsSinceEpoch}.m4a';
+        await _audioRecorder.start(
+          const RecordConfig(encoder: AudioEncoder.aacLc),
+          path: path,
+        );
+        setState(() {
+          _isRecording = true;
+          _audioPath = null;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error starting record: $e');
+    }
+  }
+
+  Future<void> _stopRecording() async {
+    try {
+      final path = await _audioRecorder.stop();
+      setState(() {
+        _isRecording = false;
+        _audioPath = path;
+      });
+      if (path != null) {
+        await _audioPlayer.setFilePath(path);
+      }
+    } catch (e) {
+      debugPrint('Error stopping record: $e');
+    }
+  }
+
+  void _deleteRecording() {
+    setState(() {
+      _audioPath = null;
+    });
+  }
+
+  Future<void> _playPause() async {
+    if (_audioPlayer.playing) {
+      await _audioPlayer.pause();
+    } else {
+      await _audioPlayer.play();
+      // Reset to start if finished
+      if (_audioPlayer.processingState == ProcessingState.completed) {
+        await _audioPlayer.seek(Duration.zero);
+        await _audioPlayer.play();
+      }
+    }
+    setState(() {});
   }
 
   Color _getEmotionColor(EmotionStatus status) {
@@ -378,7 +456,77 @@ class _LogMilestoneOverlayState extends ConsumerState<LogMilestoneOverlay> {
                               ),
                           ],
                         ),
-                        const SizedBox(height: 40),
+
+                        const SizedBox(height: 16),
+                        // Audio Recorder Section
+                        if (_isRecording)
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.red.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: Colors.red.withOpacity(0.3)),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.mic, color: Colors.red),
+                                const SizedBox(width: 12),
+                                const Expanded(
+                                  child: Text('Recording...', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.stop_circle, color: Colors.red, size: 32),
+                                  onPressed: _stopRecording,
+                                ),
+                              ],
+                            ),
+                          )
+                        else if (_audioPath != null)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.surface,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: theme.dividerColor),
+                            ),
+                            child: Row(
+                              children: [
+                                IconButton(
+                                  icon: Icon(
+                                    _audioPlayer.playing ? Icons.pause_circle : Icons.play_circle,
+                                    color: theme.colorScheme.primary,
+                                    size: 32,
+                                  ),
+                                  onPressed: _playPause,
+                                ),
+                                Expanded(
+                                  child: Text(
+                                    'Voice Note',
+                                    style: TextStyle(color: theme.colorScheme.onSurface, fontWeight: FontWeight.w500),
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.delete, color: Colors.grey),
+                                  onPressed: _deleteRecording,
+                                ),
+                              ],
+                            ),
+                          )
+                        else
+                          Row(
+                            children: [
+                              TextButton.icon(
+                                onPressed: _startRecording,
+                                icon: const Icon(Icons.mic),
+                                label: const Text('Add Voice Note'),
+                                style: TextButton.styleFrom(
+                                  foregroundColor: theme.colorScheme.primary,
+                                ),
+                              ),
+                            ],
+                          ),
+
+                        const SizedBox(height: 24),
 
                         // Selection (Emotion vs Tag)
                         if (isDoctor) ...[
@@ -684,6 +832,14 @@ class _LogMilestoneOverlayState extends ConsumerState<LogMilestoneOverlay> {
                                           final repo = ref.read(
                                             journeyRepositoryProvider,
                                           );
+                                          
+                                          String? audioUrl;
+                                          if (_audioPath != null && !_audioPath!.startsWith('http')) {
+                                            final r2 = ref.read(storageRepositoryProvider);
+                                            audioUrl = await r2.uploadAudio(File(_audioPath!));
+                                          } else if (_audioPath != null) {
+                                            audioUrl = _audioPath;
+                                          }
 
                                           if (isEditing) {
                                             await repo.updateMilestone(
@@ -691,6 +847,7 @@ class _LogMilestoneOverlayState extends ConsumerState<LogMilestoneOverlay> {
                                                   widget.initialMilestone!.id,
                                               emotionStatus: isDoctor ? null : _selectedEmotion,
                                               professionalTag: isDoctor ? _selectedTag : null,
+                                              audioUrl: audioUrl,
                                               content:
                                                   _contentController.text
                                                       .trim()
@@ -708,6 +865,7 @@ class _LogMilestoneOverlayState extends ConsumerState<LogMilestoneOverlay> {
                                                   widget.initialJourneyId,
                                               emotionStatus: isDoctor ? null : _selectedEmotion,
                                               professionalTag: isDoctor ? _selectedTag : null,
+                                              audioUrl: audioUrl,
                                               content:
                                                   _contentController.text
                                                       .trim()

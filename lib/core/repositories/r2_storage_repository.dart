@@ -1,3 +1,4 @@
+import 'package:uuid/uuid.dart';
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
@@ -5,6 +6,42 @@ import 'storage_repository.dart';
 import '../network/api_client.dart';
 
 class R2StorageRepository implements StorageRepository {
+  @override
+  Future<String> uploadAudio(File file) async {
+    try {
+      final bytesToUpload = await file.readAsBytes();
+      
+      final fileName = '${DateTime.now().millisecondsSinceEpoch}_${const Uuid().v4()}.m4a';
+      
+      final urlResponse = await _apiClient.dio.post(
+        '/api/upload/presigned-url',
+        data: {
+          'file_name': fileName,
+          'content_type': 'audio/m4a',
+        },
+      );
+      
+      final presignedUrl = urlResponse.data['url'] as String;
+      final publicUrl = urlResponse.data['public_url'] as String;
+      
+      final dio = Dio();
+      await dio.put(
+        presignedUrl,
+        data: Stream.fromIterable([bytesToUpload]),
+        options: Options(
+          headers: {
+            'Content-Type': 'audio/m4a',
+            'Content-Length': bytesToUpload.length,
+          },
+        ),
+      );
+      
+      return publicUrl;
+    } catch (e) {
+      throw Exception('Failed to upload audio: $e');
+    }
+  }
+
   final ApiClient _apiClient;
   final Dio _dio = Dio(); // Clean Dio instance for external S3 uploads
 
