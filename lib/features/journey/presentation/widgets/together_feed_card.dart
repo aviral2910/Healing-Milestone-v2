@@ -1,3 +1,4 @@
+import 'audio_player_widget.dart';
 import '../screens/journey_detail_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cached_network_image/cached_network_image.dart';
