@@ -2,10 +2,11 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+
 import 'package:healing_milestones/core/models/story_model.dart';
 import 'package:healing_milestones/core/models/paginated_response.dart';
-import 'package:healing_milestones/core/repositories/firebase_storage_repository.dart';
+import 'package:healing_milestones/core/repositories/r2_storage_repository.dart';
+import 'package:healing_milestones/core/network/api_client.dart';
 import 'package:healing_milestones/core/repositories/storage_repository.dart';
 import 'package:healing_milestones/features/posts/data/api_story_repository.dart';
 import 'package:healing_milestones/features/posts/data/story_repository.dart';
@@ -17,11 +18,9 @@ import 'package:healing_milestones/features/auth/data/auth_provider.dart';
 
 final firebaseFirestoreProvider =
     Provider<FirebaseFirestore>((ref) => FirebaseFirestore.instance);
-final firebaseStorageProvider =
-    Provider<FirebaseStorage>((ref) => FirebaseStorage.instance);
 
 final storageRepositoryProvider = Provider<StorageRepository>((ref) {
-  return FirebaseStorageRepository(ref.watch(firebaseStorageProvider));
+  return R2StorageRepository(ref.watch(apiClientProvider));
 });
 
 final storyRepositoryProvider = Provider<StoryRepository>((ref) {
