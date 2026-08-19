@@ -99,6 +99,14 @@ class _LogMilestoneOverlayState extends ConsumerState<LogMilestoneOverlay> {
     if (widget.initialMilestone?.mediaUrl != null) {
       // Handle media later
     }
+    
+    if (widget.initialMilestone?.audioUrl != null && widget.initialMilestone!.audioUrl!.isNotEmpty) {
+      _audioPath = widget.initialMilestone!.audioUrl;
+      _audioPlayer.setUrl(_audioPath!).catchError((e) {
+        debugPrint('Error loading audio: $e');
+        return null;
+      });
+    }
     _audioPlayer.playerStateStream.listen((state) {
       if (mounted) setState(() {});
     });
@@ -842,6 +850,14 @@ class _LogMilestoneOverlayState extends ConsumerState<LogMilestoneOverlay> {
                                           }
 
                                           if (isEditing) {
+                                            if (widget.initialMilestone?.audioUrl != null && audioUrl != widget.initialMilestone!.audioUrl) {
+                                              try {
+                                                ref.read(storageRepositoryProvider).deleteImageFromUrl(widget.initialMilestone!.audioUrl!);
+                                              } catch (e) {
+                                                debugPrint('Failed to delete orphaned audio: $e');
+                                              }
+                                            }
+                                            
                                             await repo.updateMilestone(
                                               milestoneId:
                                                   widget.initialMilestone!.id,
