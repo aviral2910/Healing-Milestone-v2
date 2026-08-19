@@ -13,6 +13,7 @@ import '../../../../core/widgets/shared_headers.dart';
 import '../widgets/log_milestone_overlay.dart';
 import '../widgets/create_journey_overlay.dart';
 import 'journey_detail_screen.dart';
+import 'all_checkins_screen.dart';
 
 class MyPathScreen extends ConsumerWidget {
   const MyPathScreen({super.key});
@@ -394,12 +395,34 @@ class MyPathScreen extends ConsumerWidget {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(24.0, 36.0, 24.0, 8.0),
-              child: Text(
-                'Recent Check-Ins',
-                style: theme.textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: -0.5,
-                ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Recent Check-Ins',
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const AllCheckinsScreen(),
+                        ),
+                      );
+                    },
+                    child: Text(
+                      'View All',
+                      style: TextStyle(
+                        color: theme.colorScheme.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -411,7 +434,8 @@ class MyPathScreen extends ConsumerWidget {
                 myFloatingMilestonesProvider,
               );
               return floatingMilestonesAsync.when(
-                data: (milestones) {
+                data: (allMilestones) {
+                  final milestones = allMilestones.take(5).toList();
                   if (milestones.isEmpty) {
                     return SliverToBoxAdapter(
                       child: Center(

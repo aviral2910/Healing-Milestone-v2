@@ -27,7 +27,7 @@ final myFloatingMilestonesProvider = FutureProvider.autoDispose<List<JourneyMile
   final auth = ref.watch(authProvider).value;
   if (auth?.status != AuthStatus.authenticated) return [];
   final repository = ref.watch(journeyRepositoryProvider);
-  return repository.getMilestones(isFloating: true);
+  return repository.getMilestones(isFloating: true, limit: 10);
 });
 
 final journeyMilestonesProvider = FutureProvider.autoDispose.family<List<JourneyMilestoneModel>, String>((ref, journeyId) async {
@@ -97,4 +97,54 @@ final followingJourneysProvider = FutureProvider.autoDispose<List<JourneyModel>>
   if (auth?.status != AuthStatus.authenticated) return [];
   final repository = ref.watch(journeyRepositoryProvider);
   return repository.getFollowingJourneys();
+});
+
+class AllCheckinsNotifier extends AsyncNotifier<OffsetPaginatedState<JourneyMilestoneModel>> {
+  bool _isFetchingMore = false;
+  static const int _limit = 10;
+
+  @override
+  Future<OffsetPaginatedState<JourneyMilestoneModel>> build() async {
+    final repository = ref.watch(journeyRepositoryProvider);
+    final items = await repository.getMilestones(isFloating: true, skip: 0, limit: _limit);
+    return OffsetPaginatedState(
+      items: items,
+      isEnd: items.length < _limit,
+      skip: _limit,
+    );
+  }
+
+  Future<void> fetchNextPage() async {
+    if (_isFetchingMore) return;
+    
+    final currentState = state.value;
+    if (currentState == null || currentState.isEnd) return;
+    
+    _isFetchingMore = true;
+    try {
+      final repository = ref.read(journeyRepositoryProvider);
+      final newItems = await repository.getMilestones(
+        isFloating: true,
+        skip: currentState.skip,
+        limit: _limit,
+      );
+      
+      state = AsyncValue.data(
+        OffsetPaginatedState(
+          items: [...currentState.items, ...newItems],
+          isEnd: newItems.length < _limit,
+          skip: currentState.skip + _limit,
+        ),
+      );
+    } catch (e, st) {
+      // Don't overwrite state with error so we keep old items,
+      // but maybe handle error UI state if needed
+    } finally {
+      _isFetchingMore = false;
+    }
+  }
+}
+
+final allCheckinsProvider = AsyncNotifierProvider<AllCheckinsNotifier, OffsetPaginatedState<JourneyMilestoneModel>>(() {
+  return AllCheckinsNotifier();
 });
