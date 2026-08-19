@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:healing_milestones/features/support_chat/data/api_chat_repository.dart';
 import 'package:uuid/uuid.dart';
@@ -10,9 +10,9 @@ import 'models/message_model.dart';
 
 class ChatRepository {
   final FirebaseFirestore _firestore;
-  final FirebaseStorage _storage;
+  
 
-  ChatRepository(this._firestore, this._storage);
+  ChatRepository(this._firestore);
 
   Future<String> getOrCreateSupportChat(String userId) async {
     final query = await _firestore
@@ -115,13 +115,7 @@ class ChatRepository {
     });
   }
 
-  Future<String> uploadImage(String chatId, File imageFile) async {
-    final fileName = const Uuid().v4();
-    final ref = _storage.ref().child('chats/$chatId/$fileName');
-
-    final uploadTask = await ref.putFile(imageFile);
-    return await uploadTask.ref.getDownloadURL();
-  }
+  
 }
 
 final chatRepositoryProvider = Provider<ApiChatRepository>((ref) {
