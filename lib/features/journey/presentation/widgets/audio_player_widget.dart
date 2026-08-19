@@ -58,60 +58,59 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: theme.dividerColor.withValues(alpha: 0.5)),
       ),
-      child: Row(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          StreamBuilder<PlayerState>(
-            stream: _audioPlayer.playerStateStream,
-            builder: (context, snapshot) {
-              final playerState = snapshot.data;
-              final processingState = playerState?.processingState;
-              final playing = playerState?.playing;
-              if (processingState == ProcessingState.loading ||
-                  processingState == ProcessingState.buffering) {
-                return Container(
-                  margin: const EdgeInsets.all(8.0),
-                  width: 32.0,
-                  height: 32.0,
-                  child: const CircularProgressIndicator(strokeWidth: 2),
-                );
-              } else if (playing != true) {
-                return IconButton(
-                  icon: const Icon(Icons.play_circle),
-                  iconSize: 36.0,
-                  color: theme.colorScheme.primary,
-                  onPressed: _audioPlayer.play,
-                );
-              } else if (processingState != ProcessingState.completed) {
-                return IconButton(
-                  icon: const Icon(Icons.pause_circle),
-                  iconSize: 36.0,
-                  color: theme.colorScheme.primary,
-                  onPressed: _audioPlayer.pause,
-                );
-              } else {
-                return IconButton(
-                  icon: const Icon(Icons.replay_circle_filled),
-                  iconSize: 36.0,
-                  color: theme.colorScheme.primary,
-                  onPressed: () => _audioPlayer.seek(Duration.zero),
-                );
-              }
-            },
-          ),
-          
-          Expanded(
-            child: StreamBuilder<PositionData>(
-              stream: _positionDataStream,
-              builder: (context, snapshot) {
-                final positionData = snapshot.data;
-                final position = positionData?.position ?? Duration.zero;
-                final duration = positionData?.duration ?? Duration.zero;
-                
-                return Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    SliderTheme(
+          Row(
+            children: [
+              StreamBuilder<PlayerState>(
+                stream: _audioPlayer.playerStateStream,
+                builder: (context, snapshot) {
+                  final playerState = snapshot.data;
+                  final processingState = playerState?.processingState;
+                  final playing = playerState?.playing;
+                  if (processingState == ProcessingState.loading ||
+                      processingState == ProcessingState.buffering) {
+                    return Container(
+                      margin: const EdgeInsets.all(8.0),
+                      width: 32.0,
+                      height: 32.0,
+                      child: const CircularProgressIndicator(strokeWidth: 2),
+                    );
+                  } else if (playing != true) {
+                    return IconButton(
+                      icon: const Icon(Icons.play_circle),
+                      iconSize: 36.0,
+                      color: theme.colorScheme.primary,
+                      onPressed: _audioPlayer.play,
+                    );
+                  } else if (processingState != ProcessingState.completed) {
+                    return IconButton(
+                      icon: const Icon(Icons.pause_circle),
+                      iconSize: 36.0,
+                      color: theme.colorScheme.primary,
+                      onPressed: _audioPlayer.pause,
+                    );
+                  } else {
+                    return IconButton(
+                      icon: const Icon(Icons.replay_circle_filled),
+                      iconSize: 36.0,
+                      color: theme.colorScheme.primary,
+                      onPressed: () => _audioPlayer.seek(Duration.zero),
+                    );
+                  }
+                },
+              ),
+              Expanded(
+                child: StreamBuilder<PositionData>(
+                  stream: _positionDataStream,
+                  builder: (context, snapshot) {
+                    final positionData = snapshot.data;
+                    final position = positionData?.position ?? Duration.zero;
+                    final duration = positionData?.duration ?? Duration.zero;
+                    
+                    return SliderTheme(
                       data: SliderTheme.of(context).copyWith(
                         trackHeight: 4,
                         thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
@@ -127,25 +126,34 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
                           _audioPlayer.seek(Duration(milliseconds: value.round()));
                         },
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(right: 24.0, bottom: 4.0),
-                      child: Text(
-                        (position.inMilliseconds == 0 && duration.inMilliseconds > 0)
-                            ? _formatDuration(duration)
-                            : (duration.inMilliseconds > 0)
-                                ? '${_formatDuration(position)} / ${_formatDuration(duration)}'
-                                : _formatDuration(position),
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+          StreamBuilder<PositionData>(
+            stream: _positionDataStream,
+            builder: (context, snapshot) {
+              final positionData = snapshot.data;
+              final position = positionData?.position ?? Duration.zero;
+              final duration = positionData?.duration ?? Duration.zero;
+              
+              return Padding(
+                padding: const EdgeInsets.only(right: 24.0, bottom: 4.0),
+                child: Text(
+                  (position.inMilliseconds == 0 && duration.inMilliseconds > 0)
+                      ? _formatDuration(duration)
+                      : (duration.inMilliseconds > 0)
+                          ? '${_formatDuration(position)} / ${_formatDuration(duration)}'
+                          : _formatDuration(position),
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              );
+            },
           ),
         ],
       ),
