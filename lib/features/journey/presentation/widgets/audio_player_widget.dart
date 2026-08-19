@@ -1,3 +1,4 @@
+import 'package:shimmer/shimmer.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:rxdart/rxdart.dart';
@@ -86,68 +87,64 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: theme.dividerColor.withValues(alpha: 0.5)),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          StreamBuilder<PlayerState>(
-                stream: _audioPlayer.playerStateStream,
-                builder: (context, snapshot) {
-                  final playerState = snapshot.data;
-                  final processingState = playerState?.processingState;
-                  final playing = playerState?.playing;
-                  Widget button;
-                  if (processingState == ProcessingState.loading ||
-                      processingState == ProcessingState.buffering) {
-                    button = Container(
-                      margin: const EdgeInsets.all(8.0),
-                      width: 32.0,
-                      height: 32.0,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2, 
-                        color: theme.colorScheme.primary,
-                      ),
-                    );
-                  } else if (playing != true) {
-                    button = IconButton(
-                      icon: const Icon(Icons.play_circle),
-                      iconSize: 36.0,
-                      color: theme.colorScheme.primary,
-                      onPressed: () {
-                        if (_currentlyPlaying != null && _currentlyPlaying != _audioPlayer) {
-                          _currentlyPlaying!.pause();
-                        }
-                        _currentlyPlaying = _audioPlayer;
-                        _audioPlayer.play();
-                      },
-                    );
-                  } else if (processingState != ProcessingState.completed) {
-                    button = IconButton(
-                      icon: const Icon(Icons.pause_circle),
-                      iconSize: 36.0,
-                      color: theme.colorScheme.primary,
-                      onPressed: _audioPlayer.pause,
-                    );
-                  } else {
-                    button = IconButton(
-                      icon: const Icon(Icons.replay_circle_filled),
-                      iconSize: 36.0,
-                      color: theme.colorScheme.primary,
-                      onPressed: () {
-                        if (_currentlyPlaying != null && _currentlyPlaying != _audioPlayer) {
-                          _currentlyPlaying!.pause();
-                        }
-                        _currentlyPlaying = _audioPlayer;
-                        _audioPlayer.seek(Duration.zero);
-                        _audioPlayer.play();
-                      },
-                    );
-                  }
-                  
-                  return Padding(
-                    padding: const EdgeInsets.only(left: 4.0, right: 4.0),
-                    child: button,
-                  );
-                },
+      child: StreamBuilder<PlayerState>(
+        stream: _audioPlayer.playerStateStream,
+        builder: (context, snapshot) {
+          final playerState = snapshot.data;
+          final processingState = playerState?.processingState;
+          final playing = playerState?.playing;
+          final isLoading = processingState == ProcessingState.loading || processingState == ProcessingState.buffering;
+          
+          Widget button;
+          if (isLoading) {
+            button = IconButton(
+              icon: const Icon(Icons.play_circle),
+              iconSize: 36.0,
+              color: theme.colorScheme.primary,
+              onPressed: null,
+            );
+          } else if (playing != true) {
+            button = IconButton(
+              icon: const Icon(Icons.play_circle),
+              iconSize: 36.0,
+              color: theme.colorScheme.primary,
+              onPressed: () {
+                if (_currentlyPlaying != null && _currentlyPlaying != _audioPlayer) {
+                  _currentlyPlaying!.pause();
+                }
+                _currentlyPlaying = _audioPlayer;
+                _audioPlayer.play();
+              },
+            );
+          } else if (processingState != ProcessingState.completed) {
+            button = IconButton(
+              icon: const Icon(Icons.pause_circle),
+              iconSize: 36.0,
+              color: theme.colorScheme.primary,
+              onPressed: _audioPlayer.pause,
+            );
+          } else {
+            button = IconButton(
+              icon: const Icon(Icons.replay_circle_filled),
+              iconSize: 36.0,
+              color: theme.colorScheme.primary,
+              onPressed: () {
+                if (_currentlyPlaying != null && _currentlyPlaying != _audioPlayer) {
+                  _currentlyPlaying!.pause();
+                }
+                _currentlyPlaying = _audioPlayer;
+                _audioPlayer.seek(Duration.zero);
+                _audioPlayer.play();
+              },
+            );
+          }
+          
+          final content = Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 4.0, right: 4.0),
+                child: button,
               ),
               Expanded(
                 child: StreamBuilder<PositionData>(
@@ -172,7 +169,7 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
                           child: Slider(
                             value: min(position.inMilliseconds.toDouble(), duration.inMilliseconds.toDouble()),
                             max: duration.inMilliseconds.toDouble() > 0 ? duration.inMilliseconds.toDouble() : 1.0,
-                            onChanged: (value) {
+                            onChanged: isLoading ? null : (value) {
                               _audioPlayer.seek(Duration(milliseconds: value.round()));
                             },
                           ),
@@ -190,11 +187,13 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
                                 ),
                               ),
                               Text(
-                                (position.inMilliseconds == 0 && duration.inMilliseconds > 0)
-                                    ? _formatDuration(duration)
-                                    : (duration.inMilliseconds > 0)
-                                        ? '${_formatDuration(position)} / ${_formatDuration(duration)}'
-                                        : _formatDuration(position),
+                                isLoading 
+                                    ? '--:--'
+                                    : (position.inMilliseconds == 0 && duration.inMilliseconds > 0)
+                                        ? _formatDuration(duration)
+                                        : (duration.inMilliseconds > 0)
+                                            ? '${_formatDuration(position)} / ${_formatDuration(duration)}'
+                                            : _formatDuration(position),
                                 style: theme.textTheme.labelSmall?.copyWith(
                                   color: theme.colorScheme.onSurfaceVariant,
                                   fontWeight: FontWeight.w500,
@@ -209,7 +208,18 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
                 ),
               ),
             ],
-          ),
+          );
+
+          if (isLoading) {
+            return Shimmer.fromColors(
+              baseColor: theme.colorScheme.onSurface.withValues(alpha: 0.1),
+              highlightColor: theme.colorScheme.onSurface.withValues(alpha: 0.3),
+              child: content,
+            );
+          }
+          return content;
+        },
+      ),
     );
   }
 }
