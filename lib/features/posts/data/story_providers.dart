@@ -116,6 +116,14 @@ class PaginatedStoriesNotifier extends AsyncNotifier<List<StoryModel>> {
     _lastDoc = null;
     hasMore = true;
     isLoadingMore = false;
+    
+    // Don't call /following for unauthenticated users
+    final auth = ref.watch(authProvider).value;
+    if (auth?.status != AuthStatus.authenticated) {
+      hasMore = false;
+      return [];
+    }
+    
     return _fetchPage();
   }
 
