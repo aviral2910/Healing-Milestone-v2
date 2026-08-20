@@ -33,9 +33,9 @@ class _InterestSelectionScreenState extends ConsumerState<InterestSelectionScree
   }
 
   Future<void> _saveAndContinue() async {
-    if (_selectedInterests.length < 2) {
+    if (_selectedInterests.length < 3) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select at least 2 interests.')),
+        const SnackBar(content: Text('Please select at least 3 interests.')),
       );
       return;
     }
@@ -102,7 +102,7 @@ class _InterestSelectionScreenState extends ConsumerState<InterestSelectionScree
               ),
               const SizedBox(height: 12),
               Text(
-                'Select at least 2 topics so we can personalize your experience.',
+                'Select at least 3 topics so we can personalize your experience.',
                 style: theme.textTheme.bodyLarge?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
@@ -148,7 +148,7 @@ class _InterestSelectionScreenState extends ConsumerState<InterestSelectionScree
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: (_selectedInterests.length >= 2 && !_isSaving)
+                  onPressed: (_selectedInterests.length >= 3 && !_isSaving)
                       ? _saveAndContinue
                       : null,
                   style: ElevatedButton.styleFrom(

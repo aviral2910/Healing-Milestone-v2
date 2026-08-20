@@ -93,8 +93,8 @@ class _InspireScreenState extends ConsumerState<InspireScreen>
                         fontWeight: FontWeight.w200, fontSize: 14),
                     dividerColor: theme.dividerColor,
                     tabs: const [
-                      Tab(text: 'Timeline'),
                       Tab(text: 'For You'),
+                      Tab(text: 'Following'),
                       Tab(text: 'Awareness'),
                     ],
                   ),
@@ -107,16 +107,16 @@ class _InspireScreenState extends ConsumerState<InspireScreen>
             controller: _topTabController,
             children: [
               Container(
-                key: const Key('timeline_tab'),
-                child: PostScreen(
+                key: const Key('for_you_tab'),
+                child: RecommendedSwipeScreen(
                   isActiveTab:
                       widget.isActiveTab && _topTabController.index == 0,
                   onSearchTapped: widget.onSearchTapped,
                 ),
               ),
               Container(
-                key: const Key('for_you_tab'),
-                child: RecommendedSwipeScreen(
+                key: const Key('following_tab'),
+                child: PostScreen(
                   isActiveTab:
                       widget.isActiveTab && _topTabController.index == 1,
                   onSearchTapped: widget.onSearchTapped,
