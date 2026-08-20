@@ -24,22 +24,6 @@ class _SuggestedFollowsScreenState extends ConsumerState<SuggestedFollowsScreen>
       'role': UserRole.organization,
       'isVerified': true,
       'bio': 'The official account for app updates, tutorials, and featured stories.',
-    },
-    {
-      'id': 'doc1',
-      'username': 'dr_smith',
-      'displayName': 'Dr. Sarah Smith',
-      'role': UserRole.healthcareProfessional,
-      'isVerified': true,
-      'bio': 'Neurologist specializing in Migraines and Chronic Pain.',
-    },
-    {
-      'id': 'patient1',
-      'username': 'journey_to_health',
-      'displayName': 'Alex M.',
-      'role': UserRole.member,
-      'isVerified': false,
-      'bio': 'Navigating diabetes type 1 and sharing my daily wins.',
     }
   ];
 
