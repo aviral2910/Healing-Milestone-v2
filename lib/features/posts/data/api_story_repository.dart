@@ -40,7 +40,7 @@ class ApiStoryRepository implements StoryRepository {
     int offset = (startAfter is int) ? startAfter : 0;
     
     try {
-      final response = await _dio.get('/api/stories/?skip=$offset&limit=$limit');
+      final response = await _dio.get('/api/stories/following?cursor=$offset&limit=$limit');
       final items = response.data['items'] as List;
       final stories = items.map((json) => _mapApiToStoryModel(json)).toList();
       return (stories: stories, lastDoc: offset + limit);
