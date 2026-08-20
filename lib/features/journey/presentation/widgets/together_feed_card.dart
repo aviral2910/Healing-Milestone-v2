@@ -134,7 +134,8 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
                                   widget.milestone.id,
                                   r['label']!,
                                 );
-                            container.invalidate(togetherFeedProvider);
+                            container.invalidate(recommendedMilestonesProvider);
+      container.invalidate(followingMilestonesProvider);
                           } catch (e) {
                             HealingSnackbar.showError(context, e);
                           }
@@ -778,7 +779,8 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
                                       'love',
                                     ); // Default quick-react
                               }
-                              container.invalidate(togetherFeedProvider);
+                              container.invalidate(recommendedMilestonesProvider);
+      container.invalidate(followingMilestonesProvider);
                             } catch (e) {
                               scaffoldMessenger.showSnackBar(
                                 const SnackBar(

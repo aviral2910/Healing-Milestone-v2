@@ -80,7 +80,8 @@ class TimelineNode extends ConsumerWidget {
                               r['label']!,
                             );
                             ref.invalidate(paginatedJourneyMilestonesProvider(milestone.journeyId!));
-                            ref.invalidate(togetherFeedProvider);
+                            ref.invalidate(recommendedMilestonesProvider);
+      ref.invalidate(followingMilestonesProvider);
                           } catch (e) {
                             HealingSnackbar.showError(context, e);
                           }
@@ -337,7 +338,8 @@ class TimelineNode extends ConsumerWidget {
                                 } else {
                                   ref.invalidate(myFloatingMilestonesProvider);
                                 }
-                                ref.invalidate(togetherFeedProvider);
+                                ref.invalidate(recommendedMilestonesProvider);
+      ref.invalidate(followingMilestonesProvider);
                               } catch (e) {
                                 if (context.mounted) {
                                   HealingSnackbar.showError(context, e);
@@ -461,7 +463,8 @@ class TimelineNode extends ConsumerWidget {
                             await ref.read(journeyRepositoryProvider).reactToMilestone(milestone.id, 'love');
                           }
                           ref.invalidate(paginatedJourneyMilestonesProvider(milestone.journeyId!));
-                          ref.invalidate(togetherFeedProvider);
+                          ref.invalidate(recommendedMilestonesProvider);
+      ref.invalidate(followingMilestonesProvider);
                         } catch (e) {
                           scaffoldMessenger.showSnackBar(const SnackBar(content: Text('Failed to update reaction')));
                         }

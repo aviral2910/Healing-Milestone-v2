@@ -73,7 +73,8 @@ class _CompleteJourneyOverlayState extends ConsumerState<CompleteJourneyOverlay>
       
       ref.invalidate(paginatedJourneyMilestonesProvider(widget.journeyId));
       ref.invalidate(myJourneysProvider);
-      ref.invalidate(togetherFeedProvider);
+      ref.invalidate(recommendedMilestonesProvider);
+      ref.invalidate(followingMilestonesProvider);
       
       if (mounted) {
         Navigator.pop(context);

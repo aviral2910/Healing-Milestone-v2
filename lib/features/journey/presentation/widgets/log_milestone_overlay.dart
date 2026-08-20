@@ -841,7 +841,8 @@ class _LogMilestoneOverlayState extends ConsumerState<LogMilestoneOverlay> {
                                           }
 
                                           // Generally invalidate the public feed too
-                                          ref.invalidate(togetherFeedProvider);
+                                          ref.invalidate(recommendedMilestonesProvider);
+      ref.invalidate(followingMilestonesProvider);
 
                                           if (context.mounted) {
                                             Navigator.of(context).pop();

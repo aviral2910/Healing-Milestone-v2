@@ -10,7 +10,7 @@ import 'public_journey_detail_overlay.dart';
 import '../screens/walking_with_screen.dart';
 
 class WalkingWithCarousel extends ConsumerWidget {
-  final AutoDisposeFutureProvider<List<JourneyModel>> provider;
+  final dynamic provider;
   final String title;
   
   const WalkingWithCarousel({

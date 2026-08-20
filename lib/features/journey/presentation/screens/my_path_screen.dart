@@ -321,9 +321,8 @@ class MyPathScreen extends ConsumerWidget {
                                                   ref.invalidate(
                                                     myFloatingMilestonesProvider,
                                                   );
-                                                  ref.invalidate(
-                                                    togetherFeedProvider,
-                                                  );
+                                                  ref.invalidate(recommendedMilestonesProvider);
+                                                  ref.invalidate(followingMilestonesProvider);
                                                 } catch (e) {
                                                   if (context.mounted) {
                                                     ScaffoldMessenger.of(

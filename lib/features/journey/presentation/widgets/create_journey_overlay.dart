@@ -384,7 +384,8 @@ class _CreateJourneyOverlayState extends ConsumerState<CreateJourneyOverlay> {
                                           ref.invalidate(
                                             paginatedJourneyMilestonesProvider,
                                           );
-                                          ref.invalidate(togetherFeedProvider);
+                                          ref.invalidate(recommendedMilestonesProvider);
+      ref.invalidate(followingMilestonesProvider);
                                           ref.invalidate(
                                             myFloatingMilestonesProvider,
                                           );

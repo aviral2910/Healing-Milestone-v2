@@ -124,7 +124,8 @@ class _PublicJourneyDetailOverlayState
         _isLoadingFollow = false;
       });
       // Optionally refresh the feed
-      ref.invalidate(togetherFeedProvider);
+      ref.invalidate(recommendedMilestonesProvider);
+      ref.invalidate(followingMilestonesProvider);
     } catch (e) {
       setState(() => _isLoadingFollow = false);
       if (mounted) {
