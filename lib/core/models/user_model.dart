@@ -151,6 +151,7 @@ class UserModel {
       'appliedForVerification': appliedForVerification,
       'status': status,
       'gratitudeScore': gratitudeScore,
+      'interests': interests,
     };
   }
 
@@ -184,6 +185,7 @@ class UserModel {
       appliedForVerification: map['appliedForVerification'] ?? map['applied_for_verification'] ?? false,
       status: map['status'] ?? 'active',
       gratitudeScore: map['gratitudeScore'] ?? map['gratitude_score'] ?? 20,
+      interests: List<String>.from(map['interests'] ?? []),
     );
   }
 }
