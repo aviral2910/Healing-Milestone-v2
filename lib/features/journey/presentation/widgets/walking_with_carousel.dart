@@ -10,16 +10,23 @@ import 'public_journey_detail_overlay.dart';
 import '../screens/walking_with_screen.dart';
 
 class WalkingWithCarousel extends ConsumerWidget {
-  const WalkingWithCarousel({super.key});
+  final AutoDisposeFutureProvider<List<JourneyModel>> provider;
+  final String title;
+  
+  const WalkingWithCarousel({
+    super.key, 
+    required this.provider, 
+    this.title = 'Following',
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final followingAsync = ref.watch(followingJourneysProvider);
+    final followingAsync = ref.watch(provider);
 
     return followingAsync.when(
       data: (journeys) {
         if (journeys.isEmpty) {
-          return const SizedBox.shrink(); // Hide if not following anyone
+          return const SizedBox.shrink(); // Hide if no journeys
         }
 
         final theme = Theme.of(context);
@@ -33,7 +40,7 @@ class WalkingWithCarousel extends ConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Following',
+                    title,
                     style: theme.textTheme.titleSmall?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                       fontWeight: FontWeight.w600,

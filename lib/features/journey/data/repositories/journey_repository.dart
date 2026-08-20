@@ -93,6 +93,16 @@ class JourneyRepository {
     }
   }
 
+  Future<List<JourneyModel>> getRecommendedJourneys({int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _apiClient.dio.get('/api/journeys/recommended', queryParameters: {'skip': skip, 'limit': limit});
+      final data = response.data as List;
+      return data.map((json) => JourneyModel.fromJson(json)).toList();
+    } catch (e) {
+      throw Exception('Failed to load recommended journeys: $e');
+    }
+  }
+
   Future<void> followJourney(String journeyId) async {
     try {
       await _apiClient.dio.post('/api/journeys/$journeyId/follow');
@@ -153,6 +163,38 @@ class JourneyRepository {
       return data.map((json) => JourneyMilestoneModel.fromJson(json)).toList();
     } catch (e) {
       throw Exception('Failed to load public feed: $e');
+    }
+  }
+
+  Future<List<JourneyMilestoneModel>> getRecommendedMilestones({int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _apiClient.dio.get(
+        '/api/milestones/recommended',
+        queryParameters: {
+          'skip': skip,
+          'limit': limit,
+        },
+      );
+      final data = response.data as List;
+      return data.map((json) => JourneyMilestoneModel.fromJson(json)).toList();
+    } catch (e) {
+      throw Exception('Failed to load recommended milestones feed: $e');
+    }
+  }
+
+  Future<List<JourneyMilestoneModel>> getFollowingMilestones({int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _apiClient.dio.get(
+        '/api/milestones/following',
+        queryParameters: {
+          'skip': skip,
+          'limit': limit,
+        },
+      );
+      final data = response.data as List;
+      return data.map((json) => JourneyMilestoneModel.fromJson(json)).toList();
+    } catch (e) {
+      throw Exception('Failed to load following milestones feed: $e');
     }
   }
 

@@ -35,7 +35,7 @@ final myFloatingMilestonesProvider = FutureProvider.autoDispose<List<JourneyMile
 
 
 
-class TogetherFeedNotifier extends AsyncNotifier<OffsetPaginatedState<JourneyMilestoneModel>> {
+class RecommendedMilestonesNotifier extends AsyncNotifier<OffsetPaginatedState<JourneyMilestoneModel>> {
   bool _isFetchingMore = false;
   static const int _limit = 20;
 
@@ -44,7 +44,7 @@ class TogetherFeedNotifier extends AsyncNotifier<OffsetPaginatedState<JourneyMil
     final auth = ref.watch(authProvider).value;
     if (auth?.status != AuthStatus.authenticated) return OffsetPaginatedState(items: []);
     
-    final items = await ref.watch(journeyRepositoryProvider).getPublicMilestones(limit: _limit);
+    final items = await ref.watch(journeyRepositoryProvider).getRecommendedMilestones(limit: _limit);
     return OffsetPaginatedState(
       items: items,
       skip: _limit,
@@ -59,7 +59,7 @@ class TogetherFeedNotifier extends AsyncNotifier<OffsetPaginatedState<JourneyMil
 
     _isFetchingMore = true;
     try {
-      final newItems = await ref.read(journeyRepositoryProvider).getPublicMilestones(
+      final newItems = await ref.read(journeyRepositoryProvider).getRecommendedMilestones(
         skip: currentState.skip, 
         limit: _limit
       );
@@ -73,7 +73,6 @@ class TogetherFeedNotifier extends AsyncNotifier<OffsetPaginatedState<JourneyMil
       );
     } catch (e, st) {
       print('Error fetching next page: $e');
-      // Use AsyncValue.guard to safely copy with previous state
       state = await AsyncValue.guard(() async {
         throw e;
       });
@@ -83,8 +82,66 @@ class TogetherFeedNotifier extends AsyncNotifier<OffsetPaginatedState<JourneyMil
   }
 }
 
-final togetherFeedProvider = AsyncNotifierProvider<TogetherFeedNotifier, OffsetPaginatedState<JourneyMilestoneModel>>(() {
-  return TogetherFeedNotifier();
+class FollowingMilestonesNotifier extends AsyncNotifier<OffsetPaginatedState<JourneyMilestoneModel>> {
+  bool _isFetchingMore = false;
+  static const int _limit = 20;
+
+  @override
+  Future<OffsetPaginatedState<JourneyMilestoneModel>> build() async {
+    final auth = ref.watch(authProvider).value;
+    if (auth?.status != AuthStatus.authenticated) return OffsetPaginatedState(items: []);
+    
+    final items = await ref.watch(journeyRepositoryProvider).getFollowingMilestones(limit: _limit);
+    return OffsetPaginatedState(
+      items: items,
+      skip: _limit,
+      isEnd: items.length < _limit,
+    );
+  }
+
+  Future<void> fetchNextPage() async {
+    if (_isFetchingMore) return;
+    final currentState = state.value;
+    if (currentState == null || currentState.isEnd) return;
+
+    _isFetchingMore = true;
+    try {
+      final newItems = await ref.read(journeyRepositoryProvider).getFollowingMilestones(
+        skip: currentState.skip, 
+        limit: _limit
+      );
+      
+      state = AsyncValue.data(
+        currentState.copyWith(
+          items: [...currentState.items, ...newItems],
+          skip: currentState.skip + _limit,
+          isEnd: newItems.length < _limit,
+        ),
+      );
+    } catch (e, st) {
+      print('Error fetching next page: $e');
+      state = await AsyncValue.guard(() async {
+        throw e;
+      });
+    } finally {
+      _isFetchingMore = false;
+    }
+  }
+}
+
+final recommendedMilestonesProvider = AsyncNotifierProvider<RecommendedMilestonesNotifier, OffsetPaginatedState<JourneyMilestoneModel>>(() {
+  return RecommendedMilestonesNotifier();
+});
+
+final followingMilestonesProvider = AsyncNotifierProvider<FollowingMilestonesNotifier, OffsetPaginatedState<JourneyMilestoneModel>>(() {
+  return FollowingMilestonesNotifier();
+});
+
+final recommendedJourneysProvider = FutureProvider.autoDispose<List<JourneyModel>>((ref) async {
+  final auth = ref.watch(authProvider).value;
+  if (auth?.status != AuthStatus.authenticated) return [];
+  final repository = ref.watch(journeyRepositoryProvider);
+  return repository.getRecommendedJourneys();
 });
 
 final followingJourneysProvider = FutureProvider.autoDispose<List<JourneyModel>>((ref) async {
