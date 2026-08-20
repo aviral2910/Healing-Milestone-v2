@@ -6,6 +6,8 @@ class AppRoutes {
   static const String search = '/search';
   static const String phoneAuth = '/phone-auth';
   static const String verifyOtp = '/verify-otp';
+  static const String interestSelection = '/interest-selection';
+  static const String suggestedFollows = '/suggested-follows';
   static const String timeCapsulesVault = '/time-capsules-vault';
 
 

@@ -35,6 +35,7 @@ class UserModel {
   final bool appliedForVerification;
   final String status; // 'active', 'suspended', 'banned'
   final int gratitudeScore;
+  final List<String> interests;
 
   UserModel({
     required this.userId,
@@ -62,6 +63,7 @@ class UserModel {
     this.appliedForVerification = false,
     this.status = 'active',
     this.gratitudeScore = 20,
+    this.interests = const [],
   });
 
   UserModel copyWith({
@@ -90,6 +92,7 @@ class UserModel {
     bool? appliedForVerification,
     String? status,
     int? gratitudeScore,
+    List<String>? interests,
   }) {
     return UserModel(
       userId: userId ?? this.userId,
@@ -117,6 +120,7 @@ class UserModel {
       appliedForVerification: appliedForVerification ?? this.appliedForVerification,
       status: status ?? this.status,
       gratitudeScore: gratitudeScore ?? this.gratitudeScore,
+      interests: interests ?? this.interests,
     );
   }
 

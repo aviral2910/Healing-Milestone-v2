@@ -28,6 +28,8 @@ import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/role_selection_screen.dart';
 import '../../features/auth/presentation/screens/professional_onboarding_screen.dart';
 import '../../features/auth/presentation/screens/phone_auth_screen.dart';
+import '../../features/auth/presentation/screens/interest_selection_screen.dart';
+import '../../features/auth/presentation/screens/suggested_follows_screen.dart';
 import '../../features/auth/presentation/screens/otp_verification_screen.dart';
 import '../../features/auth/presentation/screens/suspended_screen.dart';
 import '../../features/auth/data/auth_provider.dart';
@@ -99,6 +101,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         return AppRoutes.roleSelection;
       }
 
+      final needsInterests = isAuth && (authState?.userModel?.interests.isEmpty ?? false);
+      final isGoingToInterests = state.matchedLocation == AppRoutes.interestSelection || 
+                                 state.matchedLocation == AppRoutes.suggestedFollows;
+
+      if (needsInterests && !isGoingToInterests && !isGoingToOnboarding) {
+        return AppRoutes.interestSelection;
+      }
+
       if (!isAuth && isProtectedRoute) {
         return AppRoutes.login;
       }
@@ -145,6 +155,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.verifyOtp,
         builder: (context, state) => const OtpVerificationScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.interestSelection,
+        builder: (context, state) => const InterestSelectionScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.suggestedFollows,
+        builder: (context, state) => const SuggestedFollowsScreen(),
       ),
       GoRoute(
         path: AppRoutes.create,
