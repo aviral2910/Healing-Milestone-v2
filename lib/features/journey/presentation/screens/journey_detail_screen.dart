@@ -3,6 +3,8 @@ import 'package:healing_milestones/shared/widgets/qr_share_preview.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/presentation/widgets/healing_error_view.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:healing_milestones/features/auth/data/auth_provider.dart';
+import 'package:healing_milestones/shared/widgets/guest_auth_wall.dart';
 import '../../data/providers/journey_providers.dart';
 import '../../data/providers/paginated_journey_milestones_provider.dart';
 import '../widgets/timeline_node.dart';
@@ -286,6 +288,25 @@ class JourneyDetailScreen extends ConsumerWidget {
           
           return FloatingActionButton.extended(
             onPressed: () {
+              final authState = ref.read(authProvider).value;
+              if (authState?.status != AuthStatus.authenticated) {
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (context) => const FractionallySizedBox(
+                    heightFactor: 0.85,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                      child: GuestAuthWallWidget(
+                        title: 'Log a Step',
+                        subtitle: 'Create an account to log milestones and track your journey.',
+                      ),
+                    ),
+                  ),
+                );
+                return;
+              }
               LogMilestoneOverlay.show(context, journeyId: journeyId);
             },
             elevation: 8,

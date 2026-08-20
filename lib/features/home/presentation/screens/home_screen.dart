@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../shared/widgets/guest_auth_wall.dart';
+
 import 'package:go_router/go_router.dart';
 import 'package:healing_milestones/features/home/presentation/screens/inspire_screen.dart';
 import 'package:healing_milestones/features/journey/presentation/screens/my_path_screen.dart';
@@ -121,14 +123,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             // Tab 2: Together (Journeys)
             const TogetherFeedScreen(),
             // Tab 3: My Path (Gratitude Tree & Milestones)
-            const MyPathScreen(),
+            isAuthenticated 
+                ? const MyPathScreen()
+                : const GuestAuthWallWidget(
+                    title: 'Track Your Healing',
+                    subtitle: 'Create an account to start your personal journey and grow your gratitude tree.',
+                  ),
             // Tab 4: Connect (Messages)
-            MessagesScreen(
-              scrollController: _messagesScrollController,
-              isActiveTab: currentIndex == 3,
-            ),
+            isAuthenticated 
+                ? MessagesScreen(
+                    scrollController: _messagesScrollController,
+                    isActiveTab: currentIndex == 3,
+                  )
+                : const GuestAuthWallWidget(
+                    title: 'Join the Conversation',
+                    subtitle: 'Create an account to securely message doctors and connect with patients.',
+                  ),
             // Tab 5: Vault (Profile)
-            const ProfileScreen(),
+            isAuthenticated 
+                ? const ProfileScreen()
+                : const GuestAuthWallWidget(
+                    title: 'Your Profile',
+                    subtitle: 'Create an account to save stories, track milestones, and manage your preferences.',
+                  ),
           ],
         ),
         bottomNavigationBar: Container(
