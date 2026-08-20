@@ -21,7 +21,7 @@ class WalkingWithCarousel extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final followingAsync = ref.watch(provider);
+    final AsyncValue<List<JourneyModel>> followingAsync = ref.watch(provider);
 
     return followingAsync.when(
       data: (journeys) {
