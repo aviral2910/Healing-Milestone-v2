@@ -1,3 +1,5 @@
+import 'package:healing_milestones/core/models/offset_paginated_state.dart';
+import '../../data/models/journey_models.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:healing_milestones/core/router/app_routes.dart';
@@ -97,7 +99,7 @@ class _TogetherFeedTab extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final feedAsync = ref.watch(milestoneProvider);
+    final AsyncValue<OffsetPaginatedState<JourneyMilestoneModel>> feedAsync = ref.watch(milestoneProvider);
 
     return RefreshIndicator(
       onRefresh: () async {
