@@ -9,12 +9,19 @@ import '../../data/providers/journey_providers.dart';
 import '../widgets/public_journey_detail_overlay.dart';
 
 class WalkingWithScreen extends ConsumerWidget {
-  const WalkingWithScreen({Key? key}) : super(key: key);
+  final dynamic provider;
+  final String title;
+  
+  const WalkingWithScreen({
+    Key? key,
+    required this.provider,
+    required this.title,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final followingAsync = ref.watch(followingJourneysProvider);
+    final AsyncValue<List<JourneyModel>> followingAsync = ref.watch(provider);
 
     return Scaffold(
       appBar: AppBar(

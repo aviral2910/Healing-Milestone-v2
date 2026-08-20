@@ -50,7 +50,10 @@ class WalkingWithCarousel extends ConsumerWidget {
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (context) => const WalkingWithScreen(),
+                          builder: (context) => WalkingWithScreen(
+                            provider: provider,
+                            title: title,
+                          ),
                         ),
                       );
                     },

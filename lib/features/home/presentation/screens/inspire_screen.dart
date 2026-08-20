@@ -5,8 +5,6 @@ import '../../../posts/presentation/screens/post_screen.dart';
 import '../../../posts/presentation/screens/recommended_swipe_screen.dart';
 import '../../../awareness/presentation/screens/health_awareness_screen.dart';
 
-
-
 class InspireScreen extends ConsumerStatefulWidget {
   final ScrollController timelineScrollController;
   final ScrollController forYouScrollController;
@@ -42,7 +40,8 @@ class _InspireScreenState extends ConsumerState<InspireScreen>
     _currentIndex = _topTabController.index;
     _topTabController.addListener(() {
       if (_currentIndex != _topTabController.index) {
-        if (!_topTabController.indexIsChanging && _topTabController.index != _topTabController.animation?.value) {
+        if (!_topTabController.indexIsChanging &&
+            _topTabController.index != _topTabController.animation?.value) {
           // Swipe in progress, do nothing yet
           return;
         }
@@ -69,12 +68,12 @@ class _InspireScreenState extends ConsumerState<InspireScreen>
         bottom: false,
         child: NestedScrollView(
           controller: _outerScrollController,
-          
+
           headerSliverBuilder: (context, innerBoxIsScrolled) {
             return [
               CommonSliverAppBar(
                 isHeroEnabled: widget.isActiveTab,
-                isVisible: _topTabController.index != 1,
+                // isVisible: _topTabController.index != 1,
                 onSearchTapped: widget.onSearchTapped,
               ),
               SliverPersistentHeader(
@@ -85,12 +84,16 @@ class _InspireScreenState extends ConsumerState<InspireScreen>
                     indicatorColor: theme.colorScheme.primary,
                     indicatorWeight: 1,
                     labelColor: theme.colorScheme.primary,
-                    unselectedLabelColor:
-                        theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                    unselectedLabelColor: theme.colorScheme.onSurface
+                        .withValues(alpha: 0.5),
                     labelStyle: const TextStyle(
-                        fontWeight: FontWeight.w200, fontSize: 15),
+                      fontWeight: FontWeight.w200,
+                      fontSize: 15,
+                    ),
                     unselectedLabelStyle: const TextStyle(
-                        fontWeight: FontWeight.w200, fontSize: 14),
+                      fontWeight: FontWeight.w200,
+                      fontSize: 14,
+                    ),
                     dividerColor: theme.dividerColor,
                     tabs: const [
                       Tab(text: 'For You'),
@@ -151,11 +154,11 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return Container(
-      color: backgroundColor,
-      child: _tabBar,
-    );
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    return Container(color: backgroundColor, child: _tabBar);
   }
 
   @override
