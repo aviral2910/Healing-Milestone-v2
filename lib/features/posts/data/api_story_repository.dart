@@ -66,12 +66,12 @@ class ApiStoryRepository implements StoryRepository {
       publishedAt: (json['publishedAt'] ?? json['published_at']) != null 
           ? DateTime.parse(json['publishedAt'] ?? json['published_at']) 
           : DateTime.now(),
-      reactionCounts: json['reaction_counts'] != null || json['reactions'] != null
-          ? ((json['reaction_counts'] ?? json['reactions']) as Map<String, dynamic>).map(
+      reactionCounts: json['reactionCounts'] != null || json['reaction_counts'] != null || json['reactions'] != null
+          ? ((json['reactionCounts'] ?? json['reaction_counts'] ?? json['reactions']) as Map<String, dynamic>).map(
               (key, value) => MapEntry(key, value as int),
             )
           : const <String, int>{},
-      currentUserReaction: json['current_user_reaction'] ?? json['user_reaction'],
+      currentUserReaction: json['userReaction'] ?? json['current_user_reaction'] ?? json['user_reaction'],
       likesList: const <String>[], 
       likesCount: 0,
       commentCount: json['commentCount'] ?? json['comment_count'] ?? 0,

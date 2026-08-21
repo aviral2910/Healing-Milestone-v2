@@ -177,12 +177,12 @@ class StoryModel {
       likesList: List<String>.from(map['likesList'] ?? map['likes_list'] ?? []),
       commentCount: map['commentCount'] ?? map['comment_count'] ?? 0,
       comments: List<String>.from(map['comments'] ?? []),
-      reactionCounts: (map['reaction_counts'] != null)
-          ? (map['reaction_counts'] as Map<String, dynamic>).map(
+      reactionCounts: (map['reactionCounts'] != null || map['reaction_counts'] != null)
+          ? ((map['reactionCounts'] ?? map['reaction_counts']) as Map<String, dynamic>).map(
               (key, value) => MapEntry(key, value as int),
             )
           : {},
-      currentUserReaction: map['current_user_reaction'] ?? map['user_reaction'],
+      currentUserReaction: map['userReaction'] ?? map['current_user_reaction'] ?? map['user_reaction'],
       authorId: map['authorId'] ?? map['author_id'] ?? '',
       qrId: map['qrId'] ?? map['qr_id'] ?? '',
       readingTime: map['readingTime'] ?? map['reading_time'] ?? 0,
