@@ -178,6 +178,21 @@ class InteractionSection extends HookConsumerWidget {
             },
           ),
           
+          // COMMENT BUTTON
+          _ActionButton(
+            isVertical: true,
+            icon: Icon(Icons.chat_bubble_outline_rounded, color: Colors.white, size: 24, shadows: iconShadows),
+            label: '${story.commentCount}',
+            labelColor: Colors.white,
+            showLabel: story.commentCount > 0,
+            reserveLabelSpace: true,
+            labelShadows: iconShadows,
+            onTap: () {
+              FocusManager.instance.primaryFocus?.unfocus();
+              showCommentsBottomSheet(context, story);
+            },
+          ),
+          
           // SHARE BUTTON
           _ActionButton(
             isVertical: true,
