@@ -28,7 +28,7 @@ class PaginatedComments extends _$PaginatedComments {
     
     return PaginatedResponse<CommentModel>(
       items: items,
-      nextCursor: response.data['next_cursor'],
+      nextCursor: response.data['next_cursor']?.toString(),
       isEnd: response.data['is_end'] ?? true,
     );
   }
@@ -57,7 +57,7 @@ class PaginatedComments extends _$PaginatedComments {
       
       state = AsyncData(PaginatedResponse<CommentModel>(
         items: [...currentState.items, ...newItems],
-        nextCursor: response.data['next_cursor'],
+        nextCursor: response.data['next_cursor']?.toString(),
         isEnd: response.data['is_end'] ?? true,
       ));
     } finally {

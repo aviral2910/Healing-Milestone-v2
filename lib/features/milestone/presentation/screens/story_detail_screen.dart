@@ -49,8 +49,7 @@ class StoryDetailScreen extends HookConsumerWidget {
     final mainScrollController = useScrollController();
 
     return storyAsync.when(
-      loading: () =>
-          const Scaffold(body: Center(child: AppLoader())),
+      loading: () => const Scaffold(body: Center(child: AppLoader())),
       error: (error, stack) =>
           Scaffold(body: Center(child: Text('Error loading story: $error'))),
       data: (story) {
@@ -478,10 +477,15 @@ class StoryDetailScreen extends HookConsumerWidget {
                                             child: Row(
                                               children: [
                                                 AppAvatar(
-                                                  imageUrl: userAsync.value?.profilePicture,
+                                                  imageUrl: userAsync
+                                                      .value
+                                                      ?.profilePicture,
                                                   radius: 22,
-                                                  role: userAsync.value?.role ?? story.authorRole,
-                                                  isAnonymous: !story.displayAuthorName,
+                                                  role:
+                                                      userAsync.value?.role ??
+                                                      story.authorRole,
+                                                  isAnonymous:
+                                                      !story.displayAuthorName,
                                                   showRing: true,
                                                 ),
                                                 const SizedBox(width: 16),
@@ -804,20 +808,7 @@ class StoryDetailScreen extends HookConsumerWidget {
                                             ),
                                             const SizedBox(height: 64),
                                           ],
-                                          GestureDetector(
-                                            onTap: () => showCommentsBottomSheet(context, story),
-                                            child: Container(
-                                              width: double.infinity,
-                                              padding: const EdgeInsets.symmetric(vertical: 16),
-                                              child: Text(
-                                                'View Comments',
-                                                style: theme.textTheme.bodyMedium?.copyWith(
-                                                  color: theme.colorScheme.primary,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
+
                                           const SizedBox(
                                             height: 40,
                                           ), // Normal padding
@@ -891,7 +882,10 @@ class _ExpandableTagsListState extends State<_ExpandableTagsList> {
                 context.push('${AppRoutes.search}?q=$tag');
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
