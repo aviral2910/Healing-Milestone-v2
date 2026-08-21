@@ -71,7 +71,7 @@ class ApiStoryRepository implements StoryRepository {
               (key, value) => MapEntry(key, value as int),
             )
           : const <String, int>{},
-      currentUserReaction: json['current_user_reaction'],
+      currentUserReaction: json['current_user_reaction'] ?? json['user_reaction'],
       likesList: const <String>[], 
       likesCount: 0,
       commentCount: json['commentCount'] ?? json['comment_count'] ?? 0,
