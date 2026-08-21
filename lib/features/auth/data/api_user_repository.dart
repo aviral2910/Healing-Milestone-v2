@@ -86,6 +86,19 @@ class ApiUserRepository implements UserRepository {
   }
 
   @override
+  
+  Future<List<UserModel>> getSuggestedUsers() async {
+    try {
+      final response = await _dio.get('/api/users/suggested');
+      final items = response.data['items'] as List;
+      return items.map((e) => UserModel.fromMap(e)).toList();
+    } catch (e) {
+      print('Error getting suggested users: $e');
+      return [];
+    }
+  }
+
+  @override
   Future<bool> isUsernameAvailable(String username) async {
     try {
       final response = await _dio.get('/api/users/check-username?username=$username');

@@ -1,6 +1,7 @@
 import 'package:healing_milestones/core/router/app_routes.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:healing_milestones/core/models/user_model.dart';
@@ -305,6 +306,9 @@ class _ProfessionalOnboardingScreenState
                   TextFormField(
                     controller: _usernameController,
                     textInputAction: TextInputAction.next,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9._]')),
+                    ],
                     onChanged: _onUsernameChanged,
                     decoration: _buildInputDecoration(
                       'Unique Username (@handle)',

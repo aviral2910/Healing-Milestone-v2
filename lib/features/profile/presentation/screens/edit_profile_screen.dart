@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:healing_milestones/core/router/app_routes.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:healing_milestones/shared/widgets/app_avatar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -33,8 +34,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   late TextEditingController _servicesController;
   late TextEditingController _registrationController;
 
-  bool _isCheckingUsername = false;
-  bool? _isUsernameAvailable;
   Timer? _debounce;
   String? _originalUsername;
   bool _isUploadingProfilePic = false;
@@ -104,42 +103,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     super.dispose();
   }
 
-  void _onUsernameChanged(String value) {
-    final username = value.trim().toLowerCase();
-
-    if (username == _originalUsername) {
-      setState(() {
-        _isUsernameAvailable = true;
-        _isCheckingUsername = false;
-      });
-      return;
-    }
-
-    if (username.isEmpty || username.length < 3) {
-      setState(() {
-        _isUsernameAvailable = null;
-        _isCheckingUsername = false;
-      });
-      return;
-    }
-
-    setState(() {
-      _isCheckingUsername = true;
-      _isUsernameAvailable = null;
-    });
-
-    if (_debounce?.isActive ?? false) _debounce!.cancel();
-    _debounce = Timer(const Duration(milliseconds: 500), () async {
-      final available =
-          await ref.read(authProvider.notifier).isUsernameAvailable(username);
-      if (mounted) {
-        setState(() {
-          _isUsernameAvailable = available;
-          _isCheckingUsername = false;
-        });
-      }
-    });
-  }
 
   void _saveChanges() async {
     if (_formKey.currentState!.validate()) {

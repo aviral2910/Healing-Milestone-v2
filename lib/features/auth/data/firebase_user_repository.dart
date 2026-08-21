@@ -49,6 +49,12 @@ class FirebaseUserRepository implements UserRepository {
   }
 
   @override
+  
+  @override
+  Future<List<UserModel>> getSuggestedUsers() async {
+    return [];
+  }
+
   Future<bool> isUsernameAvailable(String username) async {
     final query = await _firestore
         .collection('users')

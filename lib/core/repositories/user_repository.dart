@@ -5,6 +5,7 @@ abstract class UserRepository {
   Stream<UserModel?> getUserStream(String uid);
   Future<void> createUserData(UserModel user);
   Future<void> updateUserData(UserModel user);
+  Future<List<UserModel>> getSuggestedUsers();
   Future<bool> isUsernameAvailable(String username);
   Future<List<UserModel>> searchUsers(String query);
   Future<List<UserModel>> getUsersByIds(List<String> uids);

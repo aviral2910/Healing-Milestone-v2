@@ -1,26 +1,24 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import '../../../../core/router/app_routes.dart';
-import '../../../../core/models/user_model.dart';
-import '../../data/repository_providers.dart';
-import '../../data/auth_provider.dart';
-import '../../../../shared/widgets/app_avatar.dart';
+import re
 
+with open("lib/features/auth/presentation/screens/suggested_follows_screen.dart", "r") as f:
+    content = f.read()
 
+# Add imports if missing
+if "userRepositoryProvider" not in content:
+    content = content.replace("import '../../../../core/models/user_model.dart';", "import '../../../../core/models/user_model.dart';\nimport '../../../../core/providers/core_providers.dart';")
+
+provider_code = """
 final suggestedUsersProvider = FutureProvider.autoDispose<List<UserModel>>((ref) async {
   final repo = ref.read(userRepositoryProvider);
   return await repo.getSuggestedUsers();
 });
+"""
 
-class SuggestedFollowsScreen extends ConsumerStatefulWidget {
-  const SuggestedFollowsScreen({super.key});
+if "suggestedUsersProvider" not in content:
+    content = content.replace("class SuggestedFollowsScreen", provider_code + "\nclass SuggestedFollowsScreen")
 
-  @override
-  ConsumerState<SuggestedFollowsScreen> createState() => _SuggestedFollowsScreenState();
-}
-
-class _SuggestedFollowsScreenState extends ConsumerState<SuggestedFollowsScreen> {
+# Update state class
+state_replacement = """class _SuggestedFollowsScreenState extends ConsumerState<SuggestedFollowsScreen> {
   bool _isSaving = false;
   late Set<String> _selectedUserIds;
 
@@ -156,7 +154,7 @@ class _SuggestedFollowsScreenState extends ConsumerState<SuggestedFollowsScreen>
                             children: [
                               AppAvatar(
                                 radius: 28,
-                                role: user.role,
+                                role: user.role.name,
                                 imageUrl: user.profilePicture,
                               ),
                               const SizedBox(width: 16),
@@ -270,49 +268,10 @@ class _SuggestedFollowsScreenState extends ConsumerState<SuggestedFollowsScreen>
       ),
     );
   }
-}
+}"""
 
-class _FollowButton extends StatelessWidget {
-  final bool isFollowing;
-  final VoidCallback onTap;
+content = re.sub(r'class _SuggestedFollowsScreenState extends ConsumerState<SuggestedFollowsScreen> \{.*?\n}\n\nclass _FollowButton extends StatelessWidget', state_replacement + '\n\nclass _FollowButton extends StatelessWidget', content, flags=re.DOTALL)
 
-  const _FollowButton({
-    required this.isFollowing,
-    required this.onTap,
-  });
+with open("lib/features/auth/presentation/screens/suggested_follows_screen.dart", "w") as f:
+    f.write(content)
 
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isFollowing 
-              ? theme.colorScheme.surfaceContainerHighest 
-              : theme.colorScheme.primary,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isFollowing 
-                ? theme.dividerColor 
-                : Colors.transparent,
-            width: 1,
-          ),
-        ),
-        child: Text(
-          isFollowing ? 'Following' : 'Follow',
-          style: theme.textTheme.labelLarge?.copyWith(
-            fontWeight: FontWeight.w700,
-            color: isFollowing 
-                ? theme.colorScheme.onSurface 
-                : theme.colorScheme.onPrimary,
-          ),
-        ),
-      ),
-    );
-  }
-}
