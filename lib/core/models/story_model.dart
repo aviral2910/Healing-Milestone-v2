@@ -182,7 +182,7 @@ class StoryModel {
               (key, value) => MapEntry(key, value as int),
             )
           : {},
-      currentUserReaction: map['current_user_reaction'],
+      currentUserReaction: map['current_user_reaction'] ?? map['user_reaction'],
       authorId: map['authorId'] ?? map['author_id'] ?? '',
       qrId: map['qrId'] ?? map['qr_id'] ?? '',
       readingTime: map['readingTime'] ?? map['reading_time'] ?? 0,
