@@ -74,7 +74,16 @@ class _ProfessionalOnboardingScreenState
     });
   }
 
-
+  Future<void> _skip() async {
+    if (_usernameController.text.trim().length < 3 ||
+        _isUsernameAvailable != true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content:
+                Text('Please enter an available username before skipping.')),
+      );
+      return;
+    }
 
     if (_nameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -234,6 +243,7 @@ class _ProfessionalOnboardingScreenState
         centerTitle: true,
         elevation: 0,
         backgroundColor: Colors.transparent,
+        
       ),
       body: Center(
         child: SingleChildScrollView(
