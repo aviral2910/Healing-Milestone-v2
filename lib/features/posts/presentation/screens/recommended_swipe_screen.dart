@@ -86,11 +86,7 @@ class _RecommendedSwipeScreenState extends ConsumerState<RecommendedSwipeScreen>
           controller: widget.scrollController,
           slivers: [
             if (storiesAsync.isLoading)
-              const SliverFillRemaining(
-                child: Center(
-                  child: const AppLoader.small(),
-                ),
-              )
+              const ServerHealingLoader(isSliver: true)
             else if (storiesAsync.hasError && !storiesAsync.hasValue)
               SliverFillRemaining(
                 child: Center(
