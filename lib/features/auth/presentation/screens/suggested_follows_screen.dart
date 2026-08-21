@@ -53,7 +53,7 @@ class _SuggestedFollowsScreenState extends ConsumerState<SuggestedFollowsScreen>
       }
       
       if (mounted) {
-        context.go(AppRoutes.home);
+        context.go(AppRoutes.ascensionTransition);
       }
     } catch (e) {
       if (mounted) {

@@ -80,6 +80,8 @@ class TimelineNode extends ConsumerWidget {
                               r['label']!,
                             );
                             ref.invalidate(paginatedJourneyMilestonesProvider(milestone.journeyId!));
+                          ref.invalidate(paginatedJourneyMilestonesProvider(milestone.journeyId!, isPublic: true));
+                            ref.invalidate(paginatedJourneyMilestonesProvider(milestone.journeyId!, isPublic: true));
                             ref.invalidate(recommendedMilestonesProvider);
       ref.invalidate(followingMilestonesProvider);
                           } catch (e) {
@@ -335,6 +337,9 @@ class TimelineNode extends ConsumerWidget {
                                 await ref.read(journeyRepositoryProvider).deleteMilestone(milestone.id);
                                 if (milestone.journeyId != null) {
                                   ref.invalidate(paginatedJourneyMilestonesProvider(milestone.journeyId!));
+                                  ref.invalidate(paginatedJourneyMilestonesProvider(milestone.journeyId!, isPublic: true));
+                          ref.invalidate(paginatedJourneyMilestonesProvider(milestone.journeyId!, isPublic: true));
+                            ref.invalidate(paginatedJourneyMilestonesProvider(milestone.journeyId!, isPublic: true));
                                 } else {
                                   ref.invalidate(myFloatingMilestonesProvider);
                                 }
@@ -463,6 +468,7 @@ class TimelineNode extends ConsumerWidget {
                             await ref.read(journeyRepositoryProvider).reactToMilestone(milestone.id, 'love');
                           }
                           ref.invalidate(paginatedJourneyMilestonesProvider(milestone.journeyId!));
+                          ref.invalidate(paginatedJourneyMilestonesProvider(milestone.journeyId!, isPublic: true));
                           ref.invalidate(recommendedMilestonesProvider);
       ref.invalidate(followingMilestonesProvider);
                         } catch (e) {

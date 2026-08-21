@@ -74,16 +74,7 @@ class _ProfessionalOnboardingScreenState
     });
   }
 
-  Future<void> _skip() async {
-    if (_usernameController.text.trim().length < 3 ||
-        _isUsernameAvailable != true) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content:
-                Text('Please enter an available username before skipping.')),
-      );
-      return;
-    }
+
 
     if (_nameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -110,7 +101,7 @@ class _ProfessionalOnboardingScreenState
       );
 
       await ref.read(authProvider.notifier).completeOnboarding(newUserModel);
-      if (mounted) context.go(AppRoutes.ascensionTransition);
+      if (mounted) context.push(AppRoutes.interestSelection);
     }
   }
 
@@ -167,7 +158,7 @@ class _ProfessionalOnboardingScreenState
           );
         }
 
-        if (mounted) context.go(AppRoutes.ascensionTransition);
+        if (mounted) context.push(AppRoutes.interestSelection);
       }
     }
   }
@@ -243,19 +234,6 @@ class _ProfessionalOnboardingScreenState
         centerTitle: true,
         elevation: 0,
         backgroundColor: Colors.transparent,
-        actions: [
-          TextButton(
-            onPressed: _skip,
-            child: Text(
-              'Skip',
-              style: TextStyle(
-                color: theme.colorScheme.primary,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-        ],
       ),
       body: Center(
         child: SingleChildScrollView(
