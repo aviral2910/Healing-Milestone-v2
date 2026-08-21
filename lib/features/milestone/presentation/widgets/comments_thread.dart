@@ -88,9 +88,16 @@ class _CommentsThreadState extends ConsumerState<CommentsThread> {
                   );
                 }
 
-                return AnimationLimiter(
-                  child: ListView.separated(
-                    padding: const EdgeInsets.all(16),
+                return NotificationListener<ScrollNotification>(
+                  onNotification: (ScrollNotification scrollInfo) {
+                    if (scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent - 50) {
+                      ref.read(paginatedCommentsProvider(widget.milestone.storyId).notifier).fetchNextPage();
+                    }
+                    return false;
+                  },
+                  child: AnimationLimiter(
+                    child: ListView.separated(
+                      padding: const EdgeInsets.all(16),
                     itemCount: comments.length,
                     separatorBuilder: (context, index) =>
                         const SizedBox(height: 24),
@@ -111,6 +118,7 @@ class _CommentsThreadState extends ConsumerState<CommentsThread> {
                       );
                     },
                   ),
+                ),
                 );
               },
               loading: () => const Center(child: AppLoader(size: 30)),

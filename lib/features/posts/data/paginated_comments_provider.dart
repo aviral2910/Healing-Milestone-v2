@@ -13,7 +13,7 @@ class PaginatedComments extends _$PaginatedComments {
   @override
   Future<PaginatedResponse<CommentModel>> build(String storyId) async {
     final apiClient = ref.read(apiClientProvider);
-    final response = await apiClient.dio.get('/api/stories/$storyId/comments?skip=0&limit=100');
+    final response = await apiClient.dio.get('/api/stories/$storyId/comments?skip=0&limit=20');
     final items = (response.data['items'] as List).map((json) {
       final userJson = json['user'];
       return CommentModel(
@@ -41,7 +41,7 @@ class PaginatedComments extends _$PaginatedComments {
     _isFetchingMore = true;
     try {
       final apiClient = ref.read(apiClientProvider);
-      final response = await apiClient.dio.get('/api/stories/$storyId/comments?skip=${currentState.nextCursor}&limit=100');
+      final response = await apiClient.dio.get('/api/stories/$storyId/comments?skip=${currentState.nextCursor}&limit=20');
       
       final newItems = (response.data['items'] as List).map((json) {
         final userJson = json['user'];
