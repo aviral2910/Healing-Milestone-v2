@@ -49,8 +49,8 @@ class _SuggestedFollowsScreenState extends ConsumerState<SuggestedFollowsScreen>
   @override
   void initState() {
     super.initState();
-    // Default select everyone initially
-    _selectedUserIds = _suggestedUsers.map((u) => u['id'] as String).toSet();
+    // Start with empty selections
+    _selectedUserIds = {};
   }
 
   void _toggleFollow(String userId) {
