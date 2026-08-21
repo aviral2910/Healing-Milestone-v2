@@ -56,6 +56,8 @@ class _CommentsThreadState extends ConsumerState<CommentsThread> {
 
     // Refresh the comments list instantly
     ref.invalidate(paginatedCommentsProvider(widget.milestone.storyId));
+    ref.invalidate(paginatedStoriesProvider);
+    ref.invalidate(paginatedUserStoriesProvider(widget.milestone.authorId));
   }
 
   @override

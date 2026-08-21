@@ -56,6 +56,7 @@ class _JourneyCommentsThreadState extends ConsumerState<JourneyCommentsThread> {
 
     // Refresh the comments list instantly
     ref.invalidate(paginatedJourneyCommentsProvider(widget.milestone.id));
+    ref.invalidate(paginatedJourneyMilestonesProvider(widget.milestone.journeyId!));
   }
 
   @override
