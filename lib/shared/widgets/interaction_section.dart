@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../features/milestone/presentation/widgets/comments_thread.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -370,6 +371,18 @@ class InteractionSection extends HookConsumerWidget {
                 onTap: () {
                   FocusManager.instance.primaryFocus?.unfocus();
                   showShareOptions(context, story.storyId);
+                },
+              ),
+              // COMMENT BUTTON
+              _ActionButton(
+                icon: Icon(Icons.chat_bubble_outline_rounded,
+                    color: theme.textTheme.bodySmall?.color, size: 20),
+                label: story.commentCount > 0 ? '${story.commentCount}' : 'Comment',
+                labelColor: theme.textTheme.bodySmall?.color,
+                showLabel: showLabels,
+                onTap: () {
+                  FocusManager.instance.primaryFocus?.unfocus();
+                  showCommentsBottomSheet(context, story);
                 },
               ),
               // REACT BUTTON

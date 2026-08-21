@@ -65,120 +65,140 @@ class _CommentsThreadState extends ConsumerState<CommentsThread> {
     );
     final theme = Theme.of(context);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        commentsAsync.when(
-          data: (response) {
-            final comments = response.items;
-            if (comments.isEmpty) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16.0),
-                child: Text(
-                  'No comments yet. Be the first!',
-                  style: TextStyle(
-                    color:
-                        (Theme.of(context).textTheme.bodySmall?.color ??
-                        Colors.grey),
-                  ),
-                ),
-              );
-            }
-
-            return AnimationLimiter(
-              child: ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: comments.length,
-                separatorBuilder: (context, index) =>
-                    const SizedBox(height: 24),
-                itemBuilder: (context, index) {
-                  final comment = comments[index];
-                  return AnimationConfiguration.staggeredList(
-                    position: index,
-                    duration: const Duration(milliseconds: 500),
-                    child: SlideAnimation(
-                      verticalOffset: 50.0,
-                      child: FadeInAnimation(
-                        child: _CommentBubble(
-                          comment: comment,
-                          storyOwnerId: widget.milestone.authorId,
+    return SafeArea(
+      child: Column(
+        children: [
+          Expanded(
+            child: commentsAsync.when(
+              data: (response) {
+                final comments = response.items;
+                if (comments.isEmpty) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16.0),
+                      child: Text(
+                        'No comments yet. Be the first!',
+                        style: TextStyle(
+                          color:
+                              (Theme.of(context).textTheme.bodySmall?.color ??
+                              Colors.grey),
                         ),
                       ),
                     ),
                   );
-                },
+                }
+
+                return AnimationLimiter(
+                  child: ListView.separated(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: comments.length,
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 24),
+                    itemBuilder: (context, index) {
+                      final comment = comments[index];
+                      return AnimationConfiguration.staggeredList(
+                        position: index,
+                        duration: const Duration(milliseconds: 500),
+                        child: SlideAnimation(
+                          verticalOffset: 50.0,
+                          child: FadeInAnimation(
+                            child: _CommentBubble(
+                              comment: comment,
+                              storyOwnerId: widget.milestone.authorId,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                );
+              },
+              loading: () => const Center(child: AppLoader(size: 30)),
+              error: (e, st) => Text('Error loading comments: $e'),
+            ),
+          ),
+          // Input Field
+          Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+              decoration: BoxDecoration(
+                color: theme.scaffoldBackgroundColor,
+                border: Border(
+                  top: BorderSide(
+                    color: theme.dividerColor,
+                    width: 0.5,
+                  ),
+                ),
               ),
-            );
-          },
-          loading: () => const Center(child: const AppLoader()),
-          error: (e, st) => Text('Error loading comments: $e'),
-        ),
-        const SizedBox(height: 24),
-        // Add Comment Input
-        Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: _commentController,
-                textInputAction: TextInputAction.send,
-                onSubmitted: (_) => _submitComment(),
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-                decoration: InputDecoration(
-                  hintText: 'Add a comment...',
-                  hintStyle: TextStyle(
-                    color:
-                        (Theme.of(context).textTheme.bodySmall?.color ??
-                        Colors.grey),
-                  ),
-                  filled: true,
-                  fillColor: Theme.of(context).cardColor,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 14,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(24),
-                    borderSide: BorderSide(
-                      color: Theme.of(context).dividerColor,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _commentController,
+                      textInputAction: TextInputAction.send,
+                      onSubmitted: (_) => _submitComment(),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                      decoration: InputDecoration(
+                        hintText: 'Add a comment...',
+                        hintStyle: TextStyle(
+                          color:
+                              (Theme.of(context).textTheme.bodySmall?.color ??
+                              Colors.grey),
+                        ),
+                        filled: true,
+                        fillColor: Theme.of(context).cardColor,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 14,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(24),
+                          borderSide: BorderSide(
+                            color: Theme.of(context).dividerColor,
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(24),
+                          borderSide: BorderSide(
+                            color: Theme.of(context).dividerColor,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(24),
+                          borderSide: BorderSide(
+                            color: theme.colorScheme.primary.withValues(alpha: 0.5),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(24),
-                    borderSide: BorderSide(
-                      color: Theme.of(context).dividerColor,
+                  const SizedBox(width: 12),
+                  GestureDetector(
+                    onTap: _submitComment,
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primary.withValues(alpha: 0.15),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.send_rounded,
+                        color: theme.colorScheme.primary,
+                        size: 24,
+                      ),
                     ),
                   ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(24),
-                    borderSide: BorderSide(
-                      color: theme.colorScheme.primary.withValues(alpha: 0.5),
-                    ),
-                  ),
-                ),
+                ],
               ),
             ),
-            const SizedBox(width: 12),
-            GestureDetector(
-              onTap: _submitComment,
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withValues(alpha: 0.15),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.send_rounded,
-                  color: theme.colorScheme.primary,
-                  size: 24,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ],
+          ),
+        ],
+      ),
     );
   }
 }
@@ -328,4 +348,49 @@ class _CommentBubble extends ConsumerWidget {
       ],
     );
   }
+}
+
+
+void showCommentsBottomSheet(BuildContext context, StoryModel story) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (context) => DraggableScrollableSheet(
+      initialChildSize: 0.7,
+      minChildSize: 0.4,
+      maxChildSize: 0.95,
+      expand: false,
+      builder: (context, scrollController) {
+        return Column(
+          children: [
+            // Grabber handle
+            Container(
+              margin: const EdgeInsets.only(top: 12, bottom: 8),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: Text(
+                'Comments',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            Divider(height: 1, color: Theme.of(context).dividerColor),
+            Expanded(child: CommentsThread(milestone: story)),
+          ],
+        );
+      },
+    ),
+  );
 }

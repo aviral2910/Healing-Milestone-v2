@@ -804,13 +804,20 @@ class StoryDetailScreen extends HookConsumerWidget {
                                             ),
                                             const SizedBox(height: 64),
                                           ],
-                                          Text(
-                                            'Comments',
-                                            style: theme.textTheme.headlineLarge
-                                                ?.copyWith(fontSize: 28),
+                                          GestureDetector(
+                                            onTap: () => showCommentsBottomSheet(context, story),
+                                            child: Container(
+                                              width: double.infinity,
+                                              padding: const EdgeInsets.symmetric(vertical: 16),
+                                              child: Text(
+                                                'View Comments',
+                                                style: theme.textTheme.bodyMedium?.copyWith(
+                                                  color: theme.colorScheme.primary,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
                                           ),
-                                          const SizedBox(height: 24),
-                                          CommentsThread(milestone: story),
                                           const SizedBox(
                                             height: 40,
                                           ), // Normal padding
