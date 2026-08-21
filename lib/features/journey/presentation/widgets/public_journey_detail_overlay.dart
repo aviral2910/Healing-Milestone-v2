@@ -126,6 +126,8 @@ class _PublicJourneyDetailOverlayState
       // Optionally refresh the feed
       ref.invalidate(recommendedMilestonesProvider);
       ref.invalidate(followingMilestonesProvider);
+      ref.invalidate(recommendedJourneysProvider);
+      ref.invalidate(followingJourneysProvider);
     } catch (e) {
       setState(() => _isLoadingFollow = false);
       if (mounted) {

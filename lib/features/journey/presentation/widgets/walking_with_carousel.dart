@@ -82,10 +82,7 @@ class WalkingWithCarousel extends ConsumerWidget {
                 itemCount: journeys.length,
                 itemBuilder: (context, index) {
                   final journey = journeys[index];
-                  // If the carousel title is 'Following', we assume they are following it. 
-                  // Otherwise (like 'Recommended'), they are not.
-                  final isFollowing = title.toLowerCase() == 'following';
-                  return _WalkingWithItem(journey: journey, isFollowing: isFollowing);
+                  return _WalkingWithItem(journey: journey, isFollowing: journey.isFollowing);
                 },
               ),
             ),

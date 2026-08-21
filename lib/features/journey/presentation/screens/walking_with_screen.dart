@@ -69,8 +69,7 @@ class WalkingWithScreen extends ConsumerWidget {
             itemCount: journeys.length,
             separatorBuilder: (context, index) => const SizedBox(height: 16),
             itemBuilder: (context, index) {
-              final isFollowing = title.toLowerCase() == 'following';
-              return _WalkingWithListItem(journey: journeys[index], isFollowing: isFollowing);
+              return _WalkingWithListItem(journey: journeys[index], isFollowing: journeys[index].isFollowing);
             },
           );
         },
