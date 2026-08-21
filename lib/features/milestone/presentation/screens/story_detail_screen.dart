@@ -879,21 +879,26 @@ class _ExpandableTagsListState extends State<_ExpandableTagsList> {
           spacing: 8.0,
           runSpacing: 8.0,
           children: visibleTags.map((tag) {
-            return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: theme.colorScheme.primary.withValues(alpha: 0.3),
+            return GestureDetector(
+              onTap: () {
+                context.push('${AppRoutes.search}?q=$tag');
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: theme.colorScheme.primary.withValues(alpha: 0.3),
+                  ),
                 ),
-              ),
-              child: Text(
-                '#$tag',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: theme.colorScheme.primary,
+                child: Text(
+                  '#$tag',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: theme.colorScheme.primary,
+                  ),
                 ),
               ),
             );

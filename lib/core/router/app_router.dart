@@ -146,7 +146,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppRoutes.search,
-        builder: (context, state) => const SearchScreen(),
+        builder: (context, state) {
+          final q = state.uri.queryParameters['q'];
+          return SearchScreen(initialQuery: q);
+        },
       ),
       GoRoute(
         path: AppRoutes.phoneAuth,

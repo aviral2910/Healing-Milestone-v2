@@ -17,11 +17,13 @@ import 'package:healing_milestones/shared/widgets/app_loader.dart';
 class SearchScreen extends ConsumerStatefulWidget {
   final ScrollController? scrollController;
   final bool isActiveTab;
+  final String? initialQuery;
 
   const SearchScreen({
     Key? key,
     this.scrollController,
     this.isActiveTab = true,
+    this.initialQuery,
   }) : super(key: key);
 
   @override
@@ -40,6 +42,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   void initState() {
     super.initState();
     _loadRecentSearches();
+    
+    if (widget.initialQuery != null && widget.initialQuery!.isNotEmpty) {
+      _searchController.text = widget.initialQuery!;
+      // Delay slightly to allow providers to initialize
+      Future.microtask(() {
+        ref.read(globalSearchQueryProvider.notifier).updateQuery(widget.initialQuery!);
+      });
+    }
   }
 
   Future<void> _loadRecentSearches() async {
