@@ -6,9 +6,8 @@ class FirebaseAuthRepository implements AuthRepository {
   final FirebaseAuth _firebaseAuth;
   bool _isGoogleSignInInitialized = false;
 
-  FirebaseAuthRepository({
-    required FirebaseAuth firebaseAuth,
-  }) : _firebaseAuth = firebaseAuth;
+  FirebaseAuthRepository({required FirebaseAuth firebaseAuth})
+    : _firebaseAuth = firebaseAuth;
 
   AuthUser _mapFirebaseUser(User? user) {
     if (user == null) {
@@ -43,28 +42,33 @@ class FirebaseAuthRepository implements AuthRepository {
     try {
       if (!_isGoogleSignInInitialized) {
         await GoogleSignIn.instance.initialize(
-          serverClientId: '507010116072-ut55mclmnas5jki5jnb1851tjmvcr4tp.apps.googleusercontent.com',
+          serverClientId:
+              '507010116072-ut55mclmnas5jki5jnb1851tjmvcr4tp.apps.googleusercontent.com',
         );
         _isGoogleSignInInitialized = true;
       }
-      
-      final GoogleSignInAccount? googleUser = await GoogleSignIn.instance.authenticate();
+
+      final GoogleSignInAccount? googleUser = await GoogleSignIn.instance
+          .authenticate();
       if (googleUser == null) return null;
 
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
-          
-      final GoogleSignInClientAuthorization? authz = 
-          await googleUser.authorizationClient.authorizationForScopes(['email', 'profile']);
+
+      final GoogleSignInClientAuthorization? authz = await googleUser
+          .authorizationClient
+          .authorizationForScopes(['email', 'profile']);
 
       final OAuthCredential credential = GoogleAuthProvider.credential(
         accessToken: authz?.accessToken,
         idToken: googleAuth.idToken,
       );
 
-      final userCredential = await _firebaseAuth.signInWithCredential(credential);
+      final userCredential = await _firebaseAuth.signInWithCredential(
+        credential,
+      );
       final user = userCredential.user;
-      
+
       if (user == null) return null;
       return _mapFirebaseUser(user);
     } on GoogleSignInException catch (e) {
@@ -83,7 +87,8 @@ class FirebaseAuthRepository implements AuthRepository {
   Future<void> signOut() async {
     if (!_isGoogleSignInInitialized) {
       await GoogleSignIn.instance.initialize(
-        serverClientId: '507010116072-ut55mclmnas5jki5jnb1851tjmvcr4tp.apps.googleusercontent.com',
+        serverClientId:
+            '507010116072-ut55mclmnas5jki5jnb1851tjmvcr4tp.apps.googleusercontent.com',
       );
       _isGoogleSignInInitialized = true;
     }
@@ -119,16 +124,21 @@ class FirebaseAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<AuthUser?> signInWithPhoneCredential(String verificationId, String smsCode) async {
+  Future<AuthUser?> signInWithPhoneCredential(
+    String verificationId,
+    String smsCode,
+  ) async {
     try {
       PhoneAuthCredential credential = PhoneAuthProvider.credential(
         verificationId: verificationId,
         smsCode: smsCode,
       );
-      
-      final userCredential = await _firebaseAuth.signInWithCredential(credential);
+
+      final userCredential = await _firebaseAuth.signInWithCredential(
+        credential,
+      );
       final user = userCredential.user;
-      
+
       if (user == null) return null;
       return _mapFirebaseUser(user);
     } catch (e) {
@@ -138,10 +148,14 @@ class FirebaseAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<AuthUser?> linkPhoneCredential(String verificationId, String smsCode) async {
+  Future<AuthUser?> linkPhoneCredential(
+    String verificationId,
+    String smsCode,
+  ) async {
     try {
       final user = _firebaseAuth.currentUser;
-      if (user == null) throw Exception("No user is currently signed in to link.");
+      if (user == null)
+        throw Exception("No user is currently signed in to link.");
 
       PhoneAuthCredential credential = PhoneAuthProvider.credential(
         verificationId: verificationId,
@@ -152,7 +166,9 @@ class FirebaseAuthRepository implements AuthRepository {
       return _mapFirebaseUser(userCredential.user);
     } on FirebaseAuthException catch (e) {
       if (e.code == 'credential-already-in-use') {
-        throw Exception("This phone number is already linked to another account.");
+        throw Exception(
+          "This phone number is already linked to another account.",
+        );
       }
       rethrow;
     } catch (e) {
@@ -165,21 +181,26 @@ class FirebaseAuthRepository implements AuthRepository {
   Future<AuthUser?> linkGoogleCredential() async {
     try {
       final firebaseUser = _firebaseAuth.currentUser;
-      if (firebaseUser == null) throw Exception("No user is currently signed in to link.");
+      if (firebaseUser == null)
+        throw Exception("No user is currently signed in to link.");
 
       if (!_isGoogleSignInInitialized) {
         await GoogleSignIn.instance.initialize(
-          serverClientId: '507010116072-ut55mclmnas5jki5jnb1851tjmvcr4tp.apps.googleusercontent.com',
+          serverClientId:
+              '507010116072-ut55mclmnas5jki5jnb1851tjmvcr4tp.apps.googleusercontent.com',
         );
         _isGoogleSignInInitialized = true;
       }
-      
-      final GoogleSignInAccount? googleUser = await GoogleSignIn.instance.authenticate();
+
+      final GoogleSignInAccount? googleUser = await GoogleSignIn.instance
+          .authenticate();
       if (googleUser == null) return null;
 
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-      final GoogleSignInClientAuthorization? authz = 
-          await googleUser.authorizationClient.authorizationForScopes(['email', 'profile']);
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+      final GoogleSignInClientAuthorization? authz = await googleUser
+          .authorizationClient
+          .authorizationForScopes(['email', 'profile']);
 
       final OAuthCredential credential = GoogleAuthProvider.credential(
         accessToken: authz?.accessToken,
@@ -190,7 +211,9 @@ class FirebaseAuthRepository implements AuthRepository {
       return _mapFirebaseUser(userCredential.user);
     } on FirebaseAuthException catch (e) {
       if (e.code == 'credential-already-in-use') {
-        throw Exception("This Google account is already linked to another account.");
+        throw Exception(
+          "This Google account is already linked to another account.",
+        );
       }
       rethrow;
     } catch (e) {
@@ -212,20 +235,24 @@ class FirebaseAuthRepository implements AuthRepository {
     try {
       final user = _firebaseAuth.currentUser;
       if (user == null) throw Exception("No user is currently signed in.");
-      
+
       if (!_isGoogleSignInInitialized) {
         await GoogleSignIn.instance.initialize(
-          serverClientId: '507010116072-ut55mclmnas5jki5jnb1851tjmvcr4tp.apps.googleusercontent.com',
+          serverClientId:
+              '507010116072-ut55mclmnas5jki5jnb1851tjmvcr4tp.apps.googleusercontent.com',
         );
         _isGoogleSignInInitialized = true;
       }
-      
-      final GoogleSignInAccount? googleUser = await GoogleSignIn.instance.authenticate();
+
+      final GoogleSignInAccount? googleUser = await GoogleSignIn.instance
+          .authenticate();
       if (googleUser == null) throw Exception("Google sign in cancelled.");
 
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-      final GoogleSignInClientAuthorization? authz = 
-          await googleUser.authorizationClient.authorizationForScopes(['email', 'profile']);
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+      final GoogleSignInClientAuthorization? authz = await googleUser
+          .authorizationClient
+          .authorizationForScopes(['email', 'profile']);
 
       final OAuthCredential credential = GoogleAuthProvider.credential(
         accessToken: authz?.accessToken,
@@ -239,7 +266,10 @@ class FirebaseAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<void> reauthenticateWithPhoneCredential(String verificationId, String smsCode) async {
+  Future<void> reauthenticateWithPhoneCredential(
+    String verificationId,
+    String smsCode,
+  ) async {
     try {
       final user = _firebaseAuth.currentUser;
       if (user == null) throw Exception("No user is currently signed in.");
@@ -251,7 +281,5 @@ class FirebaseAuthRepository implements AuthRepository {
     } catch (e) {
       rethrow;
     }
-  }
-}
   }
 }

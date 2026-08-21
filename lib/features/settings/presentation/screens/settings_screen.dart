@@ -365,15 +365,6 @@ String errorMessage = e.toString();
                             );
                           }
                         }
-                          
-                          scaffoldMessenger.showSnackBar(
-                            SnackBar(
-                              content: Text(errorMessage, style: const TextStyle(color: Colors.white)),
-                              backgroundColor: theme.colorScheme.error,
-                              duration: const Duration(seconds: 5),
-                            ),
-                          );
-                        }
                       },
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 18),
@@ -430,7 +421,7 @@ String errorMessage = e.toString();
                       onPressed: isLoading ? null : () async {
                         setState(() { isLoading = true; error = ''; });
                         try {
-                          await ref.read(authProvider.notifier).verifyPhoneNumber(phoneNumber);
+                          await ref.read(authProvider.notifier).verifyPhoneNumber(phoneNumber, onCodeSent: () {});
                           setState(() { isLoading = false; codeSent = true; });
                         } catch (e) {
                           setState(() { isLoading = false; error = 'Failed to send SMS code.'; });

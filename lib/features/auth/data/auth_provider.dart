@@ -176,7 +176,7 @@ class AuthNotifier extends Notifier<AsyncValue<AuthState>> {
           final currentState = state.value;
           if (currentState != null) {
             state = AsyncData(
-              currentState.copyWith(
+              (state.value ?? const AuthState()).copyWith(
                 verificationId: verificationId,
                 linkingPhoneNumber: phoneNumber,
               ),
@@ -191,7 +191,7 @@ class AuthNotifier extends Notifier<AsyncValue<AuthState>> {
           final currentState = state.value;
           if (currentState != null) {
             state = AsyncData(
-              currentState.copyWith(
+              (state.value ?? const AuthState()).copyWith(
                 verificationId: verificationId,
                 linkingPhoneNumber: phoneNumber,
               ),
@@ -254,7 +254,7 @@ class AuthNotifier extends Notifier<AsyncValue<AuthState>> {
         }
 
         state = AsyncData(
-          currentState.copyWith(
+          (state.value ?? const AuthState()).copyWith(
             authUser: user,
             userModel: updatedUserModel,
             linkingPhoneNumber: null, // clear it
@@ -280,7 +280,7 @@ class AuthNotifier extends Notifier<AsyncValue<AuthState>> {
           await _userRepository.updateUserData(updatedUserModel);
         }
         state = AsyncData(
-          currentState.copyWith(authUser: user, userModel: updatedUserModel),
+          (state.value ?? const AuthState()).copyWith(authUser: user, userModel: updatedUserModel),
         );
       }
     } catch (e) {
@@ -297,7 +297,7 @@ class AuthNotifier extends Notifier<AsyncValue<AuthState>> {
     try {
       await _userRepository.updateUserData(updatedUser);
       if (currentState != null) {
-        state = AsyncData(currentState.copyWith(userModel: updatedUser));
+        state = AsyncData((state.value ?? const AuthState()).copyWith(userModel: updatedUser));
       }
       // Force UI components listening to these streams to fetch the latest data from the API
       ref.invalidate(userStreamProvider(updatedUser.userId));
@@ -315,7 +315,7 @@ class AuthNotifier extends Notifier<AsyncValue<AuthState>> {
     try {
       final userModel = await _userRepository.getUserData(currentUser.uid);
       if (userModel != null && currentState != null) {
-        state = AsyncData(currentState.copyWith(userModel: userModel));
+        state = AsyncData((state.value ?? const AuthState()).copyWith(userModel: userModel));
       }
     } catch (e) {
       print('Error refreshing user: $e');
@@ -383,7 +383,7 @@ class AuthNotifier extends Notifier<AsyncValue<AuthState>> {
       
       // Clear verification id
       state = AsyncValue.data(
-        currentState.copyWith(
+        (state.value ?? const AuthState()).copyWith(
           verificationId: null,
           linkingPhoneNumber: null,
         ),
