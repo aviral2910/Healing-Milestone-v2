@@ -427,7 +427,7 @@ class TimelineNode extends ConsumerWidget {
             Row(
               children: [
                 if (milestone.reactionCounts.isNotEmpty)
-                  ...milestone.reactionCounts.entries.map((entry) {
+                  ...milestone.reactionCounts.entries.where((e) => e.value > 0).map((entry) {
                     String emoji = '❤️';
                     switch (entry.key) {
                       case 'spark': emoji = '✨'; break;
