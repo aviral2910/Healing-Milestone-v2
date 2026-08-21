@@ -37,5 +37,9 @@ abstract class AuthRepository {
   Future<AuthUser?> linkPhoneCredential(String verificationId, String smsCode);
   Future<AuthUser?> linkGoogleCredential();
   
+  // Re-authentication
+  Future<void> reauthenticateWithGoogle();
+  Future<void> reauthenticateWithPhoneCredential(String verificationId, String smsCode);
+  
   Future<void> deleteAccount();
 }
