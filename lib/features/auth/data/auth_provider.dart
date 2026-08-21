@@ -1,4 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:healing_milestones/core/models/user_model.dart';
 import 'package:healing_milestones/core/network/api_client.dart';
 import '../../../core/repositories/auth_repository.dart';
@@ -65,12 +67,30 @@ class AuthNotifier extends Notifier<AsyncValue<AuthState>> {
 
   Future<void> _handleUserAuthenticated(AuthUser user) async {
     try {
+      final prefs = await SharedPreferences.getInstance();
+      final cachedUserStr = prefs.getString('cached_user_model_${user.uid}');
+      if (cachedUserStr != null) {
+        try {
+          final cachedUserModel = UserModel.fromMap(jsonDecode(cachedUserStr));
+          state = AsyncData(
+            AuthState(
+              status: AuthStatus.authenticated,
+              authUser: user,
+              userModel: cachedUserModel,
+            ),
+          );
+        } catch (e) {
+          print('Failed to parse cached user: $e');
+        }
+      }
+
       final userModel = await _userRepository.getUserData(user.uid);
       if (userModel == null) {
         state = AsyncData(
           AuthState(status: AuthStatus.needsOnboarding, authUser: user),
         );
       } else {
+        await prefs.setString('cached_user_model_${user.uid}', jsonEncode(userModel.toMap()));
         state = AsyncData(
           AuthState(
             status: AuthStatus.authenticated,
@@ -80,7 +100,11 @@ class AuthNotifier extends Notifier<AsyncValue<AuthState>> {
         );
       }
     } catch (e, st) {
-      state = AsyncError(e, st);
+      if (state.value?.userModel == null) {
+        state = AsyncError(e, st);
+      } else {
+        print('Background fetch failed, keeping cached user data.');
+      }
     }
   }
 
@@ -102,7 +126,10 @@ class AuthNotifier extends Notifier<AsyncValue<AuthState>> {
   Future<void> signOut() async {
     final currentState = state.value;
     try {
-      // Show loading state while signing out
+      if (currentState?.authUser?.uid != null) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.remove('cached_user_model_${currentState!.authUser!.uid}');
+      }
       state = const AsyncValue.loading();
       await _authRepository.signOut();
       // Note: We don't manually set the state to unauthenticated here.
@@ -338,6 +365,10 @@ class AuthNotifier extends Notifier<AsyncValue<AuthState>> {
   Future<void> deleteAccount() async {
     final currentState = state.value;
     try {
+      if (currentState?.authUser?.uid != null) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.remove('cached_user_model_${currentState!.authUser!.uid}');
+      }
       state = const AsyncValue.loading();
 
       // 1. Delete user from the backend database (PostgreSQL)

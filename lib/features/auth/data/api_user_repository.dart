@@ -54,7 +54,14 @@ class ApiUserRepository implements UserRepository {
       final response = await _dio.get('/api/users/$uid');
       return UserModel.fromMap(response.data);
     } catch (e) {
-      return null;
+      if (e is DioException) {
+        if (e.response?.statusCode == 404) {
+          // Truly not found in DB = needs onboarding
+          return null;
+        }
+      }
+      // For network errors, 500s, or timeouts, we must throw so the app doesn't assume the user doesn't exist.
+      rethrow;
     }
   }
 
