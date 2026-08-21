@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+new_content = """import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/router/app_routes.dart';
@@ -38,7 +38,7 @@ class _SuggestedFollowsScreenState extends ConsumerState<SuggestedFollowsScreen>
       'id': 'wellness_journey',
       'username': 'wellness_journey',
       'displayName': 'Wellness Journey',
-      'role': UserRole.member,
+      'role': UserRole.patient,
       'isVerified': false,
       'bio': 'Sharing my personal journey of overcoming depression and finding daily joy.',
     }
@@ -327,3 +327,6 @@ class _FollowButton extends StatelessWidget {
     );
   }
 }
+"""
+with open("lib/features/auth/presentation/screens/suggested_follows_screen.dart", "w") as f:
+    f.write(new_content)
