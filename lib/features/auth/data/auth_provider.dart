@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:convert';
+import '../../../../main.dart';
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:healing_milestones/core/models/user_model.dart';
 import 'package:healing_milestones/core/network/api_client.dart';
@@ -104,6 +106,13 @@ class AuthNotifier extends Notifier<AsyncValue<AuthState>> {
         state = AsyncError(e, st);
       } else {
         print('Background fetch failed, keeping cached user data.');
+        rootScaffoldMessengerKey.currentState?.showSnackBar(
+          const SnackBar(
+            content: Text('Server is healing (waking up) 🧘‍♀️ Please give it a few seconds...'),
+            duration: Duration(seconds: 5),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
       }
     }
   }

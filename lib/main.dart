@@ -33,6 +33,8 @@ class SelectedTag extends Notifier<String> {
 }
 final selectedTagProvider = NotifierProvider<SelectedTag, String>(SelectedTag.new);
 
+final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -104,6 +106,7 @@ class HealingMilestonesApp extends ConsumerWidget {
     return DevicePreview(
       enabled: isDevicePreview,
       builder: (context) => MaterialApp.router(
+        scaffoldMessengerKey: rootScaffoldMessengerKey,
         title: 'Healing Milestones',
         theme: baseTheme,
         routerConfig: router,
