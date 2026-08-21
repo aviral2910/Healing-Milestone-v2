@@ -82,7 +82,10 @@ class WalkingWithCarousel extends ConsumerWidget {
                 itemCount: journeys.length,
                 itemBuilder: (context, index) {
                   final journey = journeys[index];
-                  return _WalkingWithItem(journey: journey);
+                  // If the carousel title is 'Following', we assume they are following it. 
+                  // Otherwise (like 'Recommended'), they are not.
+                  final isFollowing = title.toLowerCase() == 'following';
+                  return _WalkingWithItem(journey: journey, isFollowing: isFollowing);
                 },
               ),
             ),
@@ -96,9 +99,10 @@ class WalkingWithCarousel extends ConsumerWidget {
 }
 
 class _WalkingWithItem extends StatelessWidget {
+  final bool isFollowing;
   final JourneyModel journey;
 
-  const _WalkingWithItem({required this.journey});
+  const _WalkingWithItem({required this.journey, this.isFollowing = true});
 
   @override
   Widget build(BuildContext context) {
@@ -131,7 +135,7 @@ class _WalkingWithItem extends StatelessWidget {
             authorId: journey.authorUid,
             isMine: false,
             visibility: journey.visibility,
-            initialIsFollowing: true,
+            initialIsFollowing: isFollowing,
           );
         }
       },

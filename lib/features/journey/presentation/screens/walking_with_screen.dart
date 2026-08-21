@@ -69,7 +69,8 @@ class WalkingWithScreen extends ConsumerWidget {
             itemCount: journeys.length,
             separatorBuilder: (context, index) => const SizedBox(height: 16),
             itemBuilder: (context, index) {
-              return _WalkingWithListItem(journey: journeys[index]);
+              final isFollowing = title.toLowerCase() == 'following';
+              return _WalkingWithListItem(journey: journeys[index], isFollowing: isFollowing);
             },
           );
         },
@@ -86,8 +87,9 @@ class WalkingWithScreen extends ConsumerWidget {
 }
 
 class _WalkingWithListItem extends StatelessWidget {
+  final bool isFollowing;
   final JourneyModel journey;
-  const _WalkingWithListItem({required this.journey});
+  const _WalkingWithListItem({required this.journey, this.isFollowing = true});
 
   @override
   Widget build(BuildContext context) {
@@ -118,7 +120,7 @@ class _WalkingWithListItem extends StatelessWidget {
             authorId: journey.authorUid,
             isMine: false,
             visibility: journey.visibility,
-            initialIsFollowing: true,
+            initialIsFollowing: isFollowing,
           );
         }
       },
