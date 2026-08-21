@@ -153,15 +153,7 @@ class _RecommendedSwipeScreenState extends ConsumerState<RecommendedSwipeScreen>
 
     return [
       if (filteredStories.isEmpty && !paginatedResponse.isEnd)
-        const SliverFillRemaining(
-          hasScrollBody: false,
-          child: Padding(
-            padding: EdgeInsets.all(32.0),
-            child: Center(
-              child: const AppLoader.small(),
-            ),
-          ),
-        )
+        const ServerHealingLoader(isSliver: true)
       else if (filteredStories.isEmpty && paginatedResponse.isEnd)
         SliverFillRemaining(
           hasScrollBody: false,

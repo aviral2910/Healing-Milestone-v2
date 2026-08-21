@@ -106,13 +106,6 @@ class AuthNotifier extends Notifier<AsyncValue<AuthState>> {
         state = AsyncError(e, st);
       } else {
         print('Background fetch failed, keeping cached user data.');
-        rootScaffoldMessengerKey.currentState?.showSnackBar(
-          const SnackBar(
-            content: Text('Server is healing (waking up) 🧘‍♀️ Please give it a few seconds...'),
-            duration: Duration(seconds: 5),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
       }
     }
   }

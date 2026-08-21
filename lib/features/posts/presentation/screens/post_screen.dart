@@ -196,9 +196,7 @@ class PostScreen extends HookConsumerWidget {
                 },
               ),
               storiesAsync.when(
-                loading: () => const SliverFillRemaining(
-                  child: Center(child: const AppLoader.small()),
-                ),
+                loading: () => const ServerHealingLoader(isSliver: true),
                 error: (err, stack) => SliverFillRemaining(
                   child: Center(
                     child: Column(
