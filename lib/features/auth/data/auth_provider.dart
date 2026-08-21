@@ -404,7 +404,13 @@ class AuthNotifier extends Notifier<AsyncValue<AuthState>> {
       state = const AsyncValue.loading();
 
       // 1. Delete user from the backend database (PostgreSQL)
-      await _userRepository.deleteUserData();
+      try {
+        await _userRepository.deleteUserData();
+      } catch (e) {
+        // If the backend user is already deleted (e.g. from a previous failed attempt that hit requires-recent-login),
+        // it might throw a 401 or 404. We can safely ignore it and proceed to delete the Firebase user.
+        print('Backend deletion failed/already deleted: $e');
+      }
 
       // 2. Delete user from Firebase Authentication
       await _authRepository.deleteAccount();

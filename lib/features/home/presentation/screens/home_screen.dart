@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:healing_milestones/shared/widgets/server_healing_loader.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../shared/widgets/guest_auth_wall.dart';
 
@@ -85,6 +86,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final authState = ref.watch(authProvider).value;
+    final hasAuthError = ref.watch(authProvider).hasError;
     final isAuthenticated = authState?.status == AuthStatus.authenticated;
     final currentIndex = ref.watch(homeTabProvider);
     
@@ -123,14 +125,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             // Tab 2: Together (Journeys)
             const TogetherFeedScreen(),
             // Tab 3: My Path (Gratitude Tree & Milestones)
-            isAuthenticated 
+            hasAuthError
+                ? const ServerHealingLoader()
+                : isAuthenticated 
                 ? const MyPathScreen()
                 : const GuestAuthWallWidget(
                     title: 'Track Your Healing',
                     subtitle: 'Create an account to start your personal journey and grow your gratitude tree.',
                   ),
             // Tab 4: Connect (Messages)
-            isAuthenticated 
+            hasAuthError
+                ? const ServerHealingLoader()
+                : isAuthenticated 
                 ? MessagesScreen(
                     scrollController: _messagesScrollController,
                     isActiveTab: currentIndex == 3,
@@ -140,7 +146,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     subtitle: 'Create an account to securely message doctors and connect with patients.',
                   ),
             // Tab 5: Vault (Profile)
-            isAuthenticated 
+            hasAuthError
+                ? const ServerHealingLoader()
+                : isAuthenticated 
                 ? const ProfileScreen()
                 : const GuestAuthWallWidget(
                     title: 'Your Profile',
