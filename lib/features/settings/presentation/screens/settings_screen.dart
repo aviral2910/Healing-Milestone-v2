@@ -321,10 +321,19 @@ class SettingsScreen extends ConsumerWidget {
                           // Pop dialog
                           navContext.pop();
                           
+                          String errorMessage = e.toString();
+                          if (errorMessage.contains('requires-recent-login')) {
+                            errorMessage = 'For security reasons, you must log out and log back in before deleting your account.';
+                            // Automatically sign them out
+                            await ref.read(authProvider.notifier).signOut();
+                            context.go(AppRoutes.home);
+                          }
+                          
                           scaffoldMessenger.showSnackBar(
                             SnackBar(
-                              content: Text('Failed to delete account: $e'),
+                              content: Text(errorMessage, style: const TextStyle(color: Colors.white)),
                               backgroundColor: theme.colorScheme.error,
+                              duration: const Duration(seconds: 5),
                             ),
                           );
                         }
