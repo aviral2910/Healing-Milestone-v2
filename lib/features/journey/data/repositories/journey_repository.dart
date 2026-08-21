@@ -206,6 +206,7 @@ class JourneyRepository {
     String? audioUrl,
     String? mediaUrl,
     MilestoneVisibility visibility = MilestoneVisibility.public,
+    bool areCommentsEnabled = false,
   }) async {
     try {
       final response = await _apiClient.dio.post(
@@ -218,6 +219,7 @@ class JourneyRepository {
           'audio_url': audioUrl,
           'media_url': mediaUrl,
           'visibility': visibility.name,
+          'are_comments_enabled': areCommentsEnabled,
         },
       );
       return JourneyMilestoneModel.fromJson(response.data);
@@ -234,6 +236,7 @@ class JourneyRepository {
     String? audioUrl,
     String? mediaUrl,
     MilestoneVisibility? visibility,
+    bool? areCommentsEnabled,
   }) async {
     try {
       final data = <String, dynamic>{
@@ -265,6 +268,22 @@ class JourneyRepository {
     }
   }
 
+
+
+  Future<void> deleteMilestoneComment(String milestoneId, String commentId) async {
+    try {
+      await _apiClient.dio.delete('/api/journeys/milestones/$milestoneId/comments/$commentId');
+    } catch (e) {
+      throw Exception('Failed to delete comment: $e');
+    }
+  }
+  Future<void> addMilestoneComment(String milestoneId, String text) async {
+    try {
+      await _apiClient.dio.post('/api/journeys/milestones/$milestoneId/comments', data: {'text': text});
+    } catch (e) {
+      throw Exception('Failed to add comment: $e');
+    }
+  }
   Future<void> reactToMilestone(String milestoneId, String reactionType) async {
     try {
       await _apiClient.dio.post(

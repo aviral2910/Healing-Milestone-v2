@@ -21,7 +21,8 @@ class StoryModel {
   final List<String> likesList;
   final int commentCount;
   final List<String> comments;
-  final Map<String, List<String>> reactions;
+  final Map<String, int> reactionCounts;
+  final String? currentUserReaction;
   final String authorId;
   final String qrId;
   final int readingTime;
@@ -50,7 +51,8 @@ class StoryModel {
     this.likesList = const [],
     this.commentCount = 0,
     this.comments = const [],
-    this.reactions = const {},
+    this.reactionCounts = const {},
+    this.currentUserReaction,
     required this.authorId,
     required this.qrId,
     required this.readingTime,
@@ -80,7 +82,8 @@ class StoryModel {
     List<String>? likesList,
     int? commentCount,
     List<String>? comments,
-    Map<String, List<String>>? reactions,
+    Map<String, int>? reactionCounts,
+    String? currentUserReaction,
     String? authorId,
     String? qrId,
     int? readingTime,
@@ -109,7 +112,8 @@ class StoryModel {
       likesList: likesList ?? this.likesList,
       commentCount: commentCount ?? this.commentCount,
       comments: comments ?? this.comments,
-      reactions: reactions ?? this.reactions,
+      reactionCounts: reactionCounts ?? this.reactionCounts,
+      currentUserReaction: currentUserReaction ?? this.currentUserReaction,
       authorId: authorId ?? this.authorId,
       qrId: qrId ?? this.qrId,
       readingTime: readingTime ?? this.readingTime,
@@ -140,7 +144,8 @@ class StoryModel {
       'likesList': likesList,
       'commentCount': commentCount,
       'comments': comments,
-      'reactions': reactions,
+      'reactionCounts': reactionCounts,
+      'currentUserReaction': currentUserReaction,
       'authorId': authorId,
       'qrId': qrId,
       'readingTime': readingTime,
@@ -172,11 +177,12 @@ class StoryModel {
       likesList: List<String>.from(map['likesList'] ?? map['likes_list'] ?? []),
       commentCount: map['commentCount'] ?? map['comment_count'] ?? 0,
       comments: List<String>.from(map['comments'] ?? []),
-      reactions: (map['reactions'] != null)
-          ? (map['reactions'] as Map<String, dynamic>).map(
-              (key, value) => MapEntry(key, List<String>.from(value)),
+      reactionCounts: (map['reaction_counts'] != null)
+          ? (map['reaction_counts'] as Map<String, dynamic>).map(
+              (key, value) => MapEntry(key, value as int),
             )
           : {},
+      currentUserReaction: map['current_user_reaction'],
       authorId: map['authorId'] ?? map['author_id'] ?? '',
       qrId: map['qrId'] ?? map['qr_id'] ?? '',
       readingTime: map['readingTime'] ?? map['reading_time'] ?? 0,

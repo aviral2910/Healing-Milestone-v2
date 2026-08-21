@@ -107,6 +107,8 @@ class JourneyModel {
   final JourneyStatus status;
   final DateTime createdAt;
   final bool isFollowing;
+  final bool areCommentsEnabled;
+  final int commentCount;
   final String? authorUid;
   final String? authorName;
   final String? authorAvatar;
@@ -125,6 +127,8 @@ class JourneyModel {
     this.status = JourneyStatus.active,
     required this.createdAt,
     this.isFollowing = false,
+    this.areCommentsEnabled = false,
+    this.commentCount = 0,
     this.authorUid,
     this.authorName,
     this.authorAvatar,
@@ -145,6 +149,8 @@ class JourneyModel {
       status: JourneyStatus.fromString(json['status'] as String? ?? 'active'),
       createdAt: DateTime.parse(json['created_at'] as String).toLocal(),
       isFollowing: json['is_following'] as bool? ?? false,
+      areCommentsEnabled: json['are_comments_enabled'] as bool? ?? false,
+      commentCount: json['comment_count'] as int? ?? 0,
       authorUid: json['author_uid'] as String?,
       authorName: json['author_name'] as String?,
       authorAvatar: json['author_avatar'] as String?,
@@ -198,6 +204,8 @@ class JourneyMilestoneModel {
   final Map<String, int> reactionCounts;
   final String? userReaction;
   final bool isFollowing;
+  final bool areCommentsEnabled;
+  final int commentCount;
 
   JourneyMilestoneModel({
     required this.id,
@@ -227,6 +235,8 @@ class JourneyMilestoneModel {
     this.reactionCounts = const {},
     this.userReaction,
     this.isFollowing = false,
+    this.areCommentsEnabled = false,
+    this.commentCount = 0,
   });
 
   factory JourneyMilestoneModel.fromJson(Map<String, dynamic> json) {
@@ -258,6 +268,8 @@ class JourneyMilestoneModel {
       reactionCounts: (json['reaction_counts'] as Map<String, dynamic>?)?.map((k, v) => MapEntry(k, v as int)) ?? {},
       userReaction: json['user_reaction'] as String?,
       isFollowing: json['is_following'] as bool? ?? false,
+      areCommentsEnabled: json['are_comments_enabled'] as bool? ?? false,
+      commentCount: json['comment_count'] as int? ?? 0,
     );
   }
 

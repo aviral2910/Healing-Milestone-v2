@@ -74,6 +74,7 @@ class LogMilestoneOverlay extends ConsumerStatefulWidget {
 class _LogMilestoneOverlayState extends ConsumerState<LogMilestoneOverlay> {
   EmotionStatus? _selectedEmotion;
   MilestoneVisibility _selectedVisibility = MilestoneVisibility.private;
+  bool _areCommentsEnabled = false;
   final _contentController = TextEditingController();
   bool _isSubmitting = false;
 
@@ -88,6 +89,7 @@ class _LogMilestoneOverlayState extends ConsumerState<LogMilestoneOverlay> {
     if (widget.initialMilestone != null) {
       _selectedEmotion = widget.initialMilestone!.emotionStatus;
       _selectedVisibility = widget.initialMilestone!.visibility;
+      _areCommentsEnabled = widget.initialMilestone!.areCommentsEnabled;
       _selectedTag = widget.initialMilestone!.professionalTag;
       if (widget.initialMilestone!.content != null) {
         _contentController.text = widget.initialMilestone!.content!;
@@ -801,6 +803,7 @@ class _LogMilestoneOverlayState extends ConsumerState<LogMilestoneOverlay> {
                                               visibility: isFloating
                                                   ? _selectedVisibility
                                                   : null,
+                                              areCommentsEnabled: _areCommentsEnabled,
                                             );
                                           } else {
                                             await repo.createMilestone(
@@ -819,6 +822,7 @@ class _LogMilestoneOverlayState extends ConsumerState<LogMilestoneOverlay> {
                                               visibility: isFloating
                                                   ? _selectedVisibility
                                                   : MilestoneVisibility.public,
+                                              areCommentsEnabled: _areCommentsEnabled,
                                             );
                                           }
 

@@ -30,44 +30,31 @@ class InteractionSection extends HookConsumerWidget {
     final user = ref.watch(currentUserProvider);
 
     // 1. Calculate initial accurate state from story object
-    final uniqueUsers = <String>{};
+    // 1. Calculate initial accurate state from story object
     final reactionCounts = <ReactionType, int>{};
     ReactionType? initialUserReaction;
+    int initialTotalReactions = 0;
 
-    for (final entry in story.reactions.entries) {
+    for (final entry in story.reactionCounts.entries) {
       final type = ReactionType.values.firstWhere(
         (e) => e.name == entry.key,
         orElse: () => ReactionType.heart,
       );
-      reactionCounts[type] = (reactionCounts[type] ?? 0) + entry.value.length;
-      uniqueUsers.addAll(entry.value);
-
-      if (user != null && entry.value.contains(user.userId)) {
-        initialUserReaction = type;
-      }
+      reactionCounts[type] = entry.value;
+      initialTotalReactions += entry.value;
     }
 
-    if (story.likesList.isNotEmpty) {
-      final newLegacyUsers =
-          story.likesList.where((id) => !uniqueUsers.contains(id)).toList();
-      if (newLegacyUsers.isNotEmpty) {
-        reactionCounts[ReactionType.heart] =
-            (reactionCounts[ReactionType.heart] ?? 0) + newLegacyUsers.length;
-        uniqueUsers.addAll(newLegacyUsers);
-      }
-      if (user != null &&
-          initialUserReaction == null &&
-          story.likesList.contains(user.userId)) {
-        initialUserReaction = ReactionType.heart;
-      }
+    if (story.currentUserReaction != null && story.currentUserReaction!.isNotEmpty) {
+      initialUserReaction = ReactionType.values.firstWhere(
+        (e) => e.name == story.currentUserReaction,
+        orElse: () => ReactionType.heart,
+      );
     }
 
     // 2. Set up optimistic state
-    final initialTotalReactions = uniqueUsers.length;
     final optimisticUserReaction = useState<ReactionType?>(initialUserReaction);
     final optimisticTotalReactions = useState<int>(initialTotalReactions);
-    final optimisticReactionCounts =
-        useState<Map<ReactionType, int>>(reactionCounts);
+    final optimisticReactionCounts = useState<Map<ReactionType, int>>(reactionCounts);
 
     // Sync state if story object changes from stream/refresh
     useEffect(() {
@@ -75,7 +62,7 @@ class InteractionSection extends HookConsumerWidget {
       optimisticTotalReactions.value = initialTotalReactions;
       optimisticReactionCounts.value = Map.from(reactionCounts);
       return null;
-    }, [story.reactions, story.likesList, initialUserReaction]);
+    }, [story.reactionCounts, story.currentUserReaction, initialUserReaction]);
 
     final initialIsBookmarked =
         user?.bookmarkedStories.contains(story.storyId) ?? false;

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/presentation/widgets/healing_snackbar.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:healing_milestones/features/journey/presentation/widgets/journey_comments_thread.dart';
 import '../../data/models/journey_models.dart';
 import '../../data/providers/journey_providers.dart';
 import '../../data/providers/paginated_journey_milestones_provider.dart';
@@ -23,6 +24,46 @@ class TimelineNode extends ConsumerWidget {
   });
 
   
+  void _showCommentsBottomSheet(BuildContext context, JourneyMilestoneModel milestone) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        minChildSize: 0.4,
+        maxChildSize: 0.95,
+        builder: (_, controller) {
+          final theme = Theme.of(context);
+          return Container(
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surface,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: Column(
+              children: [
+                const SizedBox(height: 12),
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: theme.dividerColor,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text('Comments', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                Divider(height: 1, color: theme.dividerColor.withValues(alpha: 0.2)),
+                Expanded(child: JourneyCommentsThread(milestone: milestone)),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   void _showReactionOverlay(BuildContext context, WidgetRef ref, Offset position) {
     HapticFeedback.selectionClick();
     final theme = Theme.of(context);
@@ -441,6 +482,37 @@ class TimelineNode extends ConsumerWidget {
                     ),
                   ),
                 const Spacer(),
+                if (milestone.areCommentsEnabled) ...[
+                  GestureDetector(
+                    onTap: () {
+                      _showCommentsBottomSheet(context, milestone);
+                      // from story comments, but it takes a StoryModel.
+                      // Wait! The prompt says "if user enable it while creating it .and later to user can disable that tooo"
+                      // We need to implement a bottom sheet for Milestone Comments.
+                      // We can just show a placeholder print for now or navigate.
+                      // Actually, let's leave it as a comment for now or show a coming soon snackbar.
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.only(right: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.surface,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: theme.dividerColor.withValues(alpha: 0.1)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.chat_bubble_outline_rounded, size: 14, color: theme.colorScheme.onSurfaceVariant),
+                          if (milestone.commentCount > 0) ...[
+                            const SizedBox(width: 6),
+                            Text('${milestone.commentCount}', style: theme.textTheme.labelSmall?.copyWith(color: theme.colorScheme.onSurfaceVariant, fontWeight: FontWeight.w600)),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
                 Consumer(
                   builder: (context, ref, child) {
                     String reactEmoji = '♡';
