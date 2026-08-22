@@ -282,7 +282,7 @@ class JourneyRepository {
   }
   Future<void> addMilestoneComment(String milestoneId, String text) async {
     try {
-      await _apiClient.dio.post('/api/journeys/milestones/$milestoneId/comments', data: {'text': text});
+      await _apiClient.dio.post('/api/journeys/milestones/$milestoneId/comments', data: {'content': text});
     } catch (e) {
       throw Exception('Failed to add comment: $e');
     }
