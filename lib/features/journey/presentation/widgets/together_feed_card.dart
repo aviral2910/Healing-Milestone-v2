@@ -11,6 +11,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/journey_models.dart';
+import 'journey_comments_thread.dart';
 import '../../data/providers/journey_providers.dart';
 import 'public_journey_detail_overlay.dart';
 
@@ -721,6 +722,33 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
                       ),
 
                     const Spacer(),
+
+                    if (widget.milestone.areCommentsEnabled) ...[
+                      GestureDetector(
+                        onTap: () {
+                          showCommentsBottomSheet(context, widget.milestone);
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.only(right: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.surface,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: theme.dividerColor.withValues(alpha: 0.1)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.chat_bubble_outline_rounded, size: 14, color: theme.colorScheme.onSurfaceVariant),
+                              if (widget.milestone.commentCount > 0) ...[
+                                const SizedBox(width: 6),
+                                Text('${widget.milestone.commentCount}', style: theme.textTheme.labelSmall?.copyWith(color: theme.colorScheme.onSurfaceVariant, fontWeight: FontWeight.w600)),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
 
                     // React Button (Dynamic based on userReaction)
                     Builder(
