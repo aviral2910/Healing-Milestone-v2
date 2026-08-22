@@ -249,6 +249,9 @@ class JourneyRepository {
       if (visibility != null) {
         data['visibility'] = visibility.name;
       }
+      if (areCommentsEnabled != null) {
+        data['are_comments_enabled'] = areCommentsEnabled;
+      }
       
       final response = await _apiClient.dio.put(
         '/api/milestones/$milestoneId',

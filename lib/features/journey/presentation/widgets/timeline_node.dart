@@ -24,46 +24,6 @@ class TimelineNode extends ConsumerWidget {
   });
 
   
-  void _showCommentsBottomSheet(BuildContext context, JourneyMilestoneModel milestone) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.7,
-        minChildSize: 0.4,
-        maxChildSize: 0.95,
-        builder: (_, controller) {
-          final theme = Theme.of(context);
-          return Container(
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surface,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-            ),
-            child: Column(
-              children: [
-                const SizedBox(height: 12),
-                Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: theme.dividerColor,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text('Comments', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
-                Divider(height: 1, color: theme.dividerColor.withValues(alpha: 0.2)),
-                Expanded(child: JourneyCommentsThread(milestone: milestone)),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-
   void _showReactionOverlay(BuildContext context, WidgetRef ref, Offset position) {
     HapticFeedback.selectionClick();
     final theme = Theme.of(context);
@@ -485,7 +445,7 @@ class TimelineNode extends ConsumerWidget {
                 if (milestone.areCommentsEnabled) ...[
                   GestureDetector(
                     onTap: () {
-                      _showCommentsBottomSheet(context, milestone);
+                      showCommentsBottomSheet(context, milestone);
                       // from story comments, but it takes a StoryModel.
                       // Wait! The prompt says "if user enable it while creating it .and later to user can disable that tooo"
                       // We need to implement a bottom sheet for Milestone Comments.
