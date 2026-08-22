@@ -57,7 +57,11 @@ class _JourneyCommentsThreadState extends ConsumerState<JourneyCommentsThread> {
 
     // Refresh the comments list instantly
     ref.invalidate(paginatedJourneyCommentsProvider(widget.milestone.id));
-    ref.invalidate(paginatedJourneyMilestonesProvider(widget.milestone.journeyId!));
+    if (widget.milestone.journeyId != null) {
+      ref.invalidate(paginatedJourneyMilestonesProvider(widget.milestone.journeyId!));
+    }
+    ref.invalidate(recommendedMilestonesProvider);
+    ref.invalidate(followingMilestonesProvider);
   }
 
   @override
@@ -303,6 +307,11 @@ class _CommentBubble extends ConsumerWidget {
                               ref.invalidate(
                                 paginatedJourneyCommentsProvider(storyId),
                               );
+                              if (widget.milestone.journeyId != null) {
+                                ref.invalidate(paginatedJourneyMilestonesProvider(widget.milestone.journeyId!));
+                              }
+                              ref.invalidate(recommendedMilestonesProvider);
+                              ref.invalidate(followingMilestonesProvider);
                             },
                             child: const Text(
                               'Delete',
