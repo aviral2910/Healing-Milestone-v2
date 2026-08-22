@@ -118,6 +118,7 @@ class _JourneyCommentsThreadState extends ConsumerState<JourneyCommentsThread> {
                             child: _CommentBubble(
                               comment: comment,
                               storyOwnerId: widget.milestone.userId,
+                              journeyId: widget.milestone.journeyId,
                             ),
                           ),
                         ),
@@ -220,11 +221,13 @@ class _JourneyCommentsThreadState extends ConsumerState<JourneyCommentsThread> {
 class _CommentBubble extends ConsumerWidget {
   final CommentModel comment;
   final String storyOwnerId;
+  final String? journeyId;
 
   const _CommentBubble({
     Key? key,
     required this.comment,
     required this.storyOwnerId,
+    this.journeyId,
   }) : super(key: key);
 
   @override
@@ -307,8 +310,8 @@ class _CommentBubble extends ConsumerWidget {
                               ref.invalidate(
                                 paginatedJourneyCommentsProvider(storyId),
                               );
-                              if (widget.milestone.journeyId != null) {
-                                ref.invalidate(paginatedJourneyMilestonesProvider(widget.milestone.journeyId!));
+                              if (journeyId != null) {
+                                ref.invalidate(paginatedJourneyMilestonesProvider(journeyId!));
                               }
                               ref.invalidate(recommendedMilestonesProvider);
                               ref.invalidate(followingMilestonesProvider);
