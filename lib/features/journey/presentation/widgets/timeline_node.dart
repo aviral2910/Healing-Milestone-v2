@@ -108,6 +108,8 @@ class TimelineNode extends ConsumerWidget {
                             }
                             ref.invalidate(recommendedMilestonesProvider);
                             ref.invalidate(followingMilestonesProvider);
+                            ref.invalidate(myFloatingMilestonesProvider);
+                            ref.invalidate(allCheckinsProvider);
                           } catch (e) {
                             scaffoldMessenger.showSnackBar(
                               SnackBar(
@@ -448,6 +450,8 @@ class TimelineNode extends ConsumerWidget {
                                   }
                                   ref.invalidate(recommendedMilestonesProvider);
                                   ref.invalidate(followingMilestonesProvider);
+                                  ref.invalidate(myFloatingMilestonesProvider);
+                                  ref.invalidate(allCheckinsProvider);
                                 } catch (e) {
                                   if (context.mounted) {
                                     HealingSnackbar.showError(context, e);
@@ -690,6 +694,8 @@ class TimelineNode extends ConsumerWidget {
                           }
                           ref.invalidate(recommendedMilestonesProvider);
                           ref.invalidate(followingMilestonesProvider);
+                          ref.invalidate(myFloatingMilestonesProvider);
+                          ref.invalidate(allCheckinsProvider);
                         } catch (e) {
                           scaffoldMessenger.showSnackBar(
                             const SnackBar(

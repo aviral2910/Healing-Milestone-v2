@@ -136,9 +136,16 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
                                   r['label']!,
                                 );
                             container.invalidate(recommendedMilestonesProvider);
-      container.invalidate(followingMilestonesProvider);
+                            container.invalidate(followingMilestonesProvider);
+                            container.invalidate(myFloatingMilestonesProvider);
+                            container.invalidate(allCheckinsProvider);
                           } catch (e) {
-                            HealingSnackbar.showError(context, e);
+                            scaffoldMessenger.showSnackBar(
+                              SnackBar(
+                                content: Text(e.toString()),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
                           }
                         },
                         child: Padding(
@@ -722,7 +729,19 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
                       ),
 
                     const Spacer(),
-
+                  ],
+                ),
+                SizedBox(height: 8),
+                Divider(
+                  // height: 0,
+                  thickness: .5,
+                  color: theme.colorScheme.primary.withValues(alpha: .4),
+                ),
+                SizedBox(height: 8),
+                // React Button (Dynamic based on userReaction)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
                     if (widget.milestone.areCommentsEnabled) ...[
                       GestureDetector(
                         onTap: () {
@@ -730,27 +749,40 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
                         },
                         child: Container(
                           margin: const EdgeInsets.only(right: 8),
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 8,
+                          ),
                           decoration: BoxDecoration(
                             color: theme.colorScheme.surface,
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: theme.dividerColor.withValues(alpha: 0.1)),
+                            border: Border.all(
+                              color: theme.dividerColor.withValues(alpha: 0.1),
+                            ),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.chat_bubble_outline_rounded, size: 14, color: theme.colorScheme.onSurfaceVariant),
+                              Icon(
+                                Icons.chat_bubble_outline_rounded,
+                                size: 16,
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
                               if (widget.milestone.commentCount > 0) ...[
                                 const SizedBox(width: 6),
-                                Text('${widget.milestone.commentCount}', style: theme.textTheme.labelSmall?.copyWith(color: theme.colorScheme.onSurfaceVariant, fontWeight: FontWeight.w600)),
+                                Text(
+                                  '${widget.milestone.commentCount}',
+                                  style: theme.textTheme.labelSmall?.copyWith(
+                                    color: theme.colorScheme.onSurfaceVariant,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                               ],
                             ],
                           ),
                         ),
                       ),
                     ],
-
-                    // React Button (Dynamic based on userReaction)
                     Builder(
                       builder: (context) {
                         String reactEmoji = '♡';
@@ -808,7 +840,9 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
                                     ); // Default quick-react
                               }
                               container.invalidate(recommendedMilestonesProvider);
-      container.invalidate(followingMilestonesProvider);
+                              container.invalidate(followingMilestonesProvider);
+                              container.invalidate(myFloatingMilestonesProvider);
+                              container.invalidate(allCheckinsProvider);
                             } catch (e) {
                               scaffoldMessenger.showSnackBar(
                                 const SnackBar(
@@ -849,7 +883,7 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
                                       )
                                     : Icon(
                                         Icons.favorite_border_rounded,
-                                        size: 14,
+                                        size: 16,
 
                                         color: reactColor,
                                       ),
