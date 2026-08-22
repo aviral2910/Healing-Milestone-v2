@@ -17,14 +17,17 @@ class TimelineNode extends ConsumerWidget {
   final bool isHistoricalClosure;
 
   const TimelineNode({
-    super.key, 
+    super.key,
     required this.milestone,
     this.isReversed = false,
     this.isHistoricalClosure = false,
   });
 
-  
-  void _showReactionOverlay(BuildContext context, WidgetRef ref, Offset position) {
+  void _showReactionOverlay(
+    BuildContext context,
+    WidgetRef ref,
+    Offset position,
+  ) {
     HapticFeedback.selectionClick();
     final theme = Theme.of(context);
     final reactions = [
@@ -50,12 +53,21 @@ class TimelineNode extends ConsumerWidget {
               ),
             ),
             Positioned(
-              left: (position.dx - 100).clamp(16.0, MediaQuery.of(context).size.width - 250.0),
-              top: (position.dy - 80).clamp(kToolbarHeight, MediaQuery.of(context).size.height - 100.0),
+              left: (position.dx - 100).clamp(
+                16.0,
+                MediaQuery.of(context).size.width - 250.0,
+              ),
+              top: (position.dy - 80).clamp(
+                kToolbarHeight,
+                MediaQuery.of(context).size.height - 100.0,
+              ),
               child: Material(
                 color: Colors.transparent,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   decoration: BoxDecoration(
                     color: theme.colorScheme.surface,
                     borderRadius: BorderRadius.circular(30),
@@ -74,19 +86,35 @@ class TimelineNode extends ConsumerWidget {
                         onTap: () async {
                           Navigator.of(context).pop();
                           HapticFeedback.mediumImpact();
-                          final scaffoldMessenger = ScaffoldMessenger.of(context);
+                          final scaffoldMessenger = ScaffoldMessenger.of(
+                            context,
+                          );
                           try {
-                            await ref.read(journeyRepositoryProvider).reactToMilestone(
-                              milestone.id,
-                              r['label']!,
-                            );
-                            ref.invalidate(paginatedJourneyMilestonesProvider(milestone.journeyId!));
-                          ref.invalidate(paginatedJourneyMilestonesProvider(milestone.journeyId!, isPublic: true));
-                            ref.invalidate(paginatedJourneyMilestonesProvider(milestone.journeyId!, isPublic: true));
+                            await ref
+                                .read(journeyRepositoryProvider)
+                                .reactToMilestone(milestone.id, r['label']!);
+                            if (milestone.journeyId != null) {
+                              ref.invalidate(
+                                paginatedJourneyMilestonesProvider(
+                                  milestone.journeyId!,
+                                ),
+                              );
+                              ref.invalidate(
+                                paginatedJourneyMilestonesProvider(
+                                  milestone.journeyId!,
+                                  isPublic: true,
+                                ),
+                              );
+                            }
                             ref.invalidate(recommendedMilestonesProvider);
-      ref.invalidate(followingMilestonesProvider);
+                            ref.invalidate(followingMilestonesProvider);
                           } catch (e) {
-                            HealingSnackbar.showError(context, e);
+                            scaffoldMessenger.showSnackBar(
+                              SnackBar(
+                                content: Text(e.toString()),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
                           }
                         },
                         child: Padding(
@@ -109,10 +137,9 @@ class TimelineNode extends ConsumerWidget {
         return FadeTransition(
           opacity: animation,
           child: ScaleTransition(
-            scale: Tween<double>(begin: 0.9, end: 1.0).animate(CurvedAnimation(
-              parent: animation,
-              curve: Curves.easeOutBack,
-            )),
+            scale: Tween<double>(begin: 0.9, end: 1.0).animate(
+              CurvedAnimation(parent: animation, curve: Curves.easeOutBack),
+            ),
             child: child,
           ),
         );
@@ -122,16 +149,20 @@ class TimelineNode extends ConsumerWidget {
 
   Color _getEmotionColor(BuildContext context, EmotionStatus status) {
     switch (status) {
-      case EmotionStatus.proud: return Colors.amber;
-      case EmotionStatus.hopeful: return Colors.orange;
-      case EmotionStatus.anxious: return Colors.blue;
-      case EmotionStatus.grieving: return Colors.deepPurple;
+      case EmotionStatus.proud:
+        return Colors.amber;
+      case EmotionStatus.hopeful:
+        return Colors.orange;
+      case EmotionStatus.anxious:
+        return Colors.blue;
+      case EmotionStatus.grieving:
+        return Colors.deepPurple;
       case EmotionStatus.neutral:
-      default: return Colors.grey;
+      default:
+        return Colors.grey;
     }
   }
 
-  
   Widget _buildClosureCard(BuildContext context, ThemeData theme) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 24.0, right: 16.0),
@@ -147,7 +178,11 @@ class TimelineNode extends ConsumerWidget {
         ),
         child: Column(
           children: [
-            Icon(Icons.verified_rounded, color: theme.colorScheme.primary, size: 32),
+            Icon(
+              Icons.verified_rounded,
+              color: theme.colorScheme.primary,
+              size: 32,
+            ),
             const SizedBox(height: 12),
             Text(
               'Journey Completed',
@@ -204,7 +239,11 @@ class TimelineNode extends ConsumerWidget {
         ),
         child: Column(
           children: [
-            Icon(Icons.energy_savings_leaf_rounded, color: theme.colorScheme.primary, size: 32),
+            Icon(
+              Icons.energy_savings_leaf_rounded,
+              color: theme.colorScheme.primary,
+              size: 32,
+            ),
             const SizedBox(height: 12),
             Text(
               'Journey Resumed',
@@ -239,7 +278,11 @@ class TimelineNode extends ConsumerWidget {
     );
   }
 
-  Widget _buildStandardCard(BuildContext context, ThemeData theme, Color emotionColor) {
+  Widget _buildStandardCard(
+    BuildContext context,
+    ThemeData theme,
+    Color emotionColor,
+  ) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 24.0, right: 16.0),
       child: Container(
@@ -265,13 +308,19 @@ class TimelineNode extends ConsumerWidget {
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: emotionColor.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    (milestone.professionalTag?.name ?? milestone.emotionStatus?.name ?? "UPDATE").toUpperCase(),
+                    (milestone.professionalTag?.name ??
+                            milestone.emotionStatus?.name ??
+                            "UPDATE")
+                        .toUpperCase(),
                     style: theme.textTheme.labelSmall?.copyWith(
                       color: emotionColor,
                       fontWeight: FontWeight.w600,
@@ -287,87 +336,143 @@ class TimelineNode extends ConsumerWidget {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                if (milestone.isMine) Theme(
-                  data: Theme.of(context).copyWith(
-                    splashColor: Colors.transparent,
-                    highlightColor: Colors.transparent,
-                  ),
-                  child: Consumer(
-                    builder: (context, ref, child) {
-                      return PopupMenuButton<String>(
-                        icon: Icon(Icons.more_vert, size: 16, color: theme.colorScheme.onSurfaceVariant),
-                        padding: EdgeInsets.zero,
-                        onSelected: (value) async {
-                          if (value == 'edit') {
-                            LogMilestoneOverlay.show(context, journeyId: milestone.journeyId, milestone: milestone);
-                          } else if (value == 'delete') {
-                            final confirm = await showDialog<bool>(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                title: const Text('Delete Check-In'),
-                                content: const Text('Are you sure you want to delete this check-in?'),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(context, false),
-                                    child: const Text('Cancel'),
+                if (milestone.isMine)
+                  Theme(
+                    data: Theme.of(context).copyWith(
+                      splashColor: Colors.transparent,
+                      highlightColor: Colors.transparent,
+                    ),
+                    child: Consumer(
+                      builder: (context, ref, child) {
+                        return PopupMenuButton<String>(
+                          icon: Icon(
+                            Icons.more_vert,
+                            size: 16,
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                          padding: EdgeInsets.zero,
+                          onSelected: (value) async {
+                            if (value == 'edit') {
+                              LogMilestoneOverlay.show(
+                                context,
+                                journeyId: milestone.journeyId,
+                                milestone: milestone,
+                              );
+                            } else if (value == 'delete') {
+                              final confirm = await showDialog<bool>(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  title: const Text('Delete Check-In'),
+                                  content: const Text(
+                                    'Are you sure you want to delete this check-in?',
                                   ),
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(context, true),
-                                    child: const Text('Delete', style: TextStyle(color: Colors.red)),
-                                  ),
-                                ],
-                              ),
-                            );
-                            
-                            if (confirm == true) {
-                              try {
-                                if (milestone.audioUrl != null && milestone.audioUrl!.isNotEmpty) {
-                                  try {
-                                    await ref.read(storageRepositoryProvider).deleteImageFromUrl(milestone.audioUrl!);
-                                  } catch (e) {
-                                    debugPrint('Failed to delete audio from R2: $e');
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(context, false),
+                                      child: const Text('Cancel'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(context, true),
+                                      child: const Text(
+                                        'Delete',
+                                        style: TextStyle(color: Colors.red),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+
+                              if (confirm == true) {
+                                try {
+                                  if (milestone.audioUrl != null &&
+                                      milestone.audioUrl!.isNotEmpty) {
+                                    try {
+                                      await ref
+                                          .read(storageRepositoryProvider)
+                                          .deleteImageFromUrl(
+                                            milestone.audioUrl!,
+                                          );
+                                    } catch (e) {
+                                      debugPrint(
+                                        'Failed to delete audio from R2: $e',
+                                      );
+                                    }
                                   }
-                                }
-                                if (milestone.mediaUrl != null && milestone.mediaUrl!.isNotEmpty) {
-                                  try {
-                                    await ref.read(storageRepositoryProvider).deleteImageFromUrl(milestone.mediaUrl!);
-                                  } catch (e) {
-                                    debugPrint('Failed to delete media from R2: $e');
+                                  if (milestone.mediaUrl != null &&
+                                      milestone.mediaUrl!.isNotEmpty) {
+                                    try {
+                                      await ref
+                                          .read(storageRepositoryProvider)
+                                          .deleteImageFromUrl(
+                                            milestone.mediaUrl!,
+                                          );
+                                    } catch (e) {
+                                      debugPrint(
+                                        'Failed to delete media from R2: $e',
+                                      );
+                                    }
                                   }
-                                }
-                                await ref.read(journeyRepositoryProvider).deleteMilestone(milestone.id);
-                                if (milestone.journeyId != null) {
-                                  ref.invalidate(paginatedJourneyMilestonesProvider(milestone.journeyId!));
-                                  ref.invalidate(paginatedJourneyMilestonesProvider(milestone.journeyId!, isPublic: true));
-                          ref.invalidate(paginatedJourneyMilestonesProvider(milestone.journeyId!, isPublic: true));
-                            ref.invalidate(paginatedJourneyMilestonesProvider(milestone.journeyId!, isPublic: true));
-                                } else {
-                                  ref.invalidate(myFloatingMilestonesProvider);
-                                }
-                                ref.invalidate(recommendedMilestonesProvider);
-      ref.invalidate(followingMilestonesProvider);
-                              } catch (e) {
-                                if (context.mounted) {
-                                  HealingSnackbar.showError(context, e);
+                                  await ref
+                                      .read(journeyRepositoryProvider)
+                                      .deleteMilestone(milestone.id);
+                                  if (milestone.journeyId != null) {
+                                    ref.invalidate(
+                                      paginatedJourneyMilestonesProvider(
+                                        milestone.journeyId!,
+                                      ),
+                                    );
+                                    ref.invalidate(
+                                      paginatedJourneyMilestonesProvider(
+                                        milestone.journeyId!,
+                                        isPublic: true,
+                                      ),
+                                    );
+                                    ref.invalidate(
+                                      paginatedJourneyMilestonesProvider(
+                                        milestone.journeyId!,
+                                        isPublic: true,
+                                      ),
+                                    );
+                                    ref.invalidate(
+                                      paginatedJourneyMilestonesProvider(
+                                        milestone.journeyId!,
+                                        isPublic: true,
+                                      ),
+                                    );
+                                  } else {
+                                    ref.invalidate(
+                                      myFloatingMilestonesProvider,
+                                    );
+                                  }
+                                  ref.invalidate(recommendedMilestonesProvider);
+                                  ref.invalidate(followingMilestonesProvider);
+                                } catch (e) {
+                                  if (context.mounted) {
+                                    HealingSnackbar.showError(context, e);
+                                  }
                                 }
                               }
                             }
-                          }
-                        },
-                        itemBuilder: (context) => [
-                          const PopupMenuItem(
-                            value: 'edit',
-                            child: Text('Edit'),
-                          ),
-                          const PopupMenuItem(
-                            value: 'delete',
-                            child: Text('Delete', style: TextStyle(color: Colors.red)),
-                          ),
-                        ],
-                      );
-                    }
+                          },
+                          itemBuilder: (context) => [
+                            const PopupMenuItem(
+                              value: 'edit',
+                              child: Text('Edit'),
+                            ),
+                            const PopupMenuItem(
+                              value: 'delete',
+                              child: Text(
+                                'Delete',
+                                style: TextStyle(color: Colors.red),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
                   ),
-                ),
               ],
             ),
             const SizedBox(height: 12),
@@ -379,60 +484,91 @@ class TimelineNode extends ConsumerWidget {
                   color: theme.colorScheme.onSurface,
                 ),
               ),
-              
+
             if (milestone.audioUrl != null && milestone.audioUrl!.isNotEmpty)
               AudioPlayerWidget(audioUrl: milestone.audioUrl!),
 
-            if (milestone.content != null || (milestone.audioUrl != null && milestone.audioUrl!.isNotEmpty)) const SizedBox(height: 16),
+            if (milestone.content != null ||
+                (milestone.audioUrl != null && milestone.audioUrl!.isNotEmpty))
+              const SizedBox(height: 16),
             Row(
               children: [
                 if (milestone.reactionCounts.isNotEmpty)
-                  ...milestone.reactionCounts.entries.where((e) => e.value > 0).map((entry) {
-                    String emoji = '❤️';
-                    switch (entry.key) {
-                      case 'spark': emoji = '✨'; break;
-                      case 'strength': emoji = '💪'; break;
-                      case 'love': emoji = '❤️'; break;
-                      case 'support': emoji = '🙏'; break;
-                    }
-                    return Container(
-                      margin: const EdgeInsets.only(right: 8),
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.surface,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.2)),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(emoji, style: const TextStyle(fontSize: 12)),
-                          const SizedBox(width: 4),
-                          Text('${entry.value}',
-                            style: theme.textTheme.labelSmall?.copyWith(
-                              color: theme.colorScheme.primary,
-                              fontWeight: FontWeight.w700,
+                  ...milestone.reactionCounts.entries
+                      .where((e) => e.value > 0)
+                      .map((entry) {
+                        String emoji = '❤️';
+                        switch (entry.key) {
+                          case 'spark':
+                            emoji = '✨';
+                            break;
+                          case 'strength':
+                            emoji = '💪';
+                            break;
+                          case 'love':
+                            emoji = '❤️';
+                            break;
+                          case 'support':
+                            emoji = '🙏';
+                            break;
+                        }
+                        return Container(
+                          margin: const EdgeInsets.only(right: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.surface,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: theme.colorScheme.primary.withValues(
+                                alpha: 0.2,
+                              ),
                             ),
                           ),
-                        ],
-                      ),
-                    );
-                  }),
-                if (milestone.reactionCounts.isEmpty && milestone.reactionCount > 0)
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(emoji, style: const TextStyle(fontSize: 12)),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${entry.value}',
+                                style: theme.textTheme.labelSmall?.copyWith(
+                                  color: theme.colorScheme.primary,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                if (milestone.reactionCounts.isEmpty &&
+                    milestone.reactionCount > 0)
                   Container(
                     margin: const EdgeInsets.only(right: 8),
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: theme.colorScheme.surface,
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.2)),
+                      border: Border.all(
+                        color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                      ),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.favorite_rounded, size: 12, color: theme.colorScheme.primary),
+                        Icon(
+                          Icons.favorite_rounded,
+                          size: 12,
+                          color: theme.colorScheme.primary,
+                        ),
                         const SizedBox(width: 6),
-                        Text('${milestone.reactionCount}',
+                        Text(
+                          '${milestone.reactionCount}',
                           style: theme.textTheme.labelSmall?.copyWith(
                             color: theme.colorScheme.primary,
                             fontWeight: FontWeight.w700,
@@ -442,6 +578,18 @@ class TimelineNode extends ConsumerWidget {
                     ),
                   ),
                 const Spacer(),
+              ],
+            ),
+            SizedBox(height: 8),
+            Divider(
+              // height: 0,
+              thickness: .5,
+              color: theme.colorScheme.primary.withValues(alpha: .4),
+            ),
+            SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
                 if (milestone.areCommentsEnabled) ...[
                   GestureDetector(
                     onTap: () {
@@ -454,19 +602,34 @@ class TimelineNode extends ConsumerWidget {
                     },
                     child: Container(
                       margin: const EdgeInsets.only(right: 8),
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: theme.colorScheme.surface,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: theme.dividerColor.withValues(alpha: 0.1)),
+                        border: Border.all(
+                          color: theme.dividerColor.withValues(alpha: 0.1),
+                        ),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.chat_bubble_outline_rounded, size: 14, color: theme.colorScheme.onSurfaceVariant),
+                          Icon(
+                            Icons.chat_bubble_outline_rounded,
+                            size: 16,
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
                           if (milestone.commentCount > 0) ...[
                             const SizedBox(width: 6),
-                            Text('${milestone.commentCount}', style: theme.textTheme.labelSmall?.copyWith(color: theme.colorScheme.onSurfaceVariant, fontWeight: FontWeight.w600)),
+                            Text(
+                              '${milestone.commentCount}',
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                           ],
                         ],
                       ),
@@ -480,11 +643,20 @@ class TimelineNode extends ConsumerWidget {
                     bool isReacted = milestone.userReaction != null;
                     if (isReacted) {
                       switch (milestone.userReaction) {
-                        case 'spark': reactEmoji = '✨'; break;
-                        case 'strength': reactEmoji = '💪'; break;
-                        case 'love': reactEmoji = '❤️'; break;
-                        case 'support': reactEmoji = '🙏'; break;
-                        default: reactEmoji = '❤️';
+                        case 'spark':
+                          reactEmoji = '✨';
+                          break;
+                        case 'strength':
+                          reactEmoji = '💪';
+                          break;
+                        case 'love':
+                          reactEmoji = '❤️';
+                          break;
+                        case 'support':
+                          reactEmoji = '🙏';
+                          break;
+                        default:
+                          reactEmoji = '❤️';
                       }
                       reactColor = theme.colorScheme.primary;
                     }
@@ -495,54 +667,94 @@ class TimelineNode extends ConsumerWidget {
                         HapticFeedback.selectionClick();
                         try {
                           if (isReacted) {
-                            await ref.read(journeyRepositoryProvider).removeReaction(milestone.id);
+                            await ref
+                                .read(journeyRepositoryProvider)
+                                .removeReaction(milestone.id);
                           } else {
-                            await ref.read(journeyRepositoryProvider).reactToMilestone(milestone.id, 'love');
+                            await ref
+                                .read(journeyRepositoryProvider)
+                                .reactToMilestone(milestone.id, 'love');
                           }
-                          ref.invalidate(paginatedJourneyMilestonesProvider(milestone.journeyId!));
-                          ref.invalidate(paginatedJourneyMilestonesProvider(milestone.journeyId!, isPublic: true));
+                          if (milestone.journeyId != null) {
+                            ref.invalidate(
+                              paginatedJourneyMilestonesProvider(
+                                milestone.journeyId!,
+                              ),
+                            );
+                            ref.invalidate(
+                              paginatedJourneyMilestonesProvider(
+                                milestone.journeyId!,
+                                isPublic: true,
+                              ),
+                            );
+                          }
                           ref.invalidate(recommendedMilestonesProvider);
-      ref.invalidate(followingMilestonesProvider);
+                          ref.invalidate(followingMilestonesProvider);
                         } catch (e) {
-                          scaffoldMessenger.showSnackBar(const SnackBar(content: Text('Failed to update reaction')));
+                          scaffoldMessenger.showSnackBar(
+                            const SnackBar(
+                              content: Text('Failed to update reaction'),
+                            ),
+                          );
                         }
                       },
-                      onLongPressStart: (details) => _showReactionOverlay(context, ref, details.globalPosition),
+                      onLongPressStart: (details) => _showReactionOverlay(
+                        context,
+                        ref,
+                        details.globalPosition,
+                      ),
                       behavior: HitTestBehavior.opaque,
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
-                          color: isReacted ? reactColor.withValues(alpha: 0.08) : theme.colorScheme.surface,
+                          color: isReacted
+                              ? reactColor.withValues(alpha: 0.08)
+                              : theme.colorScheme.surface,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: isReacted ? reactColor.withValues(alpha: 0.4) : theme.dividerColor.withValues(alpha: 0.1),
+                            color: isReacted
+                                ? reactColor.withValues(alpha: 0.4)
+                                : theme.dividerColor.withValues(alpha: 0.1),
                           ),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             isReacted
-                                ? Text(reactEmoji, style: const TextStyle(fontSize: 12))
-                                : Icon(Icons.favorite_border_rounded, size: 14, color: reactColor),
+                                ? Text(
+                                    reactEmoji,
+                                    style: const TextStyle(fontSize: 12),
+                                  )
+                                : Icon(
+                                    Icons.favorite_border_rounded,
+                                    size: 16,
+                                    color: reactColor,
+                                  ),
                           ],
                         ),
                       ),
                     );
-                  }
+                  },
                 ),
               ],
             ),
-
           ],
         ),
       ),
     );
   }
-@override
+
+  @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final emotionColor = _getEmotionColor(context, milestone.emotionStatus ?? EmotionStatus.neutral);
+    final emotionColor = _getEmotionColor(
+      context,
+      milestone.emotionStatus ?? EmotionStatus.neutral,
+    );
 
     return IntrinsicHeight(
       child: Row(
@@ -600,14 +812,14 @@ class _TimelinePainter extends CustomPainter {
     final dotPaint = Paint()
       ..color = dotColor
       ..style = PaintingStyle.fill;
-      
+
     final glowPaint = Paint()
       ..color = dotColor.withValues(alpha: 0.15)
       ..style = PaintingStyle.fill;
 
     final centerX = size.width / 2;
     // Dot is placed 24 pixels from the top of this widget
-    final dotY = 24.0; 
+    final dotY = 24.0;
 
     // Draw the dot and glow
     canvas.drawCircle(Offset(centerX, dotY), 12, glowPaint);
@@ -638,15 +850,19 @@ class _TimelinePainter extends CustomPainter {
       canvas.drawLine(Offset(centerX, 0), Offset(centerX, dotY - 14), paint);
     }
     if (drawBottom) {
-      canvas.drawLine(Offset(centerX, dotY + 14), Offset(centerX, size.height), paint);
+      canvas.drawLine(
+        Offset(centerX, dotY + 14),
+        Offset(centerX, size.height),
+        paint,
+      );
     }
   }
 
   @override
   bool shouldRepaint(covariant _TimelinePainter oldDelegate) {
-    return oldDelegate.position != position || 
-           oldDelegate.color != color || 
-           oldDelegate.dotColor != dotColor ||
-           oldDelegate.isReversed != isReversed;
+    return oldDelegate.position != position ||
+        oldDelegate.color != color ||
+        oldDelegate.dotColor != dotColor ||
+        oldDelegate.isReversed != isReversed;
   }
 }
