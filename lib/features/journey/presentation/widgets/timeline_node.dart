@@ -89,28 +89,34 @@ class TimelineNode extends ConsumerWidget {
                           final scaffoldMessenger = ScaffoldMessenger.of(
                             context,
                           );
+
+                            final newMilestone = milestone.toggleReactionOptimistically(r['label']!);
+                            
+                            // Optimistic update
+                            ref.read(recommendedMilestonesProvider.notifier).updateMilestoneLocally(newMilestone);
+                            ref.read(followingMilestonesProvider.notifier).updateMilestoneLocally(newMilestone);
+                            ref.read(myFloatingMilestonesProvider.notifier).updateMilestoneLocally(newMilestone);
+                            ref.read(allCheckinsProvider.notifier).updateMilestoneLocally(newMilestone);
+                            if (milestone.journeyId != null) {
+                              ref.read(paginatedJourneyMilestonesProvider(milestone.journeyId!).notifier).updateMilestoneLocally(newMilestone);
+                              ref.read(paginatedJourneyMilestonesProvider(milestone.journeyId!, isPublic: true).notifier).updateMilestoneLocally(newMilestone);
+                            }
+
                           try {
                             await ref
                                 .read(journeyRepositoryProvider)
                                 .reactToMilestone(milestone.id, r['label']!);
-                            if (milestone.journeyId != null) {
-                              ref.invalidate(
-                                paginatedJourneyMilestonesProvider(
-                                  milestone.journeyId!,
-                                ),
-                              );
-                              ref.invalidate(
-                                paginatedJourneyMilestonesProvider(
-                                  milestone.journeyId!,
-                                  isPublic: true,
-                                ),
-                              );
-                            }
-                            ref.invalidate(recommendedMilestonesProvider);
-                            ref.invalidate(followingMilestonesProvider);
-                            ref.invalidate(myFloatingMilestonesProvider);
-                            ref.invalidate(allCheckinsProvider);
                           } catch (e) {
+                            // Revert optimistic update on failure
+                            ref.read(recommendedMilestonesProvider.notifier).updateMilestoneLocally(milestone);
+                            ref.read(followingMilestonesProvider.notifier).updateMilestoneLocally(milestone);
+                            ref.read(myFloatingMilestonesProvider.notifier).updateMilestoneLocally(milestone);
+                            ref.read(allCheckinsProvider.notifier).updateMilestoneLocally(milestone);
+                            if (milestone.journeyId != null) {
+                              ref.read(paginatedJourneyMilestonesProvider(milestone.journeyId!).notifier).updateMilestoneLocally(milestone);
+                              ref.read(paginatedJourneyMilestonesProvider(milestone.journeyId!, isPublic: true).notifier).updateMilestoneLocally(milestone);
+                            }
+
                             scaffoldMessenger.showSnackBar(
                               SnackBar(
                                 content: Text(e.toString()),
@@ -669,6 +675,19 @@ class TimelineNode extends ConsumerWidget {
                       onTap: () async {
                         final scaffoldMessenger = ScaffoldMessenger.of(context);
                         HapticFeedback.selectionClick();
+
+                            final newMilestone = milestone.toggleReactionOptimistically(isReacted ? milestone.userReaction! : 'love');
+                            
+                            // Optimistic update
+                            ref.read(recommendedMilestonesProvider.notifier).updateMilestoneLocally(newMilestone);
+                            ref.read(followingMilestonesProvider.notifier).updateMilestoneLocally(newMilestone);
+                            ref.read(myFloatingMilestonesProvider.notifier).updateMilestoneLocally(newMilestone);
+                            ref.read(allCheckinsProvider.notifier).updateMilestoneLocally(newMilestone);
+                            if (milestone.journeyId != null) {
+                              ref.read(paginatedJourneyMilestonesProvider(milestone.journeyId!).notifier).updateMilestoneLocally(newMilestone);
+                              ref.read(paginatedJourneyMilestonesProvider(milestone.journeyId!, isPublic: true).notifier).updateMilestoneLocally(newMilestone);
+                            }
+
                         try {
                           if (isReacted) {
                             await ref
@@ -679,24 +698,17 @@ class TimelineNode extends ConsumerWidget {
                                 .read(journeyRepositoryProvider)
                                 .reactToMilestone(milestone.id, 'love');
                           }
-                          if (milestone.journeyId != null) {
-                            ref.invalidate(
-                              paginatedJourneyMilestonesProvider(
-                                milestone.journeyId!,
-                              ),
-                            );
-                            ref.invalidate(
-                              paginatedJourneyMilestonesProvider(
-                                milestone.journeyId!,
-                                isPublic: true,
-                              ),
-                            );
-                          }
-                          ref.invalidate(recommendedMilestonesProvider);
-                          ref.invalidate(followingMilestonesProvider);
-                          ref.invalidate(myFloatingMilestonesProvider);
-                          ref.invalidate(allCheckinsProvider);
                         } catch (e) {
+                            // Revert optimistic update on failure
+                            ref.read(recommendedMilestonesProvider.notifier).updateMilestoneLocally(milestone);
+                            ref.read(followingMilestonesProvider.notifier).updateMilestoneLocally(milestone);
+                            ref.read(myFloatingMilestonesProvider.notifier).updateMilestoneLocally(milestone);
+                            ref.read(allCheckinsProvider.notifier).updateMilestoneLocally(milestone);
+                            if (milestone.journeyId != null) {
+                              ref.read(paginatedJourneyMilestonesProvider(milestone.journeyId!).notifier).updateMilestoneLocally(milestone);
+                              ref.read(paginatedJourneyMilestonesProvider(milestone.journeyId!, isPublic: true).notifier).updateMilestoneLocally(milestone);
+                            }
+
                           scaffoldMessenger.showSnackBar(
                             const SnackBar(
                               content: Text('Failed to update reaction'),

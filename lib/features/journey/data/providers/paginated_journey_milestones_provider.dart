@@ -45,4 +45,16 @@ class PaginatedJourneyMilestones extends _$PaginatedJourneyMilestones {
       _isFetchingMore = false;
     }
   }
+
+  void updateMilestoneLocally(JourneyMilestoneModel updated) {
+    if (state.value == null) return;
+    final items = state.value!.items;
+    final index = items.indexWhere((m) => m.id == updated.id);
+    if (index != -1) {
+      final newItems = List<JourneyMilestoneModel>.from(items);
+      newItems[index] = updated;
+      state = AsyncValue.data(state.value!.copyWith(items: newItems));
+    }
+  }
 }
+

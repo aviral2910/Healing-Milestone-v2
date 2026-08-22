@@ -23,11 +23,29 @@ final myJourneysProvider = FutureProvider.autoDispose<List<JourneyModel>>((ref) 
   return repository.getJourneys();
 });
 
-final myFloatingMilestonesProvider = FutureProvider.autoDispose<List<JourneyMilestoneModel>>((ref) async {
-  final auth = ref.watch(authProvider).value;
-  if (auth?.status != AuthStatus.authenticated) return [];
-  final repository = ref.watch(journeyRepositoryProvider);
-  return repository.getMilestones(isFloating: true, limit: 10);
+class MyFloatingMilestonesNotifier extends AutoDisposeAsyncNotifier<List<JourneyMilestoneModel>> {
+  @override
+  Future<List<JourneyMilestoneModel>> build() async {
+    final auth = ref.watch(authProvider).value;
+    if (auth?.status != AuthStatus.authenticated) return [];
+    final repository = ref.watch(journeyRepositoryProvider);
+    return repository.getMilestones(isFloating: true, limit: 10);
+  }
+
+  void updateMilestoneLocally(JourneyMilestoneModel updated) {
+    if (state.value == null) return;
+    final items = state.value!;
+    final index = items.indexWhere((m) => m.id == updated.id);
+    if (index != -1) {
+      final newItems = List<JourneyMilestoneModel>.from(items);
+      newItems[index] = updated;
+      state = AsyncValue.data(newItems);
+    }
+  }
+}
+
+final myFloatingMilestonesProvider = AsyncNotifierProvider.autoDispose<MyFloatingMilestonesNotifier, List<JourneyMilestoneModel>>(() {
+  return MyFloatingMilestonesNotifier();
 });
 
 
@@ -80,7 +98,19 @@ class RecommendedMilestonesNotifier extends AsyncNotifier<OffsetPaginatedState<J
       _isFetchingMore = false;
     }
   }
+
+  void updateMilestoneLocally(JourneyMilestoneModel updated) {
+    if (state.value == null) return;
+    final items = state.value!.items;
+    final index = items.indexWhere((m) => m.id == updated.id);
+    if (index != -1) {
+      final newItems = List<JourneyMilestoneModel>.from(items);
+      newItems[index] = updated;
+      state = AsyncValue.data(state.value!.copyWith(items: newItems));
+    }
+  }
 }
+
 
 class FollowingMilestonesNotifier extends AsyncNotifier<OffsetPaginatedState<JourneyMilestoneModel>> {
   bool _isFetchingMore = false;
@@ -127,7 +157,19 @@ class FollowingMilestonesNotifier extends AsyncNotifier<OffsetPaginatedState<Jou
       _isFetchingMore = false;
     }
   }
+
+  void updateMilestoneLocally(JourneyMilestoneModel updated) {
+    if (state.value == null) return;
+    final items = state.value!.items;
+    final index = items.indexWhere((m) => m.id == updated.id);
+    if (index != -1) {
+      final newItems = List<JourneyMilestoneModel>.from(items);
+      newItems[index] = updated;
+      state = AsyncValue.data(state.value!.copyWith(items: newItems));
+    }
+  }
 }
+
 
 final recommendedMilestonesProvider = AsyncNotifierProvider<RecommendedMilestonesNotifier, OffsetPaginatedState<JourneyMilestoneModel>>(() {
   return RecommendedMilestonesNotifier();
@@ -195,7 +237,19 @@ class AllCheckinsNotifier extends AsyncNotifier<OffsetPaginatedState<JourneyMile
       _isFetchingMore = false;
     }
   }
+
+  void updateMilestoneLocally(JourneyMilestoneModel updated) {
+    if (state.value == null) return;
+    final items = state.value!.items;
+    final index = items.indexWhere((m) => m.id == updated.id);
+    if (index != -1) {
+      final newItems = List<JourneyMilestoneModel>.from(items);
+      newItems[index] = updated;
+      state = AsyncValue.data(state.value!.copyWith(items: newItems));
+    }
+  }
 }
+
 
 final allCheckinsProvider = AsyncNotifierProvider<AllCheckinsNotifier, OffsetPaginatedState<JourneyMilestoneModel>>(() {
   return AllCheckinsNotifier();

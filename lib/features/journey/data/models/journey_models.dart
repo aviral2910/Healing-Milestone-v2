@@ -291,6 +291,68 @@ class JourneyMilestoneModel {
       'created_at': createdAt.toIso8601String(),
     };
   }
+
+  JourneyMilestoneModel updateReaction({required String? newReaction, required int newTotalCount, required Map<String, int> newCounts}) {
+    return JourneyMilestoneModel(
+      id: id,
+      userId: userId,
+      journeyId: journeyId,
+      journeyTitle: journeyTitle,
+      journeyCategory: journeyCategory,
+      timelinePosition: timelinePosition,
+      emotionStatus: emotionStatus,
+      professionalTag: professionalTag,
+      content: content,
+      isReopening: isReopening,
+      isClosure: isClosure,
+      mediaUrl: mediaUrl,
+      audioUrl: audioUrl,
+      visibility: visibility,
+      createdAt: createdAt,
+      reactionCount: newTotalCount,
+      reactionCounts: newCounts,
+      userReaction: newReaction,
+      authorName: authorName,
+      authorAvatar: authorAvatar,
+      authorUid: authorUid,
+      authorRole: authorRole,
+      authorTitle: authorTitle,
+      authorIsVerified: authorIsVerified,
+      isFollowing: isFollowing,
+      isMine: isMine,
+      areCommentsEnabled: areCommentsEnabled,
+      commentCount: commentCount,
+    );
+  }
+
+  JourneyMilestoneModel toggleReactionOptimistically(String reactionLabel) {
+    final newCounts = Map<String, int>.from(reactionCounts ?? {});
+    String? newReaction = reactionLabel;
+    int newTotalCount = reactionCount;
+
+    if (userReaction == reactionLabel) {
+      // Removing
+      newReaction = null;
+      if (newCounts[reactionLabel] != null && newCounts[reactionLabel]! > 0) {
+        newCounts[reactionLabel] = newCounts[reactionLabel]! - 1;
+      }
+      newTotalCount = newTotalCount - 1;
+    } else {
+      // Adding or changing
+      if (userReaction != null) {
+        // Removing old
+        if (newCounts[userReaction!] != null && newCounts[userReaction!]! > 0) {
+          newCounts[userReaction!] = newCounts[userReaction!]! - 1;
+        }
+        newTotalCount = newTotalCount - 1;
+      }
+      // Adding new
+      newCounts[reactionLabel] = (newCounts[reactionLabel] ?? 0) + 1;
+      newTotalCount = newTotalCount + 1;
+    }
+    
+    return updateReaction(newReaction: newReaction, newTotalCount: newTotalCount, newCounts: newCounts);
+  }
 }
 
 class MilestoneReactionModel {

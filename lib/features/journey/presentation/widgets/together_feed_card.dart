@@ -1,3 +1,4 @@
+import 'package:healing_milestones/features/journey/data/providers/paginated_journey_milestones_provider.dart';
 import 'audio_player_widget.dart';
 import 'audio_player_widget.dart';
 import '../screens/journey_detail_screen.dart';
@@ -128,18 +129,34 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
                           final scaffoldMessenger = ScaffoldMessenger.of(
                             context,
                           );
+
+                            final newMilestone = widget.milestone.toggleReactionOptimistically(r['label']!);
+                            
+                            // Optimistic update
+                            container.read(recommendedMilestonesProvider.notifier).updateMilestoneLocally(newMilestone);
+                            container.read(followingMilestonesProvider.notifier).updateMilestoneLocally(newMilestone);
+                            container.read(myFloatingMilestonesProvider.notifier).updateMilestoneLocally(newMilestone);
+                            container.read(allCheckinsProvider.notifier).updateMilestoneLocally(newMilestone);
+                            if (widget.milestone.journeyId != null) {
+                              container.read(paginatedJourneyMilestonesProvider(widget.milestone.journeyId!).notifier).updateMilestoneLocally(newMilestone);
+                              container.read(paginatedJourneyMilestonesProvider(widget.milestone.journeyId!, isPublic: true).notifier).updateMilestoneLocally(newMilestone);
+                            }
+
                           try {
                             await container
                                 .read(journeyRepositoryProvider)
-                                .reactToMilestone(
-                                  widget.milestone.id,
-                                  r['label']!,
-                                );
-                            container.invalidate(recommendedMilestonesProvider);
-                            container.invalidate(followingMilestonesProvider);
-                            container.invalidate(myFloatingMilestonesProvider);
-                            container.invalidate(allCheckinsProvider);
+                                .reactToMilestone(widget.milestone.id, r['label']!);
                           } catch (e) {
+                            // Revert optimistic update on failure
+                            container.read(recommendedMilestonesProvider.notifier).updateMilestoneLocally(widget.milestone);
+                            container.read(followingMilestonesProvider.notifier).updateMilestoneLocally(widget.milestone);
+                            container.read(myFloatingMilestonesProvider.notifier).updateMilestoneLocally(widget.milestone);
+                            container.read(allCheckinsProvider.notifier).updateMilestoneLocally(widget.milestone);
+                            if (widget.milestone.journeyId != null) {
+                              container.read(paginatedJourneyMilestonesProvider(widget.milestone.journeyId!).notifier).updateMilestoneLocally(widget.milestone);
+                              container.read(paginatedJourneyMilestonesProvider(widget.milestone.journeyId!, isPublic: true).notifier).updateMilestoneLocally(widget.milestone);
+                            }
+
                             scaffoldMessenger.showSnackBar(
                               SnackBar(
                                 content: Text(e.toString()),
@@ -826,6 +843,19 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
                               context,
                             );
                             HapticFeedback.selectionClick();
+
+                            final newMilestone = widget.milestone.toggleReactionOptimistically(isReacted ? widget.milestone.userReaction! : 'love');
+                            
+                            // Optimistic update
+                            container.read(recommendedMilestonesProvider.notifier).updateMilestoneLocally(newMilestone);
+                            container.read(followingMilestonesProvider.notifier).updateMilestoneLocally(newMilestone);
+                            container.read(myFloatingMilestonesProvider.notifier).updateMilestoneLocally(newMilestone);
+                            container.read(allCheckinsProvider.notifier).updateMilestoneLocally(newMilestone);
+                            if (widget.milestone.journeyId != null) {
+                              container.read(paginatedJourneyMilestonesProvider(widget.milestone.journeyId!).notifier).updateMilestoneLocally(newMilestone);
+                              container.read(paginatedJourneyMilestonesProvider(widget.milestone.journeyId!, isPublic: true).notifier).updateMilestoneLocally(newMilestone);
+                            }
+
                             try {
                               if (isReacted) {
                                 await container
@@ -834,16 +864,19 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
                               } else {
                                 await container
                                     .read(journeyRepositoryProvider)
-                                    .reactToMilestone(
-                                      widget.milestone.id,
-                                      'love',
-                                    ); // Default quick-react
+                                    .reactToMilestone(widget.milestone.id, 'love');
                               }
-                              container.invalidate(recommendedMilestonesProvider);
-                              container.invalidate(followingMilestonesProvider);
-                              container.invalidate(myFloatingMilestonesProvider);
-                              container.invalidate(allCheckinsProvider);
                             } catch (e) {
+                            // Revert optimistic update on failure
+                            container.read(recommendedMilestonesProvider.notifier).updateMilestoneLocally(widget.milestone);
+                            container.read(followingMilestonesProvider.notifier).updateMilestoneLocally(widget.milestone);
+                            container.read(myFloatingMilestonesProvider.notifier).updateMilestoneLocally(widget.milestone);
+                            container.read(allCheckinsProvider.notifier).updateMilestoneLocally(widget.milestone);
+                            if (widget.milestone.journeyId != null) {
+                              container.read(paginatedJourneyMilestonesProvider(widget.milestone.journeyId!).notifier).updateMilestoneLocally(widget.milestone);
+                              container.read(paginatedJourneyMilestonesProvider(widget.milestone.journeyId!, isPublic: true).notifier).updateMilestoneLocally(widget.milestone);
+                            }
+
                               scaffoldMessenger.showSnackBar(
                                 const SnackBar(
                                   content: Text('Failed to update reaction'),
