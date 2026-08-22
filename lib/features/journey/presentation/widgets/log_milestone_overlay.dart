@@ -752,7 +752,27 @@ class _LogMilestoneOverlayState extends ConsumerState<LogMilestoneOverlay> {
                           ),
                         ],
 
-                        const SizedBox(height: 60),
+                        const SizedBox(height: 24),
+                        SwitchListTile.adaptive(
+                          title: Text(
+                            'Allow Comments',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          subtitle: Text(
+                            'Let others comment on this check-in',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                          value: _areCommentsEnabled,
+                          onChanged: (val) => setState(() => _areCommentsEnabled = val),
+                          contentPadding: EdgeInsets.zero,
+                          activeColor: theme.colorScheme.primary,
+                        ),
+
+                        const SizedBox(height: 40),
 
                         // Submit Button
                         SizedBox(
