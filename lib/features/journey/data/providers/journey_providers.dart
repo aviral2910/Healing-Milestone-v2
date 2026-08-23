@@ -23,7 +23,7 @@ final myJourneysProvider = FutureProvider.autoDispose<List<JourneyModel>>((ref) 
   return repository.getJourneys();
 });
 
-class MyFloatingMilestonesNotifier extends AutoDisposeAsyncNotifier<List<JourneyMilestoneModel>> {
+class MyFloatingMilestonesNotifier extends AsyncNotifier<List<JourneyMilestoneModel>> {
   @override
   Future<List<JourneyMilestoneModel>> build() async {
     final auth = ref.watch(authProvider).value;

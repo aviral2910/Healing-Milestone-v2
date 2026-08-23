@@ -38,47 +38,50 @@ class _TogetherFeedScreenState extends ConsumerState<TogetherFeedScreen> with Si
     
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
-      body: NestedScrollView(
-        headerSliverBuilder: (context, innerBoxIsScrolled) {
-          return [
-            CommonSliverAppBar(
-              onSearchTapped: () => context.push(AppRoutes.search),
-            ),
-            SliverPersistentHeader(
-              pinned: true,
-              delegate: _SliverAppBarDelegate(
-                TabBar(
-                  controller: _tabController,
-                  labelColor: theme.colorScheme.primary,
-                  unselectedLabelColor: theme.colorScheme.onSurfaceVariant,
-                  indicatorColor: theme.colorScheme.primary,
-                  indicatorWeight: 3,
-                  labelStyle: const TextStyle(fontWeight: FontWeight.bold),
-                  unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
-                  dividerColor: theme.dividerColor,
-                  tabs: const [
-                    Tab(text: 'For You'),
-                    Tab(text: 'Following'),
-                  ],
+      body: SafeArea(
+        bottom: false,
+        child: NestedScrollView(
+          headerSliverBuilder: (context, innerBoxIsScrolled) {
+            return [
+              CommonSliverAppBar(
+                onSearchTapped: () => context.push(AppRoutes.search),
+              ),
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: _SliverAppBarDelegate(
+                  TabBar(
+                    controller: _tabController,
+                    labelColor: theme.colorScheme.primary,
+                    unselectedLabelColor: theme.colorScheme.onSurfaceVariant,
+                    indicatorColor: theme.colorScheme.primary,
+                    indicatorWeight: 3,
+                    labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+                    unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
+                    dividerColor: theme.dividerColor,
+                    tabs: const [
+                      Tab(text: 'For You'),
+                      Tab(text: 'Following'),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ];
-        },
-        body: TabBarView(
-          controller: _tabController,
-          children: [
-            _TogetherFeedTab(
-              milestoneProvider: recommendedMilestonesProvider,
-              journeyProvider: recommendedJourneysProvider,
-              carouselTitle: 'Recommended',
-            ),
-            _TogetherFeedTab(
-              milestoneProvider: followingMilestonesProvider,
-              journeyProvider: followingJourneysProvider,
-              carouselTitle: 'Following',
-            ),
-          ],
+            ];
+          },
+          body: TabBarView(
+            controller: _tabController,
+            children: [
+              _TogetherFeedTab(
+                milestoneProvider: recommendedMilestonesProvider,
+                journeyProvider: recommendedJourneysProvider,
+                carouselTitle: 'Recommended',
+              ),
+              _TogetherFeedTab(
+                milestoneProvider: followingMilestonesProvider,
+                journeyProvider: followingJourneysProvider,
+                carouselTitle: 'Following',
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -6,6 +6,7 @@ import '../../../../core/models/user_model.dart';
 import '../../data/repository_providers.dart';
 import '../../data/auth_provider.dart';
 import '../../../../shared/widgets/app_avatar.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 
 
 final suggestedUsersProvider = FutureProvider.autoDispose<List<UserModel>>((ref) async {
@@ -89,9 +90,8 @@ class _SuggestedFollowsScreenState extends ConsumerState<SuggestedFollowsScreen>
                   Text(
                     'Suggested for you',
                     style: theme.textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.bold,
                       color: theme.colorScheme.onSurface,
-                      letterSpacing: -0.5,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -113,133 +113,133 @@ class _SuggestedFollowsScreenState extends ConsumerState<SuggestedFollowsScreen>
                   if (users.isEmpty) {
                     return const Center(child: Text('No suggestions found.'));
                   }
-                  return ListView.separated(
-                    physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    itemCount: users.length,
-                    separatorBuilder: (context, index) => const SizedBox(height: 12),
-                    itemBuilder: (context, index) {
-                      final user = users[index];
-                      final isSelected = _selectedUserIds.contains(user.userId);
-                      
-                      return TweenAnimationBuilder<double>(
-                        tween: Tween(begin: 0.0, end: 1.0),
-                        duration: Duration(milliseconds: 400 + (index * 100)),
-                        curve: Curves.easeOutCubic,
-                        builder: (context, value, child) {
-                          return Transform.translate(
-                            offset: Offset(0, 30 * (1 - value)),
-                            child: Opacity(
-                              opacity: value,
-                              child: child,
-                            ),
-                          );
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.surface,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: theme.dividerColor.withValues(alpha: 0.5),
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.02),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          padding: const EdgeInsets.all(16),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              AppAvatar(
-                                radius: 28,
-                                role: user.role,
-                                imageUrl: user.profilePicture,
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: Text(
-                                            user.displayName,
-                                            style: theme.textTheme.titleMedium?.copyWith(
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
+                  return AnimationLimiter(
+                    child: ListView.builder(
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                      itemCount: users.length,
+                      itemBuilder: (context, index) {
+                        final user = users[index];
+                        final isSelected = _selectedUserIds.contains(user.userId);
+                        
+                        return AnimationConfiguration.staggeredList(
+                          position: index,
+                          duration: const Duration(milliseconds: 375),
+                          child: SlideAnimation(
+                            verticalOffset: 50.0,
+                            child: FadeInAnimation(
+                              child: Padding(
+                                padding: const EdgeInsets.only(bottom: 12.0),
+                                child: GestureDetector(
+                                  onTap: () {
+                                    context.push(AppRoutes.publicProfile(user.userId));
+                                  },
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: theme.colorScheme.surface,
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: Border.all(
+                                        color: isSelected ? theme.colorScheme.primary.withValues(alpha: 0.3) : theme.dividerColor.withValues(alpha: 0.2),
+                                        width: isSelected ? 1.5 : 1.0,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: isSelected 
+                                              ? theme.colorScheme.primary.withValues(alpha: 0.05) 
+                                              : Colors.black.withValues(alpha: 0.03),
+                                          blurRadius: 10,
+                                          offset: const Offset(0, 4),
                                         ),
-                                        if (user.isVerified) ...[
-                                          const SizedBox(width: 4),
-                                          Icon(
-                                            Icons.verified,
-                                            size: 16,
-                                            color: theme.colorScheme.primary,
-                                          ),
-                                        ],
                                       ],
                                     ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      '@${user.username}',
-                                      style: theme.textTheme.bodySmall?.copyWith(
-                                        color: theme.colorScheme.onSurfaceVariant,
-                                        fontWeight: FontWeight.w500,
+                                    padding: const EdgeInsets.all(16),
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      AppAvatar(
+                                        radius: 28,
+                                        role: user.role,
+                                        imageUrl: user.profilePicture,
                                       ),
-                                    ),
-                                    if (user.bio != null && user.bio!.isNotEmpty) ...[
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        user.bio!,
-                                        style: theme.textTheme.bodyMedium?.copyWith(
-                                          color: theme.colorScheme.onSurface,
-                                          height: 1.3,
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              children: [
+                                                Expanded(
+                                                  child: Text(
+                                                    user.displayName,
+                                                    style: theme.textTheme.titleMedium?.copyWith(
+                                                      fontWeight: FontWeight.bold,
+                                                      color: theme.colorScheme.onSurface,
+                                                    ),
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
+                                                  ),
+                                                ),
+                                                if (user.isVerified) ...[
+                                                  const SizedBox(width: 4),
+                                                  Icon(
+                                                    Icons.verified,
+                                                    size: 16,
+                                                    color: theme.colorScheme.primary,
+                                                  ),
+                                                ],
+                                              ],
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              '@${user.username}',
+                                              style: theme.textTheme.bodySmall?.copyWith(
+                                                color: theme.colorScheme.onSurfaceVariant,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                            if (user.bio != null && user.bio!.isNotEmpty) ...[
+                                              const SizedBox(height: 8),
+                                              Text(
+                                                user.bio!,
+                                                style: theme.textTheme.bodyMedium?.copyWith(
+                                                  color: theme.colorScheme.onSurface,
+                                                  height: 1.3,
+                                                ),
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ],
+                                          ],
                                         ),
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(width: 12),
+                                      _FollowButton(
+                                        isFollowing: isSelected,
+                                        onTap: () => _toggleFollow(user.userId),
                                       ),
                                     ],
-                                  ],
+                                  ),
                                 ),
                               ),
-                              const SizedBox(width: 12),
-                              _FollowButton(
-                                isFollowing: isSelected,
-                                onTap: () => _toggleFollow(user.userId),
-                              ),
-                            ],
+                            ),
                           ),
                         ),
                       );
-                    },
+                      },
+                    ),
                   );
                 },
               ),
             ),
-            Container(
-              padding: const EdgeInsets.all(24.0),
-              decoration: BoxDecoration(
-                color: theme.scaffoldBackgroundColor,
-                boxShadow: [
-                  BoxShadow(
-                    color: theme.shadowColor.withValues(alpha: 0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, -5),
-                  ),
-                ],
-              ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
               child: SizedBox(
                 width: double.infinity,
-                child: FilledButton(
+                child: ElevatedButton(
                   onPressed: _isSaving ? null : _finishOnboarding,
-                  style: FilledButton.styleFrom(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: theme.colorScheme.primary,
+                    foregroundColor: theme.colorScheme.onPrimary,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
@@ -258,7 +258,7 @@ class _SuggestedFollowsScreenState extends ConsumerState<SuggestedFollowsScreen>
                       : const Text(
                           'Continue',
                           style: TextStyle(
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
                             fontSize: 16,
                           ),
                         ),
