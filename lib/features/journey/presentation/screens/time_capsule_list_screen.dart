@@ -106,7 +106,7 @@ class TimeCapsuleListScreen extends ConsumerWidget {
                     ),
                   );
                 },
-                onOpen: () {
+                onOpen: () async {
                   if (capsule.isLocked && !capsule.isOpened) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
@@ -119,9 +119,29 @@ class TimeCapsuleListScreen extends ConsumerWidget {
                     return;
                   }
 
-                  ref
-                      .read(myTimeCapsulesProvider.notifier)
-                      .openCapsule(capsule.id);
+                  showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (_) => const Center(child: CircularProgressIndicator()),
+                  );
+                  
+                  try {
+                    await ref
+                        .read(myTimeCapsulesProvider.notifier)
+                        .openCapsule(capsule.id);
+                    if (context.mounted) Navigator.of(context).pop(); // dismiss loading
+                  } catch (e) {
+                    if (context.mounted) Navigator.of(context).pop(); // dismiss loading
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Time capsule is not ready to be opened yet")),
+                      );
+                    }
+                    return;
+                  }
+
+                  if (!context.mounted) return;
+                  
                   showGeneralDialog(
                     context: context,
                     pageBuilder: (context, animation, secondaryAnimation) {
