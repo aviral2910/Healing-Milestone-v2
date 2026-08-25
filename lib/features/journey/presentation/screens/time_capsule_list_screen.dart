@@ -119,25 +119,27 @@ class TimeCapsuleListScreen extends ConsumerWidget {
                     return;
                   }
 
-                  showDialog(
-                    context: context,
-                    barrierDismissible: false,
-                    builder: (_) => const Center(child: CircularProgressIndicator()),
-                  );
-                  
-                  try {
-                    await ref
-                        .read(myTimeCapsulesProvider.notifier)
-                        .openCapsule(capsule.id);
-                    if (context.mounted) Navigator.of(context).pop(); // dismiss loading
-                  } catch (e) {
-                    if (context.mounted) Navigator.of(context).pop(); // dismiss loading
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Time capsule is not ready to be opened yet")),
-                      );
+                  if (!capsule.isOpened) {
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (_) => const Center(child: CircularProgressIndicator()),
+                    );
+                    
+                    try {
+                      await ref
+                          .read(myTimeCapsulesProvider.notifier)
+                          .openCapsule(capsule.id);
+                      if (context.mounted) Navigator.of(context).pop(); // dismiss loading
+                    } catch (e) {
+                      if (context.mounted) Navigator.of(context).pop(); // dismiss loading
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("Time capsule is not ready to be opened yet")),
+                        );
+                      }
+                      return;
                     }
-                    return;
                   }
 
                   if (!context.mounted) return;
