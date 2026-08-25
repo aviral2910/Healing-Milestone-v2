@@ -122,23 +122,13 @@ class TimeCapsuleCard extends ConsumerWidget {
                               ),
                             ),
                             const SizedBox(height: 6),
-                            Text(
-                              _getSubtitle(
-                                isLocked,
-                                isReadyToOpen,
-                                isOpened,
-                                hasCapsule,
-                                activeCapsule,
-                              ),
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: isReadyToOpen
-                                    ? theme.colorScheme.onPrimary.withValues(
-                                        alpha: 0.8,
-                                      )
-                                    : theme.colorScheme.onSurface.withValues(
-                                        alpha: 0.7,
-                                      ),
-                              ),
+                            _buildSubtitle(
+                              isLocked,
+                              isReadyToOpen,
+                              isOpened,
+                              hasCapsule,
+                              activeCapsule,
+                              theme,
                             ),
                           ],
                         ),
@@ -189,30 +179,49 @@ class TimeCapsuleCard extends ConsumerWidget {
     return title;
   }
 
-  String _getSubtitle(
+  Widget _buildSubtitle(
     bool isLocked,
     bool isReadyToOpen,
     bool isOpened,
     bool hasCapsule,
     TimeCapsuleModel? capsule,
+    ThemeData theme,
   ) {
-    if (!hasCapsule) {
-      if (lockedCount > 0)
-        return "$lockedCount sealed capsule${lockedCount > 1 ? 's' : ''} inside. Tap to enter.";
-      return "Tap to enter the vault.";
-    }
-    if (isReadyToOpen) return "A message from your past awaits! Tap to unlock.";
-    if (isOpened) return "Opened.";
+    final style = theme.textTheme.bodyMedium?.copyWith(
+      color: isReadyToOpen
+          ? theme.colorScheme.onPrimary.withValues(alpha: 0.8)
+          : theme.colorScheme.onSurface.withValues(alpha: 0.7),
+    );
 
-    if (capsule != null) {
-      final days = capsule.unlockDate.difference(DateTime.now()).inDays;
-      if (days > 1) {
-        return "Unlocks in $days days.";
-      } else {
-        final hours = capsule.unlockDate.difference(DateTime.now()).inHours;
-        return "Unlocks in $hours hours.";
-      }
+    if (!hasCapsule) {
+      final text = lockedCount > 0
+          ? "$lockedCount sealed capsule${lockedCount > 1 ? 's' : ''} inside. Tap to enter."
+          : "Tap to enter the vault.";
+      return Text(text, style: style);
     }
-    return "Locked.";
+    if (isReadyToOpen) return Text("A message from your past awaits! Tap to unlock.", style: style);
+    if (isOpened) return Text("Opened.", style: style);
+
+    if (capsule != null && isLocked) {
+      return StreamBuilder(
+        stream: Stream.periodic(const Duration(seconds: 1)),
+        builder: (context, snapshot) {
+          final diff = capsule.unlockDate.difference(DateTime.now());
+          if (diff.isNegative) {
+            return Text("Ready to unlock!", style: style);
+          }
+          final days = diff.inDays;
+          final hours = diff.inHours.remainder(24);
+          final minutes = diff.inMinutes.remainder(60);
+          final seconds = diff.inSeconds.remainder(60);
+          
+          final timeStr = "${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}";
+          final unlockStr = days > 0 ? "Unlocks in $days days, $timeStr" : "Unlocks in $timeStr";
+          
+          return Text(unlockStr, style: style);
+        },
+      );
+    }
+    return Text("Locked.", style: style);
   }
 }
