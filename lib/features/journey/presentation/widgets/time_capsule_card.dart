@@ -181,7 +181,10 @@ class TimeCapsuleCard extends ConsumerWidget {
 
   String _formatDate(DateTime date) {
     final months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    return "${months[date.month - 1]} ${date.day}, ${date.year}";
+    final ampm = date.hour >= 12 ? 'PM' : 'AM';
+    final hr = date.hour % 12 == 0 ? 12 : date.hour % 12;
+    final min = date.minute.toString().padLeft(2, '0');
+    return "${months[date.month - 1]} ${date.day}, ${date.year}\n$hr:$min $ampm";
   }
 
   Widget _buildSubtitle(
@@ -211,12 +214,40 @@ class TimeCapsuleCard extends ConsumerWidget {
     final sealedDate = _formatDate(capsule.createdAt.toLocal());
     final unlockDate = _formatDate(capsule.unlockDate.toLocal());
 
+    Widget buildDateRow(String label1, String value1, String label2, String value2) {
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label1, style: theme.textTheme.labelSmall?.copyWith(color: style?.color?.withValues(alpha: 0.7), fontWeight: FontWeight.w600)),
+                const SizedBox(height: 2),
+                Text(value1, style: style?.copyWith(fontWeight: FontWeight.bold, height: 1.3)),
+              ],
+            ),
+          ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label2, style: theme.textTheme.labelSmall?.copyWith(color: style?.color?.withValues(alpha: 0.7), fontWeight: FontWeight.w600)),
+                const SizedBox(height: 2),
+                Text(value2, style: style?.copyWith(fontWeight: FontWeight.bold, height: 1.3)),
+              ],
+            ),
+          ),
+        ],
+      );
+    }
+
     if (isReadyToOpen) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("Sealed on $sealedDate", style: style),
-          const SizedBox(height: 8),
+          buildDateRow("SEALED", sealedDate, "TARGET", unlockDate),
+          const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
@@ -246,8 +277,8 @@ class TimeCapsuleCard extends ConsumerWidget {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("Opened on $unlockDate", style: style),
-          const SizedBox(height: 8),
+          buildDateRow("SEALED", sealedDate, "OPENED", unlockDate),
+          const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
@@ -271,7 +302,7 @@ class TimeCapsuleCard extends ConsumerWidget {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("Unlocks on $unlockDate", style: style),
+          buildDateRow("SEALED", sealedDate, "UNLOCKS", unlockDate),
           const SizedBox(height: 12),
           StreamBuilder(
             stream: Stream.periodic(const Duration(seconds: 1)),
@@ -289,23 +320,40 @@ class TimeCapsuleCard extends ConsumerWidget {
               final unlockStr = days > 0 ? "$days days, $timeStr" : timeStr;
               
               return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                  gradient: LinearGradient(
+                    colors: [
+                      theme.colorScheme.primaryContainer.withValues(alpha: 0.4),
+                      theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: theme.colorScheme.outline.withValues(alpha: 0.3)),
+                  border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.15)),
                 ),
                 child: Row(
-                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.timer_outlined, size: 16, color: theme.colorScheme.onSurfaceVariant),
-                    const SizedBox(width: 8),
+                    Icon(Icons.lock_clock, size: 20, color: theme.colorScheme.primary.withValues(alpha: 0.8)),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        "Time Remaining",
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
                     Text(
                       unlockStr,
-                      style: theme.textTheme.bodyMedium?.copyWith(
+                      style: theme.textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.bold,
                         fontFeatures: const [FontFeature.tabularFigures()],
-                        color: theme.colorScheme.onSurface,
+                        color: theme.colorScheme.primary,
+                        letterSpacing: 0.5,
                       ),
                     ),
                   ],
