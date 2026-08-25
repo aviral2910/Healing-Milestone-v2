@@ -103,14 +103,15 @@ class TimeCapsuleCard extends ConsumerWidget {
     final timeStr = "${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}";
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 48.0, horizontal: 24.0),
+      padding: const EdgeInsets.all(24.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          const SizedBox(height: 12),
           Text(
             _getTitle(true, false, false, hasCapsule),
-            style: theme.textTheme.headlineSmall?.copyWith(
+            style: theme.textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w800,
               letterSpacing: -0.5,
               color: theme.colorScheme.onSurface,
@@ -119,9 +120,9 @@ class TimeCapsuleCard extends ConsumerWidget {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 24),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
             decoration: BoxDecoration(
               color: primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(24),
