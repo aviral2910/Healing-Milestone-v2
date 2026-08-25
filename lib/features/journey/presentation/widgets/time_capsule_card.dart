@@ -25,16 +25,140 @@ class TimeCapsuleCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final hasCapsule = activeCapsule != null;
-    final isLocked = hasCapsule && activeCapsule!.isLocked && !activeCapsule!.isOpened;
-    final isReadyToOpen = hasCapsule && !activeCapsule!.isLocked && !activeCapsule!.isOpened;
-    final isOpened = hasCapsule && activeCapsule!.isOpened;
-
     final primary = theme.colorScheme.primary;
-    
-    // Determine theme colors based on state
-    final Color glowColor = isReadyToOpen ? primary : (isOpened ? theme.colorScheme.outline : primary.withValues(alpha: 0.4));
-    
+    final hasCapsule = activeCapsule != null;
+
+    return StreamBuilder(
+      stream: Stream.periodic(const Duration(seconds: 1)),
+      builder: (context, snapshot) {
+        final now = DateTime.now();
+        final isLocked = hasCapsule && activeCapsule!.unlockDate.isAfter(now) && !activeCapsule!.isOpened;
+        final isReadyToOpen = hasCapsule && !activeCapsule!.unlockDate.isAfter(now) && !activeCapsule!.isOpened;
+        final isOpened = hasCapsule && activeCapsule!.isOpened;
+
+        final diff = hasCapsule ? activeCapsule!.unlockDate.difference(now) : Duration.zero;
+        final clampedDiff = diff.isNegative ? Duration.zero : diff;
+        final isImminent = isLocked && clampedDiff.inMinutes < 5;
+
+        // Determine theme colors based on state
+        final Color glowColor = isReadyToOpen ? primary : (isOpened ? theme.colorScheme.outline : primary.withValues(alpha: 0.4));
+        
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+          child: Stack(
+            children: [
+              // Subtle glow behind the card
+              if (isReadyToOpen || isLocked)
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(28),
+                      boxShadow: [
+                        BoxShadow(
+                          color: glowColor.withValues(alpha: isReadyToOpen ? 0.3 : 0.1),
+                          blurRadius: 24,
+                          spreadRadius: -4,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              
+              // Main Card
+              ClipRRect(
+                borderRadius: BorderRadius.circular(28),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                  child: Material(
+                    color: theme.colorScheme.surface.withValues(alpha: 0.7),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(28),
+                      side: BorderSide(
+                        color: glowColor.withValues(alpha: isReadyToOpen ? 0.5 : 0.2),
+                        width: 1.5,
+                      ),
+                    ),
+                    child: InkWell(
+                      onTap: onOpen,
+                      onLongPress: onLongPress,
+                      child: isImminent 
+                          ? _buildImminentUI(theme, primary, clampedDiff, hasCapsule)
+                          : _buildNormalUI(theme, primary, isLocked, isReadyToOpen, isOpened, hasCapsule, clampedDiff),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+    );
+  }
+
+  Widget _buildImminentUI(ThemeData theme, Color primary, Duration diff, bool hasCapsule) {
+    final minutes = diff.inMinutes.remainder(60);
+    final seconds = diff.inSeconds.remainder(60);
+    final timeStr = "${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}";
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 48.0, horizontal: 24.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(
+            _getTitle(true, false, false, hasCapsule),
+            style: theme.textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.5,
+              color: theme.colorScheme.onSurface,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 32),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+            decoration: BoxDecoration(
+              color: primary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: primary.withValues(alpha: 0.3), width: 2),
+            ),
+            child: Text(
+              timeStr,
+              style: theme.textTheme.displayMedium?.copyWith(
+                fontWeight: FontWeight.w900,
+                fontFeatures: const [FontFeature.tabularFigures()],
+                color: primary,
+                letterSpacing: 2,
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.hourglass_bottom_rounded, size: 16, color: primary),
+              const SizedBox(width: 8),
+              Text(
+                "Unlocking soon...",
+                style: theme.textTheme.labelLarge?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: primary,
+                  letterSpacing: 1,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNormalUI(ThemeData theme, Color primary, bool isLocked, bool isReadyToOpen, bool isOpened, bool hasCapsule, Duration diff) {
     // Strictly thematic badge colors
     Color badgeColor;
     Color badgeTextColor;
@@ -55,101 +179,54 @@ class TimeCapsuleCard extends ConsumerWidget {
     }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-      child: Stack(
+      padding: const EdgeInsets.all(24.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Subtle glow behind the card
-          if (isReadyToOpen || isLocked)
-            Positioned.fill(
-              child: Container(
+          // TOP ROW: Badge and Icon
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildBadge(theme, badgeColor, badgeTextColor, isLocked, isReadyToOpen, isOpened, hasCapsule, primary),
+              Container(
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(28),
-                  boxShadow: [
-                    BoxShadow(
-                      color: glowColor.withValues(alpha: isReadyToOpen ? 0.3 : 0.1),
-                      blurRadius: 24,
-                      spreadRadius: -4,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
+                  color: (isReadyToOpen ? primary : (isOpened ? theme.colorScheme.outline : primary.withValues(alpha: 0.4))).withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  _getIcon(isLocked, isReadyToOpen, isOpened, hasCapsule),
+                  color: isReadyToOpen ? primary : (isOpened ? theme.colorScheme.outline : primary.withValues(alpha: 0.4)),
+                  size: 24,
                 ),
               ),
-            ),
-          
-          // Main Card
-          ClipRRect(
-            borderRadius: BorderRadius.circular(28),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-              child: Material(
-                color: theme.colorScheme.surface.withValues(alpha: 0.7),
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(28),
-                  side: BorderSide(
-                    color: glowColor.withValues(alpha: isReadyToOpen ? 0.5 : 0.2),
-                    width: 1.5,
-                  ),
-                ),
-                child: InkWell(
-                  onTap: onOpen,
-                  onLongPress: onLongPress,
-                  child: Padding(
-                    padding: const EdgeInsets.all(24.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // TOP ROW: Badge and Icon
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            _buildBadge(theme, badgeColor, badgeTextColor, isLocked, isReadyToOpen, isOpened, hasCapsule),
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: glowColor.withValues(alpha: 0.1),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(
-                                _getIcon(isLocked, isReadyToOpen, isOpened, hasCapsule),
-                                color: glowColor,
-                                size: 24,
-                              ),
-                            ),
-                          ],
-                        ),
-                        
-                        const SizedBox(height: 20),
-                        
-                        // MIDDLE: Title
-                        Text(
-                          _getTitle(isLocked, isReadyToOpen, isOpened, hasCapsule),
-                          style: theme.textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: -0.5,
-                            color: theme.colorScheme.onSurface,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        
-                        const SizedBox(height: 24),
-                        
-                        // BOTTOM: Info Area
-                        _buildBottomSection(theme, primary, isLocked, isReadyToOpen, isOpened, hasCapsule),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
+            ],
           ),
+          
+          const SizedBox(height: 20),
+          
+          // MIDDLE: Title
+          Text(
+            _getTitle(isLocked, isReadyToOpen, isOpened, hasCapsule),
+            style: theme.textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.5,
+              color: theme.colorScheme.onSurface,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          
+          const SizedBox(height: 24),
+          
+          // BOTTOM: Info Area
+          _buildBottomSection(theme, primary, isLocked, isReadyToOpen, isOpened, hasCapsule, diff),
         ],
       ),
     );
   }
 
-  Widget _buildBadge(ThemeData theme, Color bgColor, Color textColor, bool isLocked, bool isReadyToOpen, bool isOpened, bool hasCapsule) {
+  Widget _buildBadge(ThemeData theme, Color bgColor, Color textColor, bool isLocked, bool isReadyToOpen, bool isOpened, bool hasCapsule, Color primary) {
     String text = "TIME VAULT";
     IconData? icon;
     
@@ -195,7 +272,7 @@ class TimeCapsuleCard extends ConsumerWidget {
     );
   }
 
-  Widget _buildBottomSection(ThemeData theme, Color primary, bool isLocked, bool isReadyToOpen, bool isOpened, bool hasCapsule) {
+  Widget _buildBottomSection(ThemeData theme, Color primary, bool isLocked, bool isReadyToOpen, bool isOpened, bool hasCapsule, Duration diff) {
     if (!hasCapsule) {
       return Text(
         lockedCount > 0 ? "$lockedCount sealed capsules inside." : "Tap to seal a new memory.",
@@ -203,6 +280,7 @@ class TimeCapsuleCard extends ConsumerWidget {
       );
     }
 
+    final startStr = _formatDateShort(activeCapsule!.createdAt.toLocal());
     final endStr = _formatDateShort(activeCapsule!.unlockDate.toLocal());
 
     if (isReadyToOpen) {
@@ -237,77 +315,71 @@ class TimeCapsuleCard extends ConsumerWidget {
     }
 
     if (isLocked) {
-      return StreamBuilder(
-        stream: Stream.periodic(const Duration(seconds: 1)),
-        builder: (context, snapshot) {
-          final now = DateTime.now();
-          final start = activeCapsule!.createdAt;
-          final end = activeCapsule!.unlockDate;
-          
-          final totalDuration = end.difference(start).inSeconds;
-          final elapsed = now.difference(start).inSeconds;
-          double progress = totalDuration > 0 ? (elapsed / totalDuration) : 1.0;
-          progress = progress.clamp(0.0, 1.0);
+      final now = DateTime.now();
+      final start = activeCapsule!.createdAt;
+      final end = activeCapsule!.unlockDate;
+      
+      final totalDuration = end.difference(start).inSeconds;
+      final elapsed = now.difference(start).inSeconds;
+      double progress = totalDuration > 0 ? (elapsed / totalDuration) : 1.0;
+      progress = progress.clamp(0.0, 1.0);
 
-          final diff = end.difference(now);
-          final days = diff.inDays;
-          final hours = diff.inHours.remainder(24);
-          final minutes = diff.inMinutes.remainder(60);
-          final seconds = diff.inSeconds.remainder(60);
-          
-          final timeStr = "${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}";
-          final unlockStr = days > 0 ? "$days days, $timeStr" : timeStr;
+      final days = diff.inDays;
+      final hours = diff.inHours.remainder(24);
+      final minutes = diff.inMinutes.remainder(60);
+      final seconds = diff.inSeconds.remainder(60);
+      
+      final timeStr = "${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}";
+      final unlockStr = days > 0 ? "$days days, $timeStr" : timeStr;
 
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    "Time Remaining",
-                    style: theme.textTheme.labelMedium?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  Text(
-                    unlockStr,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      fontFeatures: const [FontFeature.tabularFigures()],
-                      color: theme.colorScheme.onSurface,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: LinearProgressIndicator(
-                  value: progress,
-                  minHeight: 8,
-                  backgroundColor: theme.colorScheme.surfaceContainerHighest,
-                  valueColor: AlwaysStoppedAnimation<Color>(primary),
+              Text(
+                "Time Remaining",
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-              const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    _formatDateShort(start.toLocal()),
-                    style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5)),
-                  ),
-                  Text(
-                    _formatDateShort(end.toLocal()),
-                    style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5)),
-                  ),
-                ],
+              Text(
+                unlockStr,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                  color: theme.colorScheme.onSurface,
+                ),
               ),
             ],
-          );
-        },
+          ),
+          const SizedBox(height: 12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: LinearProgressIndicator(
+              value: progress,
+              minHeight: 8,
+              backgroundColor: theme.colorScheme.surfaceContainerHighest,
+              valueColor: AlwaysStoppedAnimation<Color>(primary),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                startStr,
+                style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5)),
+              ),
+              Text(
+                endStr,
+                style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5)),
+              ),
+            ],
+          ),
+        ],
       );
     }
     
