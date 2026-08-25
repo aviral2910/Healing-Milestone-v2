@@ -181,10 +181,7 @@ class TimeCapsuleCard extends ConsumerWidget {
 
   String _formatDate(DateTime date) {
     final months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    final ampm = date.hour >= 12 ? 'PM' : 'AM';
-    final hr = date.hour % 12 == 0 ? 12 : date.hour % 12;
-    final min = date.minute.toString().padLeft(2, '0');
-    return "${months[date.month - 1]} ${date.day}, ${date.year} at $hr:$min $ampm";
+    return "${months[date.month - 1]} ${date.day}, ${date.year}";
   }
 
   Widget _buildSubtitle(
@@ -218,7 +215,7 @@ class TimeCapsuleCard extends ConsumerWidget {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("Sealed: $sealedDate", style: style),
+          Text("Sealed on $sealedDate", style: style),
           const SizedBox(height: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -249,8 +246,7 @@ class TimeCapsuleCard extends ConsumerWidget {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("Sealed: $sealedDate", style: style),
-          Text("Unlocked: $unlockDate", style: style),
+          Text("Opened on $unlockDate", style: style),
           const SizedBox(height: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -275,8 +271,7 @@ class TimeCapsuleCard extends ConsumerWidget {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("Sealed: $sealedDate", style: style),
-          Text("Target: $unlockDate", style: style),
+          Text("Unlocks on $unlockDate", style: style),
           const SizedBox(height: 12),
           StreamBuilder(
             stream: Stream.periodic(const Duration(seconds: 1)),

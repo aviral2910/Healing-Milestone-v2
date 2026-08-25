@@ -107,7 +107,7 @@ class TimeCapsuleListScreen extends ConsumerWidget {
                     ),
                   );
                 },
-                onOpen: () async {
+                onOpen: () {
                   if (capsule.isLocked && !capsule.isOpened) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
@@ -118,38 +118,50 @@ class TimeCapsuleListScreen extends ConsumerWidget {
                     return;
                   }
 
-                  showDialog(
-                    context: context,
-                    barrierDismissible: false,
-                    builder: (_) => const Center(child: CircularProgressIndicator()),
-                  );
-                  
-                  late TimeCapsuleModel fullCapsule;
-
-                  try {
-                    final notifier = ref.read(myTimeCapsulesProvider.notifier);
-                    if (!capsule.isOpened) {
-                      await notifier.openCapsule(capsule.id);
-                    }
-                    fullCapsule = await notifier.fetchCapsule(capsule.id);
-                    if (context.mounted) Navigator.of(context).pop(); // dismiss loading
-                  } catch (e) {
-                    if (context.mounted) Navigator.of(context).pop(); // dismiss loading
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Time capsule is not ready to be opened yet")),
-                      );
-                    }
-                    return;
-                  }
-
-                  if (!context.mounted) return;
-                  final capsuleToShow = fullCapsule;
-                  
                   showGeneralDialog(
                     context: context,
                     pageBuilder: (context, animation, secondaryAnimation) {
-                      return Scaffold(
+                      return FutureBuilder<TimeCapsuleModel>(
+                        future: () async {
+                          final notifier = ref.read(myTimeCapsulesProvider.notifier);
+                          if (!capsule.isOpened) {
+                            await notifier.openCapsule(capsule.id);
+                          }
+                          return notifier.fetchCapsule(capsule.id);
+                        }(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return Scaffold(
+                              backgroundColor: theme.colorScheme.surface,
+                              appBar: AppBar(
+                                backgroundColor: Colors.transparent,
+                                elevation: 0,
+                                leading: IconButton(
+                                  icon: const Icon(Icons.close),
+                                  onPressed: () => Navigator.of(context).pop(),
+                                ),
+                              ),
+                              body: const Center(child: CircularProgressIndicator()),
+                            );
+                          }
+                          
+                          if (snapshot.hasError) {
+                            return Scaffold(
+                              backgroundColor: theme.colorScheme.surface,
+                              appBar: AppBar(
+                                backgroundColor: Colors.transparent,
+                                elevation: 0,
+                                leading: IconButton(
+                                  icon: const Icon(Icons.close),
+                                  onPressed: () => Navigator.of(context).pop(),
+                                ),
+                              ),
+                              body: const Center(child: Text("Failed to open time capsule.")),
+                            );
+                          }
+                          
+                          final capsuleToShow = snapshot.data!;
+                          return Scaffold(
                         backgroundColor: theme.colorScheme.surface,
                         appBar: AppBar(
                           backgroundColor: Colors.transparent,
@@ -234,6 +246,8 @@ class TimeCapsuleListScreen extends ConsumerWidget {
                             ),
                           ),
                         ),
+                      );
+                        },
                       );
                     },
                   );
