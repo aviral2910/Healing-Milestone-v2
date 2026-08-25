@@ -33,17 +33,25 @@ class TimeCapsuleCard extends ConsumerWidget {
     final primary = theme.colorScheme.primary;
     
     // Determine theme colors based on state
-    final Color glowColor = isReadyToOpen ? primary : (isOpened ? Colors.grey.shade400 : primary.withValues(alpha: 0.5));
+    final Color glowColor = isReadyToOpen ? primary : (isOpened ? theme.colorScheme.outline : primary.withValues(alpha: 0.5));
     
-    // Highlighted badge colors
+    // Strictly thematic badge colors
     Color badgeColor;
-    Color badgeTextColor = Colors.white;
-    if (isReadyToOpen) {
-      badgeColor = primary;
+    Color badgeTextColor;
+    
+    if (!hasCapsule) {
+      badgeColor = theme.colorScheme.surfaceContainerHighest;
+      badgeTextColor = theme.colorScheme.onSurfaceVariant;
+    } else if (isReadyToOpen) {
+      badgeColor = theme.colorScheme.primary;
+      badgeTextColor = theme.colorScheme.onPrimary;
     } else if (isOpened) {
-      badgeColor = const Color(0xFF4CAF50); // Vibrant Green
+      badgeColor = theme.colorScheme.secondary;
+      badgeTextColor = theme.colorScheme.onSecondary;
     } else {
-      badgeColor = const Color(0xFFFF9800); // Vibrant Orange
+      // Sealed
+      badgeColor = theme.colorScheme.tertiary;
+      badgeTextColor = theme.colorScheme.onTertiary;
     }
 
     return Padding(
