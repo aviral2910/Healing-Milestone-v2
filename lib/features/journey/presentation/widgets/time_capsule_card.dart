@@ -179,6 +179,14 @@ class TimeCapsuleCard extends ConsumerWidget {
     return title;
   }
 
+  String _formatDate(DateTime date) {
+    final months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    final ampm = date.hour >= 12 ? 'PM' : 'AM';
+    final hr = date.hour % 12 == 0 ? 12 : date.hour % 12;
+    final min = date.minute.toString().padLeft(2, '0');
+    return "${months[date.month - 1]} ${date.day}, ${date.year} at $hr:$min $ampm";
+  }
+
   Widget _buildSubtitle(
     bool isLocked,
     bool isReadyToOpen,
@@ -187,10 +195,11 @@ class TimeCapsuleCard extends ConsumerWidget {
     TimeCapsuleModel? capsule,
     ThemeData theme,
   ) {
-    final style = theme.textTheme.bodyMedium?.copyWith(
+    final style = theme.textTheme.bodySmall?.copyWith(
       color: isReadyToOpen
           ? theme.colorScheme.onPrimary.withValues(alpha: 0.8)
-          : theme.colorScheme.onSurface.withValues(alpha: 0.7),
+          : theme.colorScheme.onSurface.withValues(alpha: 0.6),
+      height: 1.5,
     );
 
     if (!hasCapsule) {
@@ -199,29 +208,120 @@ class TimeCapsuleCard extends ConsumerWidget {
           : "Tap to enter the vault.";
       return Text(text, style: style);
     }
-    if (isReadyToOpen) return Text("A message from your past awaits! Tap to unlock.", style: style);
-    if (isOpened) return Text("Opened.", style: style);
+    
+    if (capsule == null) return const SizedBox.shrink();
 
-    if (capsule != null && isLocked) {
-      return StreamBuilder(
-        stream: Stream.periodic(const Duration(seconds: 1)),
-        builder: (context, snapshot) {
-          final diff = capsule.unlockDate.difference(DateTime.now());
-          if (diff.isNegative) {
-            return Text("Ready to unlock!", style: style);
-          }
-          final days = diff.inDays;
-          final hours = diff.inHours.remainder(24);
-          final minutes = diff.inMinutes.remainder(60);
-          final seconds = diff.inSeconds.remainder(60);
-          
-          final timeStr = "${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}";
-          final unlockStr = days > 0 ? "Unlocks in $days days, $timeStr" : "Unlocks in $timeStr";
-          
-          return Text(unlockStr, style: style);
-        },
+    final sealedDate = _formatDate(capsule.createdAt.toLocal());
+    final unlockDate = _formatDate(capsule.unlockDate.toLocal());
+
+    if (isReadyToOpen) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text("Sealed: $sealedDate", style: style),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.onPrimary.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.key, size: 16, color: theme.colorScheme.onPrimary),
+                const SizedBox(width: 6),
+                Text(
+                  "Ready to unlock!",
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.onPrimary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       );
     }
-    return Text("Locked.", style: style);
+
+    if (isOpened) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text("Sealed: $sealedDate", style: style),
+          Text("Unlocked: $unlockDate", style: style),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.primary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.2)),
+            ),
+            child: Text(
+              "Opened",
+              style: theme.textTheme.bodySmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: theme.colorScheme.primary,
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    if (isLocked) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text("Sealed: $sealedDate", style: style),
+          Text("Target: $unlockDate", style: style),
+          const SizedBox(height: 12),
+          StreamBuilder(
+            stream: Stream.periodic(const Duration(seconds: 1)),
+            builder: (context, snapshot) {
+              final diff = capsule.unlockDate.difference(DateTime.now());
+              if (diff.isNegative) {
+                return Text("Ready to unlock!", style: style);
+              }
+              final days = diff.inDays;
+              final hours = diff.inHours.remainder(24);
+              final minutes = diff.inMinutes.remainder(60);
+              final seconds = diff.inSeconds.remainder(60);
+              
+              final timeStr = "${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}";
+              final unlockStr = days > 0 ? "$days days, $timeStr" : timeStr;
+              
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: theme.colorScheme.outline.withValues(alpha: 0.3)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.timer_outlined, size: 16, color: theme.colorScheme.onSurfaceVariant),
+                    const SizedBox(width: 8),
+                    Text(
+                      unlockStr,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                        color: theme.colorScheme.onSurface,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
+      );
+    }
+    
+    return const SizedBox.shrink();
   }
 }
