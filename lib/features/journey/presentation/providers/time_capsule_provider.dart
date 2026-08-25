@@ -22,12 +22,12 @@ class MyTimeCapsulesNotifier extends AsyncNotifier<List<TimeCapsuleModel>> {
     state = await AsyncValue.guard(() => _fetchCapsules());
   }
 
-  Future<void> addCapsule(String title, String content, DateTime unlockDate) async {
+  Future<void> addCapsule(String title, String content, DateTime unlockDate, {String? mediaUrl, String? audioUrl}) async {
     final repo = ref.read(timeCapsuleRepositoryProvider);
     
     // Optimistic / Load state can be managed directly on the creation screen,
     // here we just make the API call and refresh the list.
-    await repo.createTimeCapsule(title: title, content: content, unlockDate: unlockDate);
+    await repo.createTimeCapsule(title: title, content: content, unlockDate: unlockDate, mediaUrl: mediaUrl, audioUrl: audioUrl);
     await refresh();
   }
 

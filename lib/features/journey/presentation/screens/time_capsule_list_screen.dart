@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:healing_milestones/features/journey/presentation/widgets/create_time_capsule_overlay.dart';
 import 'package:healing_milestones/features/journey/presentation/providers/time_capsule_provider.dart';
 import 'package:healing_milestones/features/journey/presentation/widgets/time_capsule_card.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:healing_milestones/features/journey/presentation/widgets/audio_player_widget.dart';
 import 'package:healing_milestones/shared/widgets/app_loader.dart';
 
 class TimeCapsuleListScreen extends ConsumerWidget {
@@ -166,16 +168,41 @@ class TimeCapsuleListScreen extends ConsumerWidget {
                                 const SizedBox(height: 32),
                                 Expanded(
                                   child: SingleChildScrollView(
-                                    child: Text(
-                                      capsule.content,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyLarge
-                                          ?.copyWith(
-                                            height: 1.6,
-                                            fontStyle: FontStyle.italic,
+                                    child: Column(
+                                      children: [
+                                        if (capsule.mediaUrl != null && capsule.mediaUrl!.isNotEmpty) ...[
+                                          ClipRRect(
+                                            borderRadius: BorderRadius.circular(16),
+                                            child: CachedNetworkImage(
+                                              imageUrl: capsule.mediaUrl!,
+                                              width: double.infinity,
+                                              fit: BoxFit.cover,
+                                              placeholder: (context, url) => Container(
+                                                height: 200,
+                                                color: theme.colorScheme.surface,
+                                                child: const Center(child: CircularProgressIndicator()),
+                                              ),
+                                              errorWidget: (context, url, error) => const Icon(Icons.error),
+                                            ),
                                           ),
-                                      textAlign: TextAlign.center,
+                                          const SizedBox(height: 24),
+                                        ],
+                                        Text(
+                                          capsule.content,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyLarge
+                                              ?.copyWith(
+                                                height: 1.6,
+                                                fontStyle: FontStyle.italic,
+                                              ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                        if (capsule.audioUrl != null && capsule.audioUrl!.isNotEmpty) ...[
+                                          const SizedBox(height: 32),
+                                          AudioPlayerWidget(audioUrl: capsule.audioUrl!, isMini: false),
+                                        ],
+                                      ],
                                     ),
                                   ),
                                 ),

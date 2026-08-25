@@ -1,4 +1,11 @@
+import 'dart:io';
 import 'dart:ui';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:record/record.dart';
+import 'package:healing_milestones/features/journey/presentation/widgets/audio_player_widget.dart';
+import 'package:healing_milestones/features/posts/data/story_providers.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:healing_milestones/features/journey/presentation/providers/time_capsule_provider.dart';
@@ -53,11 +60,63 @@ class _CreateTimeCapsuleOverlayState extends State<CreateTimeCapsuleOverlay> {
   DateTime? _customDate;
   bool _isSubmitting = false;
 
+  final ImagePicker _picker = ImagePicker();
+  File? _selectedImage;
+
+  final AudioRecorder _audioRecorder = AudioRecorder();
+  String? _audioPath;
+  bool _isRecording = false;
+
   @override
   void dispose() {
     _titleController.dispose();
     _contentController.dispose();
+    _audioRecorder.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickImage() async {
+    final picked = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
+    if (picked != null) {
+      setState(() => _selectedImage = File(picked.path));
+    }
+  }
+
+  Future<void> _startRecording() async {
+    try {
+      if (await _audioRecorder.hasPermission()) {
+        final dir = await getTemporaryDirectory();
+        final path = '${dir.path}/capsule_audio_${DateTime.now().millisecondsSinceEpoch}.m4a';
+        await _audioRecorder.start(
+          const RecordConfig(encoder: AudioEncoder.aacLc),
+          path: path,
+        );
+        setState(() {
+          _isRecording = true;
+          _audioPath = null;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error starting record: $e');
+    }
+  }
+
+  Future<void> _stopRecording() async {
+    try {
+      final path = await _audioRecorder.stop();
+      setState(() {
+        _isRecording = false;
+        _audioPath = path;
+      });
+    } catch (e) {
+      debugPrint('Error stopping record: $e');
+    }
+  }
+
+  void _deleteRecording() {
+    setState(() {
+      _audioPath = null;
+    });
   }
 
   Future<void> _pickCustomDate() async {
@@ -282,6 +341,115 @@ class _CreateTimeCapsuleOverlayState extends State<CreateTimeCapsuleOverlay> {
                           ),
                           onChanged: (_) => setState(() {}),
                         ),
+                        const SizedBox(height: 24),
+                        
+                        // Media Attachments
+                        Text(
+                          'Add Memories',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            if (_selectedImage == null)
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  onPressed: _pickImage,
+                                  icon: const Icon(Icons.image),
+                                  label: const Text('Add Photo'),
+                                  style: OutlinedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  ),
+                                ),
+                              ),
+                            if (_selectedImage == null) const SizedBox(width: 12),
+                            if (_audioPath == null && !_isRecording)
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  onPressed: _startRecording,
+                                  icon: const Icon(Icons.mic),
+                                  label: const Text('Voice Note'),
+                                  style: OutlinedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  ),
+                                ),
+                              ),
+                            if (_isRecording)
+                              Expanded(
+                                child: FilledButton.icon(
+                                  onPressed: _stopRecording,
+                                  icon: const Icon(Icons.stop),
+                                  label: const Text('Stop Recording'),
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: theme.colorScheme.error,
+                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                        
+                        if (_selectedImage != null) ...[
+                          const SizedBox(height: 16),
+                          Stack(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: Image.file(
+                                  _selectedImage!,
+                                  height: 200,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              Positioned(
+                                top: 8,
+                                right: 8,
+                                child: IconButton.filled(
+                                  onPressed: () => setState(() => _selectedImage = null),
+                                  icon: const Icon(Icons.close, size: 18),
+                                  style: IconButton.styleFrom(
+                                    backgroundColor: Colors.black54,
+                                    foregroundColor: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                        
+                        if (_audioPath != null) ...[
+                          const SizedBox(height: 16),
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.surface,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: theme.dividerColor.withValues(alpha: 0.3)),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                AudioPlayerWidget(audioUrl: _audioPath!, isMini: true),
+                                const SizedBox(height: 8),
+                                TextButton.icon(
+                                  onPressed: _deleteRecording,
+                                  icon: const Icon(Icons.delete, size: 20),
+                                  label: const Text('Delete Recording'),
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: theme.colorScheme.error,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+
                         const SizedBox(height: 32),
 
                         // Unlock Date
@@ -426,6 +594,19 @@ class _CreateTimeCapsuleOverlayState extends State<CreateTimeCapsuleOverlay> {
                                             );
                                           }
 
+                                          String? mediaUrl;
+                                          String? audioUrl;
+                                          final r2 = ref.read(storageRepositoryProvider);
+                                          
+                                          if (_selectedImage != null) {
+                                            final ext = _selectedImage!.path.split('.').last;
+                                            final path = 'time_capsules/${DateTime.now().millisecondsSinceEpoch}.$ext';
+                                            mediaUrl = await r2.uploadImage(path, _selectedImage!);
+                                          }
+                                          if (_audioPath != null) {
+                                            audioUrl = await r2.uploadAudio(File(_audioPath!));
+                                          }
+
                                           await ref
                                               .read(
                                                 myTimeCapsulesProvider.notifier,
@@ -434,6 +615,8 @@ class _CreateTimeCapsuleOverlayState extends State<CreateTimeCapsuleOverlay> {
                                                 _titleController.text.trim(),
                                                 _contentController.text.trim(),
                                                 unlockDate,
+                                                mediaUrl: mediaUrl,
+                                                audioUrl: audioUrl,
                                               );
 
                                           if (context.mounted) {

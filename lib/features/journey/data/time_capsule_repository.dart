@@ -19,6 +19,8 @@ class TimeCapsuleRepository {
     required String title,
     required String content,
     required DateTime unlockDate,
+    String? mediaUrl,
+    String? audioUrl,
   }) async {
     final response = await _dio.post(
       '/api/time-capsules/',
@@ -26,6 +28,8 @@ class TimeCapsuleRepository {
         'title': title,
         'content': content,
         'unlockDate': unlockDate.toUtc().toIso8601String(),
+        if (mediaUrl != null) 'mediaUrl': mediaUrl,
+        if (audioUrl != null) 'audioUrl': audioUrl,
       },
     );
     return TimeCapsuleModel.fromJson(response.data);
