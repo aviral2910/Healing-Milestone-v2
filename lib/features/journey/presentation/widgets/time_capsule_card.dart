@@ -31,12 +31,20 @@ class TimeCapsuleCard extends ConsumerWidget {
     final isOpened = hasCapsule && activeCapsule!.isOpened;
 
     final primary = theme.colorScheme.primary;
-    final surface = theme.colorScheme.surface;
     
     // Determine theme colors based on state
     final Color glowColor = isReadyToOpen ? primary : (isOpened ? Colors.grey.shade400 : primary.withValues(alpha: 0.5));
-    final Color badgeColor = isReadyToOpen ? primary : (isOpened ? theme.colorScheme.surfaceContainerHighest : surface.withValues(alpha: 0.8));
-    final Color badgeTextColor = isReadyToOpen ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface;
+    
+    // Highlighted badge colors
+    Color badgeColor;
+    Color badgeTextColor = Colors.white;
+    if (isReadyToOpen) {
+      badgeColor = primary;
+    } else if (isOpened) {
+      badgeColor = const Color(0xFF4CAF50); // Vibrant Green
+    } else {
+      badgeColor = const Color(0xFFFF9800); // Vibrant Orange
+    }
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
@@ -144,10 +152,17 @@ class TimeCapsuleCard extends ConsumerWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(100),
+        boxShadow: [
+          BoxShadow(
+            color: bgColor.withValues(alpha: 0.4),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -177,64 +192,18 @@ class TimeCapsuleCard extends ConsumerWidget {
       );
     }
 
-    Widget buildHighlightedDate(String label, String value, Color color) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.5,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w800,
-              color: color,
-            ),
-          ),
-        ],
-      );
-    }
-
-    final startStr = _formatDateShort(activeCapsule!.createdAt.toLocal());
     final endStr = _formatDateShort(activeCapsule!.unlockDate.toLocal());
 
     if (isReadyToOpen) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      return Row(
         children: [
-          Row(
-            children: [
-              Expanded(child: buildHighlightedDate("SEALED ON", startStr, theme.colorScheme.onSurface)),
-              Expanded(child: buildHighlightedDate("TARGET DATE", endStr, primary)),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: primary.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: primary.withValues(alpha: 0.3)),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.auto_awesome, size: 20, color: primary),
-                const SizedBox(width: 8),
-                Text(
-                  "Your message is waiting! Tap to open",
-                  style: theme.textTheme.labelLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: primary,
-                  ),
-                ),
-              ],
+          Icon(Icons.auto_awesome, size: 20, color: primary),
+          const SizedBox(width: 8),
+          Text(
+            "Your message is waiting for you.",
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w500,
+              color: theme.colorScheme.onSurface,
             ),
           ),
         ],
@@ -242,28 +211,15 @@ class TimeCapsuleCard extends ConsumerWidget {
     }
 
     if (isOpened) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      return Row(
         children: [
-          Row(
-            children: [
-              Expanded(child: buildHighlightedDate("SEALED ON", startStr, theme.colorScheme.onSurface)),
-              Expanded(child: buildHighlightedDate("OPENED ON", endStr, theme.colorScheme.onSurface)),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Icon(Icons.drafts_rounded, size: 20, color: theme.colorScheme.onSurfaceVariant),
-              const SizedBox(width: 8),
-              Text(
-                "Tap to read again",
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
+          Icon(Icons.drafts_outlined, size: 20, color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7)),
+          const SizedBox(width: 8),
+          Text(
+            "Unlocked on $endStr",
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+            ),
           ),
         ],
       );
@@ -330,11 +286,11 @@ class TimeCapsuleCard extends ConsumerWidget {
                 children: [
                   Text(
                     _formatDateShort(start.toLocal()),
-                    style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                    style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5)),
                   ),
                   Text(
                     _formatDateShort(end.toLocal()),
-                    style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                    style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5)),
                   ),
                 ],
               ),
