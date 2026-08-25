@@ -45,8 +45,12 @@ class TimeCapsuleRepository {
     return data.map((json) => TimeCapsuleModel.fromJson(json)).toList();
   }
 
-  Future<TimeCapsuleModel> openTimeCapsule(String capsuleId) async {
-    final response = await _dio.put('/api/time-capsules/$capsuleId/open');
+  Future<TimeCapsuleModel> fetchTimeCapsule(String capsuleId) async {
+    final response = await _dio.get('/api/time-capsules/$capsuleId');
     return TimeCapsuleModel.fromJson(response.data);
+  }
+
+  Future<void> openTimeCapsule(String capsuleId) async {
+    await _dio.put('/api/time-capsules/$capsuleId/open');
   }
 }

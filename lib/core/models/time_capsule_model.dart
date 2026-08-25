@@ -2,7 +2,7 @@ class TimeCapsuleModel {
   final String id;
   final String userId;
   final String title;
-  final String content;
+  final String? content;
   final String? mediaUrl;
   final String? audioUrl;
   final DateTime unlockDate;
@@ -13,7 +13,7 @@ class TimeCapsuleModel {
     required this.id,
     required this.userId,
     required this.title,
-    required this.content,
+    this.content,
     this.mediaUrl,
     this.audioUrl,
     required this.unlockDate,
@@ -26,7 +26,7 @@ class TimeCapsuleModel {
       id: json['id'] as String,
       userId: json['userId'] as String,
       title: json['title'] as String? ?? 'Untitled Capsule',
-      content: json['content'] as String,
+      content: json['content'] as String?,
       mediaUrl: json['mediaUrl'] as String?,
       audioUrl: json['audioUrl'] as String?,
       unlockDate: DateTime.parse((json['unlockDate'] as String).endsWith('Z') ? json['unlockDate'] as String : '${json['unlockDate']}Z').toLocal(),

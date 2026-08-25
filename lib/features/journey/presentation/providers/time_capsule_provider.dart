@@ -37,6 +37,11 @@ class MyTimeCapsulesNotifier extends AsyncNotifier<List<TimeCapsuleModel>> {
     await refresh();
   }
 
+  Future<TimeCapsuleModel> fetchCapsule(String capsuleId) async {
+    final repo = ref.read(timeCapsuleRepositoryProvider);
+    return repo.fetchTimeCapsule(capsuleId);
+  }
+
   Future<void> openCapsule(String capsuleId) async {
     final repo = ref.read(timeCapsuleRepositoryProvider);
     await repo.openTimeCapsule(capsuleId);

@@ -1,3 +1,4 @@
+import 'package:healing_milestones/core/models/time_capsule_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:healing_milestones/features/journey/presentation/widgets/create_time_capsule_overlay.dart';
@@ -110,39 +111,40 @@ class TimeCapsuleListScreen extends ConsumerWidget {
                   if (capsule.isLocked && !capsule.isOpened) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text(
-                          "Patience! Your future self isn't ready yet.",
-                        ),
+                        content: Text("Patience! Your future self isn't ready yet."),
                         behavior: SnackBarBehavior.floating,
                       ),
                     );
                     return;
                   }
 
-                  if (!capsule.isOpened) {
-                    showDialog(
-                      context: context,
-                      barrierDismissible: false,
-                      builder: (_) => const Center(child: CircularProgressIndicator()),
-                    );
-                    
-                    try {
-                      await ref
-                          .read(myTimeCapsulesProvider.notifier)
-                          .openCapsule(capsule.id);
-                      if (context.mounted) Navigator.of(context).pop(); // dismiss loading
-                    } catch (e) {
-                      if (context.mounted) Navigator.of(context).pop(); // dismiss loading
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Time capsule is not ready to be opened yet")),
-                        );
-                      }
-                      return;
+                  showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (_) => const Center(child: CircularProgressIndicator()),
+                  );
+                  
+                  late TimeCapsuleModel fullCapsule;
+
+                  try {
+                    final notifier = ref.read(myTimeCapsulesProvider.notifier);
+                    if (!capsule.isOpened) {
+                      await notifier.openCapsule(capsule.id);
                     }
+                    fullCapsule = await notifier.fetchCapsule(capsule.id);
+                    if (context.mounted) Navigator.of(context).pop(); // dismiss loading
+                  } catch (e) {
+                    if (context.mounted) Navigator.of(context).pop(); // dismiss loading
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Time capsule is not ready to be opened yet")),
+                      );
+                    }
+                    return;
                   }
 
                   if (!context.mounted) return;
+                  final capsuleToShow = fullCapsule;
                   
                   showGeneralDialog(
                     context: context,
@@ -170,7 +172,7 @@ class TimeCapsuleListScreen extends ConsumerWidget {
                                 ),
                                 const SizedBox(height: 24),
                                 Text(
-                                  capsule.title,
+                                  capsuleToShow.title,
                                   textAlign: TextAlign.center,
                                   style: Theme.of(context)
                                       .textTheme
@@ -180,7 +182,7 @@ class TimeCapsuleListScreen extends ConsumerWidget {
                                 const SizedBox(height: 8),
                                 Text(
                                   "Written on " +
-                                      capsule.createdAt
+                                      capsuleToShow.createdAt
                                           .toLocal()
                                           .toString()
                                           .split(' ')[0],
@@ -192,11 +194,11 @@ class TimeCapsuleListScreen extends ConsumerWidget {
                                   child: SingleChildScrollView(
                                     child: Column(
                                       children: [
-                                        if (capsule.mediaUrl != null && capsule.mediaUrl!.isNotEmpty) ...[
+                                        if (capsuleToShow.mediaUrl != null && capsuleToShow.mediaUrl!.isNotEmpty) ...[
                                           ClipRRect(
                                             borderRadius: BorderRadius.circular(16),
                                             child: CachedNetworkImage(
-                                              imageUrl: capsule.mediaUrl!,
+                                              imageUrl: capsuleToShow.mediaUrl!,
                                               width: double.infinity,
                                               fit: BoxFit.cover,
                                               placeholder: (context, url) => Container(
@@ -210,7 +212,7 @@ class TimeCapsuleListScreen extends ConsumerWidget {
                                           const SizedBox(height: 24),
                                         ],
                                         Text(
-                                          capsule.content,
+                                          capsuleToShow.content ?? '',
                                           style: Theme.of(context)
                                               .textTheme
                                               .bodyLarge
@@ -220,9 +222,9 @@ class TimeCapsuleListScreen extends ConsumerWidget {
                                               ),
                                           textAlign: TextAlign.center,
                                         ),
-                                        if (capsule.audioUrl != null && capsule.audioUrl!.isNotEmpty) ...[
+                                        if (capsuleToShow.audioUrl != null && capsuleToShow.audioUrl!.isNotEmpty) ...[
                                           const SizedBox(height: 32),
-                                          AudioPlayerWidget(audioUrl: capsule.audioUrl!, isMini: false),
+                                          AudioPlayerWidget(audioUrl: capsuleToShow.audioUrl!, isMini: false),
                                         ],
                                       ],
                                     ),
