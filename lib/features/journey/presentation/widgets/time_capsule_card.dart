@@ -33,7 +33,7 @@ class TimeCapsuleCard extends ConsumerWidget {
     final primary = theme.colorScheme.primary;
     
     // Determine theme colors based on state
-    final Color glowColor = isReadyToOpen ? primary : (isOpened ? theme.colorScheme.outline : primary.withValues(alpha: 0.5));
+    final Color glowColor = isReadyToOpen ? primary : (isOpened ? theme.colorScheme.outline : const Color(0xFFFFB300).withValues(alpha: 0.4));
     
     // Strictly thematic badge colors
     Color badgeColor;
@@ -49,9 +49,9 @@ class TimeCapsuleCard extends ConsumerWidget {
       badgeColor = theme.colorScheme.secondary;
       badgeTextColor = theme.colorScheme.onSecondary;
     } else {
-      // Sealed
-      badgeColor = theme.colorScheme.tertiary;
-      badgeTextColor = theme.colorScheme.onTertiary;
+      // Sealed - Golden theme
+      badgeColor = const Color(0xFFFFB300).withValues(alpha: 0.15);
+      badgeTextColor = const Color(0xFFFFB300);
     }
 
     return Padding(
@@ -159,11 +159,14 @@ class TimeCapsuleCard extends ConsumerWidget {
       else if (isLocked) { text = "SEALED"; }
     }
 
+    final hasGoldBorder = isLocked && hasCapsule;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(100),
+        border: hasGoldBorder ? Border.all(color: const Color(0xFFFFB300).withValues(alpha: 0.5), width: 1.5) : null,
         boxShadow: [
           BoxShadow(
             color: bgColor.withValues(alpha: 0.4),
