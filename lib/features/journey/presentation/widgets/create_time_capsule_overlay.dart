@@ -76,7 +76,12 @@ class _CreateTimeCapsuleOverlayState extends State<CreateTimeCapsuleOverlay> {
   }
 
   Future<void> _pickImage() async {
-    final picked = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
+    final picked = await _picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 70,
+      maxWidth: 1200,
+      maxHeight: 1200,
+    );
     if (picked != null) {
       setState(() => _selectedImage = File(picked.path));
     }
@@ -86,7 +91,8 @@ class _CreateTimeCapsuleOverlayState extends State<CreateTimeCapsuleOverlay> {
     try {
       if (await _audioRecorder.hasPermission()) {
         final dir = await getTemporaryDirectory();
-        final path = '${dir.path}/capsule_audio_${DateTime.now().millisecondsSinceEpoch}.m4a';
+        final path =
+            '${dir.path}/capsule_audio_${DateTime.now().millisecondsSinceEpoch}.m4a';
         await _audioRecorder.start(
           const RecordConfig(encoder: AudioEncoder.aacLc),
           path: path,
@@ -342,7 +348,7 @@ class _CreateTimeCapsuleOverlayState extends State<CreateTimeCapsuleOverlay> {
                           onChanged: (_) => setState(() {}),
                         ),
                         const SizedBox(height: 24),
-                        
+
                         // Media Attachments
                         Text(
                           'Add Memories',
@@ -360,12 +366,17 @@ class _CreateTimeCapsuleOverlayState extends State<CreateTimeCapsuleOverlay> {
                                   icon: const Icon(Icons.image),
                                   label: const Text('Add Photo'),
                                   style: OutlinedButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(vertical: 12),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 12,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
                                   ),
                                 ),
                               ),
-                            if (_selectedImage == null) const SizedBox(width: 12),
+                            if (_selectedImage == null)
+                              const SizedBox(width: 12),
                             if (_audioPath == null && !_isRecording)
                               Expanded(
                                 child: OutlinedButton.icon(
@@ -373,8 +384,12 @@ class _CreateTimeCapsuleOverlayState extends State<CreateTimeCapsuleOverlay> {
                                   icon: const Icon(Icons.mic),
                                   label: const Text('Voice Note'),
                                   style: OutlinedButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(vertical: 12),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 12,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
                                   ),
                                 ),
                               ),
@@ -386,14 +401,18 @@ class _CreateTimeCapsuleOverlayState extends State<CreateTimeCapsuleOverlay> {
                                   label: const Text('Stop Recording'),
                                   style: FilledButton.styleFrom(
                                     backgroundColor: theme.colorScheme.error,
-                                    padding: const EdgeInsets.symmetric(vertical: 12),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 12,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
                                   ),
                                 ),
                               ),
                           ],
                         ),
-                        
+
                         if (_selectedImage != null) ...[
                           const SizedBox(height: 16),
                           Stack(
@@ -411,7 +430,8 @@ class _CreateTimeCapsuleOverlayState extends State<CreateTimeCapsuleOverlay> {
                                 top: 8,
                                 right: 8,
                                 child: IconButton.filled(
-                                  onPressed: () => setState(() => _selectedImage = null),
+                                  onPressed: () =>
+                                      setState(() => _selectedImage = null),
                                   icon: const Icon(Icons.close, size: 18),
                                   style: IconButton.styleFrom(
                                     backgroundColor: Colors.black54,
@@ -422,7 +442,7 @@ class _CreateTimeCapsuleOverlayState extends State<CreateTimeCapsuleOverlay> {
                             ],
                           ),
                         ],
-                        
+
                         if (_audioPath != null) ...[
                           const SizedBox(height: 16),
                           Container(
@@ -430,12 +450,19 @@ class _CreateTimeCapsuleOverlayState extends State<CreateTimeCapsuleOverlay> {
                             decoration: BoxDecoration(
                               color: theme.colorScheme.surface,
                               borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: theme.dividerColor.withValues(alpha: 0.3)),
+                              border: Border.all(
+                                color: theme.dividerColor.withValues(
+                                  alpha: 0.3,
+                                ),
+                              ),
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
-                                AudioPlayerWidget(audioUrl: _audioPath!, isMini: true),
+                                AudioPlayerWidget(
+                                  audioUrl: _audioPath!,
+                                  isMini: true,
+                                ),
                                 const SizedBox(height: 8),
                                 TextButton.icon(
                                   onPressed: _deleteRecording,
@@ -596,15 +623,25 @@ class _CreateTimeCapsuleOverlayState extends State<CreateTimeCapsuleOverlay> {
 
                                           String? mediaUrl;
                                           String? audioUrl;
-                                          final r2 = ref.read(storageRepositoryProvider);
-                                          
+                                          final r2 = ref.read(
+                                            storageRepositoryProvider,
+                                          );
+
                                           if (_selectedImage != null) {
-                                            final ext = _selectedImage!.path.split('.').last;
-                                            final path = 'time_capsules/${DateTime.now().millisecondsSinceEpoch}.$ext';
-                                            mediaUrl = await r2.uploadImage(path, _selectedImage!);
+                                            final ext = _selectedImage!.path
+                                                .split('.')
+                                                .last;
+                                            final path =
+                                                'time_capsules/${DateTime.now().millisecondsSinceEpoch}.$ext';
+                                            mediaUrl = await r2.uploadImage(
+                                              path,
+                                              _selectedImage!,
+                                            );
                                           }
                                           if (_audioPath != null) {
-                                            audioUrl = await r2.uploadAudio(File(_audioPath!));
+                                            audioUrl = await r2.uploadAudio(
+                                              File(_audioPath!),
+                                            );
                                           }
 
                                           await ref
