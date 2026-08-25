@@ -177,16 +177,64 @@ class TimeCapsuleCard extends ConsumerWidget {
       );
     }
 
-    if (isReadyToOpen) {
-      return Row(
+    Widget buildHighlightedDate(String label, String value, Color color) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.auto_awesome, size: 20, color: primary),
-          const SizedBox(width: 8),
           Text(
-            "Your message is waiting for you.",
-            style: theme.textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w500,
-              color: theme.colorScheme.onSurface,
+            label,
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.5,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w800,
+              color: color,
+            ),
+          ),
+        ],
+      );
+    }
+
+    final startStr = _formatDateShort(activeCapsule!.createdAt.toLocal());
+    final endStr = _formatDateShort(activeCapsule!.unlockDate.toLocal());
+
+    if (isReadyToOpen) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(child: buildHighlightedDate("SEALED ON", startStr, theme.colorScheme.onSurface)),
+              Expanded(child: buildHighlightedDate("TARGET DATE", endStr, primary)),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: primary.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: primary.withValues(alpha: 0.3)),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.auto_awesome, size: 20, color: primary),
+                const SizedBox(width: 8),
+                Text(
+                  "Your message is waiting! Tap to open",
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: primary,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -194,16 +242,28 @@ class TimeCapsuleCard extends ConsumerWidget {
     }
 
     if (isOpened) {
-      final unlockedStr = _formatDateShort(activeCapsule!.unlockDate.toLocal());
-      return Row(
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.drafts_outlined, size: 20, color: theme.colorScheme.onSurfaceVariant),
-          const SizedBox(width: 8),
-          Text(
-            "Unlocked on $unlockedStr",
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
+          Row(
+            children: [
+              Expanded(child: buildHighlightedDate("SEALED ON", startStr, theme.colorScheme.onSurface)),
+              Expanded(child: buildHighlightedDate("OPENED ON", endStr, theme.colorScheme.onSurface)),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Icon(Icons.drafts_rounded, size: 20, color: theme.colorScheme.onSurfaceVariant),
+              const SizedBox(width: 8),
+              Text(
+                "Tap to read again",
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
           ),
         ],
       );
