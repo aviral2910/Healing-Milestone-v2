@@ -1,10 +1,10 @@
 import 'package:healing_milestones/features/auth/data/auth_provider.dart';
 import 'package:healing_milestones/shared/widgets/app_avatar.dart';
-import 'package:healing_milestones/core/widgets/app_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:healing_milestones/features/chat/presentation/providers/chat_providers.dart';
 import 'package:healing_milestones/features/chat/presentation/screens/chat_room_screen.dart';
+import 'package:healing_milestones/shared/widgets/app_loader.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class InboxScreen extends ConsumerWidget {
@@ -25,10 +25,7 @@ class InboxScreen extends ConsumerWidget {
           ),
         ),
         body: const TabBarView(
-          children: [
-            _ActiveChatsList(),
-            _PendingRequestsList(),
-          ],
+          children: [_ActiveChatsList(), _PendingRequestsList()],
         ),
       ),
     );
@@ -53,7 +50,7 @@ class _ActiveChatsList extends ConsumerWidget {
             final chat = chats[index];
             final currentUser = ref.watch(currentUserProvider);
             if (currentUser == null) return const SizedBox.shrink();
-            
+
             final otherUserId = chat.participants.firstWhere(
               (id) => id != currentUser.userId,
               orElse: () => chat.participants.first,
@@ -61,10 +58,18 @@ class _ActiveChatsList extends ConsumerWidget {
 
             if (chat.type == 'support') {
               return ListTile(
-                leading: const CircleAvatar(child: Icon(Icons.support_agent, color: Colors.white), backgroundColor: Colors.blue),
-                title: const Text('Healing Milestones Support', style: TextStyle(fontWeight: FontWeight.bold)),
+                leading: const CircleAvatar(
+                  child: Icon(Icons.support_agent, color: Colors.white),
+                  backgroundColor: Colors.blue,
+                ),
+                title: const Text(
+                  'Healing Milestones Support',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
                 subtitle: Text(
-                  chat.lastMessageText.isEmpty ? 'No messages yet' : chat.lastMessageText,
+                  chat.lastMessageText.isEmpty
+                      ? 'No messages yet'
+                      : chat.lastMessageText,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -74,10 +79,8 @@ class _ActiveChatsList extends ConsumerWidget {
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (_) => ChatRoomScreen(
-                        roomId: chat.id,
-                        roomType: chat.type,
-                      ),
+                      builder: (_) =>
+                          ChatRoomScreen(roomId: chat.id, roomType: chat.type),
                     ),
                   );
                 },
@@ -90,15 +93,26 @@ class _ActiveChatsList extends ConsumerWidget {
               data: (otherUser) {
                 if (otherUser == null) return const SizedBox.shrink();
                 return ListTile(
-                  leading: AppAvatar(imageUrl: otherUser.profilePicture, radius: 24),
-                  title: Text(otherUser.displayName, style: const TextStyle(fontWeight: FontWeight.w600)),
+                  leading: AppAvatar(
+                    imageUrl: otherUser.profilePicture,
+                    radius: 24,
+                  ),
+                  title: Text(
+                    otherUser.displayName,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
                   subtitle: Text(
-                    chat.lastMessageText.isEmpty ? 'Say hi!' : chat.lastMessageText,
+                    (chat.status == 'pending' && chat.initiatorId == currentUser.userId)
+                        ? 'Request sent · ${chat.lastMessageText.isEmpty ? "Say hi!" : chat.lastMessageText}'
+                        : (chat.lastMessageText.isEmpty ? 'Say hi!' : chat.lastMessageText),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      fontWeight: (chat.unreadCount[currentUser.userId] ?? 0) > 0 
-                          ? FontWeight.bold : FontWeight.normal,
+                      color: (chat.status == 'pending' && chat.initiatorId == currentUser.userId) ? Colors.grey : null,
+                      fontWeight:
+                          (chat.unreadCount[currentUser.userId] ?? 0) > 0
+                          ? FontWeight.bold
+                          : FontWeight.normal,
                     ),
                   ),
                   trailing: chat.lastMessageTime != null
@@ -116,7 +130,10 @@ class _ActiveChatsList extends ConsumerWidget {
                   },
                 );
               },
-              loading: () => const ListTile(leading: AppLoader.small(), title: Text('Loading...')),
+              loading: () => const ListTile(
+                leading: AppLoader.small(),
+                title: Text('Loading...'),
+              ),
               error: (_, __) => const SizedBox.shrink(),
             );
           },

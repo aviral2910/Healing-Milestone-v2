@@ -63,7 +63,7 @@ class ChatRepository {
         .orderBy('lastMessageTime', descending: true)
         .snapshots()
         .map((snapshot) =>
-            snapshot.docs.map((doc) => ChatRoom.fromFirestore(doc)).where((r) => r.status == 'accepted').toList());
+            snapshot.docs.map((doc) => ChatRoom.fromFirestore(doc)).where((r) => r.status == 'accepted' || (r.status == 'pending' && r.initiatorId == myUserId)).toList());
   }
 
   Stream<List<ChatRoom>> watchPendingRequests(String myUserId) {
