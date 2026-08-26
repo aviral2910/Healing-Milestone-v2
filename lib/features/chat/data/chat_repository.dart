@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -15,15 +16,42 @@ class ChatRepository {
   // --- API Methods for Permissions ---
 
   Future<void> requestChat(String targetUserId) async {
-    await _apiClient.dio.post('/api/chat/request/$targetUserId');
+    final myUid = FirebaseAuth.instance.currentUser?.uid;
+    if (myUid == null) throw Exception('Not authenticated');
+
+    final uids = [myUid, targetUserId]..sort();
+    final roomId = 'chat_${uids[0]}_${uids[1]}';
+
+    final docRef = _firestore.collection('chat_rooms').doc(roomId);
+    final doc = await docRef.get();
+    
+    if (!doc.exists) {
+      await docRef.set({
+        'participants': [myUid, targetUserId],
+        'type': 'peer',
+        'status': 'pending',
+        'initiatorId': myUid,
+        'lastMessageText': '',
+        'lastMessageTime': FieldValue.serverTimestamp(),
+        'unreadCount': {
+          myUid: 0,
+          targetUserId: 0,
+        },
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    }
   }
 
   Future<void> acceptChat(String roomId) async {
-    await _apiClient.dio.post('/api/chat/accept/$roomId');
+    await _firestore.collection('chat_rooms').doc(roomId).update({
+      'status': 'accepted',
+    });
   }
 
   Future<void> declineChat(String roomId) async {
-    await _apiClient.dio.post('/api/chat/decline/$roomId');
+    await _firestore.collection('chat_rooms').doc(roomId).update({
+      'status': 'declined',
+    });
   }
 
   // --- Firestore Streams ---
