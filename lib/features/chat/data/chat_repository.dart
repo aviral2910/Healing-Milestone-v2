@@ -15,15 +15,15 @@ class ChatRepository {
   // --- API Methods for Permissions ---
 
   Future<void> requestChat(String targetUserId) async {
-    await _apiClient.post('/api/chat/request/$targetUserId');
+    await _apiClient.dio.post('/api/chat/request/$targetUserId');
   }
 
   Future<void> acceptChat(String roomId) async {
-    await _apiClient.post('/api/chat/accept/$roomId');
+    await _apiClient.dio.post('/api/chat/accept/$roomId');
   }
 
   Future<void> declineChat(String roomId) async {
-    await _apiClient.post('/api/chat/decline/$roomId');
+    await _apiClient.dio.post('/api/chat/decline/$roomId');
   }
 
   // --- Firestore Streams ---

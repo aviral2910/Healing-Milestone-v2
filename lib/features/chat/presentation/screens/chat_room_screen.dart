@@ -37,13 +37,13 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     if (pickedFile == null) return;
     
     final user = ref.read(currentUserProvider);
-    if (user == null || user.firebaseUid == null) return;
+    if (user == null || user.userId == null) return;
 
     setState(() => _isSending = true);
     try {
       await ref.read(chatRepositoryProvider).sendMessage(
             roomId: widget.roomId,
-            senderId: user.firebaseUid!,
+            senderId: user.userId!,
             imageFile: File(pickedFile.path),
           );
     } catch (e) {
@@ -58,7 +58,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     if (text.isEmpty) return;
 
     final user = ref.read(currentUserProvider);
-    if (user == null || user.firebaseUid == null) return;
+    if (user == null || user.userId == null) return;
 
     _textController.clear();
     setState(() => _isSending = true);
@@ -66,7 +66,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     try {
       await ref.read(chatRepositoryProvider).sendMessage(
             roomId: widget.roomId,
-            senderId: user.firebaseUid!,
+            senderId: user.userId!,
             text: text,
           );
     } catch (e) {
@@ -98,7 +98,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   itemCount: messages.length,
                   itemBuilder: (context, index) {
                     final msg = messages[index];
-                    final isMe = msg.senderId == currentUser?.firebaseUid;
+                    final isMe = msg.senderId == currentUser?.userId;
                     return _MessageBubble(msg: msg, isMe: isMe);
                   },
                 );

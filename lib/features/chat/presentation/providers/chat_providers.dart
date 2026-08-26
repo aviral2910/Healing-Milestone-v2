@@ -17,14 +17,14 @@ final chatRepositoryProvider = Provider<ChatRepository>((ref) {
 
 final activeChatsProvider = StreamProvider<List<ChatRoom>>((ref) {
   final user = ref.watch(currentUserProvider);
-  if (user == null || user.firebaseUid == null) return Stream.value([]);
-  return ref.watch(chatRepositoryProvider).watchActiveChats(user.firebaseUid!);
+  if (user == null || user.userId == null) return Stream.value([]);
+  return ref.watch(chatRepositoryProvider).watchActiveChats(user.userId!);
 });
 
 final pendingRequestsProvider = StreamProvider<List<ChatRoom>>((ref) {
   final user = ref.watch(currentUserProvider);
-  if (user == null || user.firebaseUid == null) return Stream.value([]);
-  return ref.watch(chatRepositoryProvider).watchPendingRequests(user.firebaseUid!);
+  if (user == null || user.userId == null) return Stream.value([]);
+  return ref.watch(chatRepositoryProvider).watchPendingRequests(user.userId!);
 });
 
 final chatMessagesProvider = StreamProvider.family<List<ChatMessage>, String>((ref, roomId) {
