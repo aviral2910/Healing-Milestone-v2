@@ -156,19 +156,7 @@ class TimelineNode extends ConsumerWidget {
   }
 
   Color _getEmotionColor(BuildContext context, EmotionStatus status) {
-    switch (status) {
-      case EmotionStatus.proud:
-        return Colors.amber;
-      case EmotionStatus.hopeful:
-        return Colors.orange;
-      case EmotionStatus.anxious:
-        return Colors.blue;
-      case EmotionStatus.grieving:
-        return Colors.deepPurple;
-      case EmotionStatus.neutral:
-      default:
-        return Colors.grey;
-    }
+    return status.category.color;
   }
 
   Widget _buildClosureCard(BuildContext context, ThemeData theme) {

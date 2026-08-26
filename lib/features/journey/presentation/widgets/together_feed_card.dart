@@ -51,19 +51,7 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
   }
 
   Color _getEmotionColor() {
-    switch (widget.milestone.emotionStatus) {
-      case EmotionStatus.proud:
-        return Colors.amber;
-      case EmotionStatus.hopeful:
-        return Colors.orange;
-      case EmotionStatus.anxious:
-        return Colors.blue;
-      case EmotionStatus.grieving:
-        return Colors.deepPurple;
-      case EmotionStatus.neutral:
-      default:
-        return Colors.grey;
-    }
+    return widget.milestone.emotionStatus?.category.color ?? Colors.grey;
   }
 
   void _showReactionOverlay(BuildContext context, Offset position) {
@@ -255,24 +243,7 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
     if (isDoctor) {
       emotionColor = theme.colorScheme.primary;
     } else {
-      switch (widget.milestone.emotionStatus) {
-        case EmotionStatus.proud:
-          emotionColor = Colors.orange;
-          break;
-        case EmotionStatus.hopeful:
-          emotionColor = Colors.green;
-          break;
-        case EmotionStatus.anxious:
-          emotionColor = Colors.purple;
-          break;
-        case EmotionStatus.grieving:
-          emotionColor = Colors.blueGrey;
-          break;
-        case EmotionStatus.neutral:
-        default:
-          emotionColor = Colors.grey;
-          break;
-      }
+      emotionColor = widget.milestone.emotionStatus?.category.color ?? Colors.grey;
     }
 
     final bool isClosure = widget.milestone.isClosure;

@@ -7,6 +7,7 @@ import 'package:just_audio/just_audio.dart';
 import '../../../posts/data/story_providers.dart';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/journey_models.dart';
 import '../../../auth/data/auth_provider.dart';
@@ -73,6 +74,7 @@ class LogMilestoneOverlay extends ConsumerStatefulWidget {
 
 class _LogMilestoneOverlayState extends ConsumerState<LogMilestoneOverlay> {
   EmotionStatus? _selectedEmotion;
+  EmotionCategory _selectedCategory = EmotionCategory.positive;
   MilestoneVisibility _selectedVisibility = MilestoneVisibility.private;
   bool _areCommentsEnabled = false;
   final _contentController = TextEditingController();
@@ -157,51 +159,31 @@ class _LogMilestoneOverlayState extends ConsumerState<LogMilestoneOverlay> {
 
 
   Color _getEmotionColor(EmotionStatus status) {
-    switch (status) {
-      case EmotionStatus.proud:
-        return Colors.amber;
-      case EmotionStatus.hopeful:
-        return Colors.orange;
-      case EmotionStatus.anxious:
-        return Colors.blue;
-      case EmotionStatus.grieving:
-        return Colors.deepPurple;
-      case EmotionStatus.neutral:
-      default:
-        return Colors.grey;
-    }
+    return status.category.color;
   }
 
   IconData _getEmotionIcon(EmotionStatus status) {
     switch (status) {
-      case EmotionStatus.proud:
-        return Icons.emoji_events_rounded;
-      case EmotionStatus.hopeful:
-        return Icons.wb_sunny_rounded;
-      case EmotionStatus.anxious:
-        return Icons.waves_rounded;
-      case EmotionStatus.grieving:
-        return Icons.opacity_rounded;
-      case EmotionStatus.neutral:
-      default:
-        return Icons.sentiment_neutral_rounded;
+      case EmotionStatus.proud: return Icons.emoji_events_rounded;
+      case EmotionStatus.hopeful: return Icons.wb_sunny_rounded;
+      case EmotionStatus.relieved: return Icons.air_rounded;
+      case EmotionStatus.grateful: return Icons.favorite_rounded;
+      case EmotionStatus.determined: return Icons.local_fire_department_rounded;
+      case EmotionStatus.anxious: return Icons.waves_rounded;
+      case EmotionStatus.grieving: return Icons.opacity_rounded;
+      case EmotionStatus.exhausted: return Icons.battery_0_bar_rounded;
+      case EmotionStatus.frustrated: return Icons.storm_rounded;
+      case EmotionStatus.overwhelmed: return Icons.tsunami_rounded;
+      case EmotionStatus.isolated: return Icons.person_off_rounded;
+      case EmotionStatus.neutral: return Icons.sentiment_neutral_rounded;
+      case EmotionStatus.reflective: return Icons.lightbulb_rounded;
+      case EmotionStatus.waiting: return Icons.hourglass_empty_rounded;
+      default: return Icons.sentiment_neutral_rounded;
     }
   }
 
   String _getEmotionLabel(EmotionStatus status) {
-    switch (status) {
-      case EmotionStatus.proud:
-        return 'Proud';
-      case EmotionStatus.hopeful:
-        return 'Hopeful';
-      case EmotionStatus.anxious:
-        return 'Anxious';
-      case EmotionStatus.grieving:
-        return 'Grieving';
-      case EmotionStatus.neutral:
-      default:
-        return 'Okay';
-    }
+    return status.displayName;
   }
 
   Widget _buildProfessionalTagChip(ProfessionalTag tag) {
@@ -254,6 +236,39 @@ class _LogMilestoneOverlayState extends ConsumerState<LogMilestoneOverlay> {
                 ),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCategoryChip(EmotionCategory category, String label) {
+    final isSelected = _selectedCategory == category;
+    final theme = Theme.of(context);
+    
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedCategory = category;
+        });
+        HapticFeedback.selectionClick();
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? theme.colorScheme.primary : theme.colorScheme.surface.withValues(alpha: 0.5),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? theme.colorScheme.primary : theme.colorScheme.outline.withValues(alpha: 0.1),
+          ),
+        ),
+        child: Text(
+          label,
+          style: theme.textTheme.labelLarge?.copyWith(
+            color: isSelected ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            letterSpacing: 0.5,
           ),
         ),
       ),
@@ -483,21 +498,34 @@ class _LogMilestoneOverlayState extends ConsumerState<LogMilestoneOverlay> {
                             ),
                           ),
                           const SizedBox(height: 16),
+                          // Custom Category Selector
                           SingleChildScrollView(
                             scrollDirection: Axis.horizontal,
                             clipBehavior: Clip.none,
                             child: Row(
                               children: [
-                                _buildEmotionChip(EmotionStatus.hopeful),
-                                const SizedBox(width: 12),
-                                _buildEmotionChip(EmotionStatus.proud),
-                                const SizedBox(width: 12),
-                                _buildEmotionChip(EmotionStatus.neutral),
-                                const SizedBox(width: 12),
-                                _buildEmotionChip(EmotionStatus.anxious),
-                                const SizedBox(width: 12),
-                                _buildEmotionChip(EmotionStatus.grieving),
+                                _buildCategoryChip(EmotionCategory.positive, 'Uplifting'),
+                                const SizedBox(width: 8),
+                                _buildCategoryChip(EmotionCategory.negative, 'Challenging'),
+                                const SizedBox(width: 8),
+                                _buildCategoryChip(EmotionCategory.neutral, 'Neutral'),
                               ],
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          
+                          // Emotion Chips for selected category (Scrolling)
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            clipBehavior: Clip.none,
+                            child: Row(
+                              children: EmotionStatus.values
+                                  .where((e) => e.category == _selectedCategory)
+                                  .map((e) => Padding(
+                                        padding: const EdgeInsets.only(right: 12.0),
+                                        child: _buildEmotionChip(e),
+                                      ))
+                                  .toList(),
                             ),
                           ),
                         ],
