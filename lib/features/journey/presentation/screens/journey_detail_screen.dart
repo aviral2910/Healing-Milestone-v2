@@ -260,6 +260,45 @@ class _JourneyDetailScreenState extends ConsumerState<JourneyDetailScreen> {
             ),
           ),
 
+
+          if (widget.categories != null && widget.categories!.isNotEmpty)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.only(left: 24, right: 24, bottom: 16),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
+                  child: Row(
+                    children: widget.categories!.map((cat) => Padding(
+                      padding: const EdgeInsets.only(right: 6.0),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                            color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                            width: 1,
+                          ),
+                        ),
+                        child: Text(
+                          '#${cat.toUpperCase()}',
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: theme.colorScheme.primary,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.5,
+                            fontSize: 9,
+                          ),
+                        ),
+                      ),
+                    )).toList(),
+                  ),
+                ),
+              ),
+            ),
           Consumer(
             builder: (context, ref, child) {
               final milestonesAsync = ref.watch(
