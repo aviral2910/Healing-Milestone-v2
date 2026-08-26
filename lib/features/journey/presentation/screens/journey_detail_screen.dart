@@ -231,40 +231,7 @@ class _JourneyDetailScreenState extends ConsumerState<JourneyDetailScreen> {
                       letterSpacing: -0.5,
                     ),
                   ),
-                  if (widget.categories != null && widget.categories!.isNotEmpty) ...[
-                            const SizedBox(height: 12),
-                            SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              physics: const BouncingScrollPhysics(),
-                              child: Row(
-                                children: widget.categories!.map((cat) => Padding(
-                                  padding: const EdgeInsets.only(right: 8.0),
-                                  child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(
-                                    color: theme.colorScheme.primary.withValues(alpha: 0.2),
-                                    width: 1,
-                                  ),
-                                ),
-                                child: Text(
-                                  '#${cat.toUpperCase()}',
-                                  style: theme.textTheme.labelSmall?.copyWith(
-                                    color: theme.colorScheme.primary,
-                                    fontWeight: FontWeight.w800,
-                                    letterSpacing: 1.0,
-                                  ),
-                                ),
-                              ),
-                                )).toList(),
-                              ),
-                            ),
-                          ],
+
                 ],
               ),
               background: Stack(

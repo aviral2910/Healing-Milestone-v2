@@ -183,27 +183,31 @@ class PublicJourneyItem extends StatelessWidget {
             const SizedBox(height: 12),
 
             // --- 3. Category ---
-            Row(
-              children: [
-                Icon(
-                  Icons.folder_rounded,
-                  size: 14,
-                  color: primaryColor,
-                ), // Filled folder
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    (journey.categories.isNotEmpty ? journey.categories.join(' • ') : 'GENERAL').toUpperCase(),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.labelMedium?.copyWith(
-                      color: primaryColor,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.5,
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              child: Row(
+                children: (journey.categories.isNotEmpty ? journey.categories : ['General']).map((cat) => Padding(
+                  padding: const EdgeInsets.only(right: 6.0),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: primaryColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(4),
+                      border: Border.all(color: primaryColor.withValues(alpha: 0.2), width: 1),
+                    ),
+                    child: Text(
+                      '#${cat.toUpperCase()}',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: primaryColor,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.5,
+                        fontSize: 8,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                )).toList(),
+              ),
             ),
           ],
         ),

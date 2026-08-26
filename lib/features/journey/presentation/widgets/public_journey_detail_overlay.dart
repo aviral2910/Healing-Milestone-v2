@@ -393,12 +393,12 @@ class _PublicJourneyDetailOverlayState
                                   padding: const EdgeInsets.only(right: 8.0),
                                   child: Container(
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 6,
+                                  horizontal: 8,
+                                  vertical: 4,
                                 ),
                                 decoration: BoxDecoration(
                                   color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(6),
                                   border: Border.all(
                                     color: theme.colorScheme.primary.withValues(alpha: 0.2),
                                     width: 1,
@@ -409,7 +409,8 @@ class _PublicJourneyDetailOverlayState
                                   style: theme.textTheme.labelSmall?.copyWith(
                                     color: theme.colorScheme.primary,
                                     fontWeight: FontWeight.w800,
-                                    letterSpacing: 1.0,
+                                    letterSpacing: 0.5,
+                                    fontSize: 9,
                                   ),
                                 ),
                               ),
