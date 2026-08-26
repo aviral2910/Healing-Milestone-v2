@@ -1,12 +1,37 @@
 with open('lib/features/chat/data/chat_repository.dart', 'r') as f:
     content = f.read()
 
-old_watch = """        .map((snapshot) =>
-            snapshot.docs.map((doc) => ChatRoom.fromFirestore(doc)).where((r) => r.status == 'accepted').toList());"""
+new_methods = """  Future<void> deleteMessage(String roomId, String messageId) async {
+    await _firestore
+        .collection('chat_rooms')
+        .doc(roomId)
+        .collection('messages')
+        .doc(messageId)
+        .delete();
+  }
 
-new_watch = """        .map((snapshot) =>
-            snapshot.docs.map((doc) => ChatRoom.fromFirestore(doc)).where((r) => r.status == 'accepted' || (r.status == 'pending' && r.initiatorId == myUserId)).toList());"""
+  Future<void> deleteChatRoom(String roomId) async {
+    // Delete all messages first (batch delete)
+    final messages = await _firestore
+        .collection('chat_rooms')
+        .doc(roomId)
+        .collection('messages')
+        .get();
+        
+    final batch = _firestore.batch();
+    for (var doc in messages.docs) {
+      batch.delete(doc.reference);
+    }
+    
+    // Delete the room document itself
+    batch.delete(_firestore.collection('chat_rooms').doc(roomId));
+    
+    await batch.commit();
+  }
+"""
 
-content = content.replace(old_watch, new_watch)
+# Insert before the last brace
+content = content.rsplit('}', 1)[0] + new_methods + '}\n'
+
 with open('lib/features/chat/data/chat_repository.dart', 'w') as f:
     f.write(content)

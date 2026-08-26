@@ -160,7 +160,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   itemBuilder: (context, index) {
                     final msg = messages[index];
                     final isMe = msg.senderId == currentUser?.userId;
-                    return _MessageBubble(msg: msg, isMe: isMe);
+                    return _MessageBubble(msg: msg, isMe: isMe, roomId: widget.roomId);
                   },
                 );
               },
@@ -238,17 +238,38 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 class _MessageBubble extends ConsumerWidget {
   final ChatMessage msg;
   final bool isMe;
+  final String roomId;
 
-  const _MessageBubble({required this.msg, required this.isMe});
+  const _MessageBubble({required this.msg, required this.isMe, required this.roomId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     
-    return Align(
-      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+    return GestureDetector(
+      onLongPress: isMe ? () {
+        showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('Unsend Message?'),
+            content: const Text('This will permanently delete the message for everyone.'),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  ref.read(chatRepositoryProvider).deleteMessage(roomId, msg.id);
+                },
+                child: const Text('Unsend', style: TextStyle(color: Colors.red)),
+              ),
+            ],
+          ),
+        );
+      } : null,
+      child: Align(
+        alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
           color: isMe ? theme.colorScheme.primary : theme.colorScheme.surfaceContainerHighest,
