@@ -153,12 +153,7 @@ class _DirectShareSheetState extends ConsumerState<DirectShareSheet> {
                         }
 
                         // Filter out empty rooms or group rooms (assuming 1-on-1 for now)
-                        final validRooms = rooms
-                            .where(
-                              (r) =>
-                                  r.participants.contains(currentUser.userId) &&
-                                  r.participants.length > 1,
-                            )
+                        final validRooms = rooms.where((r) => r.participants.contains(currentUser.userId) && r.participants.length > 1 && r.type != "support")
                             .toList();
 
                         return ListView.builder(
