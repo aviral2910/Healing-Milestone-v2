@@ -233,10 +233,13 @@ class _JourneyDetailScreenState extends ConsumerState<JourneyDetailScreen> {
                   ),
                   if (widget.categories != null && widget.categories!.isNotEmpty) ...[
                             const SizedBox(height: 12),
-                            Wrap(
-                              spacing: 8.0,
-                              runSpacing: 8.0,
-                              children: widget.categories!.map((cat) => Container(
+                            SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              physics: const BouncingScrollPhysics(),
+                              child: Row(
+                                children: widget.categories!.map((cat) => Padding(
+                                  padding: const EdgeInsets.only(right: 8.0),
+                                  child: Container(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 10,
                                   vertical: 6,
@@ -257,7 +260,9 @@ class _JourneyDetailScreenState extends ConsumerState<JourneyDetailScreen> {
                                     letterSpacing: 1.0,
                                   ),
                                 ),
-                              )).toList(),
+                              ),
+                                )).toList(),
+                              ),
                             ),
                           ],
                 ],
