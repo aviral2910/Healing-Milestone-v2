@@ -1,0 +1,226 @@
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:healing_milestones/features/auth/presentation/providers/auth_providers.dart';
+import 'package:healing_milestones/features/chat/presentation/providers/chat_providers.dart';
+import 'package:healing_milestones/features/chat/data/models/chat_models.dart';
+import 'package:timeago/timeago.dart' as timeago;
+
+class ChatRoomScreen extends ConsumerStatefulWidget {
+  final String roomId;
+  final String roomType;
+
+  const ChatRoomScreen({
+    super.key,
+    required this.roomId,
+    required this.roomType,
+  });
+
+  @override
+  ConsumerState<ChatRoomScreen> createState() => _ChatRoomScreenState();
+}
+
+class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
+  final _textController = TextEditingController();
+  final _imagePicker = ImagePicker();
+  bool _isSending = false;
+
+  @override
+  void dispose() {
+    _textController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickAndSendImage() async {
+    final pickedFile = await _imagePicker.pickImage(source: ImageSource.gallery);
+    if (pickedFile == null) return;
+    
+    final user = ref.read(currentUserProvider);
+    if (user == null || user.firebaseUid == null) return;
+
+    setState(() => _isSending = true);
+    try {
+      await ref.read(chatRepositoryProvider).sendMessage(
+            roomId: widget.roomId,
+            senderId: user.firebaseUid!,
+            imageFile: File(pickedFile.path),
+          );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to send image: $e')));
+    } finally {
+      setState(() => _isSending = false);
+    }
+  }
+
+  Future<void> _sendTextMessage() async {
+    final text = _textController.text.trim();
+    if (text.isEmpty) return;
+
+    final user = ref.read(currentUserProvider);
+    if (user == null || user.firebaseUid == null) return;
+
+    _textController.clear();
+    setState(() => _isSending = true);
+    
+    try {
+      await ref.read(chatRepositoryProvider).sendMessage(
+            roomId: widget.roomId,
+            senderId: user.firebaseUid!,
+            text: text,
+          );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to send message: $e')));
+    } finally {
+      setState(() => _isSending = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final messagesAsync = ref.watch(chatMessagesProvider(widget.roomId));
+    final currentUser = ref.watch(currentUserProvider);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.roomType == 'support' ? 'Support Chat' : 'Chat'),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: messagesAsync.when(
+              data: (messages) {
+                if (messages.isEmpty) {
+                  return const Center(child: Text('Say hi!'));
+                }
+                return ListView.builder(
+                  reverse: true, // Newest at bottom
+                  itemCount: messages.length,
+                  itemBuilder: (context, index) {
+                    final msg = messages[index];
+                    final isMe = msg.senderId == currentUser?.firebaseUid;
+                    return _MessageBubble(msg: msg, isMe: isMe);
+                  },
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, st) => Center(child: Text('Error: $e')),
+            ),
+          ),
+          _buildInputArea(context),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInputArea(BuildContext context) {
+    return SafeArea(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+        color: Theme.of(context).colorScheme.surface,
+        child: Row(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.image_outlined),
+              onPressed: _isSending ? null : _pickAndSendImage,
+            ),
+            // TODO: Add attachment icon for Journeys/Stories
+            Expanded(
+              child: TextField(
+                controller: _textController,
+                decoration: InputDecoration(
+                  hintText: 'Type a message...',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24),
+                    borderSide: BorderSide.none,
+                  ),
+                  filled: true,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                ),
+                textCapitalization: TextCapitalization.sentences,
+                onSubmitted: (_) => _sendTextMessage(),
+              ),
+            ),
+            const SizedBox(width: 8),
+            if (_isSending)
+              const Padding(
+                padding: EdgeInsets.all(12.0),
+                child: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2)),
+              )
+            else
+              IconButton(
+                icon: const Icon(Icons.send_rounded),
+                color: Theme.of(context).colorScheme.primary,
+                onPressed: _sendTextMessage,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MessageBubble extends StatelessWidget {
+  final ChatMessage msg;
+  final bool isMe;
+
+  const _MessageBubble({required this.msg, required this.isMe});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
+    return Align(
+      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: isMe ? theme.colorScheme.primary : theme.colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(16).copyWith(
+            bottomRight: isMe ? const Radius.circular(4) : const Radius.circular(16),
+            bottomLeft: isMe ? const Radius.circular(16) : const Radius.circular(4),
+          ),
+        ),
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.75,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (msg.imageUrl != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(msg.imageUrl!, fit: BoxFit.cover),
+                ),
+              ),
+            if (msg.sharedJourneyId != null)
+              Container(
+                padding: const EdgeInsets.all(8),
+                color: Colors.black12,
+                child: Text('🔗 Shared Journey: ${msg.sharedJourneyId}\n(Batch fetch UI pending)'),
+              ),
+            if (msg.text != null && msg.text!.isNotEmpty)
+              Text(
+                msg.text!,
+                style: TextStyle(
+                  color: isMe ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface,
+                ),
+              ),
+            const SizedBox(height: 4),
+            if (msg.createdAt != null)
+              Text(
+                timeago.format(msg.createdAt!),
+                style: TextStyle(
+                  fontSize: 10,
+                  color: isMe ? theme.colorScheme.onPrimary.withValues(alpha: 0.7) : theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
