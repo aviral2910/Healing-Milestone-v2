@@ -291,7 +291,6 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
                 authorId: widget.milestone.authorUid ?? widget.milestone.userId,
                 isMine: widget.milestone.isMine,
                 visibility: widget.milestone.visibility,
-                    isMine: widget.milestone.isMine,
                 initialIsFollowing: widget.milestone.isFollowing,
               );
             }
