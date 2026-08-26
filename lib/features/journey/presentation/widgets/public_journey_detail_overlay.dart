@@ -216,8 +216,7 @@ class _PublicJourneyDetailOverlayState
                     ),
                   ),
                   actions: [
-                    if (widget.visibility != MilestoneVisibility.private &&
-                        widget.visibility != MilestoneVisibility.anonymous)
+                    if (widget.visibility != MilestoneVisibility.private)
                       Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Container(
