@@ -163,7 +163,7 @@ class _JourneyDetailScreenState extends ConsumerState<JourneyDetailScreen> {
                   icon: const Icon(Icons.share),
                   tooltip: 'Share Journey',
                   onPressed: () {
-                    showJourneyShareOptions(context, widget.journeyId, widget.title);
+                    showJourneyShareOptions(context, widget.journeyId, widget.title, isMine: widget.isMine);
                   },
                 ),
               Consumer(

@@ -233,6 +233,8 @@ class _PublicJourneyDetailOverlayState
                                 context,
                                 widget.journeyId,
                                 widget.title,
+                                isMine: widget.isMine,
+                                authorName: displayAuthor,
                               );
                             },
                             icon: const Icon(Icons.share, size: 22),
