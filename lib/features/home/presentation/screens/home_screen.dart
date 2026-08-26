@@ -9,9 +9,9 @@ import 'package:healing_milestones/features/journey/presentation/screens/my_path
 import 'package:healing_milestones/features/journey/presentation/screens/together_feed_screen.dart';
 import 'package:healing_milestones/features/profile/presentation/screens/profile_screen.dart';
 
-import '../../../../features/support_chat/presentation/screens/messages_screen.dart';
+import 'package:healing_milestones/features/chat/presentation/screens/inbox_screen.dart';
 import '../../../../features/auth/data/auth_provider.dart';
-import '../../../../features/support_chat/presentation/providers/chat_providers.dart';
+import 'package:healing_milestones/features/chat/presentation/providers/chat_providers.dart';
 import '../providers/home_tab_provider.dart';
 import '../../../../core/widgets/lazy_indexed_stack.dart';
 
@@ -137,10 +137,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             hasAuthError
                 ? const ServerHealingLoader()
                 : isAuthenticated 
-                ? MessagesScreen(
-                    scrollController: _messagesScrollController,
-                    isActiveTab: currentIndex == 3,
-                  )
+                ? const InboxScreen()
                 : const GuestAuthWallWidget(
                     title: 'Join the Conversation',
                     subtitle: 'Create an account to securely message doctors and connect with patients.',
@@ -190,51 +187,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     index: 2,
                     theme: theme,
                   ),
-                  Consumer(builder: (context, ref, child) {
-
-                    int unreadCount = 0;
-
-                    if (isAuthenticated) {
-
-                      final chatStatusAsync = ref.watch(supportChatStatusProvider);
-
-                      final chatId = chatStatusAsync.value;
-
-                      if (chatId != null && chatId.isNotEmpty) {
-
-                        final chatAsync = ref.watch(supportChatStreamProvider(chatId));
-
-                        if (chatAsync.value != null) {
-
-                          final currentUser = ref.read(currentUserProvider);
-
-                          if (currentUser != null) {
-
-                            unreadCount = chatAsync.value!.unreadCount[currentUser.userId] ?? 0;
-
-                          }
-
-                        }
-
-                      }
-
-                    }
-
-                    return _buildNavItem(
-
-                      icon: Icons.forum_outlined,
-
-                      activeIcon: Icons.forum_rounded,
-
-                      index: 3,
-
-                      theme: theme,
-
-                      unreadCount: unreadCount,
-
-                    );
-
-                  }),
+                  _buildNavItem(
+                    icon: Icons.forum_outlined,
+                    activeIcon: Icons.forum_rounded,
+                    index: 3,
+                    theme: theme,
+                  ),
                   _buildNavItem(
                     icon: Icons.person_outline_rounded,
                     activeIcon: Icons.person_rounded,
