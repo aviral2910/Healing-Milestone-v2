@@ -27,6 +27,7 @@ class TimestampConverter implements JsonConverter<DateTime, Object> {
 
 @freezed
 class ChatRoom with _$ChatRoom {
+  const ChatRoom._();
   const factory ChatRoom({
     required String id,
     @Default([]) List<String> participants,
@@ -39,8 +40,9 @@ class ChatRoom with _$ChatRoom {
     @TimestampConverter() DateTime? createdAt,
   }) = _ChatRoom;
 
-  factory ChatRoom.fromJson(Map<String, dynamic> json) => _$ChatRoomFromJson(json);
-  
+  factory ChatRoom.fromJson(Map<String, dynamic> json) =>
+      _$ChatRoomFromJson(json);
+
   factory ChatRoom.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
     data['id'] = doc.id;
@@ -50,6 +52,7 @@ class ChatRoom with _$ChatRoom {
 
 @freezed
 class ChatMessage with _$ChatMessage {
+  const ChatMessage._();
   const factory ChatMessage({
     required String id,
     required String senderId,
@@ -61,8 +64,9 @@ class ChatMessage with _$ChatMessage {
     @Default([]) List<String> readBy,
   }) = _ChatMessage;
 
-  factory ChatMessage.fromJson(Map<String, dynamic> json) => _$ChatMessageFromJson(json);
-  
+  factory ChatMessage.fromJson(Map<String, dynamic> json) =>
+      _$ChatMessageFromJson(json);
+
   factory ChatMessage.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
     data['id'] = doc.id;
