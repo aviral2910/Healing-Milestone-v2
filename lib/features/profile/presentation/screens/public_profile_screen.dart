@@ -1,3 +1,4 @@
+import 'package:healing_milestones/features/chat/presentation/screens/chat_room_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:healing_milestones/core/router/app_routes.dart';
 import 'package:flutter/material.dart';
@@ -331,13 +332,23 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen>
                                           return;
                                         }
                                         try {
-                                          // Request chat permission from FastAPI
-                                          await ref.read(chatRepositoryProvider).requestChat(user.userId);
-                                          // In a real app we'd get the roomId back and navigate. 
-                                          // For now, let's just show a snackbar or navigate to inbox.
+                                          final currentUser = ref.read(currentUserProvider);
+                                          final isMutual = currentUser != null && 
+                                              currentUser.followingList.contains(user.userId) && 
+                                              currentUser.followersList.contains(user.userId);
+
+                                          await ref.read(chatRepositoryProvider).requestChat(user.userId, isMutual: isMutual);
+                                          
                                           if (context.mounted) {
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              const SnackBar(content: Text('Chat request sent! Check your inbox.')),
+                                            final uids = [currentUser!.userId, user.userId]..sort();
+                                            final roomId = 'chat_${uids[0]}_${uids[1]}';
+                                            Navigator.of(context).push(
+                                              MaterialPageRoute(
+                                                builder: (_) => ChatRoomScreen(
+                                                  roomId: roomId,
+                                                  roomType: 'peer',
+                                                ),
+                                              ),
                                             );
                                           }
                                         } catch (e) {
