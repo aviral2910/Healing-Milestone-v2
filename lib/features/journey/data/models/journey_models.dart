@@ -387,7 +387,7 @@ class JourneyMilestoneModel {
       userId: userId,
       journeyId: journeyId,
       journeyTitle: journeyTitle,
-      journeyCategories: journeyCategory,
+      journeyCategories: journeyCategories,
       timelinePosition: timelinePosition,
       emotionStatus: emotionStatus,
       professionalTag: professionalTag,
