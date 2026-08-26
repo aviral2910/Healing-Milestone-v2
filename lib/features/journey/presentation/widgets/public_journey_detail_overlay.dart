@@ -16,7 +16,7 @@ import 'package:healing_milestones/shared/widgets/app_loader.dart';
 class PublicJourneyDetailOverlay extends ConsumerStatefulWidget {
   final String journeyId;
   final String title;
-  final String? category;
+  final List<String>? categories;
   final String? authorName;
   final String? authorAvatar;
   final String? authorId;
@@ -28,7 +28,7 @@ class PublicJourneyDetailOverlay extends ConsumerStatefulWidget {
     Key? key,
     required this.journeyId,
     required this.title,
-    this.category,
+    this.categories,
     this.authorName,
     this.authorAvatar,
     this.authorId,
@@ -45,7 +45,7 @@ class PublicJourneyDetailOverlay extends ConsumerStatefulWidget {
     BuildContext context, {
     required String journeyId,
     required String title,
-    String? category,
+    List<String>? categories,
     String? authorName,
     String? authorAvatar,
     String? authorId,
@@ -63,7 +63,7 @@ class PublicJourneyDetailOverlay extends ConsumerStatefulWidget {
         return PublicJourneyDetailOverlay(
           journeyId: journeyId,
           title: title,
-          category: category,
+          categories: categories,
           authorName: authorName,
           authorAvatar: authorAvatar,
           authorId: authorId,
@@ -294,11 +294,7 @@ class _PublicJourneyDetailOverlayState
                                       AppAvatar(
                                         imageUrl: widget.authorAvatar,
                                         radius: 20,
-                                        role: milestonesAsync
-                                            .value
-                                            ?.items
-                                            .first
-                                            .authorRole,
+                                        role: (milestonesAsync.value?.items.isNotEmpty == true ? milestonesAsync.value!.items.first.authorRole : null),
                                         isAnonymous:
                                             widget.visibility ==
                                             MilestoneVisibility.anonymous,
@@ -387,43 +383,33 @@ class _PublicJourneyDetailOverlayState
                               color: theme.colorScheme.onSurface,
                             ),
                           ),
-                          if (widget.category != null) ...[
+                          if (widget.categories != null && widget.categories!.isNotEmpty) ...[
                             const SizedBox(height: 12),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                color: theme.colorScheme.primary.withValues(
-                                  alpha: 0.1,
+                            Wrap(
+                              spacing: 8.0,
+                              runSpacing: 8.0,
+                              children: widget.categories!.map((cat) => Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 6,
                                 ),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: theme.colorScheme.primary.withValues(
-                                    alpha: 0.2,
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                                    width: 1,
                                   ),
                                 ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.folder_open_rounded,
-                                    size: 14,
+                                child: Text(
+                                  '#${cat.toUpperCase()}',
+                                  style: theme.textTheme.labelSmall?.copyWith(
                                     color: theme.colorScheme.primary,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: 1.0,
                                   ),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    widget.category!.toUpperCase(),
-                                    style: theme.textTheme.labelSmall?.copyWith(
-                                      color: theme.colorScheme.primary,
-                                      fontWeight: FontWeight.w800,
-                                      letterSpacing: 1.0,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                                ),
+                              )).toList(),
                             ),
                           ],
                           if (!widget.isMine) ...[

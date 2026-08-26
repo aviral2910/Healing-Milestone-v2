@@ -16,7 +16,7 @@ import 'package:healing_milestones/shared/widgets/app_loader.dart';
 class JourneyDetailScreen extends ConsumerStatefulWidget {
   final String journeyId;
   final String title;
-  final String? category;
+  final List<String>? categories;
   final MilestoneVisibility? visibility;
   final bool isMine;
 
@@ -24,7 +24,7 @@ class JourneyDetailScreen extends ConsumerStatefulWidget {
     Key? key,
     required this.journeyId,
     required this.title,
-    this.category,
+    this.categories,
     this.visibility,
     this.isMine = false,
   }) : super(key: key);
@@ -231,41 +231,35 @@ class _JourneyDetailScreenState extends ConsumerState<JourneyDetailScreen> {
                       letterSpacing: -0.5,
                     ),
                   ),
-                  if (widget.category != null) ...[
-                    const SizedBox(height: 4),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            theme.colorScheme.primary.withValues(alpha: 0.15),
-                            theme.colorScheme.secondary.withValues(alpha: 0.05),
+                  if (widget.categories != null && widget.categories!.isNotEmpty) ...[
+                            const SizedBox(height: 12),
+                            Wrap(
+                              spacing: 8.0,
+                              runSpacing: 8.0,
+                              children: widget.categories!.map((cat) => Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Text(
+                                  '#${cat.toUpperCase()}',
+                                  style: theme.textTheme.labelSmall?.copyWith(
+                                    color: theme.colorScheme.primary,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: 1.0,
+                                  ),
+                                ),
+                              )).toList(),
+                            ),
                           ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: theme.colorScheme.primary.withValues(
-                            alpha: 0.2,
-                          ),
-                          width: 0.5,
-                        ),
-                      ),
-                      child: Text(
-                        widget.category!.toUpperCase(),
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: theme.colorScheme.primary,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 1.2,
-                          fontSize: 8,
-                        ),
-                      ),
-                    ),
-                  ],
                 ],
               ),
               background: Stack(
