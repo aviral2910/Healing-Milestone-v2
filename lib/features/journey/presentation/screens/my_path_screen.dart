@@ -191,7 +191,7 @@ class MyPathScreen extends ConsumerWidget {
                                 builder: (_) => JourneyDetailScreen(
                                   journeyId: journey.id,
                                   title: journey.title,
-                                  category: journey.category,
+                                  category: journey.categories.isNotEmpty ? journey.categories.first : 'General',
                 visibility: journey.visibility,
                                   isMine: true,
                                 ),

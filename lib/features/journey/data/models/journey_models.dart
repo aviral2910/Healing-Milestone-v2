@@ -188,7 +188,7 @@ class JourneyModel {
   final String id;
   final String userId;
   final String title;
-  final String category;
+  final List<String> categories;
   final MilestoneVisibility visibility;
   final bool isActive;
   final JourneyType type;
@@ -208,7 +208,7 @@ class JourneyModel {
     required this.id,
     required this.userId,
     required this.title,
-    required this.category,
+    required this.categories,
     this.visibility = MilestoneVisibility.public,
     this.isActive = true,
     this.type = JourneyType.personal,
@@ -230,7 +230,8 @@ class JourneyModel {
       id: json['id'] as String,
       userId: json['user_id'] as String,
       title: json['title'] as String,
-      category: json['category'] as String? ?? 'General',
+            categories: (json['categories'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? 
+                  (json['category'] != null ? [json['category'].toString()] : []),
       visibility: MilestoneVisibility.fromString(json['visibility'] as String? ?? 'public'),
       type: JourneyType.fromString(json['type'] as String? ?? 'personal'),
       isActive: json['is_active'] as bool? ?? true,
@@ -253,7 +254,7 @@ class JourneyModel {
       'id': id,
       'user_id': userId,
       'title': title,
-      'category': category,
+      'categories': categories,
       'type': type.name,
       'visibility': visibility.name,
       'is_active': isActive,
@@ -269,7 +270,7 @@ class JourneyMilestoneModel {
   final String userId;
   final String? journeyId;
   final String? journeyTitle;
-  final String? journeyCategory;
+  final List<String>? journeyCategories;
   final TimelinePosition timelinePosition;
   final EmotionStatus? emotionStatus; // Nullable for doctors
   final ProfessionalTag? professionalTag;
@@ -300,7 +301,7 @@ class JourneyMilestoneModel {
     required this.userId,
     this.journeyId,
     this.journeyTitle,
-    this.journeyCategory,
+    this.journeyCategories,
     this.timelinePosition = TimelinePosition.standalone,
     this.emotionStatus,
     this.professionalTag,
@@ -333,7 +334,7 @@ class JourneyMilestoneModel {
       userId: json['user_id'] as String,
       journeyId: json['journey_id'] as String?,
       journeyTitle: json['journey_title'] as String?,
-      journeyCategory: json['journey_category'] as String?,
+      journeyCategories: (json['journey_categories'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? (json['journey_category'] != null ? [json['journey_category'].toString()] : null),
       timelinePosition: TimelinePosition.fromString(json['timeline_position'] as String? ?? 'standalone'),
       emotionStatus: json['emotion_status'] != null ? EmotionStatus.fromString(json['emotion_status'] as String) : null,
       professionalTag: ProfessionalTag.fromString(json['professional_tag'] as String?),
@@ -386,7 +387,7 @@ class JourneyMilestoneModel {
       userId: userId,
       journeyId: journeyId,
       journeyTitle: journeyTitle,
-      journeyCategory: journeyCategory,
+      journeyCategories: journeyCategory,
       timelinePosition: timelinePosition,
       emotionStatus: emotionStatus,
       professionalTag: professionalTag,

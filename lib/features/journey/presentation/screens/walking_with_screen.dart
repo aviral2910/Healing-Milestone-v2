@@ -103,7 +103,7 @@ class _WalkingWithListItem extends StatelessWidget {
               builder: (_) => JourneyDetailScreen(
                 journeyId: journey.id,
                 title: journey.title,
-                category: journey.category,
+                category: journey.categories.isNotEmpty ? journey.categories.first : 'General',
                 visibility: journey.visibility,
               ),
             ),
@@ -113,7 +113,7 @@ class _WalkingWithListItem extends StatelessWidget {
             context,
             journeyId: journey.id,
             title: journey.title,
-            category: journey.category,
+            category: journey.categories.isNotEmpty ? journey.categories.first : 'General',
             authorName: journey.authorName,
             authorAvatar: journey.authorAvatar,
             authorId: journey.authorUid,

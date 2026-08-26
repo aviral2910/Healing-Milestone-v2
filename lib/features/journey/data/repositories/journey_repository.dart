@@ -26,13 +26,13 @@ class JourneyRepository {
     }
   }
 
-  Future<JourneyModel> createJourney(String title, String category, MilestoneVisibility visibility, {JourneyType type = JourneyType.personal}) async {
+  Future<JourneyModel> createJourney(String title, List<String> categories, MilestoneVisibility visibility, {JourneyType type = JourneyType.personal}) async {
     try {
       final response = await _apiClient.dio.post(
         '/api/journeys/',
         data: {
           'title': title,
-          'category': category,
+          'categories': categories,
           'type': type.name,
           'visibility': visibility.name,
         },
@@ -56,13 +56,13 @@ class JourneyRepository {
     }
   }
 
-  Future<JourneyModel> updateJourney(String id, String title, String category, MilestoneVisibility visibility, {JourneyType type = JourneyType.personal}) async {
+  Future<JourneyModel> updateJourney(String id, String title, List<String> categories, MilestoneVisibility visibility, {JourneyType type = JourneyType.personal}) async {
     try {
       final response = await _apiClient.dio.put(
         '/api/journeys/$id',
         data: {
           'title': title,
-          'category': category,
+          'categories': categories,
           'type': type.name,
           'visibility': visibility.name,
         },

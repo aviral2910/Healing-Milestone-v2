@@ -291,7 +291,7 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
                   builder: (_) => JourneyDetailScreen(
                     journeyId: widget.milestone.journeyId!,
                     title: widget.milestone.journeyTitle ?? 'Journey',
-                    category: widget.milestone.journeyCategory,
+                    category: (widget.milestone.journeyCategories?.isNotEmpty == true ? widget.milestone.journeyCategories!.first : null),
                     visibility: widget.milestone.visibility,
                     isMine: widget.milestone.isMine,
                   ),
@@ -302,7 +302,7 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
                 context,
                 journeyId: widget.milestone.journeyId!,
                 title: widget.milestone.journeyTitle ?? 'Journey',
-                category: widget.milestone.journeyCategory,
+                category: (widget.milestone.journeyCategories?.isNotEmpty == true ? widget.milestone.journeyCategories!.first : null),
                 authorName: widget.milestone.authorName,
                 authorAvatar: widget.milestone.authorAvatar,
                 authorId: widget.milestone.authorUid ?? widget.milestone.userId,

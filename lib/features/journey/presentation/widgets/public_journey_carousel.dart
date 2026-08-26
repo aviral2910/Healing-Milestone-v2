@@ -105,7 +105,7 @@ class PublicJourneyItem extends StatelessWidget {
               builder: (_) => JourneyDetailScreen(
                 journeyId: journey.id,
                 title: journey.title,
-                category: journey.category,
+                category: journey.categories.isNotEmpty ? journey.categories.first : 'General',
                 visibility: journey.visibility,
               ),
             ),
@@ -115,7 +115,7 @@ class PublicJourneyItem extends StatelessWidget {
             context,
             journeyId: journey.id,
             title: journey.title,
-            category: journey.category,
+            category: journey.categories.isNotEmpty ? journey.categories.first : 'General',
             authorName: journey.authorName,
             authorAvatar: journey.authorAvatar,
             authorId: journey.authorUid,
@@ -193,7 +193,7 @@ class PublicJourneyItem extends StatelessWidget {
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
-                    journey.category.toUpperCase(),
+                    (journey.categories.isNotEmpty ? journey.categories.join(' • ') : 'GENERAL').toUpperCase(),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.labelMedium?.copyWith(

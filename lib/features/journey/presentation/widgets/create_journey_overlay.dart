@@ -1,4 +1,8 @@
 import 'dart:ui';
+import 'dart:async';
+import 'package:flutter/services.dart';
+import '../../../../features/posts/data/api_hashtag_repository.dart';
+import '../../../../features/posts/data/hashtag_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/providers/journey_providers.dart';
@@ -54,6 +58,10 @@ class CreateJourneyOverlay extends ConsumerStatefulWidget {
 class _CreateJourneyOverlayState extends ConsumerState<CreateJourneyOverlay> {
   final _titleController = TextEditingController();
   final _categoryController = TextEditingController();
+  List<String> _selectedCategories = [];
+  List<String> _suggestions = [];
+  bool _isSearchingCategories = false;
+  Timer? _debounce;
   MilestoneVisibility _visibility = MilestoneVisibility.public;
   bool _isSubmitting = false;
 
@@ -62,7 +70,7 @@ class _CreateJourneyOverlayState extends ConsumerState<CreateJourneyOverlay> {
     super.initState();
     if (widget.initialJourney != null) {
       _titleController.text = widget.initialJourney!.title;
-      _categoryController.text = widget.initialJourney!.category;
+      _selectedCategories = List.from(widget.initialJourney!.categories);
       _visibility = widget.initialJourney!.visibility;
     }
   }
@@ -71,7 +79,78 @@ class _CreateJourneyOverlayState extends ConsumerState<CreateJourneyOverlay> {
   void dispose() {
     _titleController.dispose();
     _categoryController.dispose();
+    _debounce?.cancel();
     super.dispose();
+  }
+
+    void _onCategoryChanged(String query) {
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+
+    final cleanQuery = query.toLowerCase().trim();
+
+    if (cleanQuery.isEmpty) {
+      setState(() {
+        _suggestions = [];
+        _isSearchingCategories = false;
+      });
+      return;
+    }
+
+    final trendingAsync = ref.read(trendingHashtagsProvider);
+    List<String> localMatches = [];
+    if (trendingAsync.hasValue && trendingAsync.value != null) {
+      localMatches = trendingAsync.value!
+          .where(
+            (tag) => tag.startsWith(cleanQuery) && !_selectedCategories.contains(tag),
+          )
+          .take(4)
+          .toList();
+    }
+
+    if (localMatches.isNotEmpty) {
+      setState(() {
+        _suggestions = localMatches;
+        _isSearchingCategories = false;
+      });
+      return;
+    }
+
+    setState(() => _isSearchingCategories = true);
+
+    _debounce = Timer(const Duration(milliseconds: 300), () async {
+      try {
+        final apiRepo = ref.read(apiHashtagRepositoryProvider);
+        final results = await apiRepo.searchHashtags(cleanQuery);
+        
+        if (mounted) {
+          setState(() {
+            _suggestions = results.where((tag) => !_selectedCategories.contains(tag)).toList();
+            _isSearchingCategories = false;
+          });
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() => _isSearchingCategories = false);
+        }
+      }
+    });
+  }
+
+  void _addCategory(String query) {
+    final cleanQuery = query.toLowerCase().trim();
+    if (cleanQuery.isNotEmpty && !_selectedCategories.contains(cleanQuery) && _selectedCategories.length < 3) {
+      setState(() {
+        _selectedCategories.add(cleanQuery);
+        _categoryController.clear();
+        _suggestions = [];
+        _isSearchingCategories = false;
+      });
+    } else {
+        _categoryController.clear();
+        setState(() {
+            _suggestions = [];
+        });
+    }
   }
 
   JourneyType _selectedType = JourneyType.personal;
@@ -360,23 +439,13 @@ class _CreateJourneyOverlayState extends ConsumerState<CreateJourneyOverlay> {
                                             await repo.updateJourney(
                                               widget.initialJourney!.id,
                                               _titleController.text.trim(),
-                                              _categoryController.text
-                                                      .trim()
-                                                      .isEmpty
-                                                  ? 'General'
-                                                  : _categoryController.text
-                                                        .trim(),
+                                              _selectedCategories.isEmpty ? ['General'] : _selectedCategories,
                                               _visibility,
                                             );
                                           } else {
                                             await repo.createJourney(
                                               _titleController.text.trim(),
-                                              _categoryController.text
-                                                      .trim()
-                                                      .isEmpty
-                                                  ? 'General'
-                                                  : _categoryController.text
-                                                        .trim(),
+                                              _selectedCategories.isEmpty ? ['General'] : _selectedCategories,
                                               _visibility,
                                             );
                                           }

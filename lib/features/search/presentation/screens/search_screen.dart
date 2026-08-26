@@ -30,9 +30,10 @@ class SearchScreen extends ConsumerStatefulWidget {
   ConsumerState<SearchScreen> createState() => _SearchScreenState();
 }
 
-class _SearchScreenState extends ConsumerState<SearchScreen> {
+class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
+  late final TabController _tabController;
   Timer? _debounce;
   String? _selectedHashtag;
   
@@ -41,6 +42,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 4, vsync: this);
     _loadRecentSearches();
     
     if (widget.initialQuery != null && widget.initialQuery!.isNotEmpty) {
@@ -96,6 +98,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
   @override
   void dispose() {
+    _tabController.dispose();
     _searchController.dispose();
     _focusNode.dispose();
     _debounce?.cancel();
@@ -140,7 +143,31 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 snap: true,
                 elevation: 0,
                 titleSpacing: 0,
-                toolbarHeight: 72,
+
+
+                bottom: TabBar(
+                  controller: _tabController,
+                  isScrollable: true,
+                  dividerColor: Colors.transparent,
+                  tabAlignment: TabAlignment.start,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  indicatorPadding: EdgeInsets.zero,
+                  labelPadding: const EdgeInsets.symmetric(horizontal: 16),
+                  indicator: BoxDecoration(
+                    borderRadius: BorderRadius.circular(30),
+                    color: theme.colorScheme.primary,
+                  ),
+                  labelColor: theme.colorScheme.onPrimary,
+                  unselectedLabelColor: theme.colorScheme.onSurface,
+                  labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+                  tabs: const [
+                    Tab(text: 'Top', height: 36),
+                    Tab(text: 'People', height: 36),
+                    Tab(text: 'Stories', height: 36),
+                    Tab(text: 'Journeys', height: 36),
+                  ],
+                ),
                 title: Padding(
                   padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0),
                   child: Container(
@@ -377,7 +404,161 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     );
   }
 
+
   Widget _buildResultsState(WidgetRef ref) {
+    return TabBarView(
+      controller: _tabController,
+      children: [
+        _buildGlobalSearchTabView(ref),
+        _buildPeopleSearchTabView(ref),
+        _buildStoriesSearchTabView(ref),
+        _buildJourneysSearchTabView(ref),
+      ],
+    );
+  }
+
+  Widget _buildPeopleSearchTabView(WidgetRef ref) {
+    final stateAsync = ref.watch(paginatedPeopleProvider);
+    
+    return stateAsync.when(
+      loading: () => const Center(child: AppLoader()),
+      error: (err, stack) => Center(child: Text('Error: $err', style: const TextStyle(color: Colors.red))),
+      data: (state) {
+        if (state.items.isEmpty && !state.isLoadingMore) {
+          return const Center(child: Text('No people found.', style: TextStyle(color: Colors.grey)));
+        }
+        
+        return NotificationListener<ScrollNotification>(
+          onNotification: (scrollInfo) {
+            if (!state.isLoadingMore && state.hasMore && 
+                scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent - 200) {
+              ref.read(paginatedPeopleProvider.notifier).loadMore();
+            }
+            return false;
+          },
+          child: ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: state.items.length + (state.isLoadingMore ? 1 : 0),
+            itemBuilder: (context, index) {
+              if (index >= state.items.length) {
+                return const Center(child: Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: CircularProgressIndicator(),
+                ));
+              }
+              final user = state.items[index];
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 16.0),
+                child: UserProfileCard(
+                  user: user,
+                  onTap: () {
+                    _submitSearch(_searchController.text);
+                    final currentUser = ref.read(currentUserProvider);
+                    if (currentUser?.userId == user.userId) {
+                      context.push(AppRoutes.profile);
+                    } else {
+                      context.push(AppRoutes.publicProfile(user.userId));
+                    }
+                  },
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildStoriesSearchTabView(WidgetRef ref) {
+    final stateAsync = ref.watch(paginatedStoriesProvider);
+    
+    return stateAsync.when(
+      loading: () => const Center(child: AppLoader()),
+      error: (err, stack) => Center(child: Text('Error: $err', style: const TextStyle(color: Colors.red))),
+      data: (state) {
+        if (state.items.isEmpty && !state.isLoadingMore) {
+          return const Center(child: Text('No stories found.', style: TextStyle(color: Colors.grey)));
+        }
+        
+        return NotificationListener<ScrollNotification>(
+          onNotification: (scrollInfo) {
+            if (!state.isLoadingMore && state.hasMore && 
+                scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent - 200) {
+              ref.read(paginatedStoriesProvider.notifier).loadMore();
+            }
+            return false;
+          },
+          child: ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: state.items.length + (state.isLoadingMore ? 1 : 0),
+            itemBuilder: (context, index) {
+              if (index >= state.items.length) {
+                return const Center(child: Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: CircularProgressIndicator(),
+                ));
+              }
+              final story = state.items[index];
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 16.0),
+                child: StoryCard(
+                  story: story,
+                  content: _truncateContent(story.description, 180),
+                  onTap: () {
+                    _submitSearch(_searchController.text);
+                    context.push(AppRoutes.storyDetail(story.storyId));
+                  },
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildJourneysSearchTabView(WidgetRef ref) {
+    final stateAsync = ref.watch(paginatedJourneysProvider);
+    
+    return stateAsync.when(
+      loading: () => const Center(child: AppLoader()),
+      error: (err, stack) => Center(child: Text('Error: $err', style: const TextStyle(color: Colors.red))),
+      data: (state) {
+        if (state.items.isEmpty && !state.isLoadingMore) {
+          return const Center(child: Text('No journeys found.', style: TextStyle(color: Colors.grey)));
+        }
+        
+        return NotificationListener<ScrollNotification>(
+          onNotification: (scrollInfo) {
+            if (!state.isLoadingMore && state.hasMore && 
+                scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent - 200) {
+              ref.read(paginatedJourneysProvider.notifier).loadMore();
+            }
+            return false;
+          },
+          child: GridView.builder(
+            padding: const EdgeInsets.all(16),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              mainAxisSpacing: 16,
+              crossAxisSpacing: 16,
+              childAspectRatio: 0.9,
+            ),
+            itemCount: state.items.length + (state.isLoadingMore ? 1 : 0),
+            itemBuilder: (context, index) {
+              if (index >= state.items.length) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              final journey = state.items[index];
+              return PublicJourneyItem(journey: journey);
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildGlobalSearchTabView(WidgetRef ref) {
     final searchAsync = ref.watch(globalSearchProvider);
     
     return searchAsync.when(
