@@ -80,7 +80,7 @@ class _DirectShareSheetState extends ConsumerState<DirectShareSheet> {
         bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
       decoration: const BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: SafeArea(
@@ -94,7 +94,7 @@ class _DirectShareSheetState extends ConsumerState<DirectShareSheet> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.grey[300],
+                  color: Theme.of(context).dividerColor,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -108,7 +108,7 @@ class _DirectShareSheetState extends ConsumerState<DirectShareSheet> {
                 controller: _searchController,
                 decoration: InputDecoration(
                   hintText: 'Search people...',
-                  prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                  prefixIcon: const Icon(Icons.search, color: Theme.of(context).colorScheme.onSurfaceVariant),
                   filled: true,
                   fillColor: Colors.grey[100],
                   border: OutlineInputBorder(
@@ -138,7 +138,7 @@ class _DirectShareSheetState extends ConsumerState<DirectShareSheet> {
                             child: Text(
                               "No recent chats yet.\nStart a chat from someone's profile!",
                               textAlign: TextAlign.center,
-                              style: TextStyle(color: Colors.grey),
+                              style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
                             ),
                           );
                         }
@@ -300,10 +300,10 @@ class _DirectShareSheetState extends ConsumerState<DirectShareSheet> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.grey[100],
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, size: 24, color: Colors.grey[800]),
+              child: Icon(icon, size: 24, color: Theme.of(context).colorScheme.onSurface),
             ),
             const SizedBox(height: 8),
             Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
