@@ -5,6 +5,7 @@ import 'package:healing_milestones/shared/widgets/app_avatar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:healing_milestones/features/auth/data/auth_provider.dart';
+import 'package:healing_milestones/features/chat/presentation/providers/chat_providers.dart';
 import 'package:healing_milestones/features/posts/data/story_providers.dart';
 import '../../../../core/models/story_model.dart';
 import '../../../../core/presentation/widgets/user_badge.dart';

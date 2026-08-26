@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:healing_milestones/core/network/api_client.dart';
-import 'package:healing_milestones/features/auth/presentation/providers/auth_providers.dart';
+import 'package:healing_milestones/features/auth/data/auth_provider.dart';
 import 'package:healing_milestones/features/chat/data/chat_repository.dart';
 import 'package:healing_milestones/features/chat/data/models/chat_models.dart';
 

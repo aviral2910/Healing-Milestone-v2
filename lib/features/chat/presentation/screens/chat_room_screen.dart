@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:healing_milestones/features/auth/presentation/providers/auth_providers.dart';
+import 'package:healing_milestones/features/auth/data/auth_provider.dart';
 import 'package:healing_milestones/features/chat/presentation/providers/chat_providers.dart';
 import 'package:healing_milestones/features/chat/data/models/chat_models.dart';
 import 'package:timeago/timeago.dart' as timeago;
