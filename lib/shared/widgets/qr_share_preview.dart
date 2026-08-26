@@ -1,3 +1,5 @@
+import 'package:healing_milestones/shared/widgets/direct_share_sheet.dart';
+
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -221,58 +223,20 @@ class _QrSharePreviewState extends State<QrSharePreview> {
   }
 }
 
+
 void showShareOptions(BuildContext context, String storyId) {
   final shareUrl = 'https://healingmilestones.in/story/$storyId';
 
   showModalBottomSheet(
     context: context,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-    ),
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
     builder: (context) {
-      return SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 12),
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 16),
-            ListTile(
-              leading: const Icon(Icons.link),
-              title: const Text('Share Link'),
-              onTap: () {
-                Navigator.of(context).pop();
-                Share.share(
-                    'Check out this story on Healing Milestones:\n\n$shareUrl',
-                    subject: 'Healing Milestones Story');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.qr_code_2),
-              title: const Text('Share QR Code'),
-              onTap: () {
-                Navigator.of(context).pop();
-                showDialog(
-                  context: context,
-                  builder: (context) => QrSharePreview(
-                    id: storyId,
-                    shareUrl: shareUrl,
-                    shareText: 'Check out this story on Healing Milestones!',
-                    qrBottomText: 'Scan to read the Healing Story',
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 16),
-          ],
-        ),
+      return DirectShareSheet(
+        storyId: storyId,
+        shareUrl: shareUrl,
+        shareText: 'Check out this story on Healing Milestones:\n\n$shareUrl',
+        qrBottomText: 'Scan to read the Healing Story',
       );
     },
   );
@@ -283,53 +247,14 @@ void showProfileShareOptions(BuildContext context, String userId) {
 
   showModalBottomSheet(
     context: context,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-    ),
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
     builder: (context) {
-      return SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 12),
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 16),
-            ListTile(
-              leading: const Icon(Icons.link),
-              title: const Text('Share Link'),
-              onTap: () {
-                Navigator.of(context).pop();
-                Share.share(
-                    'Check out this profile on Healing Milestones:\n\n$shareUrl',
-                    subject: 'Healing Milestones Profile');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.qr_code_2),
-              title: const Text('Share QR Code'),
-              onTap: () {
-                Navigator.of(context).pop();
-                showDialog(
-                  context: context,
-                  builder: (context) => QrSharePreview(
-                    id: userId,
-                    shareUrl: shareUrl,
-                    shareText: 'Check out this profile on Healing Milestones!',
-                    qrBottomText: 'Scan to view Profile',
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 16),
-          ],
-        ),
+      return DirectShareSheet(
+        profileId: userId,
+        shareUrl: shareUrl,
+        shareText: 'Check out this profile on Healing Milestones:\n\n$shareUrl',
+        qrBottomText: 'Scan to view Profile',
       );
     },
   );
@@ -338,90 +263,29 @@ void showProfileShareOptions(BuildContext context, String userId) {
 void showJourneyShareOptions(BuildContext context, String journeyId, String journeyTitle, {bool isMine = true, String? authorName}) {
   final shareUrl = 'https://healingmilestones.in/journey/$journeyId';
 
+  String text = 'Follow my journey: $journeyTitle on Healing Milestones:\n\n$shareUrl';
+  String qrText = 'Scan to follow my journey on Healing Milestones.';
+  
+  if (!isMine) {
+    if (authorName != null && authorName != 'Anonymous') {
+      text = "Follow $authorName's journey: $journeyTitle on Healing Milestones:\n\n$shareUrl";
+      qrText = "Scan to follow $authorName's journey on Healing Milestones.";
+    } else {
+      text = "Check out this journey: $journeyTitle on Healing Milestones:\n\n$shareUrl";
+      qrText = "Scan to follow this journey on Healing Milestones.";
+    }
+  }
+
   showModalBottomSheet(
     context: context,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-    ),
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
     builder: (context) {
-      return SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 12),
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 16),
-            ListTile(
-              leading: const Icon(Icons.link),
-              title: const Text('Share Link'),
-              onTap: () {
-                Navigator.of(context).pop();
-                String text = 'Follow my journey: $journeyTitle on Healing Milestones:\n\n$shareUrl';
-                if (!isMine) {
-                  if (authorName != null && authorName != 'Anonymous') {
-                    text = "Follow $authorName's journey: $journeyTitle on Healing Milestones:\n\n$shareUrl";
-                  } else {
-                    text = "Check out this journey: $journeyTitle on Healing Milestones:\n\n$shareUrl";
-                  }
-                }
-                
-                Share.share(text, subject: 'Healing Milestones Journey');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.qr_code),
-              title: const Text('Share QR Code'),
-              onTap: () {
-                Navigator.of(context).pop();
-                
-                String qrText = 'Scan to follow my journey on Healing Milestones.';
-                if (!isMine) {
-                  if (authorName != null && authorName != 'Anonymous') {
-                    qrText = "Scan to follow $authorName's journey on Healing Milestones.";
-                  } else {
-                    qrText = "Scan to follow this journey on Healing Milestones.";
-                  }
-                }
-
-                showGeneralDialog(
-                  context: context,
-                  barrierDismissible: true,
-                  barrierLabel: 'Dismiss',
-                  barrierColor: Colors.black87,
-                  transitionDuration: const Duration(milliseconds: 300),
-                  pageBuilder: (context, animation, secondaryAnimation) {
-                    return QrSharePreview(
-                      id: journeyId,
-                      shareUrl: shareUrl,
-                      shareText: qrText,
-                      qrBottomText: 'HEALING MILESTONES',
-                    );
-                  },
-                  transitionBuilder: (context, animation, secondaryAnimation, child) {
-                    return FadeTransition(
-                      opacity: animation,
-                      child: SlideTransition(
-                        position: Tween<Offset>(
-                          begin: const Offset(0, 0.05),
-                          end: Offset.zero,
-                        ).animate(animation),
-                        child: child,
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
-            const SizedBox(height: 16),
-          ],
-        ),
+      return DirectShareSheet(
+        journeyId: journeyId,
+        shareUrl: shareUrl,
+        shareText: text,
+        qrBottomText: qrText,
       );
     },
   );
