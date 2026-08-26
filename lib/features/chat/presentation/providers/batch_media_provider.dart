@@ -2,13 +2,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:healing_milestones/core/network/api_client.dart';
 import 'package:healing_milestones/core/models/story_model.dart';
 import 'package:healing_milestones/features/journey/data/models/journey_models.dart';
+import 'package:hooks_riverpod/legacy.dart';
 
 class BatchMediaState {
   final Map<String, JourneyModel> journeys;
   final Map<String, StoryModel> stories;
-  
+
   BatchMediaState({this.journeys = const {}, this.stories = const {}});
-  
+
   BatchMediaState copyWith({
     Map<String, JourneyModel>? journeys,
     Map<String, StoryModel>? stories,
@@ -33,9 +34,14 @@ class BatchMediaNotifier extends StateNotifier<BatchMediaState> {
 
     _requestedJourneys.addAll(needed);
     try {
-      final res = await _apiClient.dio.post('/api/journeys/batch', data: {'ids': needed});
+      final res = await _apiClient.dio.post(
+        '/api/journeys/batch',
+        data: {'ids': needed},
+      );
       final List data = res.data;
-      final newJourneys = {for (var j in data) j['id'].toString(): JourneyModel.fromJson(j)};
+      final newJourneys = {
+        for (var j in data) j['id'].toString(): JourneyModel.fromJson(j),
+      };
       if (mounted) {
         state = state.copyWith(journeys: {...state.journeys, ...newJourneys});
       }
@@ -50,9 +56,15 @@ class BatchMediaNotifier extends StateNotifier<BatchMediaState> {
 
     _requestedStories.addAll(needed);
     try {
-      final res = await _apiClient.dio.post('/api/stories/batch', data: {'ids': needed});
+      final res = await _apiClient.dio.post(
+        '/api/stories/batch',
+        data: {'ids': needed},
+      );
       final List data = res.data['items'] ?? [];
-      final newStories = {for (var s in data) s['id'].toString(): StoryModel.fromMap(s, s['id'].toString())};
+      final newStories = {
+        for (var s in data)
+          s['id'].toString(): StoryModel.fromMap(s, s['id'].toString()),
+      };
       if (mounted) {
         state = state.copyWith(stories: {...state.stories, ...newStories});
       }
@@ -62,6 +74,7 @@ class BatchMediaNotifier extends StateNotifier<BatchMediaState> {
   }
 }
 
-final batchMediaProvider = StateNotifierProvider<BatchMediaNotifier, BatchMediaState>((ref) {
-  return BatchMediaNotifier(ref.watch(apiClientProvider));
-});
+final batchMediaProvider =
+    StateNotifierProvider<BatchMediaNotifier, BatchMediaState>((ref) {
+      return BatchMediaNotifier(ref.watch(apiClientProvider));
+    });

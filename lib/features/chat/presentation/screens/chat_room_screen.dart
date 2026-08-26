@@ -261,7 +261,7 @@ class _MessageBubble extends ConsumerWidget {
       if (journey == null) {
         return const Padding(padding: EdgeInsets.all(8.0), child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)));
       }
-      imageUrl = journey.coverImageUrl;
+      imageUrl = null;
       title = journey.title;
     } else {
       final story = mediaState.stories[id];
