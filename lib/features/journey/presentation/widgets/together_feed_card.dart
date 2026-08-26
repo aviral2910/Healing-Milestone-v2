@@ -130,31 +130,77 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
                             context,
                           );
 
-                            final newMilestone = widget.milestone.toggleReactionOptimistically(r['label']!);
-                            
-                            // Optimistic update
-                            container.read(recommendedMilestonesProvider.notifier).updateMilestoneLocally(newMilestone);
-                            container.read(followingMilestonesProvider.notifier).updateMilestoneLocally(newMilestone);
-                            container.read(myFloatingMilestonesProvider.notifier).updateMilestoneLocally(newMilestone);
-                            container.read(allCheckinsProvider.notifier).updateMilestoneLocally(newMilestone);
-                            if (widget.milestone.journeyId != null) {
-                              container.read(paginatedJourneyMilestonesProvider(widget.milestone.journeyId!).notifier).updateMilestoneLocally(newMilestone);
-                              container.read(paginatedJourneyMilestonesProvider(widget.milestone.journeyId!, isPublic: true).notifier).updateMilestoneLocally(newMilestone);
-                            }
+                          final newMilestone = widget.milestone
+                              .toggleReactionOptimistically(r['label']!);
+
+                          // Optimistic update
+                          container
+                              .read(recommendedMilestonesProvider.notifier)
+                              .updateMilestoneLocally(newMilestone);
+                          container
+                              .read(followingMilestonesProvider.notifier)
+                              .updateMilestoneLocally(newMilestone);
+                          container
+                              .read(myFloatingMilestonesProvider.notifier)
+                              .updateMilestoneLocally(newMilestone);
+                          container
+                              .read(allCheckinsProvider.notifier)
+                              .updateMilestoneLocally(newMilestone);
+                          if (widget.milestone.journeyId != null) {
+                            container
+                                .read(
+                                  paginatedJourneyMilestonesProvider(
+                                    widget.milestone.journeyId!,
+                                  ).notifier,
+                                )
+                                .updateMilestoneLocally(newMilestone);
+                            container
+                                .read(
+                                  paginatedJourneyMilestonesProvider(
+                                    widget.milestone.journeyId!,
+                                    isPublic: true,
+                                  ).notifier,
+                                )
+                                .updateMilestoneLocally(newMilestone);
+                          }
 
                           try {
                             await container
                                 .read(journeyRepositoryProvider)
-                                .reactToMilestone(widget.milestone.id, r['label']!);
+                                .reactToMilestone(
+                                  widget.milestone.id,
+                                  r['label']!,
+                                );
                           } catch (e) {
                             // Revert optimistic update on failure
-                            container.read(recommendedMilestonesProvider.notifier).updateMilestoneLocally(widget.milestone);
-                            container.read(followingMilestonesProvider.notifier).updateMilestoneLocally(widget.milestone);
-                            container.read(myFloatingMilestonesProvider.notifier).updateMilestoneLocally(widget.milestone);
-                            container.read(allCheckinsProvider.notifier).updateMilestoneLocally(widget.milestone);
+                            container
+                                .read(recommendedMilestonesProvider.notifier)
+                                .updateMilestoneLocally(widget.milestone);
+                            container
+                                .read(followingMilestonesProvider.notifier)
+                                .updateMilestoneLocally(widget.milestone);
+                            container
+                                .read(myFloatingMilestonesProvider.notifier)
+                                .updateMilestoneLocally(widget.milestone);
+                            container
+                                .read(allCheckinsProvider.notifier)
+                                .updateMilestoneLocally(widget.milestone);
                             if (widget.milestone.journeyId != null) {
-                              container.read(paginatedJourneyMilestonesProvider(widget.milestone.journeyId!).notifier).updateMilestoneLocally(widget.milestone);
-                              container.read(paginatedJourneyMilestonesProvider(widget.milestone.journeyId!, isPublic: true).notifier).updateMilestoneLocally(widget.milestone);
+                              container
+                                  .read(
+                                    paginatedJourneyMilestonesProvider(
+                                      widget.milestone.journeyId!,
+                                    ).notifier,
+                                  )
+                                  .updateMilestoneLocally(widget.milestone);
+                              container
+                                  .read(
+                                    paginatedJourneyMilestonesProvider(
+                                      widget.milestone.journeyId!,
+                                      isPublic: true,
+                                    ).notifier,
+                                  )
+                                  .updateMilestoneLocally(widget.milestone);
                             }
 
                             scaffoldMessenger.showSnackBar(
@@ -304,129 +350,273 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
           animation: _scaleAnimation,
           builder: (context, child) =>
               Transform.scale(scale: _scaleAnimation.value, child: child),
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: isClosure
-                  ? null
-                  : const Color(0xFF141414).withValues(alpha: 0.8),
-              gradient: isClosure
-                  ? LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        theme.colorScheme.primary.withValues(alpha: 0.1),
-                        const Color(0xFF141414),
-                        const Color(0xFF141414),
-                      ],
-                      stops: const [0.0, 0.4, 1.0],
-                    )
-                  : null,
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                color: isClosure
-                    ? theme.colorScheme.primary.withValues(alpha: 0.6)
-                    : theme.colorScheme.primary.withValues(alpha: 0.2),
-                width: isClosure ? 1 : .5,
-              ),
-              boxShadow: [
-                BoxShadow(
+          child: Builder(
+            builder: (context) {
+              final bool isJourney =
+                  widget.milestone.journeyId != null &&
+                  widget.milestone.journeyTitle != null;
+
+              final mainCard = Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
                   color: isClosure
-                      ? theme.colorScheme.primary.withValues(alpha: 0.15)
-                      : theme.colorScheme.primary.withValues(alpha: 0.02),
-                  blurRadius: isClosure ? 24 : 12,
-                  spreadRadius: isClosure ? -5 : 0,
-                  offset: const Offset(0, 4),
+                      ? null
+                      : const Color(0xFF141414).withValues(alpha: 0.8),
+                  gradient: isClosure
+                      ? LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            theme.colorScheme.primary.withValues(alpha: 0.1),
+                            const Color(0xFF141414),
+                            const Color(0xFF141414),
+                          ],
+                          stops: const [0.0, 0.4, 1.0],
+                        )
+                      : null,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: isClosure
+                        ? theme.colorScheme.primary.withValues(alpha: 0.6)
+                        : theme.colorScheme.primary.withValues(alpha: 0.2),
+                    width: isClosure ? 1 : .5,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: isClosure
+                          ? theme.colorScheme.primary.withValues(alpha: 0.15)
+                          : theme.colorScheme.primary.withValues(alpha: 0.02),
+                      blurRadius: isClosure ? 24 : 12,
+                      spreadRadius: isClosure ? -5 : 0,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // --- 1. HEADER ROW (Avatar + Info) ---
-                Row(
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    AppAvatar(
-                      imageUrl: widget.milestone.authorAvatar,
-                      radius: 17,
-                      role: widget.milestone.authorRole,
-                      isAnonymous:
-                          widget.milestone.visibility ==
-                          MilestoneVisibility.anonymous,
-                      showRing: true,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
+                    // --- 1. HEADER ROW (Avatar + Info) ---
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        AppAvatar(
+                          imageUrl: widget.milestone.authorAvatar,
+                          radius: 17,
+                          role: widget.milestone.authorRole,
+                          isAnonymous:
+                              widget.milestone.visibility ==
+                              MilestoneVisibility.anonymous,
+                          showRing: true,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Flexible(
-                                child: Text(
-                                  displayAuthor,
-                                  style: theme.textTheme.titleSmall?.copyWith(
-                                    fontWeight: FontWeight.w700,
-                                    color: theme.colorScheme.onSurface,
+                              Row(
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      displayAuthor,
+                                      style: theme.textTheme.titleSmall
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w700,
+                                            color: theme.colorScheme.onSurface,
+                                          ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  if (widget.milestone.authorIsVerified) ...[
+                                    const SizedBox(width: 4),
+                                    Icon(
+                                      Icons.verified,
+                                      color: theme.colorScheme.primary,
+                                      size: 14,
+                                    ),
+                                  ],
+                                ],
+                              ),
+                              if (widget.milestone.authorTitle != null &&
+                                  widget.milestone.authorTitle!.isNotEmpty) ...[
+                                const SizedBox(height: 1),
+                                Text(
+                                  widget.milestone.authorTitle!,
+                                  style: theme.textTheme.labelSmall?.copyWith(
+                                    color: theme.colorScheme.primary,
+                                    fontWeight: FontWeight.w600,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
-                              ),
-                              if (widget.milestone.authorIsVerified) ...[
-                                const SizedBox(width: 4),
-                                Icon(
-                                  Icons.verified,
-                                  color: theme.colorScheme.primary,
-                                  size: 14,
-                                ),
+                                const SizedBox(height: 2),
+                              ] else ...[
+                                const SizedBox(height: 2),
                               ],
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    _getTimeAgo(widget.milestone.createdAt),
+                                    style: theme.textTheme.labelSmall?.copyWith(
+                                      color: theme.colorScheme.onSurfaceVariant,
+                                    ),
+                                  ),
+                                  if (widget.milestone.journeyTitle != null &&
+                                      !isClosure) ...[
+                                    const SizedBox(width: 8),
+                                    Flexible(
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 6,
+                                          vertical: 2,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: theme.colorScheme.primary
+                                              .withValues(alpha: 0.1),
+                                          borderRadius: BorderRadius.circular(
+                                            6,
+                                          ),
+                                          border: Border.all(
+                                            color: theme.colorScheme.primary
+                                                .withValues(alpha: 0.2),
+                                            width: 0.5,
+                                          ),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              Icons.folder_rounded,
+                                              size: 10,
+                                              color: theme
+                                                  .colorScheme
+                                                  .primary, // Solid gold color
+                                            ),
+                                            const SizedBox(width: 4),
+                                            Flexible(
+                                              child: Text(
+                                                widget.milestone.journeyTitle!,
+                                                style: theme
+                                                    .textTheme
+                                                    .labelSmall
+                                                    ?.copyWith(
+                                                      color: theme
+                                                          .colorScheme
+                                                          .primary, // Solid gold color
+                                                      fontWeight:
+                                                          FontWeight.w800,
+                                                      height: 1.1,
+                                                    ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
                             ],
                           ),
-                          if (widget.milestone.authorTitle != null &&
-                              widget.milestone.authorTitle!.isNotEmpty) ...[
-                            const SizedBox(height: 1),
-                            Text(
-                              widget.milestone.authorTitle!,
-                              style: theme.textTheme.labelSmall?.copyWith(
-                                color: theme.colorScheme.primary,
-                                fontWeight: FontWeight.w600,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                        ),
+
+                        const SizedBox(width: 8),
+
+                        // Very small emotion badge opposite the name
+                        Container(
+                          margin: const EdgeInsets.only(
+                            top: 2,
+                          ), // Align visually with the name text height
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isDoctor
+                                ? theme.colorScheme.primary
+                                : emotionColor.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(6),
+                            border: isDoctor
+                                ? null
+                                : Border.all(
+                                    color: emotionColor.withValues(alpha: 0.2),
+                                  ),
+                          ),
+                          child: Text(
+                            (isDoctor &&
+                                    widget.milestone.professionalTag != null)
+                                ? widget.milestone.professionalTag!.name
+                                      .toUpperCase()
+                                : (widget.milestone.emotionStatus?.name
+                                          .toUpperCase() ??
+                                      "UPDATE"),
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: isDoctor
+                                  ? theme.colorScheme.onPrimary
+                                  : emotionColor,
+                              fontSize:
+                                  9, // Very small to match height of the name
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.5,
                             ),
-                            const SizedBox(height: 2),
-                          ] else ...[
-                            const SizedBox(height: 2),
-                          ],
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text(
-                                _getTimeAgo(widget.milestone.createdAt),
-                                style: theme.textTheme.labelSmall?.copyWith(
-                                  color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // --- 2. BODY CONTENT ---
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Event Markers inside the content (as drawn in sketch)
+                        if (isClosure) ...[
+                          Container(
+                            width: double.infinity,
+                            margin: const EdgeInsets.only(bottom: 24, top: 8),
+                            child: Column(
+                              children: [
+                                Icon(
+                                  Icons.emoji_events_rounded,
+                                  color: theme.colorScheme.primary,
+                                  size: 48,
+                                  shadows: [
+                                    Shadow(
+                                      color: theme.colorScheme.primary
+                                          .withValues(alpha: 0.5),
+                                      blurRadius: 16,
+                                    ),
+                                  ],
                                 ),
-                              ),
-                              if (widget.milestone.journeyTitle != null &&
-                                  !isClosure) ...[
-                                const SizedBox(width: 8),
-                                Flexible(
-                                  child: Container(
+                                const SizedBox(height: 12),
+                                Text(
+                                  'JOURNEY COMPLETED',
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    color: theme.colorScheme.primary,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 2.0,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                                if (widget.milestone.journeyTitle != null) ...[
+                                  const SizedBox(height: 8),
+                                  Container(
                                     padding: const EdgeInsets.symmetric(
-                                      horizontal: 6,
-                                      vertical: 2,
+                                      horizontal: 14,
+                                      vertical: 6,
                                     ),
                                     decoration: BoxDecoration(
                                       color: theme.colorScheme.primary
                                           .withValues(alpha: 0.1),
-                                      borderRadius: BorderRadius.circular(6),
+                                      borderRadius: BorderRadius.circular(20),
                                       border: Border.all(
                                         color: theme.colorScheme.primary
                                             .withValues(alpha: 0.2),
-                                        width: 0.5,
+                                        width: 1.0,
                                       ),
                                     ),
                                     child: Row(
@@ -434,22 +624,19 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
                                       children: [
                                         Icon(
                                           Icons.folder_rounded,
-                                          size: 10,
-                                          color: theme
-                                              .colorScheme
-                                              .primary, // Solid gold color
+                                          size: 14,
+                                          color: theme.colorScheme.primary,
                                         ),
-                                        const SizedBox(width: 4),
+                                        const SizedBox(width: 6),
                                         Flexible(
                                           child: Text(
                                             widget.milestone.journeyTitle!,
-                                            style: theme.textTheme.labelSmall
+                                            style: theme.textTheme.labelMedium
                                                 ?.copyWith(
-                                                  color: theme
-                                                      .colorScheme
-                                                      .primary, // Solid gold color
+                                                  color:
+                                                      theme.colorScheme.primary,
                                                   fontWeight: FontWeight.w800,
-                                                  height: 1.1,
+                                                  letterSpacing: 0.5,
                                                 ),
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
@@ -458,222 +645,133 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
                                       ],
                                     ),
                                   ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ] else if (isReopening) ...[
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            margin: const EdgeInsets.only(bottom: 12),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.primary.withValues(
+                                alpha: 0.05,
+                              ),
+                              border: Border.all(
+                                color: theme.colorScheme.primary.withValues(
+                                  alpha: 0.2,
+                                ),
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.energy_savings_leaf_rounded,
+                                  color: theme.colorScheme.primary,
+                                  size: 16,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Journey Resumed',
+                                  style: theme.textTheme.labelMedium?.copyWith(
+                                    color: theme.colorScheme.primary,
+                                    fontWeight: FontWeight.w700,
+                                  ),
                                 ),
                               ],
-                            ],
+                            ),
                           ),
                         ],
-                      ),
+
+                        if (widget.milestone.content != null &&
+                            widget.milestone.content!.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 8.0),
+                            child: Text(
+                              widget.milestone.content!,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: theme.colorScheme.onSurface,
+                                height: 1.5,
+                              ),
+                            ),
+                          ),
+                        if (widget.milestone.audioUrl != null &&
+                            widget.milestone.audioUrl!.isNotEmpty)
+                          AudioPlayerWidget(
+                            audioUrl: widget.milestone.audioUrl!,
+                          ),
+                      ],
                     ),
 
-                    const SizedBox(width: 8),
+                    const SizedBox(height: 16),
 
-                    // Very small emotion badge opposite the name
-                    Container(
-                      margin: const EdgeInsets.only(
-                        top: 2,
-                      ), // Align visually with the name text height
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 3,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isDoctor
-                            ? theme.colorScheme.primary
-                            : emotionColor.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(6),
-                        border: isDoctor
-                            ? null
-                            : Border.all(
-                                color: emotionColor.withValues(alpha: 0.2),
-                              ),
-                      ),
-                      child: Text(
-                        (isDoctor && widget.milestone.professionalTag != null)
-                            ? widget.milestone.professionalTag!.name
-                                  .toUpperCase()
-                            : (widget.milestone.emotionStatus?.name
-                                      .toUpperCase() ??
-                                  "UPDATE"),
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: isDoctor
-                              ? theme.colorScheme.onPrimary
-                              : emotionColor,
-                          fontSize: 9, // Very small to match height of the name
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 16),
-
-                // --- 2. BODY CONTENT ---
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Event Markers inside the content (as drawn in sketch)
-                    if (isClosure) ...[
-                      Container(
-                        width: double.infinity,
-                        margin: const EdgeInsets.only(bottom: 24, top: 8),
-                        child: Column(
-                          children: [
-                            Icon(
-                              Icons.emoji_events_rounded,
-                              color: theme.colorScheme.primary,
-                              size: 48,
-                              shadows: [
-                                Shadow(
-                                  color: theme.colorScheme.primary.withValues(
-                                    alpha: 0.5,
-                                  ),
-                                  blurRadius: 16,
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              'JOURNEY COMPLETED',
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                color: theme.colorScheme.primary,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 2.0,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                            if (widget.milestone.journeyTitle != null) ...[
-                              const SizedBox(height: 8),
-                              Container(
+                    // --- 3. FOOTER ROW ---
+                    Row(
+                      children: [
+                        // Multiple small reaction cards
+                        ...widget.milestone.reactionCounts.entries
+                            .where((e) => e.value > 0)
+                            .map((entry) {
+                              String emoji = '♡';
+                              switch (entry.key) {
+                                case 'spark':
+                                  emoji = '✨';
+                                  break;
+                                case 'strength':
+                                  emoji = '💪';
+                                  break;
+                                case 'love':
+                                  emoji = '❤️';
+                                  break;
+                                case 'support':
+                                  emoji = '🙏';
+                                  break;
+                              }
+                              return Container(
+                                margin: const EdgeInsets.only(right: 8),
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: 14,
+                                  horizontal: 10,
                                   vertical: 6,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: theme.colorScheme.primary.withValues(
-                                    alpha: 0.1,
-                                  ),
-                                  borderRadius: BorderRadius.circular(20),
+                                  color: theme.colorScheme.surface,
+                                  borderRadius: BorderRadius.circular(8),
                                   border: Border.all(
                                     color: theme.colorScheme.primary.withValues(
                                       alpha: 0.2,
                                     ),
-                                    width: 1.0,
-                                  ),
+                                  ), // Themic border
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(
-                                      Icons.folder_rounded,
-                                      size: 14,
-                                      color: theme.colorScheme.primary,
+                                    Text(
+                                      emoji,
+                                      style: const TextStyle(fontSize: 12),
                                     ),
-                                    const SizedBox(width: 6),
-                                    Flexible(
-                                      child: Text(
-                                        widget.milestone.journeyTitle!,
-                                        style: theme.textTheme.labelMedium
-                                            ?.copyWith(
-                                              color: theme.colorScheme.primary,
-                                              fontWeight: FontWeight.w800,
-                                              letterSpacing: 0.5,
-                                            ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      '${entry.value}',
+                                      style: theme.textTheme.labelSmall
+                                          ?.copyWith(
+                                            color: theme.colorScheme.primary,
+                                            fontWeight: FontWeight.w700,
+                                          ),
                                     ),
                                   ],
                                 ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                    ] else if (isReopening) ...[
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        margin: const EdgeInsets.only(bottom: 12),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.primary.withValues(
-                            alpha: 0.05,
-                          ),
-                          border: Border.all(
-                            color: theme.colorScheme.primary.withValues(
-                              alpha: 0.2,
-                            ),
-                          ),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.energy_savings_leaf_rounded,
-                              color: theme.colorScheme.primary,
-                              size: 16,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Journey Resumed',
-                              style: theme.textTheme.labelMedium?.copyWith(
-                                color: theme.colorScheme.primary,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                              );
+                            }),
 
-                    if (widget.milestone.content != null &&
-                        widget.milestone.content!.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 8.0),
-                        child: Text(
-                          widget.milestone.content!,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: theme.colorScheme.onSurface,
-                            height: 1.5,
-                          ),
-                        ),
-                      ),
-                    if (widget.milestone.audioUrl != null &&
-                        widget.milestone.audioUrl!.isNotEmpty)
-                      AudioPlayerWidget(audioUrl: widget.milestone.audioUrl!),
-                  ],
-                ),
-
-                const SizedBox(height: 16),
-
-                // --- 3. FOOTER ROW ---
-                Row(
-                  children: [
-                    // Multiple small reaction cards
-                    ...widget.milestone.reactionCounts.entries
-                        .where((e) => e.value > 0)
-                        .map((entry) {
-                          String emoji = '♡';
-                          switch (entry.key) {
-                            case 'spark':
-                              emoji = '✨';
-                              break;
-                            case 'strength':
-                              emoji = '💪';
-                              break;
-                            case 'love':
-                              emoji = '❤️';
-                              break;
-                            case 'support':
-                              emoji = '🙏';
-                              break;
-                          }
-                          return Container(
+                        // Fallback for legacy data if reactionCounts is empty but reactionCount > 0
+                        if (widget.milestone.reactionCounts.isEmpty &&
+                            widget.milestone.reactionCount > 0)
+                          Container(
                             margin: const EdgeInsets.only(right: 8),
                             padding: const EdgeInsets.symmetric(
                               horizontal: 10,
@@ -686,18 +784,19 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
                                 color: theme.colorScheme.primary.withValues(
                                   alpha: 0.2,
                                 ),
-                              ), // Themic border
+                              ),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Text(
-                                  emoji,
-                                  style: const TextStyle(fontSize: 12),
+                                Icon(
+                                  Icons.favorite_rounded,
+                                  size: 12,
+                                  color: theme.colorScheme.primary,
                                 ),
-                                const SizedBox(width: 4),
+                                const SizedBox(width: 6),
                                 Text(
-                                  '${entry.value}',
+                                  '${widget.milestone.reactionCount}',
                                   style: theme.textTheme.labelSmall?.copyWith(
                                     color: theme.colorScheme.primary,
                                     fontWeight: FontWeight.w700,
@@ -705,232 +804,337 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
                                 ),
                               ],
                             ),
-                          );
-                        }),
+                          ),
 
-                    // Fallback for legacy data if reactionCounts is empty but reactionCount > 0
-                    if (widget.milestone.reactionCounts.isEmpty &&
-                        widget.milestone.reactionCount > 0)
-                      Container(
-                        margin: const EdgeInsets.only(right: 8),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.surface,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: theme.colorScheme.primary.withValues(
-                              alpha: 0.2,
-                            ),
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.favorite_rounded,
-                              size: 12,
-                              color: theme.colorScheme.primary,
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              '${widget.milestone.reactionCount}',
-                              style: theme.textTheme.labelSmall?.copyWith(
-                                color: theme.colorScheme.primary,
-                                fontWeight: FontWeight.w700,
+                        const Spacer(),
+                      ],
+                    ),
+                    SizedBox(height: 8),
+                    Divider(
+                      // height: 0,
+                      thickness: .5,
+                      color: theme.colorScheme.primary.withValues(alpha: .4),
+                    ),
+                    SizedBox(height: 8),
+                    // React Button (Dynamic based on userReaction)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        if (widget.milestone.areCommentsEnabled) ...[
+                          GestureDetector(
+                            onTap: () {
+                              showCommentsBottomSheet(
+                                context,
+                                widget.milestone,
+                              );
+                            },
+                            child: Container(
+                              margin: const EdgeInsets.only(right: 8),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 8,
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                    const Spacer(),
-                  ],
-                ),
-                SizedBox(height: 8),
-                Divider(
-                  // height: 0,
-                  thickness: .5,
-                  color: theme.colorScheme.primary.withValues(alpha: .4),
-                ),
-                SizedBox(height: 8),
-                // React Button (Dynamic based on userReaction)
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    if (widget.milestone.areCommentsEnabled) ...[
-                      GestureDetector(
-                        onTap: () {
-                          showCommentsBottomSheet(context, widget.milestone);
-                        },
-                        child: Container(
-                          margin: const EdgeInsets.only(right: 8),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.surface,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: theme.dividerColor.withValues(alpha: 0.1),
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.chat_bubble_outline_rounded,
-                                size: 16,
-                                color: theme.colorScheme.onSurfaceVariant,
-                              ),
-                              if (widget.milestone.commentCount > 0) ...[
-                                const SizedBox(width: 6),
-                                Text(
-                                  '${widget.milestone.commentCount}',
-                                  style: theme.textTheme.labelSmall?.copyWith(
-                                    color: theme.colorScheme.onSurfaceVariant,
-                                    fontWeight: FontWeight.w600,
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.surface,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: theme.dividerColor.withValues(
+                                    alpha: 0.1,
                                   ),
                                 ),
-                              ],
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                    Builder(
-                      builder: (context) {
-                        String reactEmoji = '♡';
-                        String reactLabel = 'React';
-                        Color reactColor = theme.colorScheme.onSurfaceVariant;
-                        bool isReacted = widget.milestone.userReaction != null;
-
-                        if (isReacted) {
-                          switch (widget.milestone.userReaction) {
-                            case 'spark':
-                              reactEmoji = '✨';
-                              reactLabel = 'Spark';
-                              break;
-                            case 'strength':
-                              reactEmoji = '💪';
-                              reactLabel = 'Strength';
-                              break;
-                            case 'love':
-                              reactEmoji = '❤️';
-                              reactLabel = 'Love';
-                              break;
-                            case 'support':
-                              reactEmoji = '🙏';
-                              reactLabel = 'Support';
-                              break;
-                            default:
-                              reactEmoji = '❤️';
-                              reactLabel = 'Reacted';
-                          }
-                          reactColor = theme
-                              .colorScheme
-                              .primary; // Golden primary color when reacted
-                        }
-
-                        return GestureDetector(
-                          onTap: () async {
-                            final scaffoldMessenger = ScaffoldMessenger.of(
-                              context,
-                            );
-                            final container = ProviderScope.containerOf(
-                              context,
-                            );
-                            HapticFeedback.selectionClick();
-
-                            final newMilestone = widget.milestone.toggleReactionOptimistically(isReacted ? widget.milestone.userReaction! : 'love');
-                            
-                            // Optimistic update
-                            container.read(recommendedMilestonesProvider.notifier).updateMilestoneLocally(newMilestone);
-                            container.read(followingMilestonesProvider.notifier).updateMilestoneLocally(newMilestone);
-                            container.read(myFloatingMilestonesProvider.notifier).updateMilestoneLocally(newMilestone);
-                            container.read(allCheckinsProvider.notifier).updateMilestoneLocally(newMilestone);
-                            if (widget.milestone.journeyId != null) {
-                              container.read(paginatedJourneyMilestonesProvider(widget.milestone.journeyId!).notifier).updateMilestoneLocally(newMilestone);
-                              container.read(paginatedJourneyMilestonesProvider(widget.milestone.journeyId!, isPublic: true).notifier).updateMilestoneLocally(newMilestone);
-                            }
-
-                            try {
-                              if (isReacted) {
-                                await container
-                                    .read(journeyRepositoryProvider)
-                                    .removeReaction(widget.milestone.id);
-                              } else {
-                                await container
-                                    .read(journeyRepositoryProvider)
-                                    .reactToMilestone(widget.milestone.id, 'love');
-                              }
-                            } catch (e) {
-                            // Revert optimistic update on failure
-                            container.read(recommendedMilestonesProvider.notifier).updateMilestoneLocally(widget.milestone);
-                            container.read(followingMilestonesProvider.notifier).updateMilestoneLocally(widget.milestone);
-                            container.read(myFloatingMilestonesProvider.notifier).updateMilestoneLocally(widget.milestone);
-                            container.read(allCheckinsProvider.notifier).updateMilestoneLocally(widget.milestone);
-                            if (widget.milestone.journeyId != null) {
-                              container.read(paginatedJourneyMilestonesProvider(widget.milestone.journeyId!).notifier).updateMilestoneLocally(widget.milestone);
-                              container.read(paginatedJourneyMilestonesProvider(widget.milestone.journeyId!, isPublic: true).notifier).updateMilestoneLocally(widget.milestone);
-                            }
-
-                              scaffoldMessenger.showSnackBar(
-                                const SnackBar(
-                                  content: Text('Failed to update reaction'),
-                                ),
-                              );
-                            }
-                          },
-                          onLongPressStart: (details) => _showReactionOverlay(
-                            context,
-                            details.globalPosition,
-                          ),
-                          behavior: HitTestBehavior.opaque,
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 8,
-                            ),
-                            decoration: BoxDecoration(
-                              color: isReacted
-                                  ? reactColor.withValues(alpha: 0.08)
-                                  : theme.colorScheme.surface,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: isReacted
-                                    ? reactColor.withValues(alpha: 0.4)
-                                    : theme.dividerColor.withValues(alpha: 0.1),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.chat_bubble_outline_rounded,
+                                    size: 16,
+                                    color: theme.colorScheme.onSurfaceVariant,
+                                  ),
+                                  if (widget.milestone.commentCount > 0) ...[
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      '${widget.milestone.commentCount}',
+                                      style: theme.textTheme.labelSmall
+                                          ?.copyWith(
+                                            color: theme
+                                                .colorScheme
+                                                .onSurfaceVariant,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                    ),
+                                  ],
+                                ],
                               ),
                             ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                isReacted
-                                    ? Text(
-                                        reactEmoji,
-                                        style: const TextStyle(fontSize: 12),
-                                      )
-                                    : Icon(
-                                        Icons.favorite_border_rounded,
-                                        size: 16,
-
-                                        color: reactColor,
-                                      ),
-                              ],
-                            ),
                           ),
-                        );
-                      },
+                        ],
+                        Builder(
+                          builder: (context) {
+                            String reactEmoji = '♡';
+                            String reactLabel = 'React';
+                            Color reactColor =
+                                theme.colorScheme.onSurfaceVariant;
+                            bool isReacted =
+                                widget.milestone.userReaction != null;
+
+                            if (isReacted) {
+                              switch (widget.milestone.userReaction) {
+                                case 'spark':
+                                  reactEmoji = '✨';
+                                  reactLabel = 'Spark';
+                                  break;
+                                case 'strength':
+                                  reactEmoji = '💪';
+                                  reactLabel = 'Strength';
+                                  break;
+                                case 'love':
+                                  reactEmoji = '❤️';
+                                  reactLabel = 'Love';
+                                  break;
+                                case 'support':
+                                  reactEmoji = '🙏';
+                                  reactLabel = 'Support';
+                                  break;
+                                default:
+                                  reactEmoji = '❤️';
+                                  reactLabel = 'Reacted';
+                              }
+                              reactColor = theme
+                                  .colorScheme
+                                  .primary; // Golden primary color when reacted
+                            }
+
+                            return GestureDetector(
+                              onTap: () async {
+                                final scaffoldMessenger = ScaffoldMessenger.of(
+                                  context,
+                                );
+                                final container = ProviderScope.containerOf(
+                                  context,
+                                );
+                                HapticFeedback.selectionClick();
+
+                                final newMilestone = widget.milestone
+                                    .toggleReactionOptimistically(
+                                      isReacted
+                                          ? widget.milestone.userReaction!
+                                          : 'love',
+                                    );
+
+                                // Optimistic update
+                                container
+                                    .read(
+                                      recommendedMilestonesProvider.notifier,
+                                    )
+                                    .updateMilestoneLocally(newMilestone);
+                                container
+                                    .read(followingMilestonesProvider.notifier)
+                                    .updateMilestoneLocally(newMilestone);
+                                container
+                                    .read(myFloatingMilestonesProvider.notifier)
+                                    .updateMilestoneLocally(newMilestone);
+                                container
+                                    .read(allCheckinsProvider.notifier)
+                                    .updateMilestoneLocally(newMilestone);
+                                if (widget.milestone.journeyId != null) {
+                                  container
+                                      .read(
+                                        paginatedJourneyMilestonesProvider(
+                                          widget.milestone.journeyId!,
+                                        ).notifier,
+                                      )
+                                      .updateMilestoneLocally(newMilestone);
+                                  container
+                                      .read(
+                                        paginatedJourneyMilestonesProvider(
+                                          widget.milestone.journeyId!,
+                                          isPublic: true,
+                                        ).notifier,
+                                      )
+                                      .updateMilestoneLocally(newMilestone);
+                                }
+
+                                try {
+                                  if (isReacted) {
+                                    await container
+                                        .read(journeyRepositoryProvider)
+                                        .removeReaction(widget.milestone.id);
+                                  } else {
+                                    await container
+                                        .read(journeyRepositoryProvider)
+                                        .reactToMilestone(
+                                          widget.milestone.id,
+                                          'love',
+                                        );
+                                  }
+                                } catch (e) {
+                                  // Revert optimistic update on failure
+                                  container
+                                      .read(
+                                        recommendedMilestonesProvider.notifier,
+                                      )
+                                      .updateMilestoneLocally(widget.milestone);
+                                  container
+                                      .read(
+                                        followingMilestonesProvider.notifier,
+                                      )
+                                      .updateMilestoneLocally(widget.milestone);
+                                  container
+                                      .read(
+                                        myFloatingMilestonesProvider.notifier,
+                                      )
+                                      .updateMilestoneLocally(widget.milestone);
+                                  container
+                                      .read(allCheckinsProvider.notifier)
+                                      .updateMilestoneLocally(widget.milestone);
+                                  if (widget.milestone.journeyId != null) {
+                                    container
+                                        .read(
+                                          paginatedJourneyMilestonesProvider(
+                                            widget.milestone.journeyId!,
+                                          ).notifier,
+                                        )
+                                        .updateMilestoneLocally(
+                                          widget.milestone,
+                                        );
+                                    container
+                                        .read(
+                                          paginatedJourneyMilestonesProvider(
+                                            widget.milestone.journeyId!,
+                                            isPublic: true,
+                                          ).notifier,
+                                        )
+                                        .updateMilestoneLocally(
+                                          widget.milestone,
+                                        );
+                                  }
+
+                                  scaffoldMessenger.showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'Failed to update reaction',
+                                      ),
+                                    ),
+                                  );
+                                }
+                              },
+                              onLongPressStart: (details) =>
+                                  _showReactionOverlay(
+                                    context,
+                                    details.globalPosition,
+                                  ),
+                              behavior: HitTestBehavior.opaque,
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 8,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: isReacted
+                                      ? reactColor.withValues(alpha: 0.08)
+                                      : theme.colorScheme.surface,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: isReacted
+                                        ? reactColor.withValues(alpha: 0.4)
+                                        : theme.dividerColor.withValues(
+                                            alpha: 0.1,
+                                          ),
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    isReacted
+                                        ? Text(
+                                            reactEmoji,
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                            ),
+                                          )
+                                        : Icon(
+                                            Icons.favorite_border_rounded,
+                                            size: 16,
+
+                                            color: reactColor,
+                                          ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
+              );
+
+              if (!isJourney) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 0,
+                    vertical: 8,
+                  ),
+                  child: mainCard,
+                );
+              }
+
+              return Container(
+                margin: const EdgeInsets.only(
+                  left: 0,
+                  right: 8,
+                  top: 8,
+                  bottom: 8,
+                ),
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    // Bottom-most page
+                    Positioned(
+                      top: 10,
+                      bottom: -10,
+                      left: 10,
+                      right: -10,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF141414).withValues(alpha: 0.4),
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.primary.withValues(alpha: 0.1),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // Middle page
+                    Positioned(
+                      top: 5,
+                      bottom: -5,
+                      left: 5,
+                      right: -5,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF141414).withValues(alpha: 0.6),
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.primary.withValues(alpha: 0.15),
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Top page (actual card)
+                    mainCard,
+                  ],
+                ),
+              );
+            },
           ),
         ),
       ),
