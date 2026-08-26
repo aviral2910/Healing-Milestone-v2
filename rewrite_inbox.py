@@ -1,4 +1,10 @@
-import 'package:healing_milestones/features/auth/data/auth_provider.dart';
+with open('lib/features/chat/presentation/screens/inbox_screen.dart', 'r') as f:
+    content = f.read()
+
+# I will just write a completely new, beautiful InboxScreen.
+import os
+
+new_inbox = """import 'package:healing_milestones/features/auth/data/auth_provider.dart';
 import 'package:healing_milestones/shared/widgets/app_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -311,3 +317,7 @@ class _ChatListTile extends StatelessWidget {
     );
   }
 }
+"""
+
+with open('lib/features/chat/presentation/screens/inbox_screen.dart', 'w') as f:
+    f.write(new_inbox)
