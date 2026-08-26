@@ -12,28 +12,34 @@ class InboxScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    
     return DefaultTabController(
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Messages', style: TextStyle(fontWeight: FontWeight.bold)),
+          title: Text(
+            'Messages', 
+            style: theme.textTheme.headlineLarge?.copyWith(fontSize: 28),
+          ),
           centerTitle: false,
           actions: [
             IconButton(
               icon: const Icon(Icons.edit_square),
-              onPressed: () {
-                // Future feature: start new chat
-              },
+              onPressed: () {},
             ),
           ],
           bottom: TabBar(
             dividerColor: Colors.transparent,
-            indicatorSize: TabBarIndicatorSize.tab,
+            indicatorSize: TabBarIndicatorSize.label,
+            indicatorColor: theme.colorScheme.primary,
             indicatorWeight: 3,
-            labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
+            labelStyle: theme.textTheme.titleMedium,
+            unselectedLabelStyle: theme.textTheme.titleMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
             tabs: const [
-              Tab(text: 'Messages'),
+              Tab(text: 'Primary'),
               Tab(text: 'Requests'),
             ],
           ),
@@ -52,6 +58,7 @@ class _ActiveChatsList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final activeChatsAsync = ref.watch(activeChatsProvider);
+    final theme = Theme.of(context);
 
     return activeChatsAsync.when(
       data: (chats) {
@@ -60,18 +67,28 @@ class _ActiveChatsList extends ConsumerWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.chat_bubble_outline, size: 64, color: Theme.of(context).colorScheme.outline),
-                const SizedBox(height: 16),
-                const Text('No messages yet', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surface,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: theme.dividerColor),
+                  ),
+                  child: Icon(Icons.send_rounded, size: 48, color: theme.colorScheme.primary),
+                ),
+                const SizedBox(height: 24),
+                Text('Your Messages', style: theme.textTheme.titleLarge),
                 const SizedBox(height: 8),
-                Text('Send a message to start a conversation.', style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                Text('Send private messages to friends.', 
+                  style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                ),
               ],
             ),
           );
         }
         return ListView.builder(
           itemCount: chats.length,
-          padding: const EdgeInsets.symmetric(vertical: 8),
+          padding: const EdgeInsets.only(top: 8, bottom: 24),
           itemBuilder: (context, index) {
             final chat = chats[index];
             final currentUser = ref.watch(currentUserProvider);
@@ -84,15 +101,18 @@ class _ActiveChatsList extends ConsumerWidget {
 
             if (chat.type == 'support') {
               return _ChatListTile(
-                title: 'Healing Milestones Support',
+                title: 'Support',
                 subtitle: chat.lastMessageText.isEmpty ? 'No messages yet' : chat.lastMessageText,
                 time: chat.lastMessageTime,
                 isUnread: false,
                 isSentRequest: false,
-                leading: const CircleAvatar(
-                  radius: 28,
-                  backgroundColor: Colors.blue,
-                  child: Icon(Icons.support_agent, color: Colors.white, size: 32),
+                leading: Container(
+                  width: 56, height: 56,
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primary,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.support_agent, color: theme.colorScheme.onPrimary, size: 28),
                 ),
                 onTap: () => _navigateToChat(context, chat.id, chat.type),
               );
@@ -118,7 +138,10 @@ class _ActiveChatsList extends ConsumerWidget {
                   onTap: () => _navigateToChat(context, chat.id, chat.type),
                 );
               },
-              loading: () => const ListTile(leading: AppLoader.small(), title: Text('Loading...')),
+              loading: () => const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                child: Row(children: [AppLoader.small(), SizedBox(width: 16), Text('Loading...')]),
+              ),
               error: (_, __) => const SizedBox.shrink(),
             );
           },
@@ -144,6 +167,7 @@ class _PendingRequestsList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final pendingRequestsAsync = ref.watch(pendingRequestsProvider);
+    final theme = Theme.of(context);
 
     return pendingRequestsAsync.when(
       data: (chats) {
@@ -152,16 +176,24 @@ class _PendingRequestsList extends ConsumerWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.mark_email_read_outlined, size: 64, color: Theme.of(context).colorScheme.outline),
-                const SizedBox(height: 16),
-                const Text('No message requests', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surface,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: theme.dividerColor),
+                  ),
+                  child: Icon(Icons.mark_email_read_outlined, size: 48, color: theme.colorScheme.primary),
+                ),
+                const SizedBox(height: 24),
+                Text('No message requests', style: theme.textTheme.titleLarge),
               ],
             ),
           );
         }
         return ListView.builder(
           itemCount: chats.length,
-          padding: const EdgeInsets.symmetric(vertical: 8),
+          padding: const EdgeInsets.only(top: 8, bottom: 24),
           itemBuilder: (context, index) {
             final chat = chats[index];
             final currentUser = ref.watch(currentUserProvider);
@@ -196,18 +228,21 @@ class _PendingRequestsList extends ConsumerWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.cancel, color: Colors.redAccent, size: 28),
+                        icon: Icon(Icons.cancel, color: theme.colorScheme.onSurfaceVariant, size: 28),
                         onPressed: () => ref.read(chatRepositoryProvider).declineChat(chat.id),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.check_circle, color: Colors.green, size: 28),
+                        icon: Icon(Icons.check_circle, color: theme.colorScheme.primary, size: 28),
                         onPressed: () => ref.read(chatRepositoryProvider).acceptChat(chat.id),
                       ),
                     ],
                   ),
                 );
               },
-              loading: () => const ListTile(leading: AppLoader.small(), title: Text('Loading...')),
+              loading: () => const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                child: Row(children: [AppLoader.small(), SizedBox(width: 16), Text('Loading...')]),
+              ),
               error: (_, __) => const SizedBox.shrink(),
             );
           },
@@ -242,23 +277,24 @@ class _ChatListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
         child: Row(
           children: [
             leading,
-            const SizedBox(width: 14),
+            const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     title,
-                    style: TextStyle(
-                      fontWeight: isUnread ? FontWeight.bold : FontWeight.w500,
-                      fontSize: 15,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: isUnread ? FontWeight.w800 : FontWeight.w600,
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -269,21 +305,19 @@ class _ChatListTile extends StatelessWidget {
                           subtitle,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: isSentRequest ? Theme.of(context).colorScheme.onSurfaceVariant : (isUnread ? Theme.of(context).colorScheme.onSurface : Theme.of(context).colorScheme.onSurfaceVariant),
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: isSentRequest 
+                                ? theme.colorScheme.onSurfaceVariant 
+                                : (isUnread ? theme.colorScheme.onSurface : theme.colorScheme.onSurfaceVariant),
                             fontWeight: isUnread ? FontWeight.w600 : FontWeight.normal,
-                            fontSize: 14,
                           ),
                         ),
                       ),
                       if (time != null) ...[
-                        const SizedBox(width: 6),
+                        const SizedBox(width: 8),
                         Text(
                           '· ${timeago.format(time!, locale: 'en_short')}',
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
-                            fontSize: 13,
-                          ),
+                          style: theme.textTheme.bodySmall,
                         ),
                       ],
                     ],
@@ -297,10 +331,10 @@ class _ChatListTile extends StatelessWidget {
             ] else if (isUnread) ...[
               const SizedBox(width: 12),
               Container(
-                width: 8,
-                height: 8,
-                decoration: const BoxDecoration(
-                  color: Colors.blue,
+                width: 10,
+                height: 10,
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary,
                   shape: BoxShape.circle,
                 ),
               ),
