@@ -13,11 +13,12 @@ import '../widgets/complete_journey_overlay.dart';
 import '../widgets/reopen_journey_overlay.dart';
 import 'package:healing_milestones/shared/widgets/app_loader.dart';
 
-class JourneyDetailScreen extends ConsumerWidget {
+class JourneyDetailScreen extends ConsumerStatefulWidget {
   final String journeyId;
   final String title;
   final String? category;
   final MilestoneVisibility? visibility;
+  final bool isMine;
 
   const JourneyDetailScreen({
     Key? key,
@@ -25,10 +26,104 @@ class JourneyDetailScreen extends ConsumerWidget {
     required this.title,
     this.category,
     this.visibility,
+    this.isMine = false,
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<JourneyDetailScreen> createState() => _JourneyDetailScreenState();
+}
+
+class _JourneyDetailScreenState extends ConsumerState<JourneyDetailScreen> {
+  MilestoneVisibility? _currentVisibility;
+  bool _isUpdatingVisibility = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentVisibility = widget.visibility;
+  }
+
+  IconData _getVisibilityIcon(MilestoneVisibility? vis) {
+    switch (vis) {
+      case MilestoneVisibility.public: return Icons.public;
+      case MilestoneVisibility.private: return Icons.lock_outline;
+      case MilestoneVisibility.anonymous: return Icons.masks;
+      default: return Icons.public;
+    }
+  }
+  
+  String _getVisibilityText(MilestoneVisibility vis) {
+    switch (vis) {
+      case MilestoneVisibility.public: return 'Public';
+      case MilestoneVisibility.private: return 'Private';
+      case MilestoneVisibility.anonymous: return 'Anonymous';
+    }
+  }
+
+  void _showVisibilityBottomSheet() {
+    final theme = Theme.of(context);
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: theme.colorScheme.surface,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (bottomSheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: Row(
+                    children: [
+                      Icon(Icons.visibility_rounded, color: theme.colorScheme.primary),
+                      const SizedBox(width: 12),
+                      Text('Journey Visibility', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                for (final vis in MilestoneVisibility.values)
+                  ListTile(
+                    leading: Icon(_getVisibilityIcon(vis)),
+                    title: Text(_getVisibilityText(vis)),
+                    trailing: _currentVisibility == vis
+                        ? Icon(Icons.check_circle, color: theme.colorScheme.primary)
+                        : null,
+                    onTap: () async {
+                      Navigator.pop(bottomSheetContext);
+                      if (_currentVisibility != vis) {
+                        setState(() { _isUpdatingVisibility = true; });
+                        try {
+                          await ref.read(journeyRepositoryProvider).updateJourneyVisibility(widget.journeyId, vis);
+                          if (mounted) {
+                            setState(() { _currentVisibility = vis; });
+                            ref.invalidate(userJourneysProvider);
+                            ref.invalidate(myJourneysProvider);
+                          }
+                        } catch (e) {
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to update visibility')));
+                          }
+                        } finally {
+                          if (mounted) {
+                            setState(() { _isUpdatingVisibility = false; });
+                          }
+                        }
+                      }
+                    },
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -38,7 +133,7 @@ class JourneyDetailScreen extends ConsumerWidget {
       body: NotificationListener<ScrollNotification>(
         onNotification: (ScrollNotification scrollInfo) {
           if (scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent - 200) {
-            ref.read(paginatedJourneyMilestonesProvider(journeyId).notifier).fetchNextPage();
+            ref.read(paginatedJourneyMilestonesProvider(widget.journeyId).notifier).fetchNextPage();
           }
           return false;
         },
@@ -52,17 +147,28 @@ class JourneyDetailScreen extends ConsumerWidget {
               alpha: 0.8,
             ),
             actions: [
-              if (visibility == MilestoneVisibility.public)
+              if (widget.isMine)
+                _isUpdatingVisibility
+                    ? const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16.0),
+                        child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+                      )
+                    : IconButton(
+                        icon: Icon(_getVisibilityIcon(_currentVisibility)),
+                        tooltip: 'Change Visibility',
+                        onPressed: _showVisibilityBottomSheet,
+                      ),
+              if (_currentVisibility == MilestoneVisibility.public)
                 IconButton(
                   icon: const Icon(Icons.share),
                   tooltip: 'Share Journey',
                   onPressed: () {
-                    showJourneyShareOptions(context, journeyId, title);
+                    showJourneyShareOptions(context, widget.journeyId, widget.title);
                   },
                 ),
               Consumer(
                 builder: (context, ref, child) {
-                  final milestonesAsync = ref.watch(paginatedJourneyMilestonesProvider(journeyId));
+                  final milestonesAsync = ref.watch(paginatedJourneyMilestonesProvider(widget.journeyId));
                   final milestones = milestonesAsync.value?.items ?? [];
                   final isCompleted = milestones.isNotEmpty && milestones.first.isClosure;
                   if (isCompleted) {
@@ -102,7 +208,7 @@ class JourneyDetailScreen extends ConsumerWidget {
                         );
                         return;
                       }
-                      CompleteJourneyOverlay.show(context, journeyId: journeyId);
+                      CompleteJourneyOverlay.show(context, journeyId: widget.journeyId);
                     },
                   );
                 },
@@ -119,13 +225,13 @@ class JourneyDetailScreen extends ConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Text(
-                    title,
+                    widget.title,
                     style: theme.textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                       letterSpacing: -0.5,
                     ),
                   ),
-                  if (category != null) ...[
+                  if (widget.category != null) ...[
                     const SizedBox(height: 4),
                     Container(
                       padding: const EdgeInsets.symmetric(
@@ -150,7 +256,7 @@ class JourneyDetailScreen extends ConsumerWidget {
                         ),
                       ),
                       child: Text(
-                        category!.toUpperCase(),
+                        widget.category!.toUpperCase(),
                         style: theme.textTheme.labelSmall?.copyWith(
                           color: theme.colorScheme.primary,
                           fontWeight: FontWeight.w800,
@@ -191,7 +297,7 @@ class JourneyDetailScreen extends ConsumerWidget {
           Consumer(
             builder: (context, ref, child) {
               final milestonesAsync = ref.watch(
-                paginatedJourneyMilestonesProvider(journeyId),
+                paginatedJourneyMilestonesProvider(widget.journeyId),
               );
               return milestonesAsync.when(
                 data: (state) {
@@ -265,7 +371,7 @@ class JourneyDetailScreen extends ConsumerWidget {
                 error: (err, stack) => SliverToBoxAdapter(
                   child: HealingErrorView(
                     error: err,
-                    onRetry: () => ref.invalidate(paginatedJourneyMilestonesProvider(journeyId)),
+                    onRetry: () => ref.invalidate(paginatedJourneyMilestonesProvider(widget.journeyId)),
                   ),
                 ),
               );
@@ -276,14 +382,14 @@ class JourneyDetailScreen extends ConsumerWidget {
       ),
       floatingActionButton: Consumer(
         builder: (context, ref, child) {
-          final milestonesAsync = ref.watch(paginatedJourneyMilestonesProvider(journeyId));
+          final milestonesAsync = ref.watch(paginatedJourneyMilestonesProvider(widget.journeyId));
           final milestones = milestonesAsync.value?.items ?? [];
           final isCompleted = milestones.isNotEmpty && milestones.first.isClosure;
           
           if (isCompleted) {
             return FloatingActionButton.extended(
               onPressed: () {
-                ReopenJourneyOverlay.show(context, journeyId: journeyId);
+                ReopenJourneyOverlay.show(context, journeyId: widget.journeyId);
               },
               elevation: 8,
               backgroundColor: theme.colorScheme.surface,
@@ -317,7 +423,7 @@ class JourneyDetailScreen extends ConsumerWidget {
                 );
                 return;
               }
-              LogMilestoneOverlay.show(context, journeyId: journeyId);
+              LogMilestoneOverlay.show(context, journeyId: widget.journeyId);
             },
             elevation: 8,
             backgroundColor: theme.colorScheme.primary,

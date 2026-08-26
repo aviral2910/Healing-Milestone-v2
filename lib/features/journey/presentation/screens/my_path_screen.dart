@@ -193,6 +193,7 @@ class MyPathScreen extends ConsumerWidget {
                                   title: journey.title,
                                   category: journey.category,
                 visibility: journey.visibility,
+                                  isMine: true,
                                 ),
                               ),
                             );

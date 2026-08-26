@@ -43,6 +43,19 @@ class JourneyRepository {
     }
   }
 
+  Future<void> updateJourneyVisibility(String id, MilestoneVisibility visibility) async {
+    try {
+      await _apiClient.dio.put(
+        '/api/journeys/$id',
+        data: {
+          'visibility': visibility.name,
+        },
+      );
+    } catch (e) {
+      throw Exception('Failed to update visibility: $e');
+    }
+  }
+
   Future<JourneyModel> updateJourney(String id, String title, String category, MilestoneVisibility visibility, {JourneyType type = JourneyType.personal}) async {
     try {
       final response = await _apiClient.dio.put(
