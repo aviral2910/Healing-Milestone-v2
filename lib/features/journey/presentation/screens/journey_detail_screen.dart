@@ -158,7 +158,7 @@ class _JourneyDetailScreenState extends ConsumerState<JourneyDetailScreen> {
                         tooltip: 'Change Visibility',
                         onPressed: _showVisibilityBottomSheet,
                       ),
-              if (_currentVisibility == MilestoneVisibility.public)
+              if (_currentVisibility == MilestoneVisibility.public || _currentVisibility == MilestoneVisibility.anonymous)
                 IconButton(
                   icon: const Icon(Icons.share),
                   tooltip: 'Share Journey',
