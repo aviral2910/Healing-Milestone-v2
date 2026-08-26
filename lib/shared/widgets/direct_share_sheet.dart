@@ -51,7 +51,9 @@ class _DirectShareSheetState extends ConsumerState<DirectShareSheet> {
     });
 
     try {
-      await ref.read(chatRepositoryProvider).sendMessage(
+      await ref
+          .read(chatRepositoryProvider)
+          .sendMessage(
             roomId: roomId,
             senderId: currentUser.userId,
             text: "Check this out!", // Optional text
@@ -60,9 +62,9 @@ class _DirectShareSheetState extends ConsumerState<DirectShareSheet> {
           );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to send: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to send: $e')));
         setState(() {
           _sentRoomIds.remove(roomId);
         });
@@ -79,7 +81,7 @@ class _DirectShareSheetState extends ConsumerState<DirectShareSheet> {
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -100,7 +102,7 @@ class _DirectShareSheetState extends ConsumerState<DirectShareSheet> {
               ),
             ),
             const SizedBox(height: 16),
-            
+
             // Search Bar
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -108,7 +110,10 @@ class _DirectShareSheetState extends ConsumerState<DirectShareSheet> {
                 controller: _searchController,
                 decoration: InputDecoration(
                   hintText: 'Search people...',
-                  prefixIcon: const Icon(Icons.search, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                  prefixIcon: Icon(
+                    Icons.search,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                   filled: true,
                   fillColor: Colors.grey[100],
                   border: OutlineInputBorder(
@@ -134,17 +139,27 @@ class _DirectShareSheetState extends ConsumerState<DirectShareSheet> {
                   : activeChatsAsync.when(
                       data: (rooms) {
                         if (rooms.isEmpty) {
-                          return const Center(
+                          return Center(
                             child: Text(
                               "No recent chats yet.\nStart a chat from someone's profile!",
                               textAlign: TextAlign.center,
-                              style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                              style: TextStyle(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                              ),
                             ),
                           );
                         }
 
                         // Filter out empty rooms or group rooms (assuming 1-on-1 for now)
-                        final validRooms = rooms.where((r) => r.participants.contains(currentUser.userId) && r.participants.length > 1).toList();
+                        final validRooms = rooms
+                            .where(
+                              (r) =>
+                                  r.participants.contains(currentUser.userId) &&
+                                  r.participants.length > 1,
+                            )
+                            .toList();
 
                         return ListView.builder(
                           scrollDirection: Axis.horizontal,
@@ -152,19 +167,29 @@ class _DirectShareSheetState extends ConsumerState<DirectShareSheet> {
                           itemCount: validRooms.length,
                           itemBuilder: (context, index) {
                             final room = validRooms[index];
-                            final otherUserId = room.participants.firstWhere((id) => id != currentUser.userId);
-                            
+                            final otherUserId = room.participants.firstWhere(
+                              (id) => id != currentUser.userId,
+                            );
+
                             // Watch other user's profile
-                            final otherUserAsync = ref.watch(userByIdProvider(otherUserId));
+                            final otherUserAsync = ref.watch(
+                              userByIdProvider(otherUserId),
+                            );
 
                             return Container(
                               width: 80,
-                              margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                              margin: const EdgeInsets.symmetric(
+                                horizontal: 4.0,
+                              ),
                               child: otherUserAsync.when(
                                 data: (user) {
                                   // Apply search filter
-                                  if (user == null) return const SizedBox.shrink();
-                                  if (_searchQuery.isNotEmpty && !user.displayName.toLowerCase().contains(_searchQuery)) {
+                                  if (user == null)
+                                    return const SizedBox.shrink();
+                                  if (_searchQuery.isNotEmpty &&
+                                      !user.displayName.toLowerCase().contains(
+                                        _searchQuery,
+                                      )) {
                                     return const SizedBox.shrink();
                                   }
 
@@ -176,14 +201,16 @@ class _DirectShareSheetState extends ConsumerState<DirectShareSheet> {
                                       AppAvatar(
                                         imageUrl: user.profilePicture,
                                         radius: 28,
-                                        
                                       ),
                                       const SizedBox(height: 6),
                                       Text(
                                         user.displayName.split(' ').first,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w500,
+                                        ),
                                       ),
                                       const SizedBox(height: 6),
                                       SizedBox(
@@ -194,22 +221,39 @@ class _DirectShareSheetState extends ConsumerState<DirectShareSheet> {
                                                 onPressed: null,
                                                 style: FilledButton.styleFrom(
                                                   padding: EdgeInsets.zero,
-                                                  backgroundColor: Theme.of(context).colorScheme.primary,
+                                                  backgroundColor: Theme.of(
+                                                    context,
+                                                  ).colorScheme.primary,
                                                 ),
-                                                child: const Text('Sent', style: TextStyle(fontSize: 11, color: Colors.white)),
+                                                child: const Text(
+                                                  'Sent',
+                                                  style: TextStyle(
+                                                    fontSize: 11,
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
                                               )
                                             : OutlinedButton(
-                                                onPressed: () => _sendToRoom(room.id, otherUserId),
+                                                onPressed: () => _sendToRoom(
+                                                  room.id,
+                                                  otherUserId,
+                                                ),
                                                 style: OutlinedButton.styleFrom(
                                                   padding: EdgeInsets.zero,
                                                 ),
-                                                child: const Text('Send', style: TextStyle(fontSize: 11)),
+                                                child: const Text(
+                                                  'Send',
+                                                  style: TextStyle(
+                                                    fontSize: 11,
+                                                  ),
+                                                ),
                                               ),
                                       ),
                                     ],
                                   );
                                 },
-                                loading: () => const Center(child: AppLoader.small()),
+                                loading: () =>
+                                    const Center(child: AppLoader.small()),
                                 error: (_, __) => const SizedBox.shrink(),
                               ),
                             );
@@ -232,7 +276,9 @@ class _DirectShareSheetState extends ConsumerState<DirectShareSheet> {
                   label: 'Copy Link',
                   onTap: () {
                     Clipboard.setData(ClipboardData(text: widget.shareUrl));
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Link copied to clipboard')));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Link copied to clipboard')),
+                    );
                     Navigator.pop(context);
                   },
                 ),
@@ -242,7 +288,10 @@ class _DirectShareSheetState extends ConsumerState<DirectShareSheet> {
                   onTap: () {
                     Navigator.pop(context);
                     // ignore: deprecated_member_use
-                    Share.share(widget.shareText, subject: 'Healing Milestones');
+                    Share.share(
+                      widget.shareText,
+                      subject: 'Healing Milestones',
+                    );
                   },
                 ),
                 _buildOptionBtn(
@@ -258,24 +307,29 @@ class _DirectShareSheetState extends ConsumerState<DirectShareSheet> {
                       transitionDuration: const Duration(milliseconds: 300),
                       pageBuilder: (context, animation, secondaryAnimation) {
                         return QrSharePreview(
-                          id: widget.storyId ?? widget.journeyId ?? widget.profileId ?? 'unknown',
+                          id:
+                              widget.storyId ??
+                              widget.journeyId ??
+                              widget.profileId ??
+                              'unknown',
                           shareUrl: widget.shareUrl,
                           shareText: widget.shareText,
                           qrBottomText: widget.qrBottomText,
                         );
                       },
-                      transitionBuilder: (context, animation, secondaryAnimation, child) {
-                        return FadeTransition(
-                          opacity: animation,
-                          child: SlideTransition(
-                            position: Tween<Offset>(
-                              begin: const Offset(0, 0.05),
-                              end: Offset.zero,
-                            ).animate(animation),
-                            child: child,
-                          ),
-                        );
-                      },
+                      transitionBuilder:
+                          (context, animation, secondaryAnimation, child) {
+                            return FadeTransition(
+                              opacity: animation,
+                              child: SlideTransition(
+                                position: Tween<Offset>(
+                                  begin: const Offset(0, 0.05),
+                                  end: Offset.zero,
+                                ).animate(animation),
+                                child: child,
+                              ),
+                            );
+                          },
                     );
                   },
                 ),
@@ -288,7 +342,11 @@ class _DirectShareSheetState extends ConsumerState<DirectShareSheet> {
     );
   }
 
-  Widget _buildOptionBtn({required IconData icon, required String label, required VoidCallback onTap}) {
+  Widget _buildOptionBtn({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
@@ -303,10 +361,17 @@ class _DirectShareSheetState extends ConsumerState<DirectShareSheet> {
                 color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, size: 24, color: Theme.of(context).colorScheme.onSurface),
+              child: Icon(
+                icon,
+                size: 24,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
             ),
             const SizedBox(height: 8),
-            Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
+            Text(
+              label,
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+            ),
           ],
         ),
       ),

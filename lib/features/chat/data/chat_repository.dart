@@ -32,25 +32,23 @@ class ChatRepository {
     return _firestore
         .collection('chat_rooms')
         .where('participants', arrayContains: myUserId)
-        .where('status', isEqualTo: 'accepted')
         .orderBy('lastMessageTime', descending: true)
         .snapshots()
         .map((snapshot) =>
-            snapshot.docs.map((doc) => ChatRoom.fromFirestore(doc)).toList());
+            snapshot.docs.map((doc) => ChatRoom.fromFirestore(doc)).where((r) => r.status == 'accepted').toList());
   }
 
   Stream<List<ChatRoom>> watchPendingRequests(String myUserId) {
     // Rooms where I am a participant, status is pending, but I am NOT the initiator
     // Note: Firestore doesn't support 'not equal' well with arrayContains.
-    // We will query where participants contains me, status == pending, and filter locally
+    // We will query where participants contains me, filter status and initiator locally to avoid missing composite indexes.
     return _firestore
         .collection('chat_rooms')
         .where('participants', arrayContains: myUserId)
-        .where('status', isEqualTo: 'pending')
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snapshot) {
-      final allPending = snapshot.docs.map((doc) => ChatRoom.fromFirestore(doc)).toList();
+      final allPending = snapshot.docs.map((doc) => ChatRoom.fromFirestore(doc)).where((r) => r.status == 'pending').toList();
       return allPending.where((room) => room.initiatorId != myUserId).toList();
     });
   }
@@ -59,11 +57,10 @@ class ChatRepository {
     return _firestore
         .collection('chat_rooms')
         .where('initiatorId', isEqualTo: myUserId)
-        .where('status', isEqualTo: 'pending')
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snapshot) =>
-            snapshot.docs.map((doc) => ChatRoom.fromFirestore(doc)).toList());
+            snapshot.docs.map((doc) => ChatRoom.fromFirestore(doc)).where((r) => r.status == 'pending').toList());
   }
 
   Stream<List<ChatMessage>> watchMessages(String roomId) {
