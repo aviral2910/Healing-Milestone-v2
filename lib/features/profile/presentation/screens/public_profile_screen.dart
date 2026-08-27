@@ -325,60 +325,53 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen>
                                     ),
                                   ),
                                   const SizedBox(width: 12),
-                                  Expanded(
-                                    child: ElevatedButton(
-                                      onPressed: () async {
-                                        if (currentUser == null) {
-                                          context.push(AppRoutes.login);
-                                          return;
-                                        }
-                                        try {
-                                          final currentUser = ref.read(currentUserProvider);
-                                          final isMutual = currentUser != null && 
-                                              currentUser.followingList.contains(user.userId) && 
-                                              currentUser.followersList.contains(user.userId);
+                                  ElevatedButton(
+                                    onPressed: () async {
+                                      if (currentUser == null) {
+                                        context.push(AppRoutes.login);
+                                        return;
+                                      }
+                                      try {
+                                        final currentUser = ref.read(currentUserProvider);
+                                        final isMutual = currentUser != null && 
+                                            currentUser.followingList.contains(user.userId) && 
+                                            currentUser.followersList.contains(user.userId);
 
-                                          await ref.read(chatRepositoryProvider).requestChat(user.userId, isMutual: isMutual);
-                                          
-                                          if (context.mounted) {
-                                            final uids = [currentUser!.userId, user.userId]..sort();
-                                            final roomId = 'chat_${uids[0]}_${uids[1]}';
-                                            Navigator.of(context).push(
-                                              MaterialPageRoute(
-                                                builder: (_) => ChatRoomScreen(
-                                                  roomId: roomId,
-                                                  roomType: 'peer',
-                                                ),
+                                        await ref.read(chatRepositoryProvider).requestChat(user.userId, isMutual: isMutual);
+                                        
+                                        if (context.mounted) {
+                                          final uids = [currentUser!.userId, user.userId]..sort();
+                                          final roomId = 'chat_${uids[0]}_${uids[1]}';
+                                          Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                              builder: (_) => ChatRoomScreen(
+                                                roomId: roomId,
+                                                roomType: 'peer',
                                               ),
-                                            );
-                                          }
-                                        } catch (e) {
-                                          if (context.mounted) {
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              SnackBar(content: Text('Could not start chat: $e')),
-                                            );
-                                          }
+                                            ),
+                                          );
                                         }
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: theme.colorScheme.primaryContainer,
-                                        foregroundColor: theme.colorScheme.onPrimaryContainer,
-                                        elevation: 0,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                        ),
-                                        padding: const EdgeInsets.symmetric(
-                                          vertical: 14,
-                                        ),
+                                      } catch (e) {
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(content: Text('Could not start chat: $e')),
+                                          );
+                                        }
+                                      }
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: theme.colorScheme.primaryContainer,
+                                      foregroundColor: theme.colorScheme.onPrimaryContainer,
+                                      elevation: 0,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
                                       ),
-                                      child: const Text(
-                                        'Message',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
-                                        ),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 20,
+                                        vertical: 14,
                                       ),
                                     ),
+                                    child: const Icon(Icons.send_rounded, size: 20),
                                   ),
                                 ],
                               );
