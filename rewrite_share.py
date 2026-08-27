@@ -36,47 +36,54 @@ class DirectShareSheet extends ConsumerStatefulWidget {
 
 class _DirectShareSheetState extends ConsumerState<DirectShareSheet> {
   String _searchQuery = '';
+  final Set<String> _selectedUserIds = {};
   final Set<String> _sentUserIds = {};
-  final Set<String> _sendingUserIds = {};
+  bool _isSending = false;
 
-  void _sendToUser(String targetUserId, List<dynamic> rooms) async {
-    if (_sentUserIds.contains(targetUserId) || _sendingUserIds.contains(targetUserId)) return;
+  void _sendToSelected(List<dynamic> rooms) async {
+    if (_selectedUserIds.isEmpty || _isSending) return;
 
     setState(() {
-      _sendingUserIds.add(targetUserId);
+      _isSending = true;
     });
 
     try {
       final repo = ref.read(chatRepositoryProvider);
       final currentUid = FirebaseAuth.instance.currentUser!.uid;
 
-      // Find existing room or request one
-      String? roomId;
-      try {
-        final existingRoom = rooms.firstWhere(
-          (r) => r.participants.contains(targetUserId) && r.participants.contains(currentUid),
-        );
-        roomId = existingRoom.id;
-      } catch (_) {
-        roomId = await repo.requestChat(targetUserId, isMutual: false);
-      }
+      for (final targetUserId in _selectedUserIds) {
+        String? roomId;
+        try {
+          final existingRoom = rooms.firstWhere(
+            (r) => r.participants.contains(targetUserId) && r.participants.contains(currentUid),
+          );
+          roomId = existingRoom.id;
+        } catch (_) {
+          roomId = await repo.requestChat(targetUserId, isMutual: false);
+        }
 
-      if (roomId != null) {
-        await repo.sendMessage(
-          roomId: roomId,
-          senderId: currentUid,
-          text: widget.journeyId != null
-              ? "Check out this Journey!"
-              : widget.storyId != null ? "Check out this Story!" : "Check out this profile!",
-          sharedJourneyId: widget.journeyId,
-          sharedStoryId: widget.storyId,
-        );
+        if (roomId != null) {
+          await repo.sendMessage(
+            roomId: roomId,
+            senderId: currentUid,
+            text: widget.journeyId != null
+                ? "Check out this Journey!"
+                : widget.storyId != null ? "Check out this Story!" : "Check out this profile!",
+            sharedJourneyId: widget.journeyId,
+            sharedStoryId: widget.storyId,
+          );
+        }
       }
 
       if (mounted) {
         setState(() {
-          _sentUserIds.add(targetUserId);
+          _sentUserIds.addAll(_selectedUserIds);
+          _selectedUserIds.clear();
         });
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Sent successfully!')),
+        );
       }
     } catch (e) {
       if (mounted) {
@@ -87,10 +94,21 @@ class _DirectShareSheetState extends ConsumerState<DirectShareSheet> {
     } finally {
       if (mounted) {
         setState(() {
-          _sendingUserIds.remove(targetUserId);
+          _isSending = false;
         });
       }
     }
+  }
+
+  void _toggleSelection(String userId) {
+    if (_sentUserIds.contains(userId)) return;
+    setState(() {
+      if (_selectedUserIds.contains(userId)) {
+        _selectedUserIds.remove(userId);
+      } else {
+        _selectedUserIds.add(userId);
+      }
+    });
   }
 
   @override
@@ -274,70 +292,74 @@ class _DirectShareSheetState extends ConsumerState<DirectShareSheet> {
                                                 return const SizedBox.shrink();
                                               }
           
+                                              final isSelected = _selectedUserIds.contains(otherUserId);
                                               final isSent = _sentUserIds.contains(otherUserId);
-                                              final isSending = _sendingUserIds.contains(otherUserId);
           
-                                              return Padding(
-                                                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
-                                                child: Row(
-                                                  children: [
-                                                    AppAvatar(imageUrl: user.profilePicture, radius: 24),
-                                                    const SizedBox(width: 16),
-                                                    Expanded(
-                                                      child: Column(
-                                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                                        children: [
-                                                          Text(
-                                                            user.displayName,
-                                                            maxLines: 1,
-                                                            overflow: TextOverflow.ellipsis,
-                                                            style: theme.textTheme.titleMedium?.copyWith(
-                                                              fontWeight: FontWeight.w600,
-                                                            ),
-                                                          ),
-                                                          if (user.username != null) ...[
-                                                            const SizedBox(height: 2),
+                                              return InkWell(
+                                                onTap: () => _toggleSelection(otherUserId),
+                                                child: Padding(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
+                                                  child: Row(
+                                                    children: [
+                                                      AppAvatar(imageUrl: user.profilePicture, radius: 24),
+                                                      const SizedBox(width: 16),
+                                                      Expanded(
+                                                        child: Column(
+                                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                                          children: [
                                                             Text(
-                                                              '@${user.username}',
+                                                              user.displayName,
                                                               maxLines: 1,
                                                               overflow: TextOverflow.ellipsis,
-                                                              style: theme.textTheme.bodySmall?.copyWith(
-                                                                color: theme.colorScheme.onSurfaceVariant,
+                                                              style: theme.textTheme.titleMedium?.copyWith(
+                                                                fontWeight: FontWeight.w600,
+                                                                color: isSent ? theme.colorScheme.onSurfaceVariant : theme.colorScheme.onSurface,
                                                               ),
                                                             ),
-                                                          ],
-                                                        ],
-                                                      ),
-                                                    ),
-                                                    const SizedBox(width: 12),
-                                                    
-                                                    // Inline Send Button
-                                                    GestureDetector(
-                                                      onTap: isSent || isSending ? null : () => _sendToUser(otherUserId, rooms),
-                                                      child: Container(
-                                                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                                                        decoration: BoxDecoration(
-                                                          color: isSent 
-                                                              ? theme.colorScheme.surface
-                                                              : theme.colorScheme.primary,
-                                                          border: isSent ? Border.all(color: theme.dividerColor.withValues(alpha: 0.3)) : null,
-                                                          borderRadius: BorderRadius.circular(16),
-                                                        ),
-                                                        child: isSending
-                                                            ? SizedBox(
-                                                                width: 16, height: 16,
-                                                                child: CircularProgressIndicator(strokeWidth: 2, color: theme.colorScheme.onPrimary),
-                                                              )
-                                                            : Text(
-                                                                isSent ? 'Sent' : 'Send',
-                                                                style: theme.textTheme.titleSmall?.copyWith(
-                                                                  color: isSent ? theme.colorScheme.onSurface : theme.colorScheme.onPrimary,
-                                                                  fontWeight: FontWeight.bold,
+                                                            if (user.username != null) ...[
+                                                              const SizedBox(height: 2),
+                                                              Text(
+                                                                '@${user.username}',
+                                                                maxLines: 1,
+                                                                overflow: TextOverflow.ellipsis,
+                                                                style: theme.textTheme.bodySmall?.copyWith(
+                                                                  color: theme.colorScheme.onSurfaceVariant,
                                                                 ),
                                                               ),
+                                                            ],
+                                                          ],
+                                                        ),
                                                       ),
-                                                    ),
-                                                  ],
+                                                      const SizedBox(width: 12),
+                                                      
+                                                      // Selection Indicator
+                                                      if (isSent)
+                                                        Container(
+                                                          padding: const EdgeInsets.all(4),
+                                                          decoration: BoxDecoration(
+                                                            shape: BoxShape.circle,
+                                                            color: theme.colorScheme.surfaceContainerHighest,
+                                                          ),
+                                                          child: Icon(Icons.send_rounded, size: 16, color: theme.colorScheme.onSurface),
+                                                        )
+                                                      else
+                                                        Container(
+                                                          width: 24,
+                                                          height: 24,
+                                                          decoration: BoxDecoration(
+                                                            shape: BoxShape.circle,
+                                                            border: Border.all(
+                                                              color: isSelected ? theme.colorScheme.primary : theme.dividerColor.withValues(alpha: 0.5),
+                                                              width: isSelected ? 0 : 1.5,
+                                                            ),
+                                                            color: isSelected ? theme.colorScheme.primary : Colors.transparent,
+                                                          ),
+                                                          child: isSelected
+                                                              ? Icon(Icons.check, size: 16, color: theme.colorScheme.onPrimary)
+                                                              : null,
+                                                        ),
+                                                    ],
+                                                  ),
                                                 ),
                                               );
                                             },
@@ -353,7 +375,7 @@ class _DirectShareSheetState extends ConsumerState<DirectShareSheet> {
                                   error: (e, _) => const SliverToBoxAdapter(child: Center(child: Text("Error loading chats"))),
                                 ),
                                 
-                          const SliverToBoxAdapter(child: SizedBox(height: 120)), // Padding for bottom bar
+                          const SliverToBoxAdapter(child: SizedBox(height: 220)), // Padding for bottom bar
                         ],
                       ),
                     ),
@@ -385,53 +407,82 @@ class _DirectShareSheetState extends ConsumerState<DirectShareSheet> {
                       ),
                     ],
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      _buildOptionBtn(
-                        context: context,
-                        icon: Icons.link_rounded,
-                        label: 'Copy Link',
-                        onTap: () {
-                          Clipboard.setData(ClipboardData(text: widget.shareUrl));
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Link copied to clipboard')),
-                          );
-                          Navigator.pop(context);
-                        },
-                      ),
-                      _buildOptionBtn(
-                        context: context,
-                        icon: Icons.ios_share_rounded,
-                        label: 'Share via',
-                        onTap: () {
-                          Navigator.pop(context);
-                          // ignore: deprecated_member_use
-                          Share.share(widget.shareText, subject: 'Healing Milestones');
-                        },
-                      ),
-                      _buildOptionBtn(
-                        context: context,
-                        icon: Icons.qr_code_2_rounded,
-                        label: 'QR Code',
-                        onTap: () {
-                          Navigator.pop(context);
-                          showGeneralDialog(
+                      if (_selectedUserIds.isNotEmpty) ...[
+                        activeChatsAsync.whenOrNull(
+                          data: (rooms) => ElevatedButton(
+                            onPressed: _isSending ? null : () => _sendToSelected(rooms),
+                            style: ElevatedButton.styleFrom(
+                              minimumSize: const Size(double.infinity, 56),
+                              backgroundColor: theme.colorScheme.primary,
+                              foregroundColor: theme.colorScheme.onPrimary,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+                            ),
+                            child: _isSending
+                                ? SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2, color: theme.colorScheme.onPrimary))
+                                : Text('Send to ${_selectedUserIds.length}', style: theme.textTheme.titleMedium?.copyWith(
+                                    color: theme.colorScheme.onPrimary,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  )),
+                          ),
+                        ) ?? const SizedBox.shrink(),
+                        const SizedBox(height: 24),
+                        Divider(height: 1, color: theme.dividerColor.withValues(alpha: 0.1)),
+                        const SizedBox(height: 16),
+                      ],
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          _buildOptionBtn(
                             context: context,
-                            barrierDismissible: true,
-                            barrierLabel: 'Dismiss',
-                            barrierColor: Colors.black.withValues(alpha: 0.8),
-                            transitionDuration: const Duration(milliseconds: 300),
-                            pageBuilder: (context, animation, secondaryAnimation) {
-                              return QrSharePreview(
-                                id: widget.storyId ?? widget.journeyId ?? widget.profileId ?? 'unknown',
-                                shareUrl: widget.shareUrl,
-                                shareText: widget.shareText,
-                                qrBottomText: widget.qrBottomText,
+                            icon: Icons.link_rounded,
+                            label: 'Copy Link',
+                            onTap: () {
+                              Clipboard.setData(ClipboardData(text: widget.shareUrl));
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Link copied to clipboard')),
+                              );
+                              Navigator.pop(context);
+                            },
+                          ),
+                          _buildOptionBtn(
+                            context: context,
+                            icon: Icons.ios_share_rounded,
+                            label: 'Share via',
+                            onTap: () {
+                              Navigator.pop(context);
+                              // ignore: deprecated_member_use
+                              Share.share(widget.shareText, subject: 'Healing Milestones');
+                            },
+                          ),
+                          _buildOptionBtn(
+                            context: context,
+                            icon: Icons.qr_code_2_rounded,
+                            label: 'QR Code',
+                            onTap: () {
+                              Navigator.pop(context);
+                              showGeneralDialog(
+                                context: context,
+                                barrierDismissible: true,
+                                barrierLabel: 'Dismiss',
+                                barrierColor: Colors.black.withValues(alpha: 0.8),
+                                transitionDuration: const Duration(milliseconds: 300),
+                                pageBuilder: (context, animation, secondaryAnimation) {
+                                  return QrSharePreview(
+                                    id: widget.storyId ?? widget.journeyId ?? widget.profileId ?? 'unknown',
+                                    shareUrl: widget.shareUrl,
+                                    shareText: widget.shareText,
+                                    qrBottomText: widget.qrBottomText,
+                                  );
+                                },
                               );
                             },
-                          );
-                        },
+                          ),
+                        ],
                       ),
                     ],
                   ),
