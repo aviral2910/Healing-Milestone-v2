@@ -328,6 +328,19 @@ class _MessageBubble extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
+    // Sleek monochrome palette
+    final sentColor = isDark 
+        ? Colors.white.withValues(alpha: 0.2) 
+        : const Color(0xFF1C1C1E); 
+        
+    final receivedColor = isDark
+        ? const Color(0xFF2C2C2E)
+        : const Color(0xFFF1F1F1);
+
+    final sentTextColor = Colors.white;
+    final receivedTextColor = isDark ? Colors.white : Colors.black87;
 
     return GestureDetector(
       onLongPress: isMe
@@ -427,16 +440,7 @@ class _MessageBubble extends ConsumerWidget {
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: BoxDecoration(
-            gradient: isMe
-                ? const LinearGradient(
-                    colors: [Color(0xFF007AFF), Color(0xFF0056FF)], // Sleek iOS/Messenger Blue
-                    begin: Alignment.bottomLeft,
-                    end: Alignment.topRight,
-                  )
-                : null,
-            color: isMe
-                ? null
-                : theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+            color: isMe ? sentColor : receivedColor,
             borderRadius: BorderRadius.circular(22).copyWith(
               bottomRight: isMe
                   ? const Radius.circular(6)
@@ -487,9 +491,7 @@ class _MessageBubble extends ConsumerWidget {
                 Text(
                   msg.text!,
                   style: theme.textTheme.bodyLarge?.copyWith(
-                    color: isMe
-                        ? Colors.white
-                        : theme.colorScheme.onSurface,
+                    color: isMe ? sentTextColor : receivedTextColor,
                   ),
                 ),
               const SizedBox(height: 4),
@@ -498,9 +500,9 @@ class _MessageBubble extends ConsumerWidget {
                   timeago.format(msg.createdAt!),
                   style: theme.textTheme.bodySmall?.copyWith(
                     fontSize: 11,
-                    color: isMe
-                        ? Colors.white70
-                        : theme.colorScheme.onSurfaceVariant,
+                    color: isMe 
+                        ? sentTextColor.withValues(alpha: 0.6) 
+                        : receivedTextColor.withValues(alpha: 0.6),
                   ),
                 ),
             ],
