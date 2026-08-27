@@ -193,6 +193,11 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                         .loadJourneys(journeyIds);
                   if (storyIds.isNotEmpty)
                     ref.read(batchMediaProvider.notifier).loadStories(storyIds);
+                    
+                  // Mark chat as read
+                  if (currentUser?.userId != null) {
+                    ref.read(chatRepositoryProvider).markAsRead(widget.roomId, currentUser!.userId!);
+                  }
                 });
 
                 if (messages.isEmpty) {

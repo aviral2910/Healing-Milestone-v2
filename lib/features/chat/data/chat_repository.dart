@@ -137,26 +137,39 @@ class ChatRepository {
         'readBy': [senderId],
       });
 
-      // 2. Update room snippet
+      // 2. Update room snippet & unread counts
       final roomRef = _firestore.collection('chat_rooms').doc(roomId);
       final snippet = text?.isNotEmpty == true 
           ? text 
           : (imageUrl != null ? '📷 Image' : (sharedJourneyId != null ? '🔗 Shared a Journey' : '🔗 Shared a Story'));
 
-      // 3. We can't do complex FieldValue.increment inside dynamic map easily, 
-      // so in a real massive scale app we use a cloud function. 
-      // For now we just update snippet.
-      transaction.update(roomRef, {
-        'lastMessageText': snippet,
-        'lastMessageSenderId': senderId,
-        'lastMessageTime': now,
-      });
+      final roomDoc = await transaction.get(roomRef);
+      if (roomDoc.exists) {
+        final data = roomDoc.data();
+        final participants = List<String>.from(data?['participants'] ?? []);
+        
+        final updates = <String, dynamic>{
+          'lastMessageText': snippet,
+          'lastMessageSenderId': senderId,
+          'lastMessageTime': now,
+        };
+
+        for (final p in participants) {
+          if (p != senderId) {
+            updates['unreadCount.$p'] = FieldValue.increment(1);
+          }
+        }
+        
+        transaction.update(roomRef, updates);
+      }
     });
   }
 
   Future<void> markAsRead(String roomId, String myUserId) async {
-    // Normally handled by pagination/scroll listener updating individual messages
-    // Or just clearing the unread count in the room doc.
+    final roomRef = _firestore.collection('chat_rooms').doc(roomId);
+    await roomRef.update({
+      'unreadCount.$myUserId': 0,
+    });
   }
   Future<void> deleteMessage(String roomId, String messageId) async {
     await _firestore

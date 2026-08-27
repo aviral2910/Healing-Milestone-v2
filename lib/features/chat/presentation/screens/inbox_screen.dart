@@ -443,7 +443,7 @@ class _ChatListTile extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
-                  unreadCount > 99 ? '99+' : unreadCount.toString(),
+                  unreadCount > 9 ? '9+' : unreadCount.toString(),
                   style: theme.textTheme.labelSmall?.copyWith(
                     color: theme.colorScheme.onPrimary,
                     fontWeight: FontWeight.bold,
