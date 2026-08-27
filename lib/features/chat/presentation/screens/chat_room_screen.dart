@@ -310,18 +310,11 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                         ),
                       )
                     else if (_hasText)
-                      TextButton(
+                      IconButton(
                         onPressed: _sendTextMessage,
-                        style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          foregroundColor: theme.colorScheme.primary,
-                        ),
-                        child: const Text(
-                          'Send',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
+                        icon: Icon(
+                          Icons.send_rounded,
+                          color: theme.colorScheme.primary,
                         ),
                       )
                     else ...[
