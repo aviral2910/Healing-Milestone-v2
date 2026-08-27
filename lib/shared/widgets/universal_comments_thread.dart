@@ -296,9 +296,8 @@ class _CommentBubble extends ConsumerWidget {
             onTap: () {
               if (user != null) {
                 Navigator.pop(context); // Close bottom sheet
-                context.pushNamed(
-                  'public-profile',
-                  pathParameters: {'id': user.userId},
+                context.push(
+                  AppRoutes.publicProfile(user.userId),
                   extra: user,
                 );
               }

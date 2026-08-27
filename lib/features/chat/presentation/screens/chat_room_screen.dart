@@ -1,3 +1,5 @@
+import 'package:healing_milestones/core/router/app_routes.dart';
+
 import 'package:healing_milestones/shared/widgets/app_loader.dart';
 import 'package:healing_milestones/shared/widgets/app_avatar.dart';
 import 'dart:io';
@@ -5,6 +7,7 @@ import 'package:healing_milestones/features/journey/presentation/screens/journey
 import 'package:healing_milestones/features/milestone/presentation/screens/story_detail_screen.dart';
 import 'package:healing_milestones/features/profile/presentation/screens/public_profile_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter/services.dart';
 import 'package:healing_milestones/shared/widgets/quick_emoji_bar.dart';
 import 'package:flutter/cupertino.dart';
@@ -180,19 +183,28 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               data: (user) {
                 if (user == null)
                   return Text('User', style: theme.textTheme.titleMedium);
-                return Row(
-                  children: [
-                    AppAvatar(imageUrl: user.profilePicture, radius: 18),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        user.displayName,
-                        style: theme.textTheme.titleMedium,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                return GestureDetector(
+                  onTap: () {
+                    context.push(
+                      AppRoutes.publicProfile(user.userId),
+                      extra: user,
+                    );
+                  },
+                  behavior: HitTestBehavior.opaque,
+                  child: Row(
+                    children: [
+                      AppAvatar(imageUrl: user.profilePicture, radius: 18),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          user.displayName,
+                          style: theme.textTheme.titleMedium,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 );
               },
               loading: () =>
