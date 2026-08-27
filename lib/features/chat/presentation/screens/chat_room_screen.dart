@@ -486,14 +486,17 @@ class _MessageBubble extends ConsumerWidget {
                     onTap: () {
                       Navigator.push(context, MaterialPageRoute(builder: (_) => Scaffold(
                         backgroundColor: Colors.black,
+                        extendBodyBehindAppBar: true,
                         appBar: AppBar(
                           backgroundColor: Colors.transparent,
-                          iconTheme: const IconThemeData(color: Colors.white),
+                          elevation: 0,
+                          iconTheme: const IconThemeData(color: Colors.white, shadows: [Shadow(color: Colors.black45, blurRadius: 4)]),
                         ),
-                        body: Center(
-                          child: InteractiveViewer(
-                            minScale: 1.0,
-                            maxScale: 4.0,
+                        body: InteractiveViewer(
+                          minScale: 1.0,
+                          maxScale: 4.0,
+                          clipBehavior: Clip.none,
+                          child: Center(
                             child: CachedNetworkImage(imageUrl: msg.imageUrl!),
                           ),
                         ),
