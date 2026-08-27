@@ -325,7 +325,7 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen>
                                     ),
                                   ),
                                   const SizedBox(width: 12),
-                                  ElevatedButton(
+                                  OutlinedButton(
                                     onPressed: () async {
                                       if (currentUser == null) {
                                         context.push(AppRoutes.login);
@@ -359,10 +359,9 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen>
                                         }
                                       }
                                     },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: theme.colorScheme.primaryContainer,
-                                      foregroundColor: theme.colorScheme.onPrimaryContainer,
-                                      elevation: 0,
+                                    style: OutlinedButton.styleFrom(
+                                      foregroundColor: theme.colorScheme.primary,
+                                      side: BorderSide(color: theme.colorScheme.primary, width: 1.5),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(12),
                                       ),
