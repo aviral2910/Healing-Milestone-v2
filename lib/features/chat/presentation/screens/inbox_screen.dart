@@ -20,7 +20,10 @@ class InboxScreen extends ConsumerWidget {
         appBar: AppBar(
           title: Text(
             'Messages', 
-            style: theme.textTheme.headlineLarge?.copyWith(fontSize: 28),
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w600,
+              letterSpacing: -0.5,
+            ),
           ),
           centerTitle: false,
           actions: [
@@ -62,65 +65,36 @@ class _ActiveChatsList extends ConsumerWidget {
 
     return activeChatsAsync.when(
       data: (chats) {
-        return CustomScrollView(
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            // Search Bar
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
-                child: Container(
-                  height: 44,
+        if (chats.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                    borderRadius: BorderRadius.circular(12),
+                    color: theme.colorScheme.surface,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: theme.dividerColor.withValues(alpha: 0.1)),
                   ),
-                  child: TextField(
-                    style: theme.textTheme.bodyMedium,
-                    decoration: InputDecoration(
-                      hintText: 'Search...',
-                      hintStyle: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                      prefixIcon: Icon(Icons.search, size: 20, color: theme.colorScheme.onSurfaceVariant),
-                      border: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    ),
-                  ),
+                  child: Icon(Icons.maps_ugc_rounded, size: 48, color: theme.colorScheme.primary),
                 ),
-              ),
+                const SizedBox(height: 24),
+                Text('No Messages', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+                const SizedBox(height: 8),
+                Text('Start a conversation.', 
+                  style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                ),
+              ],
             ),
-            
-            // Empty State
-            if (chats.isEmpty)
-              SliverFillRemaining(
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(24),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.surface,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: theme.dividerColor.withValues(alpha: 0.1)),
-                        ),
-                        child: Icon(Icons.maps_ugc_rounded, size: 48, color: theme.colorScheme.primary),
-                      ),
-                      const SizedBox(height: 24),
-                      Text('No Messages Yet', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 8),
-                      Text('Send private messages to friends.', 
-                        style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-                      ),
-                    ],
-                  ),
-                ),
-              )
-            else
-              SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
+          );
+        }
+
+        return ListView.builder(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.only(top: 8, bottom: 24),
+          itemCount: chats.length,
+          itemBuilder: (context, index) {
                     final chat = chats[index];
                     final currentUser = ref.watch(currentUserProvider);
                     if (currentUser == null) return const SizedBox.shrink();
@@ -253,12 +227,7 @@ class _ActiveChatsList extends ConsumerWidget {
                       ),
                       error: (_, __) => const SizedBox.shrink(),
                     );
-                  },
-                  childCount: chats.length,
-                ),
-              ),
-            const SliverToBoxAdapter(child: SizedBox(height: 24)),
-          ],
+          },
         );
       },
       loading: () => const Center(child: AppLoader()),
@@ -411,10 +380,12 @@ class _ChatListTile extends StatelessWidget {
                   Text(
                     title,
                     style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: isUnread ? FontWeight.w800 : FontWeight.w600,
+                      fontWeight: isUnread ? FontWeight.w600 : FontWeight.w400,
+                      letterSpacing: -0.3,
+                      fontSize: 15,
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 3),
                   Row(
                     children: [
                       Expanded(
@@ -426,7 +397,8 @@ class _ChatListTile extends StatelessWidget {
                             color: isSentRequest 
                                 ? theme.colorScheme.onSurfaceVariant 
                                 : (isUnread ? theme.colorScheme.onSurface : theme.colorScheme.onSurfaceVariant),
-                            fontWeight: isUnread ? FontWeight.w600 : FontWeight.normal,
+                            fontWeight: isUnread ? FontWeight.w500 : FontWeight.w400,
+                            fontSize: 13,
                           ),
                         ),
                       ),
@@ -434,7 +406,10 @@ class _ChatListTile extends StatelessWidget {
                         const SizedBox(width: 8),
                         Text(
                           '· ${timeago.format(time!, locale: 'en_short')}',
-                          style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                            fontSize: 12,
+                          ),
                         ),
                       ],
                     ],
