@@ -558,21 +558,33 @@ class _MessageBubble extends ConsumerWidget {
     String? title;
 
     if (isJourney) {
-      final journey = mediaState.journeys[id];
-      if (journey == null) {
+      if (!mediaState.journeys.containsKey(id)) {
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
           child: _buildShimmerBox(context, double.infinity, 80, radius: 12),
         );
       }
+      final journey = mediaState.journeys[id];
+      if (journey == null) {
+        return const Padding(
+          padding: EdgeInsets.symmetric(vertical: 8.0),
+          child: Text('Journey unavailable', style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic)),
+        );
+      }
       imageUrl = null;
       title = journey.title;
     } else {
-      final story = mediaState.stories[id];
-      if (story == null) {
+      if (!mediaState.stories.containsKey(id)) {
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
           child: _buildShimmerBox(context, double.infinity, 160, radius: 12),
+        );
+      }
+      final story = mediaState.stories[id];
+      if (story == null) {
+        return const Padding(
+          padding: EdgeInsets.symmetric(vertical: 8.0),
+          child: Text('Post unavailable', style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic)),
         );
       }
       imageUrl = story.mainImage;

@@ -5,14 +5,14 @@ import 'package:healing_milestones/features/journey/data/models/journey_models.d
 import 'package:hooks_riverpod/legacy.dart';
 
 class BatchMediaState {
-  final Map<String, JourneyModel> journeys;
-  final Map<String, StoryModel> stories;
+  final Map<String, JourneyModel?> journeys;
+  final Map<String, StoryModel?> stories;
 
   BatchMediaState({this.journeys = const {}, this.stories = const {}});
 
   BatchMediaState copyWith({
-    Map<String, JourneyModel>? journeys,
-    Map<String, StoryModel>? stories,
+    Map<String, JourneyModel?>? journeys,
+    Map<String, StoryModel?>? stories,
   }) {
     return BatchMediaState(
       journeys: journeys ?? this.journeys,
@@ -38,15 +38,28 @@ class BatchMediaNotifier extends StateNotifier<BatchMediaState> {
         '/api/journeys/batch',
         data: {'ids': needed},
       );
-      final List data = res.data;
-      final newJourneys = {
-        for (var j in data) j['id'].toString(): JourneyModel.fromJson(j),
-      };
-      if (mounted) {
-        state = state.copyWith(journeys: {...state.journeys, ...newJourneys});
+      if (res.data is List) {
+        final List data = res.data;
+        final newJourneys = <String, JourneyModel?>{
+          for (var j in data) j['id'].toString(): JourneyModel.fromJson(j),
+        };
+        
+        for (var id in needed) {
+          if (!newJourneys.containsKey(id)) {
+            newJourneys[id] = null;
+          }
+        }
+        
+        if (mounted) {
+          state = state.copyWith(journeys: {...state.journeys, ...newJourneys});
+        }
+      } else {
+        print("Backend returned non-list for journeys batch: ${res.data}");
       }
     } catch (e) {
-      _requestedJourneys.removeAll(needed); // Allow retry
+      print('Error loadJourneys: $e');
+      // If we remove them, they get retried endlessly by the UI!
+      // Let's NOT remove them from _requestedJourneys so it stops spinning/retrying.
     }
   }
 
@@ -61,15 +74,23 @@ class BatchMediaNotifier extends StateNotifier<BatchMediaState> {
         data: {'ids': needed},
       );
       final List data = res.data['items'] ?? [];
-      final newStories = {
+      final newStories = <String, StoryModel?>{
         for (var s in data)
           s['id'].toString(): StoryModel.fromMap(s, s['id'].toString()),
       };
+      
+      for (var id in needed) {
+        if (!newStories.containsKey(id)) {
+          newStories[id] = null;
+        }
+      }
+      
       if (mounted) {
         state = state.copyWith(stories: {...state.stories, ...newStories});
       }
     } catch (e) {
-      _requestedStories.removeAll(needed); // Allow retry
+      print('Error loadStories: $e');
+      // Do not remove to prevent infinite reload loop if server is failing
     }
   }
 }
