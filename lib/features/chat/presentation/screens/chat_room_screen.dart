@@ -5,6 +5,7 @@ import 'package:healing_milestones/features/journey/presentation/screens/journey
 import 'package:healing_milestones/features/milestone/presentation/screens/story_detail_screen.dart';
 import 'package:healing_milestones/features/profile/presentation/screens/public_profile_screen.dart';
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import 'package:shimmer/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -984,11 +985,7 @@ class _ImagePreviewScreenState extends State<_ImagePreviewScreen> {
     final theme = Theme.of(context);
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white, shadows: [Shadow(color: Colors.black45, blurRadius: 4)]),
-      ),
+
       extendBodyBehindAppBar: true,
       body: Stack(
         children: [
@@ -1003,62 +1000,79 @@ class _ImagePreviewScreenState extends State<_ImagePreviewScreen> {
           
           // Bottom Controls
           Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
-                  colors: [Colors.black87, Colors.transparent],
+            bottom: 40,
+            left: 30,
+            right: 30,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(40),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                child: Container(
+                  height: 64,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.4),
+                    borderRadius: BorderRadius.circular(40),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Left: Cancel Button
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded, color: Colors.white),
+                        onPressed: () => Navigator.pop(context, null),
+                      ),
+                      
+                      // Middle: View Once Toggle
+                      GestureDetector(
+                        onTap: () => setState(() => isViewOnce = !isViewOnce),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: isViewOnce 
+                                ? theme.colorScheme.primary 
+                                : Colors.white.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                isViewOnce ? Icons.timer_rounded : Icons.timer_outlined,
+                                color: Colors.white,
+                                size: 18,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                isViewOnce ? 'View Once' : 'Permanent',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      
+                      // Right: Send Button
+                      GestureDetector(
+                        onTap: () => Navigator.pop(context, isViewOnce),
+                        child: Container(
+                          height: 48,
+                          width: 48,
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primary,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.send_rounded, color: Colors.white, size: 22),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // View Once Toggle Button
-                  InkWell(
-                    onTap: () {
-                      setState(() {
-                        isViewOnce = !isViewOnce;
-                      });
-                    },
-                    borderRadius: BorderRadius.circular(30),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      decoration: BoxDecoration(
-                        color: isViewOnce ? theme.colorScheme.primary : Colors.white.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(30),
-                        border: Border.all(color: isViewOnce ? theme.colorScheme.primary : Colors.white54),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            isViewOnce ? Icons.timer_rounded : Icons.timer_outlined, 
-                            color: Colors.white, 
-                            size: 20
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            isViewOnce ? 'View Once On' : 'View Once Off',
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  
-                  // Send Button
-                  FloatingActionButton(
-                    onPressed: () => Navigator.pop(context, isViewOnce),
-                    backgroundColor: theme.colorScheme.primary,
-                    elevation: 0,
-                    shape: const CircleBorder(),
-                    child: const Icon(Icons.send_rounded, color: Colors.white),
-                  ),
-                ],
               ),
             ),
           ),
