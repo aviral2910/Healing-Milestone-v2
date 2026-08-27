@@ -28,6 +28,19 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   final _textController = TextEditingController();
   final _imagePicker = ImagePicker();
   bool _isSending = false;
+  bool _hasText = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _textController.addListener(() {
+      if (_hasText != _textController.text.isNotEmpty) {
+        setState(() {
+          _hasText = _textController.text.isNotEmpty;
+        });
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -165,8 +178,12 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.info_outline),
-            onPressed: () {}, // Future profile view
+            icon: const Icon(Icons.local_phone_outlined),
+            onPressed: () {}, 
+          ),
+          IconButton(
+            icon: const Icon(Icons.videocam_outlined),
+            onPressed: () {}, 
           ),
         ],
       ),
@@ -232,29 +249,32 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
     return SafeArea(
       child: Container(
-        padding: const EdgeInsets.only(
-          left: 8.0,
-          right: 8.0,
-          bottom: 12.0,
-          top: 8.0,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
         color: theme.scaffoldBackgroundColor,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            IconButton(
-              padding: const EdgeInsets.all(12),
-              icon: Icon(
-                Icons.camera_alt_outlined,
-                color: theme.colorScheme.onSurface,
+            Padding(
+              padding: const EdgeInsets.only(bottom: 4, right: 12),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary,
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  icon: Icon(Icons.camera_alt, color: theme.colorScheme.onPrimary, size: 22),
+                  onPressed: () {}, // Future camera integration
+                  constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                  padding: EdgeInsets.zero,
+                ),
               ),
-              onPressed: _isSending ? null : _pickAndSendImage,
             ),
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
-                  color: theme.dividerColor.withOpacity(0.5),
+                  color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: theme.dividerColor.withValues(alpha: 0.1)),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
@@ -264,7 +284,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                         controller: _textController,
                         style: theme.textTheme.bodyLarge,
                         minLines: 1,
-                        maxLines: 4,
+                        maxLines: 5,
                         decoration: InputDecoration(
                           hintText: 'Message...',
                           hintStyle: theme.textTheme.bodyLarge?.copyWith(
@@ -273,30 +293,40 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                           border: InputBorder.none,
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 16,
-                            vertical: 12,
+                            vertical: 10,
                           ),
                         ),
                         textCapitalization: TextCapitalization.sentences,
-                        onSubmitted: (_) => _sendTextMessage(),
                       ),
                     ),
                     if (_isSending)
                       const Padding(
                         padding: EdgeInsets.all(12.0),
                         child: SizedBox(
-                          width: 24,
-                          height: 24,
+                          width: 20,
+                          height: 20,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         ),
                       )
-                    else
-                      IconButton(
-                        icon: Icon(
-                          Icons.send_rounded,
-                          color: theme.colorScheme.primary,
-                        ),
+                    else if (_hasText)
+                      TextButton(
                         onPressed: _sendTextMessage,
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          foregroundColor: theme.colorScheme.primary,
+                        ),
+                        child: const Text('Send', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      )
+                    else ...[
+                      IconButton(
+                        icon: Icon(Icons.mic_none, color: theme.colorScheme.onSurfaceVariant),
+                        onPressed: () {}, 
                       ),
+                      IconButton(
+                        icon: Icon(Icons.image_outlined, color: theme.colorScheme.onSurfaceVariant),
+                        onPressed: _pickAndSendImage,
+                      ),
+                    ]
                   ],
                 ),
               ),
@@ -326,31 +356,91 @@ class _MessageBubble extends ConsumerWidget {
     return GestureDetector(
       onLongPress: isMe
           ? () {
-              showDialog(
+              showModalBottomSheet(
                 context: context,
-                builder: (ctx) => AlertDialog(
-                  title: const Text('Unsend Message?'),
-                  content: const Text(
-                    'This will permanently delete the message for everyone.',
+                backgroundColor: Colors.transparent,
+                builder: (ctx) => Container(
+                  margin: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: theme.scaffoldBackgroundColor,
+                    borderRadius: BorderRadius.circular(24),
                   ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(ctx),
-                      child: const Text('Cancel'),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pop(ctx);
-                        ref
-                            .read(chatRepositoryProvider)
-                            .deleteMessage(roomId, msg.id);
-                      },
-                      child: const Text(
-                        'Unsend',
-                        style: TextStyle(color: Colors.red),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const SizedBox(height: 8),
+                      Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: theme.dividerColor,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 24),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: Text(
+                          'Unsend message?',
+                          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: Text(
+                          'This message will be unsent for everyone in the chat.',
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                            height: 1.3,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Divider(height: 1, color: theme.dividerColor.withValues(alpha: 0.1)),
+                      InkWell(
+                        onTap: () {
+                          Navigator.pop(ctx);
+                          ref.read(chatRepositoryProvider).deleteMessage(roomId, msg.id);
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Unsend',
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  color: Colors.redAccent,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Divider(height: 1, color: theme.dividerColor.withValues(alpha: 0.1)),
+                      InkWell(
+                        onTap: () => Navigator.pop(ctx),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Cancel',
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                    ],
+                  ),
                 ),
               );
             }
@@ -364,13 +454,13 @@ class _MessageBubble extends ConsumerWidget {
             color: isMe
                 ? theme.colorScheme.primary
                 : theme.colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(16).copyWith(
+            borderRadius: BorderRadius.circular(22).copyWith(
               bottomRight: isMe
-                  ? const Radius.circular(4)
-                  : const Radius.circular(16),
+                  ? const Radius.circular(6)
+                  : const Radius.circular(22),
               bottomLeft: isMe
-                  ? const Radius.circular(16)
-                  : const Radius.circular(4),
+                  ? const Radius.circular(22)
+                  : const Radius.circular(6),
             ),
           ),
           constraints: BoxConstraints(

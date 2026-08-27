@@ -15,25 +15,20 @@ class InboxScreen extends ConsumerWidget {
     final theme = Theme.of(context);
     final pendingRequestsAsync = ref.watch(pendingRequestsProvider);
     final pendingCount = pendingRequestsAsync.value?.length ?? 0;
-    
+
     return DefaultTabController(
       length: 2,
       child: Scaffold(
         appBar: AppBar(
           title: Text(
-            'Messages', 
+            'Messages',
             style: theme.textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w600,
               letterSpacing: -0.5,
             ),
           ),
           centerTitle: false,
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.edit_square),
-              onPressed: () {},
-            ),
-          ],
+
           bottom: TabBar(
             dividerColor: Colors.transparent,
             indicatorSize: TabBarIndicatorSize.label,
@@ -53,7 +48,10 @@ class InboxScreen extends ConsumerWidget {
                     if (pendingCount > 0) ...[
                       const SizedBox(width: 6),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: theme.colorScheme.error,
                           borderRadius: BorderRadius.circular(10),
@@ -102,15 +100,29 @@ class _ActiveChatsList extends ConsumerWidget {
                   decoration: BoxDecoration(
                     color: theme.colorScheme.surface,
                     shape: BoxShape.circle,
-                    border: Border.all(color: theme.dividerColor.withValues(alpha: 0.1)),
+                    border: Border.all(
+                      color: theme.dividerColor.withValues(alpha: 0.1),
+                    ),
                   ),
-                  child: Icon(Icons.maps_ugc_rounded, size: 48, color: theme.colorScheme.primary),
+                  child: Icon(
+                    Icons.maps_ugc_rounded,
+                    size: 48,
+                    color: theme.colorScheme.primary,
+                  ),
                 ),
                 const SizedBox(height: 24),
-                Text('No Messages', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+                Text(
+                  'No Messages',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 const SizedBox(height: 8),
-                Text('Start a conversation.', 
-                  style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                Text(
+                  'Start a conversation.',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ],
             ),
@@ -122,162 +134,214 @@ class _ActiveChatsList extends ConsumerWidget {
           padding: const EdgeInsets.only(top: 8, bottom: 24),
           itemCount: chats.length,
           itemBuilder: (context, index) {
-                    final chat = chats[index];
-                    final currentUser = ref.watch(currentUserProvider);
-                    if (currentUser == null) return const SizedBox.shrink();
+            final chat = chats[index];
+            final currentUser = ref.watch(currentUserProvider);
+            if (currentUser == null) return const SizedBox.shrink();
 
-                    final otherUserId = chat.participants.firstWhere(
-                      (id) => id != currentUser.userId,
-                      orElse: () => chat.participants.first,
-                    );
+            final otherUserId = chat.participants.firstWhere(
+              (id) => id != currentUser.userId,
+              orElse: () => chat.participants.first,
+            );
 
-                    if (chat.type == 'support') {
-                      return _ChatListTile(
-                        title: 'Support',
-                        subtitle: chat.lastMessageText.isEmpty ? 'No messages yet' : chat.lastMessageText,
-                        time: chat.lastMessageTime,
-                        isUnread: false,
-                        isSentRequest: false,
-                        leading: Container(
-                          width: 56, height: 56,
+            if (chat.type == 'support') {
+              return _ChatListTile(
+                title: 'Support',
+                subtitle: chat.lastMessageText.isEmpty
+                    ? 'No messages yet'
+                    : chat.lastMessageText,
+                time: chat.lastMessageTime,
+                isUnread: false,
+                isSentRequest: false,
+                leading: Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primary,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.support_agent,
+                    color: theme.colorScheme.onPrimary,
+                    size: 28,
+                  ),
+                ),
+                onTap: () => _navigateToChat(context, chat.id, chat.type),
+              );
+            }
+
+            final otherUserAsync = ref.watch(userByIdProvider(otherUserId));
+
+            return otherUserAsync.when(
+              data: (otherUser) {
+                if (otherUser == null) return const SizedBox.shrink();
+                final isSentRequest =
+                    chat.status == 'pending' &&
+                    chat.initiatorId == currentUser.userId;
+                final isUnread =
+                    (chat.unreadCount[currentUser.userId] ?? 0) > 0;
+                final isMine = chat.lastMessageSenderId == currentUser.userId;
+
+                String displaySubtitle = chat.lastMessageText;
+                if (displaySubtitle.isEmpty) {
+                  displaySubtitle = isMine ? 'Sent a message' : 'Say hi!';
+                }
+
+                if (isSentRequest) {
+                  displaySubtitle = 'Request sent';
+                } else if (isMine) {
+                  displaySubtitle = 'Sent · $displaySubtitle';
+                }
+
+                return _ChatListTile(
+                  title: otherUser.displayName,
+                  subtitle: displaySubtitle,
+                  time: chat.lastMessageTime,
+                  isUnread: isUnread && !isMine,
+                  unreadCount: (!isMine)
+                      ? (chat.unreadCount[currentUser.userId] ?? 0)
+                      : 0,
+                  isSentRequest: isSentRequest,
+                  isMine: isMine,
+                  leading: AppAvatar(
+                    imageUrl: otherUser.profilePicture,
+                    radius: 28,
+                  ),
+                  onTap: () => _navigateToChat(context, chat.id, chat.type),
+                  onLongPress: () {
+                    showModalBottomSheet(
+                      context: context,
+                      backgroundColor: Colors.transparent,
+                      builder: (ctx) {
+                        return Container(
+                          margin: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: theme.colorScheme.primary,
-                            shape: BoxShape.circle,
+                            color: theme.colorScheme.surface,
+                            borderRadius: BorderRadius.circular(24),
                           ),
-                          child: Icon(Icons.support_agent, color: theme.colorScheme.onPrimary, size: 28),
-                        ),
-                        onTap: () => _navigateToChat(context, chat.id, chat.type),
-                      );
-                    }
-
-                    final otherUserAsync = ref.watch(userByIdProvider(otherUserId));
-
-                    return otherUserAsync.when(
-                      data: (otherUser) {
-                        if (otherUser == null) return const SizedBox.shrink();
-                        final isSentRequest = chat.status == 'pending' && chat.initiatorId == currentUser.userId;
-                        final isUnread = (chat.unreadCount[currentUser.userId] ?? 0) > 0;
-                        final isMine = chat.lastMessageSenderId == currentUser.userId;
-                        
-                        String displaySubtitle = chat.lastMessageText;
-                        if (displaySubtitle.isEmpty) {
-                          displaySubtitle = isMine ? 'Sent a message' : 'Say hi!';
-                        }
-                        
-                        if (isSentRequest) {
-                          displaySubtitle = 'Request sent';
-                        } else if (isMine) {
-                          displaySubtitle = 'Sent · $displaySubtitle';
-                        }
-
-                        return _ChatListTile(
-                          title: otherUser.displayName,
-                          subtitle: displaySubtitle,
-                          time: chat.lastMessageTime,
-                          isUnread: isUnread && !isMine,
-                          unreadCount: (!isMine) ? (chat.unreadCount[currentUser.userId] ?? 0) : 0,
-                          isSentRequest: isSentRequest,
-                          isMine: isMine,
-                          leading: AppAvatar(imageUrl: otherUser.profilePicture, radius: 28),
-                          onTap: () => _navigateToChat(context, chat.id, chat.type),
-                          onLongPress: () {
-                            showModalBottomSheet(
-                              context: context,
-                              backgroundColor: Colors.transparent,
-                              builder: (ctx) {
-                                return Container(
-                                  margin: const EdgeInsets.all(16),
-                                  decoration: BoxDecoration(
-                                    color: theme.colorScheme.surface,
-                                    borderRadius: BorderRadius.circular(24),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const SizedBox(height: 12),
+                              Container(
+                                width: 40,
+                                height: 4,
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.onSurfaceVariant
+                                      .withValues(alpha: 0.4),
+                                  borderRadius: BorderRadius.circular(2),
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              AppAvatar(
+                                imageUrl: otherUser.profilePicture,
+                                radius: 32,
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                otherUser.displayName,
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 32,
+                                ),
+                                child: Text(
+                                  'This will permanently delete the chat and its history for both of you.',
+                                  textAlign: TextAlign.center,
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: theme.colorScheme.onSurfaceVariant,
+                                    height: 1.3,
                                   ),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              Divider(
+                                height: 1,
+                                color: theme.dividerColor.withValues(
+                                  alpha: 0.1,
+                                ),
+                              ),
+                              InkWell(
+                                onTap: () {
+                                  Navigator.of(ctx).pop();
+                                  ref
+                                      .read(chatRepositoryProvider)
+                                      .deleteChatRoom(chat.id);
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      const SizedBox(height: 12),
-                                      Container(
-                                        width: 40,
-                                        height: 4,
-                                        decoration: BoxDecoration(
-                                          color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
-                                          borderRadius: BorderRadius.circular(2),
-                                        ),
+                                      const Icon(
+                                        Icons.delete_outline,
+                                        color: Colors.redAccent,
                                       ),
-                                      const SizedBox(height: 24),
-                                      AppAvatar(imageUrl: otherUser.profilePicture, radius: 32),
-                                      const SizedBox(height: 12),
+                                      const SizedBox(width: 8),
                                       Text(
-                                        otherUser.displayName,
-                                        style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                                        'Delete Chat',
+                                        style: theme.textTheme.titleMedium
+                                            ?.copyWith(
+                                              color: Colors.redAccent,
+                                              fontWeight: FontWeight.w600,
+                                            ),
                                       ),
-                                      const SizedBox(height: 12),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 32),
-                                        child: Text(
-                                          'This will permanently delete the chat and its history for both of you.',
-                                          textAlign: TextAlign.center,
-                                          style: theme.textTheme.bodyMedium?.copyWith(
-                                            color: theme.colorScheme.onSurfaceVariant,
-                                            height: 1.3,
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 24),
-                                      Divider(height: 1, color: theme.dividerColor.withValues(alpha: 0.1)),
-                                      InkWell(
-                                        onTap: () {
-                                          Navigator.of(ctx).pop();
-                                          ref.read(chatRepositoryProvider).deleteChatRoom(chat.id);
-                                        },
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(vertical: 16),
-                                          child: Row(
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            children: [
-                                              const Icon(Icons.delete_outline, color: Colors.redAccent),
-                                              const SizedBox(width: 8),
-                                              Text(
-                                                'Delete Chat',
-                                                style: theme.textTheme.titleMedium?.copyWith(
-                                                  color: Colors.redAccent,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      Divider(height: 1, color: theme.dividerColor.withValues(alpha: 0.1)),
-                                      InkWell(
-                                        onTap: () => Navigator.of(ctx).pop(),
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(vertical: 16),
-                                          child: Row(
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            children: [
-                                              Text(
-                                                'Cancel',
-                                                style: theme.textTheme.titleMedium,
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      SizedBox(height: MediaQuery.of(context).padding.bottom + 8),
                                     ],
                                   ),
-                                );
-                              }
-                            );
-                          },
+                                ),
+                              ),
+                              Divider(
+                                height: 1,
+                                color: theme.dividerColor.withValues(
+                                  alpha: 0.1,
+                                ),
+                              ),
+                              InkWell(
+                                onTap: () => Navigator.of(ctx).pop(),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        'Cancel',
+                                        style: theme.textTheme.titleMedium,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              SizedBox(
+                                height:
+                                    MediaQuery.of(context).padding.bottom + 8,
+                              ),
+                            ],
+                          ),
                         );
                       },
-                      loading: () => const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                        child: Row(children: [AppLoader.small(), SizedBox(width: 16), Text('Loading...')]),
-                      ),
-                      error: (_, __) => const SizedBox.shrink(),
                     );
+                  },
+                );
+              },
+              loading: () => const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                child: Row(
+                  children: [
+                    AppLoader.small(),
+                    SizedBox(width: 16),
+                    Text('Loading...'),
+                  ],
+                ),
+              ),
+              error: (_, __) => const SizedBox.shrink(),
+            );
           },
         );
       },
@@ -315,12 +379,23 @@ class _PendingRequestsList extends ConsumerWidget {
                   decoration: BoxDecoration(
                     color: theme.colorScheme.surface,
                     shape: BoxShape.circle,
-                    border: Border.all(color: theme.dividerColor.withValues(alpha: 0.1)),
+                    border: Border.all(
+                      color: theme.dividerColor.withValues(alpha: 0.1),
+                    ),
                   ),
-                  child: Icon(Icons.mark_email_read_rounded, size: 48, color: theme.colorScheme.primary),
+                  child: Icon(
+                    Icons.mark_email_read_rounded,
+                    size: 48,
+                    color: theme.colorScheme.primary,
+                  ),
                 ),
                 const SizedBox(height: 24),
-                Text('No Message Requests', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                Text(
+                  'No Message Requests',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ],
             ),
           );
@@ -343,18 +418,26 @@ class _PendingRequestsList extends ConsumerWidget {
             return otherUserAsync.when(
               data: (otherUser) {
                 if (otherUser == null) return const SizedBox.shrink();
-                
+
                 return _ChatListTile(
                   title: otherUser.displayName,
-                  subtitle: chat.lastMessageText.isEmpty ? 'Wants to message you' : chat.lastMessageText,
+                  subtitle: chat.lastMessageText.isEmpty
+                      ? 'Wants to message you'
+                      : chat.lastMessageText,
                   time: chat.lastMessageTime,
                   isUnread: true,
                   isSentRequest: false,
-                  leading: AppAvatar(imageUrl: otherUser.profilePicture, radius: 28),
+                  leading: AppAvatar(
+                    imageUrl: otherUser.profilePicture,
+                    radius: 28,
+                  ),
                   onTap: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (_) => ChatRoomScreen(roomId: chat.id, roomType: chat.type),
+                        builder: (_) => ChatRoomScreen(
+                          roomId: chat.id,
+                          roomType: chat.type,
+                        ),
                       ),
                     );
                   },
@@ -362,12 +445,24 @@ class _PendingRequestsList extends ConsumerWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
-                        icon: Icon(Icons.cancel, color: theme.colorScheme.onSurfaceVariant, size: 28),
-                        onPressed: () => ref.read(chatRepositoryProvider).declineChat(chat.id),
+                        icon: Icon(
+                          Icons.cancel,
+                          color: theme.colorScheme.onSurfaceVariant,
+                          size: 28,
+                        ),
+                        onPressed: () => ref
+                            .read(chatRepositoryProvider)
+                            .declineChat(chat.id),
                       ),
                       IconButton(
-                        icon: Icon(Icons.check_circle, color: theme.colorScheme.primary, size: 28),
-                        onPressed: () => ref.read(chatRepositoryProvider).acceptChat(chat.id),
+                        icon: Icon(
+                          Icons.check_circle,
+                          color: theme.colorScheme.primary,
+                          size: 28,
+                        ),
+                        onPressed: () => ref
+                            .read(chatRepositoryProvider)
+                            .acceptChat(chat.id),
                       ),
                     ],
                   ),
@@ -375,7 +470,13 @@ class _PendingRequestsList extends ConsumerWidget {
               },
               loading: () => const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                child: Row(children: [AppLoader.small(), SizedBox(width: 16), Text('Loading...')]),
+                child: Row(
+                  children: [
+                    AppLoader.small(),
+                    SizedBox(width: 16),
+                    Text('Loading...'),
+                  ],
+                ),
               ),
               error: (_, __) => const SizedBox.shrink(),
             );
@@ -418,7 +519,7 @@ class _ChatListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return InkWell(
       onTap: onTap,
       onLongPress: onLongPress,
@@ -449,10 +550,14 @@ class _ChatListTile extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: theme.textTheme.bodyMedium?.copyWith(
-                            color: isUnread 
-                                ? theme.colorScheme.onSurface 
-                                : theme.colorScheme.onSurface.withValues(alpha: 0.55),
-                            fontWeight: isUnread ? FontWeight.w600 : FontWeight.w400,
+                            color: isUnread
+                                ? theme.colorScheme.onSurface
+                                : theme.colorScheme.onSurface.withValues(
+                                    alpha: 0.55,
+                                  ),
+                            fontWeight: isUnread
+                                ? FontWeight.w600
+                                : FontWeight.w400,
                             fontSize: 13,
                           ),
                         ),
@@ -461,7 +566,9 @@ class _ChatListTile extends StatelessWidget {
                         Text(
                           ' · ${timeago.format(time!, locale: 'en_short')}',
                           style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
+                            color: theme.colorScheme.onSurface.withValues(
+                              alpha: 0.55,
+                            ),
                             fontSize: 13,
                           ),
                         ),
