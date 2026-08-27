@@ -66,14 +66,21 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     bool? isViewOnce = await showModalBottomSheet<bool>(
       context: context,
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (ctx) => SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text("Send Image", style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+              Text(
+                "Send Image",
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 24),
               ListTile(
                 leading: const Icon(Icons.send_rounded, size: 28),
@@ -83,8 +90,18 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               ),
               const Divider(height: 1),
               ListTile(
-                leading: const Icon(Icons.timer_rounded, size: 28, color: Colors.blue),
-                title: const Text("Send as View Once", style: TextStyle(color: Colors.blue, fontWeight: FontWeight.w600)),
+                leading: const Icon(
+                  Icons.timer_rounded,
+                  size: 28,
+                  color: Colors.blue,
+                ),
+                title: const Text(
+                  "Send as View Once",
+                  style: TextStyle(
+                    color: Colors.blue,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 subtitle: const Text("Image disappears after they view it"),
                 onTap: () => Navigator.pop(ctx, true),
               ),
@@ -244,10 +261,12 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                         .loadJourneys(journeyIds);
                   if (storyIds.isNotEmpty)
                     ref.read(batchMediaProvider.notifier).loadStories(storyIds);
-                    
+
                   // Mark chat as read
                   if (currentUser?.userId != null) {
-                    ref.read(chatRepositoryProvider).markAsRead(widget.roomId, currentUser!.userId!);
+                    ref
+                        .read(chatRepositoryProvider)
+                        .markAsRead(widget.roomId, currentUser!.userId!);
                   }
                 });
 
@@ -291,9 +310,13 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                  color: theme.colorScheme.surfaceContainerHighest.withValues(
+                    alpha: 0.5,
+                  ),
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: theme.dividerColor.withValues(alpha: 0.1)),
+                  border: Border.all(
+                    color: theme.dividerColor.withValues(alpha: 0.1),
+                  ),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
@@ -334,18 +357,30 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           foregroundColor: theme.colorScheme.primary,
                         ),
-                        child: const Text('Send', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        child: const Text(
+                          'Send',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
                       )
                     else ...[
                       IconButton(
-                        icon: Icon(Icons.mic_none, color: theme.colorScheme.onSurfaceVariant),
-                        onPressed: () {}, 
+                        icon: Icon(
+                          Icons.mic_none,
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                        onPressed: () {},
                       ),
                       IconButton(
-                        icon: Icon(Icons.image_outlined, color: theme.colorScheme.onSurfaceVariant),
+                        icon: Icon(
+                          Icons.image_outlined,
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
                         onPressed: _pickAndSendImage,
                       ),
-                    ]
+                    ],
                   ],
                 ),
               ),
@@ -358,8 +393,12 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 }
 
 class _MessageBubble extends ConsumerWidget {
-
-  Widget _buildViewOnceImage(BuildContext context, WidgetRef ref, ChatMessage msg, bool isMe) {
+  Widget _buildViewOnceImage(
+    BuildContext context,
+    WidgetRef ref,
+    ChatMessage msg,
+    bool isMe,
+  ) {
     if (msg.isViewed) {
       return Container(
         padding: const EdgeInsets.all(12),
@@ -370,9 +409,19 @@ class _MessageBubble extends ConsumerWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.remove_red_eye_outlined, color: Colors.grey.shade600, size: 20),
+            Icon(
+              Icons.remove_red_eye_outlined,
+              color: Colors.grey.shade600,
+              size: 20,
+            ),
             const SizedBox(width: 8),
-            Text('Opened', style: TextStyle(color: Colors.grey.shade600, fontStyle: FontStyle.italic)),
+            Text(
+              'Opened',
+              style: TextStyle(
+                color: Colors.grey.shade600,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
           ],
         ),
       );
@@ -390,7 +439,10 @@ class _MessageBubble extends ConsumerWidget {
           children: const [
             Icon(Icons.timer_rounded, color: Colors.blue, size: 20),
             SizedBox(width: 8),
-            Text('Photo Sent', style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold)),
+            Text(
+              'Photo Sent',
+              style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
+            ),
           ],
         ),
       );
@@ -400,24 +452,32 @@ class _MessageBubble extends ConsumerWidget {
       onTap: () async {
         if (msg.imageUrl == null) return;
         // View the photo
-        await Navigator.push(context, MaterialPageRoute(builder: (_) => Scaffold(
-          backgroundColor: Colors.black,
-          extendBodyBehindAppBar: true,
-          appBar: AppBar(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            iconTheme: const IconThemeData(color: Colors.white, shadows: [Shadow(color: Colors.black45, blurRadius: 4)]),
-          ),
-          body: InteractiveViewer(
-            minScale: 1.0,
-            maxScale: 4.0,
-            clipBehavior: Clip.none,
-            child: Center(
-              child: CachedNetworkImage(imageUrl: msg.imageUrl!),
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => Scaffold(
+              backgroundColor: Colors.black,
+              extendBodyBehindAppBar: true,
+              appBar: AppBar(
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                iconTheme: const IconThemeData(
+                  color: Colors.white,
+                  shadows: [Shadow(color: Colors.black45, blurRadius: 4)],
+                ),
+              ),
+              body: InteractiveViewer(
+                minScale: 1.0,
+                maxScale: 4.0,
+                clipBehavior: Clip.none,
+                child: Center(
+                  child: CachedNetworkImage(imageUrl: msg.imageUrl!),
+                ),
+              ),
             ),
           ),
-        )));
-        
+        );
+
         // Once popped, mark as viewed!
         ref.read(chatRepositoryProvider).markMessageAsViewed(roomId, msg.id);
       },
@@ -432,14 +492,25 @@ class _MessageBubble extends ConsumerWidget {
           children: const [
             Icon(Icons.timer_rounded, color: Colors.white, size: 20),
             SizedBox(width: 8),
-            Text('Tap to View Photo', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            Text(
+              'Tap to View Photo',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildShimmerBox(BuildContext context, double width, double height, {double radius = 8}) {
+  Widget _buildShimmerBox(
+    BuildContext context,
+    double width,
+    double height, {
+    double radius = 8,
+  }) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     return Shimmer.fromColors(
@@ -470,12 +541,12 @@ class _MessageBubble extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    
+
     // Sleek monochrome palette
-    final sentColor = isDark 
-        ? Colors.white.withValues(alpha: 0.2) 
-        : const Color(0xFF1C1C1E); 
-        
+    final sentColor = isDark
+        ? Colors.white.withValues(alpha: 0.2)
+        : const Color(0xFF1C1C1E);
+
     final receivedColor = isDark
         ? const Color(0xFF2C2C2E)
         : const Color(0xFFF1F1F1);
@@ -512,7 +583,9 @@ class _MessageBubble extends ConsumerWidget {
                         padding: const EdgeInsets.symmetric(horizontal: 24),
                         child: Text(
                           'Unsend message?',
-                          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -528,11 +601,16 @@ class _MessageBubble extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(height: 24),
-                      Divider(height: 1, color: theme.dividerColor.withValues(alpha: 0.1)),
+                      Divider(
+                        height: 1,
+                        color: theme.dividerColor.withValues(alpha: 0.1),
+                      ),
                       InkWell(
                         onTap: () {
                           Navigator.pop(ctx);
-                          ref.read(chatRepositoryProvider).deleteMessage(roomId, msg.id);
+                          ref
+                              .read(chatRepositoryProvider)
+                              .deleteMessage(roomId, msg.id);
                         },
                         child: Padding(
                           padding: const EdgeInsets.symmetric(vertical: 16),
@@ -550,7 +628,10 @@ class _MessageBubble extends ConsumerWidget {
                           ),
                         ),
                       ),
-                      Divider(height: 1, color: theme.dividerColor.withValues(alpha: 0.1)),
+                      Divider(
+                        height: 1,
+                        color: theme.dividerColor.withValues(alpha: 0.1),
+                      ),
                       InkWell(
                         onTap: () => Navigator.pop(ctx),
                         child: Padding(
@@ -605,34 +686,56 @@ class _MessageBubble extends ConsumerWidget {
                       : GestureDetector(
                           onTap: () {
                             if (msg.imageUrl == null) return;
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => Scaffold(
-                              backgroundColor: Colors.black,
-                              extendBodyBehindAppBar: true,
-                              appBar: AppBar(
-                                backgroundColor: Colors.transparent,
-                                elevation: 0,
-                                iconTheme: const IconThemeData(color: Colors.white, shadows: [Shadow(color: Colors.black45, blurRadius: 4)]),
-                              ),
-                              body: InteractiveViewer(
-                                minScale: 1.0,
-                                maxScale: 4.0,
-                                clipBehavior: Clip.none,
-                                child: Center(
-                                  child: CachedNetworkImage(imageUrl: msg.imageUrl!),
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => Scaffold(
+                                  backgroundColor: Colors.black,
+                                  extendBodyBehindAppBar: true,
+                                  appBar: AppBar(
+                                    backgroundColor: Colors.transparent,
+                                    elevation: 0,
+                                    iconTheme: const IconThemeData(
+                                      color: Colors.white,
+                                      shadows: [
+                                        Shadow(
+                                          color: Colors.black45,
+                                          blurRadius: 4,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  body: InteractiveViewer(
+                                    minScale: 1.0,
+                                    maxScale: 4.0,
+                                    clipBehavior: Clip.none,
+                                    child: Center(
+                                      child: CachedNetworkImage(
+                                        imageUrl: msg.imageUrl!,
+                                      ),
+                                    ),
+                                  ),
                                 ),
                               ),
-                            )));
+                            );
                           },
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(8),
                             child: CachedNetworkImage(
                               imageUrl: msg.imageUrl ?? '',
                               fit: BoxFit.cover,
-                              placeholder: (context, url) => _buildShimmerBox(context, double.infinity, 200),
-                              errorWidget: (context, url, error) => const SizedBox(
-                                height: 100,
-                                child: Center(child: Icon(Icons.error_outline)),
+                              placeholder: (context, url) => _buildShimmerBox(
+                                context,
+                                double.infinity,
+                                200,
                               ),
+                              errorWidget: (context, url, error) =>
+                                  const SizedBox(
+                                    height: 100,
+                                    child: Center(
+                                      child: Icon(Icons.error_outline),
+                                    ),
+                                  ),
                             ),
                           ),
                         ),
@@ -663,7 +766,9 @@ class _MessageBubble extends ConsumerWidget {
               if (msg.text != null && msg.text!.isNotEmpty)
                 Text(
                   msg.text!,
-                  style: theme.textTheme.bodyLarge?.copyWith(
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: .7,
                     color: isMe ? sentTextColor : receivedTextColor,
                   ),
                 ),
@@ -673,8 +778,8 @@ class _MessageBubble extends ConsumerWidget {
                   timeago.format(msg.createdAt!),
                   style: theme.textTheme.bodySmall?.copyWith(
                     fontSize: 11,
-                    color: isMe 
-                        ? sentTextColor.withValues(alpha: 0.6) 
+                    color: isMe
+                        ? sentTextColor.withValues(alpha: 0.6)
                         : receivedTextColor.withValues(alpha: 0.6),
                   ),
                 ),
@@ -713,7 +818,10 @@ class _MessageBubble extends ConsumerWidget {
       if (journey == null) {
         return const Padding(
           padding: EdgeInsets.symmetric(vertical: 8.0),
-          child: Text('Journey unavailable', style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic)),
+          child: Text(
+            'Journey unavailable',
+            style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
+          ),
         );
       }
       imageUrl = null;
@@ -729,7 +837,10 @@ class _MessageBubble extends ConsumerWidget {
       if (story == null) {
         return const Padding(
           padding: EdgeInsets.symmetric(vertical: 8.0),
-          child: Text('Post unavailable', style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic)),
+          child: Text(
+            'Post unavailable',
+            style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
+          ),
         );
       }
       imageUrl = story.mainImage;
@@ -739,9 +850,22 @@ class _MessageBubble extends ConsumerWidget {
     return GestureDetector(
       onTap: () {
         if (isJourney) {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => JourneyDetailScreen(journeyId: id, title: title ?? 'Shared Journey')));
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => JourneyDetailScreen(
+                journeyId: id,
+                title: title ?? 'Shared Journey',
+              ),
+            ),
+          );
         } else {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => StoryDetailScreen(milestoneId: id)));
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => StoryDetailScreen(milestoneId: id),
+            ),
+          );
         }
       },
       child: Container(
@@ -752,56 +876,58 @@ class _MessageBubble extends ConsumerWidget {
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                isJourney ? Icons.map_rounded : Icons.menu_book_rounded,
-                size: 14,
-                color: fgColor.withValues(alpha: 0.7),
-              ),
-              const SizedBox(width: 4),
-              Text(
-                isJourney ? 'Shared Journey' : 'Shared Story',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: fgColor.withValues(alpha: 0.8),
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  isJourney ? Icons.map_rounded : Icons.menu_book_rounded,
+                  size: 14,
+                  color: fgColor.withValues(alpha: 0.7),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          if (imageUrl != null && imageUrl.isNotEmpty)
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: CachedNetworkImage(
-                imageUrl: imageUrl,
-                height: 120,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                placeholder: (context, url) => _buildShimmerBox(context, double.infinity, 120),
-                errorWidget: (context, url, error) => const SizedBox(
+                const SizedBox(width: 4),
+                Text(
+                  isJourney ? 'Shared Journey' : 'Shared Story',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: fgColor.withValues(alpha: 0.8),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            if (imageUrl != null && imageUrl.isNotEmpty)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: CachedNetworkImage(
+                  imageUrl: imageUrl,
                   height: 120,
-                  child: Center(child: Icon(Icons.error_outline)),
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) =>
+                      _buildShimmerBox(context, double.infinity, 120),
+                  errorWidget: (context, url, error) => const SizedBox(
+                    height: 120,
+                    child: Center(child: Icon(Icons.error_outline)),
+                  ),
                 ),
               ),
+            const SizedBox(height: 8),
+            Text(
+              title ?? 'Untitled',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: fgColor,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
-          const SizedBox(height: 8),
-          Text(
-            title ?? 'Untitled',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: fgColor,
-            ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
+          ],
+        ),
       ),
-    ));
+    );
   }
 
   Widget _buildSharedProfileCard({
@@ -820,7 +946,12 @@ class _MessageBubble extends ConsumerWidget {
 
     return GestureDetector(
       onTap: () {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => PublicProfileScreen(userId: profileId)));
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => PublicProfileScreen(userId: profileId),
+          ),
+        );
       },
       child: Container(
         margin: const EdgeInsets.only(top: 8, bottom: 8),
@@ -830,45 +961,146 @@ class _MessageBubble extends ConsumerWidget {
           borderRadius: BorderRadius.circular(12),
         ),
         child: userAsync.when(
-        data: (user) {
-          if (user == null) return const Text('User not found');
-          return Row(
-            children: [
-              AppAvatar(imageUrl: user.profilePicture, radius: 20),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      user.displayName,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: fgColor,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    if (user.username != null)
+          data: (user) {
+            if (user == null) return const Text('User not found');
+            return Row(
+              children: [
+                AppAvatar(imageUrl: user.profilePicture, radius: 20),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Text(
-                        '@${user.username}',
+                        user.displayName,
                         style: TextStyle(
-                          fontSize: 12,
-                          color: fgColor.withValues(alpha: 0.8),
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: fgColor,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                  ],
+                      if (user.username != null)
+                        Text(
+                          '@${user.username}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: fgColor.withValues(alpha: 0.8),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          },
+          loading: () =>
+              _buildShimmerBox(context, double.infinity, 60, radius: 12),
+          error: (_, __) => const Text('Error loading profile'),
+        ),
+      ),
+    );
+  }
+}
+
+class _ImagePreviewScreen extends StatefulWidget {
+  final File imageFile;
+  const _ImagePreviewScreen({required this.imageFile});
+
+  @override
+  State<_ImagePreviewScreen> createState() => _ImagePreviewScreenState();
+}
+
+class _ImagePreviewScreenState extends State<_ImagePreviewScreen> {
+  bool isViewOnce = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white, shadows: [Shadow(color: Colors.black45, blurRadius: 4)]),
+      ),
+      extendBodyBehindAppBar: true,
+      body: Stack(
+        children: [
+          // Image Preview
+          Positioned.fill(
+            child: InteractiveViewer(
+              child: Center(
+                child: Image.file(widget.imageFile, fit: BoxFit.contain),
+              ),
+            ),
+          ),
+          
+          // Bottom Controls
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                  colors: [Colors.black87, Colors.transparent],
                 ),
               ),
-            ],
-          );
-        },
-        loading: () => _buildShimmerBox(context, double.infinity, 60, radius: 12),
-        error: (_, __) => const Text('Error loading profile'),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // View Once Toggle Button
+                  InkWell(
+                    onTap: () {
+                      setState(() {
+                        isViewOnce = !isViewOnce;
+                      });
+                    },
+                    borderRadius: BorderRadius.circular(30),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: isViewOnce ? Colors.blue : Colors.white.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(30),
+                        border: Border.all(color: isViewOnce ? Colors.blue : Colors.white54),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            isViewOnce ? Icons.timer_rounded : Icons.timer_outlined, 
+                            color: Colors.white, 
+                            size: 20
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            isViewOnce ? 'View Once On' : 'View Once Off',
+                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  
+                  // Send Button
+                  FloatingActionButton(
+                    onPressed: () => Navigator.pop(context, isViewOnce),
+                    backgroundColor: Colors.blue,
+                    elevation: 0,
+                    shape: const CircleBorder(),
+                    child: const Icon(Icons.send_rounded, color: Colors.white),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
-    ));
+    );
   }
 }
