@@ -623,7 +623,7 @@ class _MessageBubble extends ConsumerWidget {
       child: Align(
         alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
         child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
             color: isMe ? sentColor : receivedColor,
@@ -836,7 +836,6 @@ class _MessageBubble extends ConsumerWidget {
         }
       },
       child: Container(
-        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: bgColor,
           // No border radius here since the outer bubble clips it now!
@@ -844,51 +843,56 @@ class _MessageBubble extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Icon(
-                  isJourney ? Icons.map_rounded : Icons.menu_book_rounded,
-                  size: 14,
-                  color: fgColor.withValues(alpha: 0.7),
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  isJourney ? 'Shared Journey' : 'Shared Story',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: fgColor.withValues(alpha: 0.8),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
             if (imageUrl != null && imageUrl.isNotEmpty)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: CachedNetworkImage(
-                  imageUrl: imageUrl,
-                  height: 120,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) =>
-                      _buildShimmerBox(context, double.infinity, 120),
-                  errorWidget: (context, url, error) => const SizedBox(
-                    height: 120,
-                    child: Center(child: Icon(Icons.error_outline)),
-                  ),
+              CachedNetworkImage(
+                imageUrl: imageUrl,
+                height: 140,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                placeholder: (context, url) =>
+                    _buildShimmerBox(context, double.infinity, 140),
+                errorWidget: (context, url, error) => const SizedBox(
+                  height: 140,
+                  child: Center(child: Icon(Icons.error_outline)),
                 ),
               ),
-            const SizedBox(height: 8),
-            Text(
-              title ?? 'Untitled',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: fgColor,
+            Padding(
+              padding: const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        isJourney ? Icons.map_rounded : Icons.menu_book_rounded,
+                        size: 14,
+                        color: fgColor.withValues(alpha: 0.7),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        isJourney ? 'Shared Journey' : 'Shared Post',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: fgColor.withValues(alpha: 0.8),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    title ?? 'Untitled',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: fgColor,
+                      height: 1.3,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
               ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
