@@ -624,7 +624,7 @@ class _MessageBubble extends ConsumerWidget {
         alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
         child: Container(
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
             color: isMe ? sentColor : receivedColor,
             borderRadius: BorderRadius.circular(22).copyWith(
@@ -738,13 +738,16 @@ class _MessageBubble extends ConsumerWidget {
                 ),
               const SizedBox(height: 4),
               if (msg.createdAt != null)
-                Text(
-                  timeago.format(msg.createdAt!),
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    fontSize: 11,
-                    color: isMe
-                        ? sentTextColor.withValues(alpha: 0.6)
-                        : receivedTextColor.withValues(alpha: 0.6),
+                Padding(
+                  padding: const EdgeInsets.only(left: 12, right: 12, bottom: 8, top: 2),
+                  child: Text(
+                    timeago.format(msg.createdAt!),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      fontSize: 11,
+                      color: isMe
+                          ? sentTextColor.withValues(alpha: 0.6)
+                          : receivedTextColor.withValues(alpha: 0.6),
+                    ),
                   ),
                 ),
             ],
