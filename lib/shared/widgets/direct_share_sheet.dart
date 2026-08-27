@@ -115,11 +115,17 @@ class _DirectShareSheetState extends ConsumerState<DirectShareSheet> {
     final currentUser = ref.watch(currentUserProvider);
     final theme = Theme.of(context);
 
+    // Get the surface color from the app theme (usually #0F0F0F)
+    final surfaceColor = theme.colorScheme.surface;
+    // Lighter surface for search bar and buttons (usually #1E1E1E)
+    final surfaceLight = theme.cardTheme.color ?? theme.colorScheme.surfaceContainerHighest;
+
     return Container(
       height: MediaQuery.of(context).size.height * 0.85,
       decoration: BoxDecoration(
-        color: theme.scaffoldBackgroundColor,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        color: surfaceColor,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+        border: Border(top: BorderSide(color: theme.dividerColor, width: 0.5)),
       ),
       child: SafeArea(
         top: false,
@@ -128,39 +134,22 @@ class _DirectShareSheetState extends ConsumerState<DirectShareSheet> {
             // Drag handle
             const SizedBox(height: 12),
             Container(
-              width: 48,
-              height: 5,
+              width: 40,
+              height: 4,
               decoration: BoxDecoration(
-                color: theme.dividerColor,
-                borderRadius: BorderRadius.circular(2.5),
+                color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                borderRadius: BorderRadius.circular(2),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             
-            // Header
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text("Share", style: theme.textTheme.headlineLarge?.copyWith(fontSize: 22)),
-                  IconButton(
-                    icon: Icon(Icons.close, color: theme.colorScheme.onSurfaceVariant),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 8),
-
             // Search Bar
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: Container(
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.surface,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: theme.dividerColor.withValues(alpha: 0.5)),
+                  color: surfaceLight,
+                  borderRadius: BorderRadius.circular(24),
                 ),
                 child: TextField(
                   style: theme.textTheme.bodyLarge,
@@ -169,7 +158,7 @@ class _DirectShareSheetState extends ConsumerState<DirectShareSheet> {
                     hintStyle: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                     prefixIcon: Icon(Icons.search, color: theme.colorScheme.onSurfaceVariant),
                     border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                   onChanged: (val) {
                     setState(() {
@@ -179,7 +168,7 @@ class _DirectShareSheetState extends ConsumerState<DirectShareSheet> {
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
 
             // Multi-select Users Grid
             Expanded(
@@ -203,12 +192,12 @@ class _DirectShareSheetState extends ConsumerState<DirectShareSheet> {
                         }
 
                         return GridView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 4,
-                            mainAxisSpacing: 16,
-                            crossAxisSpacing: 12,
-                            childAspectRatio: 0.7, // Adjust for avatar + text
+                            mainAxisSpacing: 24,
+                            crossAxisSpacing: 8,
+                            childAspectRatio: 0.65, 
                           ),
                           itemCount: validRooms.length,
                           itemBuilder: (context, index) {
@@ -236,47 +225,56 @@ class _DirectShareSheetState extends ConsumerState<DirectShareSheet> {
 
                                 return GestureDetector(
                                   onTap: () => _toggleSelection(otherUserId),
+                                  behavior: HitTestBehavior.opaque,
                                   child: Column(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Stack(
                                         alignment: Alignment.bottomRight,
                                         children: [
-                                          Opacity(
-                                            opacity: isSent ? 0.5 : 1.0,
-                                            child: AppAvatar(imageUrl: user.profilePicture, radius: 32),
+                                          Container(
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              border: isSelected ? Border.all(color: theme.colorScheme.primary, width: 2.5) : null,
+                                            ),
+                                            padding: EdgeInsets.all(isSelected ? 3 : 0),
+                                            child: Opacity(
+                                              opacity: isSent ? 0.4 : 1.0,
+                                              child: AppAvatar(imageUrl: user.profilePicture, radius: 34),
+                                            ),
                                           ),
                                           if (isSelected)
                                             Container(
+                                              margin: const EdgeInsets.only(bottom: 2, right: 2),
                                               decoration: BoxDecoration(
                                                 color: theme.colorScheme.primary,
                                                 shape: BoxShape.circle,
-                                                border: Border.all(color: theme.scaffoldBackgroundColor, width: 2),
+                                                border: Border.all(color: surfaceColor, width: 3),
                                               ),
-                                              padding: const EdgeInsets.all(2),
+                                              padding: const EdgeInsets.all(3),
                                               child: Icon(Icons.check, size: 14, color: theme.colorScheme.onPrimary),
                                             ),
                                           if (isSent)
                                             Container(
+                                              margin: const EdgeInsets.only(bottom: 2, right: 2),
                                               decoration: BoxDecoration(
-                                                color: Colors.grey,
+                                                color: theme.colorScheme.surfaceContainerHighest,
                                                 shape: BoxShape.circle,
-                                                border: Border.all(color: theme.scaffoldBackgroundColor, width: 2),
+                                                border: Border.all(color: surfaceColor, width: 3),
                                               ),
-                                              padding: const EdgeInsets.all(2),
-                                              child: const Icon(Icons.send, size: 12, color: Colors.white),
+                                              padding: const EdgeInsets.all(3),
+                                              child: Icon(Icons.send_rounded, size: 12, color: theme.colorScheme.onSurface),
                                             ),
                                         ],
                                       ),
-                                      const SizedBox(height: 6),
+                                      const SizedBox(height: 12),
                                       Text(
-                                        user.displayName.split(' ').first, // First name only
+                                        user.displayName.split(' ').first,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                         textAlign: TextAlign.center,
                                         style: theme.textTheme.titleMedium?.copyWith(
-                                          fontSize: 12,
-                                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                          fontSize: 13,
                                           color: isSent ? theme.colorScheme.onSurfaceVariant : theme.colorScheme.onSurface,
                                         ),
                                       ),
@@ -298,31 +296,31 @@ class _DirectShareSheetState extends ConsumerState<DirectShareSheet> {
             // Big Send Button (only visible when items selected)
             if (_selectedUserIds.isNotEmpty) ...[
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+                padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
                 child: activeChatsAsync.whenOrNull(
                   data: (rooms) => ElevatedButton(
                     onPressed: _isSending ? null : () => _sendToSelected(rooms),
                     style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 50),
+                      minimumSize: const Size(double.infinity, 56),
                       backgroundColor: theme.colorScheme.primary,
                       foregroundColor: theme.colorScheme.onPrimary,
                       elevation: 0,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
                     ),
                     child: _isSending
-                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                        : Text('Send to ${_selectedUserIds.length}', style: theme.textTheme.titleMedium?.copyWith(color: theme.colorScheme.onPrimary)),
+                        ? SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2, color: theme.colorScheme.onPrimary))
+                        : Text('Send', style: theme.textTheme.titleLarge?.copyWith(color: theme.colorScheme.onPrimary)),
                   ),
                 ),
               ),
             ],
 
-            Divider(height: 1, color: theme.dividerColor.withValues(alpha: 0.5)),
+            Divider(height: 1, color: theme.dividerColor),
 
             // Classic Share Options (Horizontal Row)
             Container(
-              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 8),
-              color: theme.colorScheme.surface,
+              padding: const EdgeInsets.only(top: 24, bottom: 32, left: 16, right: 16),
+              color: surfaceColor,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
@@ -340,7 +338,7 @@ class _DirectShareSheetState extends ConsumerState<DirectShareSheet> {
                   ),
                   _buildOptionBtn(
                     context: context,
-                    icon: Icons.share_rounded,
+                    icon: Icons.ios_share_rounded,
                     label: 'Share via',
                     onTap: () {
                       Navigator.pop(context);
@@ -396,6 +394,8 @@ class _DirectShareSheetState extends ConsumerState<DirectShareSheet> {
     required VoidCallback onTap,
   }) {
     final theme = Theme.of(context);
+    final surfaceLight = theme.cardTheme.color ?? theme.colorScheme.surfaceContainerHighest;
+    
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
@@ -407,14 +407,13 @@ class _DirectShareSheetState extends ConsumerState<DirectShareSheet> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: theme.scaffoldBackgroundColor,
+                color: surfaceLight,
                 shape: BoxShape.circle,
-                border: Border.all(color: theme.dividerColor),
               ),
-              child: Icon(icon, size: 28, color: theme.colorScheme.onSurface),
+              child: Icon(icon, size: 26, color: theme.colorScheme.onSurface),
             ),
             const SizedBox(height: 12),
-            Text(label, style: theme.textTheme.titleMedium?.copyWith(fontSize: 13)),
+            Text(label, style: theme.textTheme.titleMedium?.copyWith(fontSize: 13, color: theme.colorScheme.onSurface)),
           ],
         ),
       ),

@@ -1,4 +1,6 @@
-import 'dart:io';
+import os
+
+new_qr = """import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:screenshot/screenshot.dart';
@@ -199,3 +201,7 @@ class _QrSharePreviewState extends State<QrSharePreview> {
     );
   }
 }
+"""
+
+with open('lib/shared/widgets/qr_share_preview.dart', 'w') as f:
+    f.write(new_qr)
