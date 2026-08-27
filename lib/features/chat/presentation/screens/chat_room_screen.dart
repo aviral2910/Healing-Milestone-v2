@@ -271,12 +271,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.surfaceContainerHighest.withValues(
-                    alpha: 0.5,
-                  ),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(
-                    color: theme.dividerColor.withValues(alpha: 0.1),
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.15),
                   ),
                 ),
                 child: Row(
@@ -291,7 +289,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                         decoration: InputDecoration(
                           hintText: 'Message...',
                           hintStyle: theme.textTheme.bodyLarge?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
+                            color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
                           ),
                           border: InputBorder.none,
                           contentPadding: const EdgeInsets.symmetric(
@@ -329,18 +327,12 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                     else ...[
                       IconButton(
                         icon: Icon(
-                          Icons.mic_none,
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                        onPressed: () {},
-                      ),
-                      IconButton(
-                        icon: Icon(
                           Icons.image_outlined,
-                          color: theme.colorScheme.onSurfaceVariant,
+                          color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                         ),
                         onPressed: _pickAndSendImage,
                       ),
+                      const SizedBox(width: 4),
                     ],
                   ],
                 ),
@@ -508,11 +500,11 @@ class _MessageBubble extends ConsumerWidget {
 
     // Sleek monochrome palette
     final sentColor = isDark
-        ? Colors.white.withValues(alpha: 0.2)
+        ? Colors.white.withValues(alpha: 0.12)
         : const Color(0xFF1C1C1E);
 
     final receivedColor = isDark
-        ? const Color(0xFF2C2C2E)
+        ? const Color(0xFF1C1C1E)
         : const Color(0xFFF1F1F1);
 
     final sentTextColor = Colors.white;
