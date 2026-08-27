@@ -16,7 +16,7 @@ class QuickEmojiBar extends StatelessWidget {
   }) : super(key: key);
 
   static const List<String> _quickEmojis = [
-    '❤️', '🫂', '🙌', '✨', '🌻', '🔥', '👏', '💯', '💪', '🙏'
+    '❤️', '😊', '🔥', '🥰', '👏', '🙌', '😁', '✨', '🌻', '🫰', '🫂', '💯', '💪', '🙏'
   ];
 
   @override
