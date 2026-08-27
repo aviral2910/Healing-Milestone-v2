@@ -113,6 +113,7 @@ class ChatRepository {
     String? sharedJourneyId,
     String? sharedStoryId,
     String? sharedProfileId,
+    bool isViewOnce = false,
   }) async {
     String? imageUrl;
     
@@ -169,6 +170,15 @@ class ChatRepository {
     });
   }
 
+  Future<void> markMessageAsViewed(String roomId, String messageId) async {
+    await _firestore
+        .collection('chat_rooms')
+        .doc(roomId)
+        .collection('messages')
+        .doc(messageId)
+        .update({'isViewed': true});
+  }
+
   Future<void> markAsRead(String roomId, String myUserId) async {
     final roomRef = _firestore.collection('chat_rooms').doc(roomId);
     await roomRef.update({
@@ -203,3 +213,4 @@ class ChatRepository {
     await batch.commit();
   }
 }
+

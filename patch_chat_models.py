@@ -1,15 +1,19 @@
-with open("lib/features/chat/data/models/chat_models.dart", "r") as f:
+import re
+
+with open('lib/features/chat/data/models/chat_models.dart', 'r') as f:
     content = f.read()
 
-content = content.replace(
-    "class ChatRoom with _$ChatRoom {",
-    "class ChatRoom with _$ChatRoom {\n  const ChatRoom._();"
-)
+old_code = """    @TimestampConverter() DateTime? createdAt,
+    @Default([]) List<String> readBy,
+  }) = _ChatMessage;"""
 
-content = content.replace(
-    "class ChatMessage with _$ChatMessage {",
-    "class ChatMessage with _$ChatMessage {\n  const ChatMessage._();"
-)
+new_code = """    @TimestampConverter() DateTime? createdAt,
+    @Default([]) List<String> readBy,
+    @Default(false) bool isViewOnce,
+    @Default(false) bool isViewed,
+  }) = _ChatMessage;"""
 
-with open("lib/features/chat/data/models/chat_models.dart", "w") as f:
+content = content.replace(old_code, new_code)
+
+with open('lib/features/chat/data/models/chat_models.dart', 'w') as f:
     f.write(content)

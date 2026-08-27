@@ -56,8 +56,45 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   Future<void> _pickAndSendImage() async {
     final pickedFile = await _imagePicker.pickImage(
       source: ImageSource.gallery,
+      imageQuality: 70, // Compress image natively
+      maxWidth: 1200,
+      maxHeight: 1200,
     );
     if (pickedFile == null) return;
+
+    // Ask user if they want to send as View Once
+    bool? isViewOnce = await showModalBottomSheet<bool>(
+      context: context,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text("Send Image", style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 24),
+              ListTile(
+                leading: const Icon(Icons.send_rounded, size: 28),
+                title: const Text("Send Normally"),
+                subtitle: const Text("Image stays in the chat permanently"),
+                onTap: () => Navigator.pop(ctx, false),
+              ),
+              const Divider(height: 1),
+              ListTile(
+                leading: const Icon(Icons.timer_rounded, size: 28, color: Colors.blue),
+                title: const Text("Send as View Once", style: TextStyle(color: Colors.blue, fontWeight: FontWeight.w600)),
+                subtitle: const Text("Image disappears after they view it"),
+                onTap: () => Navigator.pop(ctx, true),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    if (isViewOnce == null) return; // User cancelled
 
     final user = ref.read(currentUserProvider);
     if (user == null || user.userId == null) return;
@@ -70,6 +107,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             roomId: widget.roomId,
             senderId: user.userId!,
             imageFile: File(pickedFile.path),
+            isViewOnce: isViewOnce,
           );
     } catch (e) {
       ScaffoldMessenger.of(
@@ -321,6 +359,85 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
 class _MessageBubble extends ConsumerWidget {
 
+  Widget _buildViewOnceImage(BuildContext context, WidgetRef ref, ChatMessage msg, bool isMe) {
+    if (msg.isViewed) {
+      return Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey.withOpacity(0.3)),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.remove_red_eye_outlined, color: Colors.grey.shade600, size: 20),
+            const SizedBox(width: 8),
+            Text('Opened', style: TextStyle(color: Colors.grey.shade600, fontStyle: FontStyle.italic)),
+          ],
+        ),
+      );
+    }
+
+    if (isMe) {
+      return Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey.withOpacity(0.3)),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: const [
+            Icon(Icons.timer_rounded, color: Colors.blue, size: 20),
+            SizedBox(width: 8),
+            Text('Photo Sent', style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold)),
+          ],
+        ),
+      );
+    }
+
+    return GestureDetector(
+      onTap: () async {
+        // View the photo
+        await Navigator.push(context, MaterialPageRoute(builder: (_) => Scaffold(
+          backgroundColor: Colors.black,
+          extendBodyBehindAppBar: true,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            iconTheme: const IconThemeData(color: Colors.white, shadows: [Shadow(color: Colors.black45, blurRadius: 4)]),
+          ),
+          body: InteractiveViewer(
+            minScale: 1.0,
+            maxScale: 4.0,
+            clipBehavior: Clip.none,
+            child: Center(
+              child: CachedNetworkImage(imageUrl: msg.imageUrl!),
+            ),
+          ),
+        )));
+        
+        // Once popped, mark as viewed!
+        ref.read(chatRepositoryProvider).markMessageAsViewed(roomId, msg.id);
+      },
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(colors: [Colors.blue, Colors.purple]),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: const [
+            Icon(Icons.timer_rounded, color: Colors.white, size: 20),
+            SizedBox(width: 8),
+            Text('Tap to View Photo', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildShimmerBox(BuildContext context, double width, double height, {double radius = 8}) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
@@ -482,39 +599,41 @@ class _MessageBubble extends ConsumerWidget {
               if (msg.imageUrl != null)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 8.0),
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => Scaffold(
-                        backgroundColor: Colors.black,
-                        extendBodyBehindAppBar: true,
-                        appBar: AppBar(
-                          backgroundColor: Colors.transparent,
-                          elevation: 0,
-                          iconTheme: const IconThemeData(color: Colors.white, shadows: [Shadow(color: Colors.black45, blurRadius: 4)]),
-                        ),
-                        body: InteractiveViewer(
-                          minScale: 1.0,
-                          maxScale: 4.0,
-                          clipBehavior: Clip.none,
-                          child: Center(
-                            child: CachedNetworkImage(imageUrl: msg.imageUrl!),
+                  child: msg.isViewOnce
+                      ? _buildViewOnceImage(context, ref, msg, isMe)
+                      : GestureDetector(
+                          onTap: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => Scaffold(
+                              backgroundColor: Colors.black,
+                              extendBodyBehindAppBar: true,
+                              appBar: AppBar(
+                                backgroundColor: Colors.transparent,
+                                elevation: 0,
+                                iconTheme: const IconThemeData(color: Colors.white, shadows: [Shadow(color: Colors.black45, blurRadius: 4)]),
+                              ),
+                              body: InteractiveViewer(
+                                minScale: 1.0,
+                                maxScale: 4.0,
+                                clipBehavior: Clip.none,
+                                child: Center(
+                                  child: CachedNetworkImage(imageUrl: msg.imageUrl!),
+                                ),
+                              ),
+                            )));
+                          },
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: CachedNetworkImage(
+                              imageUrl: msg.imageUrl!,
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) => _buildShimmerBox(context, double.infinity, 200),
+                              errorWidget: (context, url, error) => const SizedBox(
+                                height: 100,
+                                child: Center(child: Icon(Icons.error_outline)),
+                              ),
+                            ),
                           ),
                         ),
-                      )));
-                    },
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: CachedNetworkImage(
-                        imageUrl: msg.imageUrl!,
-                        fit: BoxFit.cover,
-                        placeholder: (context, url) => _buildShimmerBox(context, double.infinity, 200),
-                        errorWidget: (context, url, error) => const SizedBox(
-                          height: 100,
-                          child: Center(child: Icon(Icons.error_outline)),
-                        ),
-                      ),
-                    ),
-                  ),
                 ),
               if (msg.sharedJourneyId != null)
                 _buildSharedCard(

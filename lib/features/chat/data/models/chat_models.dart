@@ -64,6 +64,8 @@ abstract class ChatMessage with _$ChatMessage {
     String? sharedProfileId,
     @TimestampConverter() DateTime? createdAt,
     @Default([]) List<String> readBy,
+    @Default(false) bool isViewOnce,
+    @Default(false) bool isViewed,
   }) = _ChatMessage;
 
   factory ChatMessage.fromJson(Map<String, dynamic> json) =>
