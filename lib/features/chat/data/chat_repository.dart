@@ -171,12 +171,24 @@ class ChatRepository {
   }
 
   Future<void> markMessageAsViewed(String roomId, String messageId) async {
-    await _firestore
-        .collection('chat_rooms')
-        .doc(roomId)
-        .collection('messages')
-        .doc(messageId)
-        .update({'isViewed': true});
+    final docRef = _firestore.collection('chat_rooms').doc(roomId).collection('messages').doc(messageId);
+    final doc = await docRef.get();
+    
+    if (doc.exists) {
+      final data = doc.data();
+      if (data != null && data['imageUrl'] != null) {
+        try {
+          await _storage.refFromURL(data['imageUrl']).delete();
+        } catch (e) {
+          print("Error deleting view-once image from storage: $e");
+        }
+      }
+    }
+
+    await docRef.update({
+      'isViewed': true,
+      'imageUrl': FieldValue.delete(),
+    });
   }
 
   Future<void> markAsRead(String roomId, String myUserId) async {
@@ -186,12 +198,21 @@ class ChatRepository {
     });
   }
   Future<void> deleteMessage(String roomId, String messageId) async {
-    await _firestore
-        .collection('chat_rooms')
-        .doc(roomId)
-        .collection('messages')
-        .doc(messageId)
-        .delete();
+    final docRef = _firestore.collection('chat_rooms').doc(roomId).collection('messages').doc(messageId);
+    final doc = await docRef.get();
+    
+    if (doc.exists) {
+      final data = doc.data();
+      if (data != null && data['imageUrl'] != null) {
+        try {
+          await _storage.refFromURL(data['imageUrl']).delete();
+        } catch (e) {
+          print("Error deleting image from storage: $e");
+        }
+      }
+    }
+    
+    await docRef.delete();
   }
 
   Future<void> deleteChatRoom(String roomId) async {
@@ -204,6 +225,14 @@ class ChatRepository {
         
     final batch = _firestore.batch();
     for (var doc in messages.docs) {
+      final data = doc.data();
+      if (data['imageUrl'] != null) {
+        try {
+          await _storage.refFromURL(data['imageUrl']).delete();
+        } catch (e) {
+          print("Error deleting image from storage during room deletion: $e");
+        }
+      }
       batch.delete(doc.reference);
     }
     
