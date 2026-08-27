@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:healing_milestones/shared/widgets/chat_input_field.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:go_router/go_router.dart';
@@ -207,53 +208,11 @@ class _UniversalCommentsThreadState
                       top: BorderSide(color: theme.dividerColor, width: 0.5),
                     ),
                   ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _commentController,
-                          focusNode: _focusNode,
-                          textInputAction: TextInputAction.send,
-                          onSubmitted: (_) => _submitComment(),
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
-                          decoration: InputDecoration(
-                            hintText: 'Add a comment...',
-                            hintStyle: TextStyle(
-                              color:
-                                  (Theme.of(
-                                    context,
-                                  ).textTheme.bodySmall?.color ??
-                                  Colors.grey),
-                            ),
-                            border: InputBorder.none,
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 12,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      GestureDetector(
-                        onTap: _submitComment,
-                        child: Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.primary.withValues(
-                              alpha: 0.15,
-                            ),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.send_rounded,
-                            color: theme.colorScheme.primary,
-                            size: 24,
-                          ),
-                        ),
-                      ),
-                    ],
+                  child: ChatInputField(
+                    controller: _commentController,
+                    focusNode: _focusNode,
+                    hintText: 'Add a comment...',
+                    onSend: _submitComment,
                   ),
                 ),
               ],

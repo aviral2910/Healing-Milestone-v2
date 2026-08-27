@@ -7,6 +7,7 @@ import 'package:healing_milestones/features/journey/presentation/screens/journey
 import 'package:healing_milestones/features/milestone/presentation/screens/story_detail_screen.dart';
 import 'package:healing_milestones/features/profile/presentation/screens/public_profile_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:healing_milestones/shared/widgets/chat_input_field.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/services.dart';
 import 'package:healing_milestones/shared/widgets/quick_emoji_bar.dart';
@@ -381,74 +382,18 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.onSurface.withValues(
-                        alpha: 0.08,
+                  child: ChatInputField(
+                    controller: _textController,
+                    focusNode: _focusNode,
+                    isLoading: _isSending,
+                    hasText: _hasText,
+                    onSend: _sendTextMessage,
+                    trailingIcon: IconButton(
+                      icon: Icon(
+                        Icons.image_outlined,
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                       ),
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(
-                        color: theme.colorScheme.onSurface.withValues(
-                          alpha: 0.15,
-                        ),
-                      ),
-                    ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: _textController,
-                            focusNode: _focusNode,
-                            style: theme.textTheme.bodyLarge,
-                            minLines: 1,
-                            maxLines: 5,
-                            decoration: InputDecoration(
-                              hintText: 'Message...',
-                              hintStyle: theme.textTheme.bodyLarge?.copyWith(
-                                color: theme.colorScheme.onSurface.withValues(
-                                  alpha: 0.4,
-                                ),
-                              ),
-                              border: InputBorder.none,
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 10,
-                              ),
-                            ),
-                            textCapitalization: TextCapitalization.sentences,
-                          ),
-                        ),
-                        if (_isSending)
-                          const Padding(
-                            padding: EdgeInsets.all(12.0),
-                            child: SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            ),
-                          )
-                        else if (_hasText)
-                          IconButton(
-                            onPressed: _sendTextMessage,
-                            icon: Icon(
-                              Icons.send_rounded,
-                              color: theme.colorScheme.primary,
-                            ),
-                          )
-                        else ...[
-                          IconButton(
-                            icon: Icon(
-                              Icons.image_outlined,
-                              color: theme.colorScheme.onSurface.withValues(
-                                alpha: 0.7,
-                              ),
-                            ),
-                            onPressed: _pickAndSendImage,
-                          ),
-                          const SizedBox(width: 4),
-                        ],
-                      ],
+                      onPressed: _pickAndSendImage,
                     ),
                   ),
                 ),
