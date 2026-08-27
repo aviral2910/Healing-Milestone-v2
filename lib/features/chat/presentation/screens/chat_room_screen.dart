@@ -62,52 +62,11 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     );
     if (pickedFile == null) return;
 
-    // Ask user if they want to send as View Once
-    bool? isViewOnce = await showModalBottomSheet<bool>(
-      context: context,
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                "Send Image",
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 24),
-              ListTile(
-                leading: const Icon(Icons.send_rounded, size: 28),
-                title: const Text("Send Normally"),
-                subtitle: const Text("Image stays in the chat permanently"),
-                onTap: () => Navigator.pop(ctx, false),
-              ),
-              const Divider(height: 1),
-              ListTile(
-                leading: const Icon(
-                  Icons.timer_rounded,
-                  size: 28,
-                  color: Colors.blue,
-                ),
-                title: const Text(
-                  "Send as View Once",
-                  style: TextStyle(
-                    color: Colors.blue,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                subtitle: const Text("Image disappears after they view it"),
-                onTap: () => Navigator.pop(ctx, true),
-              ),
-            ],
-          ),
-        ),
+    // Show Full-Screen Image Preview with View Once toggle
+    bool? isViewOnce = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => _ImagePreviewScreen(imageFile: File(pickedFile.path)),
       ),
     );
 
