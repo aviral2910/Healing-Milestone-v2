@@ -148,6 +148,7 @@ class ChatRepository {
       // For now we just update snippet.
       transaction.update(roomRef, {
         'lastMessageText': snippet,
+        'lastMessageSenderId': senderId,
         'lastMessageTime': now,
       });
     });

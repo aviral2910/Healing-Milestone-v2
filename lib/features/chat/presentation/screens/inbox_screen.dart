@@ -130,15 +130,26 @@ class _ActiveChatsList extends ConsumerWidget {
                         if (otherUser == null) return const SizedBox.shrink();
                         final isSentRequest = chat.status == 'pending' && chat.initiatorId == currentUser.userId;
                         final isUnread = (chat.unreadCount[currentUser.userId] ?? 0) > 0;
+                        final isMine = chat.lastMessageSenderId == currentUser.userId;
                         
+                        String displaySubtitle = chat.lastMessageText;
+                        if (displaySubtitle.isEmpty) {
+                          displaySubtitle = isMine ? 'Sent a message' : 'Say hi!';
+                        }
+                        
+                        if (isSentRequest) {
+                          displaySubtitle = 'Request sent · $displaySubtitle';
+                        } else if (isMine) {
+                          displaySubtitle = 'Sent · $displaySubtitle';
+                        }
+
                         return _ChatListTile(
                           title: otherUser.displayName,
-                          subtitle: isSentRequest
-                                ? 'Request sent · ${chat.lastMessageText.isEmpty ? "Say hi!" : chat.lastMessageText}'
-                                : (chat.lastMessageText.isEmpty ? 'Say hi!' : chat.lastMessageText),
+                          subtitle: displaySubtitle,
                           time: chat.lastMessageTime,
-                          isUnread: isUnread,
+                          isUnread: isUnread && !isMine,
                           isSentRequest: isSentRequest,
+                          isMine: isMine,
                           leading: AppAvatar(imageUrl: otherUser.profilePicture, radius: 28),
                           onTap: () => _navigateToChat(context, chat.id, chat.type),
                           onLongPress: () {
@@ -343,6 +354,7 @@ class _ChatListTile extends StatelessWidget {
   final DateTime? time;
   final bool isUnread;
   final bool isSentRequest;
+  final bool isMine;
   final Widget leading;
   final VoidCallback onTap;
   final VoidCallback? onLongPress;
@@ -354,6 +366,7 @@ class _ChatListTile extends StatelessWidget {
     required this.time,
     required this.isUnread,
     required this.isSentRequest,
+    this.isMine = false,
     required this.leading,
     required this.onTap,
     this.onLongPress,
@@ -394,10 +407,10 @@ class _ChatListTile extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: theme.textTheme.bodyMedium?.copyWith(
-                            color: isSentRequest 
+                            color: (isSentRequest || isMine)
                                 ? theme.colorScheme.onSurfaceVariant 
                                 : (isUnread ? theme.colorScheme.onSurface : theme.colorScheme.onSurfaceVariant),
-                            fontWeight: isUnread ? FontWeight.w500 : FontWeight.w400,
+                            fontWeight: isUnread ? FontWeight.w600 : FontWeight.w400,
                             fontSize: 13,
                           ),
                         ),

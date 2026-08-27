@@ -35,6 +35,7 @@ abstract class ChatRoom with _$ChatRoom {
     required String status, // "pending", "accepted", "declined"
     required String initiatorId,
     @Default("") String lastMessageText,
+    @Default("") String lastMessageSenderId,
     @TimestampConverter() DateTime? lastMessageTime,
     @Default({}) Map<String, int> unreadCount,
     @TimestampConverter() DateTime? createdAt,
