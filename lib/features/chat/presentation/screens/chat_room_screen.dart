@@ -5,6 +5,7 @@ import 'package:healing_milestones/features/journey/presentation/screens/journey
 import 'package:healing_milestones/features/milestone/presentation/screens/story_detail_screen.dart';
 import 'package:healing_milestones/features/profile/presentation/screens/public_profile_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/cupertino.dart';
 import 'dart:ui';
 import 'package:shimmer/shimmer.dart';
@@ -258,11 +259,72 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     );
   }
 
+  final List<String> _quickEmojis = ['❤️', '🫂', '🙌', '✨', '🌻', '🔥', '👏', '💯', '💪', '🙏'];
+
+  Widget _buildQuickEmojis(BuildContext context) {
+    final theme = Theme.of(context);
+    
+    return Container(
+      width: double.infinity,
+      color: theme.scaffoldBackgroundColor,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: Row(
+          children: _quickEmojis.map((emoji) {
+            return Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: InkWell(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  final currentText = _textController.text;
+                  final selection = _textController.selection;
+                  if (selection.isValid && selection.start >= 0) {
+                    final newText = currentText.replaceRange(selection.start, selection.end, emoji);
+                    _textController.value = TextEditingValue(
+                      text: newText,
+                      selection: TextSelection.collapsed(offset: selection.start + emoji.length),
+                    );
+                  } else {
+                    _textController.text = currentText + emoji;
+                    _textController.selection = TextSelection.collapsed(offset: _textController.text.length);
+                  }
+                  
+                  // Trigger state update to show send button
+                  setState(() {});
+                },
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
+                    ),
+                  ),
+                  child: Text(
+                    emoji,
+                    style: const TextStyle(fontSize: 22),
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
   Widget _buildInputArea(BuildContext context) {
     final theme = Theme.of(context);
 
     return SafeArea(
-      child: Container(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildQuickEmojis(context),
+          Container(
         padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
         color: theme.scaffoldBackgroundColor,
         child: Row(
@@ -333,6 +395,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             ),
           ],
         ),
+      ),
+        ],
       ),
     );
   }
