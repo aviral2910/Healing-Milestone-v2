@@ -15,37 +15,40 @@ class InterestSelectionScreen extends ConsumerStatefulWidget {
 
 class _InterestSelectionScreenState
     extends ConsumerState<InterestSelectionScreen> {
-  final List<String> _availableInterests = [
-    'Anxiety',
-    'Depression',
-    'Migraines',
-    'Diabetes',
-    'Chronic Pain',
-    'Fitness',
-    'Sleep',
-    'Heart Health',
-    'Pregnancy',
-    'Menopause',
-    'ADHD',
-    'PTSD',
-    'Weight Loss',
-  ];
+  final Map<String, List<String>> _categorizedInterests = {
+    '🧠 Mental & Emotional Health': [
+      'Anxiety', 'Depression', 'PTSD', 'Trauma Recovery', 'Grief & Loss', 
+      'Burnout', 'Panic Attacks', 'Bipolar Disorder', 'Insomnia', 
+      'Stress Management', 'Addiction Recovery'
+    ],
+    '🏃‍♂️ Chronic Illness & Pain': [
+      'Chronic Pain', 'Fibromyalgia', 'Migraines', 'Long Covid', 
+      'Diabetes', 'Arthritis', 'Chronic Fatigue', 'Lupus', 'POTS'
+    ],
+    '🍎 Gut Health & Nutrition': [
+      'Gut Health', 'IBS', 'Celiac Disease', "Crohn's & Colitis", 
+      'Food Allergies', 'Weight Loss', 'Eating Disorder Recovery', 
+      'Anti-Inflammatory Diet'
+    ],
+    '👶 Women\'s Health & Family': [
+      'Pregnancy', 'Postpartum', 'Menopause', 'PCOS', 'Endometriosis', 
+      'Fertility Journey', 'Motherhood'
+    ],
+    '🧬 Neurodivergence & Cognitive': [
+      'ADHD', 'Autism', 'Brain Fog', 'Concussion Recovery'
+    ],
+    '🧘‍♀️ Lifestyle, Wellness & Holistic': [
+      'Fitness', 'Sleep Hygiene', 'Meditation', 'Yoga for Healing', 
+      'Breathwork', 'Somatic Healing', 'Physical Therapy'
+    ],
+    '🤝 Support & Relationships': [
+      'Caregiving', 'Setting Boundaries', 'Narcissistic Abuse Recovery', 
+      'Finding Community'
+    ],
+  };
 
   final Set<String> _selectedInterests = {};
   bool _isSaving = false;
-  
-  List<String>? _cachedTags;
-  List<String> _previousTrending = [];
-
-  void _toggleInterest(String interest) {
-    setState(() {
-      if (_selectedInterests.contains(interest)) {
-        _selectedInterests.remove(interest);
-      } else {
-        _selectedInterests.add(interest);
-      }
-    });
-  }
 
   Future<void> _saveAndContinue() async {
     if (_selectedInterests.length < 3) {
@@ -94,30 +97,17 @@ class _InterestSelectionScreenState
     final trendingAsync = ref.watch(trendingHashtagsProvider);
     final trendingTags = trendingAsync.value ?? [];
 
-    // Only rebuild and shuffle the list if trending tags finish loading
-    if (_cachedTags == null || trendingTags.length != _previousTrending.length) {
-      _previousTrending = trendingTags;
-      
-      final combinedList = <String>[..._availableInterests];
-      
-      final int maxTotalTags = 30;
-      final int spotsLeft = maxTotalTags - combinedList.length;
-      
-      if (spotsLeft > 0) {
-        int added = 0;
-        for (final tag in trendingTags) {
-          if (added >= spotsLeft) break;
-          if (!combinedList.any((t) => t.toLowerCase() == tag.toLowerCase())) {
-              combinedList.add(tag);
-              added++;
-          }
-        }
-      }
-      
-      combinedList.shuffle();
-      _cachedTags = combinedList;
+        final Map<String, List<String>> displayCategories = {};
+    
+    // 1. Add Trending Tags first (if available)
+    if (trendingTags.isNotEmpty) {
+      // Limit trending tags to top 10
+      displayCategories['🔥 Trending Now'] = trendingTags.take(10).toList();
     }
     
+    // 2. Add all other categories
+    displayCategories.addAll(_categorizedInterests);
+
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
@@ -151,52 +141,79 @@ class _InterestSelectionScreenState
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 24),
               Expanded(
-                child: SingleChildScrollView(
+                child: ListView.separated(
                   physics: const BouncingScrollPhysics(),
-                  child: Wrap(
-                    spacing: 12.0,
-                    runSpacing: 16.0,
-                    children: _cachedTags!.map((interest) {
-                      final isTrending =
-                          trendingTags.contains(interest) &&
-                          !_availableInterests.contains(interest);
-                      final displayLabel = isTrending
-                          ? '🔥 $interest'
-                          : interest;
-                      final isSelected = _selectedInterests.contains(interest);
-                      return ChoiceChip(
-                        label: Text(
-                          displayLabel,
-                          style: TextStyle(
-                            color: isSelected
-                                ? theme.colorScheme.onPrimary
-                                : theme.colorScheme.onSurface,
-                            fontWeight: isSelected
-                                ? FontWeight.w600
-                                : FontWeight.w400,
+                  itemCount: displayCategories.length,
+                  separatorBuilder: (context, index) => const SizedBox(height: 28),
+                  itemBuilder: (context, index) {
+                    final categoryEntry = displayCategories.entries.elementAt(index);
+                    final categoryName = categoryEntry.key;
+                    final tags = categoryEntry.value;
+                    
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          categoryName,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.onSurface,
                           ),
                         ),
-                        selected: isSelected,
-                        onSelected: (_) => _toggleInterest(interest),
-                        selectedColor: theme.colorScheme.primary,
-                        backgroundColor: theme.colorScheme.surface,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                          side: BorderSide(
-                            color: isSelected
-                                ? Colors.transparent
-                                : theme.dividerColor,
-                          ),
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 10.0,
+                          runSpacing: 12.0,
+                          children: tags.map((interest) {
+                            // Deduplicate case-insensitively for selection matching
+                            final isSelected = _selectedInterests.any(
+                              (selected) => selected.toLowerCase() == interest.toLowerCase()
+                            );
+                            
+                            return ChoiceChip(
+                              label: Text(
+                                interest,
+                                style: TextStyle(
+                                  color: isSelected 
+                                      ? theme.colorScheme.onPrimary 
+                                      : theme.colorScheme.onSurface,
+                                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                                ),
+                              ),
+                              selected: isSelected,
+                              onSelected: (_) {
+                                // Find the exact case used in _selectedInterests to remove it, or add the new one
+                                setState(() {
+                                  final match = _selectedInterests.where(
+                                    (s) => s.toLowerCase() == interest.toLowerCase()
+                                  ).firstOrNull;
+                                  
+                                  if (match != null) {
+                                    _selectedInterests.remove(match);
+                                  } else {
+                                    _selectedInterests.add(interest);
+                                  }
+                                });
+                              },
+                              selectedColor: theme.colorScheme.primary,
+                              backgroundColor: theme.colorScheme.surface,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                                side: BorderSide(
+                                  color: isSelected 
+                                      ? Colors.transparent 
+                                      : theme.dividerColor.withValues(alpha: 0.5),
+                                ),
+                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                            );
+                          }).toList(),
                         ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                      );
-                    }).toList(),
-                  ),
+                      ],
+                    );
+                  },
                 ),
               ),
               const SizedBox(height: 16),
