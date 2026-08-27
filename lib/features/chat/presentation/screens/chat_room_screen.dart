@@ -269,7 +269,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       color: theme.scaffoldBackgroundColor,
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         child: Row(
           children: _quickEmojis.map((emoji) {
             return Padding(
@@ -293,19 +293,19 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   // Trigger state update to show send button
                   setState(() {});
                 },
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(16),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
                     color: theme.colorScheme.onSurface.withValues(alpha: 0.05),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(16),
                     border: Border.all(
                       color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
                     ),
                   ),
                   child: Text(
                     emoji,
-                    style: const TextStyle(fontSize: 22),
+                    style: const TextStyle(fontSize: 18),
                   ),
                 ),
               ),
