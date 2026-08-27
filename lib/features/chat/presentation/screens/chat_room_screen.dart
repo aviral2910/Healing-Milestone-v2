@@ -386,6 +386,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                         Expanded(
                           child: TextField(
                             controller: _textController,
+                            focusNode: _focusNode,
                             style: theme.textTheme.bodyLarge,
                             minLines: 1,
                             maxLines: 5,
