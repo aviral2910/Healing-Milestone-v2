@@ -728,12 +728,15 @@ class _MessageBubble extends ConsumerWidget {
                   isMe: isMe,
                 ),
               if (msg.text != null && msg.text!.isNotEmpty)
-                Text(
-                  msg.text!,
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w500,
-                    letterSpacing: .7,
-                    color: isMe ? sentTextColor : receivedTextColor,
+                Padding(
+                  padding: const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 4),
+                  child: Text(
+                    msg.text!,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: .7,
+                      color: isMe ? sentTextColor : receivedTextColor,
+                    ),
                   ),
                 ),
               const SizedBox(height: 4),
