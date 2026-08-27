@@ -273,7 +273,9 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen>
                               return Row(
                                 children: [
                                   Expanded(
-                                    child: ElevatedButton(
+                                    child: SizedBox(
+                                      height: 52,
+                                      child: ElevatedButton(
                                       onPressed: () async {
                                         if (currentUser == null) {
                                           context.push(AppRoutes.login);
@@ -323,54 +325,57 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen>
                                         ),
                                       ),
                                     ),
+                                    ),
                                   ),
                                   const SizedBox(width: 12),
-                                  OutlinedButton(
-                                    onPressed: () async {
-                                      if (currentUser == null) {
-                                        context.push(AppRoutes.login);
-                                        return;
-                                      }
-                                      try {
-                                        final currentUser = ref.read(currentUserProvider);
-                                        final isMutual = currentUser != null && 
-                                            currentUser.followingList.contains(user.userId) && 
-                                            currentUser.followersList.contains(user.userId);
+                                  SizedBox(
+                                    height: 52,
+                                    width: 52,
+                                    child: ElevatedButton(
+                                      onPressed: () async {
+                                        if (currentUser == null) {
+                                          context.push(AppRoutes.login);
+                                          return;
+                                        }
+                                        try {
+                                          final currentUser = ref.read(currentUserProvider);
+                                          final isMutual = currentUser != null && 
+                                              currentUser.followingList.contains(user.userId) && 
+                                              currentUser.followersList.contains(user.userId);
 
-                                        await ref.read(chatRepositoryProvider).requestChat(user.userId, isMutual: isMutual);
-                                        
-                                        if (context.mounted) {
-                                          final uids = [currentUser!.userId, user.userId]..sort();
-                                          final roomId = 'chat_${uids[0]}_${uids[1]}';
-                                          Navigator.of(context).push(
-                                            MaterialPageRoute(
-                                              builder: (_) => ChatRoomScreen(
-                                                roomId: roomId,
-                                                roomType: 'peer',
+                                          await ref.read(chatRepositoryProvider).requestChat(user.userId, isMutual: isMutual);
+                                          
+                                          if (context.mounted) {
+                                            final uids = [currentUser!.userId, user.userId]..sort();
+                                            final roomId = 'chat_${uids[0]}_${uids[1]}';
+                                            Navigator.of(context).push(
+                                              MaterialPageRoute(
+                                                builder: (_) => ChatRoomScreen(
+                                                  roomId: roomId,
+                                                  roomType: 'peer',
+                                                ),
                                               ),
-                                            ),
-                                          );
+                                            );
+                                          }
+                                        } catch (e) {
+                                          if (context.mounted) {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              SnackBar(content: Text('Could not start chat: $e')),
+                                            );
+                                          }
                                         }
-                                      } catch (e) {
-                                        if (context.mounted) {
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            SnackBar(content: Text('Could not start chat: $e')),
-                                          );
-                                        }
-                                      }
-                                    },
-                                    style: OutlinedButton.styleFrom(
-                                      foregroundColor: theme.colorScheme.primary,
-                                      side: BorderSide(color: theme.colorScheme.primary, width: 1.5),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.15),
+                                        foregroundColor: theme.colorScheme.primary,
+                                        elevation: 0,
+                                        padding: EdgeInsets.zero,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(14),
+                                        ),
                                       ),
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 20,
-                                        vertical: 14,
-                                      ),
+                                      child: const Icon(Icons.send_rounded, size: 24),
                                     ),
-                                    child: const Icon(Icons.send_rounded, size: 20),
                                   ),
                                 ],
                               );
