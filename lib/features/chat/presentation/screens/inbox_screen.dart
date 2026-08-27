@@ -137,9 +137,7 @@ class _ActiveChatsList extends ConsumerWidget {
                           displaySubtitle = isMine ? 'Sent a message' : 'Say hi!';
                         }
                         
-                        if (isSentRequest) {
-                          displaySubtitle = 'Request sent · $displaySubtitle';
-                        } else if (isMine) {
+                        if (isMine) {
                           displaySubtitle = 'Sent · $displaySubtitle';
                         }
 
@@ -148,6 +146,7 @@ class _ActiveChatsList extends ConsumerWidget {
                           subtitle: displaySubtitle,
                           time: chat.lastMessageTime,
                           isUnread: isUnread && !isMine,
+                          unreadCount: (!isMine) ? (chat.unreadCount[currentUser.userId] ?? 0) : 0,
                           isSentRequest: isSentRequest,
                           isMine: isMine,
                           leading: AppAvatar(imageUrl: otherUser.profilePicture, radius: 28),
@@ -353,6 +352,7 @@ class _ChatListTile extends StatelessWidget {
   final String subtitle;
   final DateTime? time;
   final bool isUnread;
+  final int unreadCount;
   final bool isSentRequest;
   final bool isMine;
   final Widget leading;
@@ -365,6 +365,7 @@ class _ChatListTile extends StatelessWidget {
     required this.subtitle,
     required this.time,
     required this.isUnread,
+    this.unreadCount = 0,
     required this.isSentRequest,
     this.isMine = false,
     required this.leading,
@@ -407,9 +408,9 @@ class _ChatListTile extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: theme.textTheme.bodyMedium?.copyWith(
-                            color: (isSentRequest || isMine)
-                                ? theme.colorScheme.onSurfaceVariant 
-                                : (isUnread ? theme.colorScheme.onSurface : theme.colorScheme.onSurfaceVariant),
+                            color: isUnread 
+                                ? theme.colorScheme.onSurface 
+                                : theme.colorScheme.onSurface.withValues(alpha: 0.55),
                             fontWeight: isUnread ? FontWeight.w600 : FontWeight.w400,
                             fontSize: 13,
                           ),
@@ -419,7 +420,7 @@ class _ChatListTile extends StatelessWidget {
                         Text(
                           ' · ${timeago.format(time!, locale: 'en_short')}',
                           style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                            color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
                             fontSize: 13,
                           ),
                         ),
@@ -431,6 +432,23 @@ class _ChatListTile extends StatelessWidget {
             if (trailingAction != null) ...[
               const SizedBox(width: 8),
               trailingAction!,
+            ] else if (unreadCount > 0) ...[
+              const SizedBox(width: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  unreadCount > 99 ? '99+' : unreadCount.toString(),
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.onPrimary,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 11,
+                  ),
+                ),
+              ),
             ] else if (isUnread) ...[
               const SizedBox(width: 12),
               Container(
