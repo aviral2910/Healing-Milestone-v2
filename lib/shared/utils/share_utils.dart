@@ -28,3 +28,31 @@ void showStoryShareOptions(BuildContext context, String storyId, String content)
     ),
   );
 }
+
+void showProfileShareOptions(BuildContext context, String profileId) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (ctx) => DirectShareSheet(
+      profileId: profileId,
+      shareUrl: 'https://healingmilestones.com/profile/$profileId',
+      shareText: 'Check out this profile!',
+      qrBottomText: 'Scan to view profile',
+    ),
+  );
+}
+
+void showShareOptions(BuildContext context, String storyId) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (ctx) => DirectShareSheet(
+      storyId: storyId,
+      shareUrl: 'https://healingmilestones.com/story/$storyId',
+      shareText: 'Check out this post!',
+      qrBottomText: 'Scan to view post',
+    ),
+  );
+}

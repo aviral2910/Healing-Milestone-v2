@@ -5,7 +5,6 @@ def add_import(filepath):
         content = f.read()
     
     if "package:healing_milestones/shared/utils/share_utils.dart" not in content:
-        # Find first import
         match = re.search(r'^import .*;', content, re.MULTILINE)
         if match:
             insert_pos = match.end()
@@ -13,5 +12,6 @@ def add_import(filepath):
             with open(filepath, 'w') as f:
                 f.write(content)
 
-add_import('lib/features/journey/presentation/screens/journey_detail_screen.dart')
-add_import('lib/features/journey/presentation/widgets/public_journey_detail_overlay.dart')
+add_import('lib/features/profile/presentation/screens/profile_screen.dart')
+add_import('lib/features/profile/presentation/screens/public_profile_screen.dart')
+add_import('lib/shared/widgets/interaction_section.dart')
