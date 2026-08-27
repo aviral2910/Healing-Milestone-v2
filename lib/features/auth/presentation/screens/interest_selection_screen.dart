@@ -125,100 +125,122 @@ class _InterestSelectionScreenState
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'What brings you here?',
-                style: theme.textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: theme.colorScheme.onSurface,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Select at least 3 topics so we can personalize your experience.',
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: 24),
               Expanded(
-                child: ListView.separated(
+                child: CustomScrollView(
                   physics: const BouncingScrollPhysics(),
-                  itemCount: displayCategories.length,
-                  separatorBuilder: (context, index) => const SizedBox(height: 28),
-                  itemBuilder: (context, index) {
-                    final categoryEntry = displayCategories.entries.elementAt(index);
-                    final categoryName = categoryEntry.key;
-                    final tags = categoryEntry.value;
-                    
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          categoryName,
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: theme.colorScheme.onSurface,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Wrap(
-                          spacing: 10.0,
-                          runSpacing: 12.0,
-                          children: tags.map((interest) {
-                            // Deduplicate case-insensitively for selection matching
-                            final isSelected = _selectedInterests.any(
-                              (selected) => selected.toLowerCase() == interest.toLowerCase()
-                            );
-                            
-                            return ChoiceChip(
-                              label: Text(
-                                interest,
-                                style: TextStyle(
-                                  color: isSelected 
-                                      ? theme.colorScheme.onPrimary 
-                                      : theme.colorScheme.onSurface,
-                                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                                ),
+                  slivers: [
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 8.0, bottom: 28.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'What are you navigating right now?',
+                              style: theme.textTheme.headlineMedium?.copyWith(
+                                fontWeight: FontWeight.w900,
+                                color: theme.colorScheme.onSurface,
+                                height: 1.2,
+                                letterSpacing: -0.5,
                               ),
-                              selected: isSelected,
-                              onSelected: (_) {
-                                // Find the exact case used in _selectedInterests to remove it, or add the new one
-                                setState(() {
-                                  final match = _selectedInterests.where(
-                                    (s) => s.toLowerCase() == interest.toLowerCase()
-                                  ).firstOrNull;
-                                  
-                                  if (match != null) {
-                                    _selectedInterests.remove(match);
-                                  } else {
-                                    _selectedInterests.add(interest);
-                                  }
-                                });
-                              },
-                              selectedColor: theme.colorScheme.primary,
-                              backgroundColor: theme.colorScheme.surface,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                                side: BorderSide(
-                                  color: isSelected 
-                                      ? Colors.transparent 
-                                      : theme.dividerColor.withValues(alpha: 0.5),
-                                ),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              'Select at least 3 topics so we can build a personalized feed of stories and journeys that matter to you.',
+                              style: theme.textTheme.bodyLarge?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant,
+                                height: 1.4,
                               ),
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                            );
-                          }).toList(),
+                            ),
+                          ],
                         ),
-                      ],
-                    );
-                  },
+                      ),
+                    ),
+                    SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          final categoryEntry = displayCategories.entries.elementAt(index);
+                          final categoryName = categoryEntry.key;
+                          final tags = categoryEntry.value;
+                          
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 32.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  categoryName,
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.w800,
+                                    color: theme.colorScheme.onSurface,
+                                    letterSpacing: 0.2,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                Wrap(
+                                  spacing: 10.0,
+                                  runSpacing: 12.0,
+                                  children: tags.map((interest) {
+                                    final isSelected = _selectedInterests.any(
+                                      (selected) => selected.toLowerCase() == interest.toLowerCase()
+                                    );
+                                    
+                                    return ChoiceChip(
+                                      label: Text(
+                                        interest,
+                                        style: TextStyle(
+                                          color: isSelected 
+                                              ? theme.colorScheme.onPrimary 
+                                              : theme.colorScheme.onSurface,
+                                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                                        ),
+                                      ),
+                                      selected: isSelected,
+                                      onSelected: (_) {
+                                        setState(() {
+                                          final match = _selectedInterests.where(
+                                            (s) => s.toLowerCase() == interest.toLowerCase()
+                                          ).firstOrNull;
+                                          
+                                          if (match != null) {
+                                            _selectedInterests.remove(match);
+                                          } else {
+                                            _selectedInterests.add(interest);
+                                          }
+                                        });
+                                      },
+                                      selectedColor: theme.colorScheme.primary,
+                                      backgroundColor: theme.colorScheme.surface,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(20),
+                                        side: BorderSide(
+                                          color: isSelected 
+                                              ? Colors.transparent 
+                                              : theme.dividerColor.withValues(alpha: 0.6),
+                                          width: 1,
+                                        ),
+                                      ),
+                                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                    );
+                                  }).toList(),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                        childCount: displayCategories.length,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 16),
-              SizedBox(
+              Container(
                 width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                decoration: BoxDecoration(
+                  color: theme.scaffoldBackgroundColor,
+                ),
                 child: ElevatedButton(
                   onPressed: (_selectedInterests.length >= 3 && !_isSaving)
                       ? _saveAndContinue
@@ -226,31 +248,24 @@ class _InterestSelectionScreenState
                   style: ElevatedButton.styleFrom(
                     backgroundColor: theme.colorScheme.primary,
                     foregroundColor: theme.colorScheme.onPrimary,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
                     ),
-                    elevation: 0,
                   ),
                   child: _isSaving
-                      ? SizedBox(
+                      ? const SizedBox(
                           height: 20,
                           width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: theme.colorScheme.onPrimary,
-                          ),
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                         )
                       : const Text(
                           'Continue',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16,
-                          ),
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                 ),
               ),
-              const SizedBox(height: 24),
             ],
           ),
         ),
