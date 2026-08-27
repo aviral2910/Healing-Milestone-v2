@@ -2,6 +2,8 @@ import 'package:healing_milestones/shared/widgets/app_loader.dart';
 import 'package:healing_milestones/shared/widgets/app_avatar.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:shimmer/shimmer.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:healing_milestones/features/chat/presentation/providers/batch_media_provider.dart';
 import 'package:image_picker/image_picker.dart';
@@ -315,6 +317,24 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 }
 
 class _MessageBubble extends ConsumerWidget {
+
+  Widget _buildShimmerBox(BuildContext context, double width, double height, {double radius = 8}) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    return Shimmer.fromColors(
+      baseColor: isDark ? Colors.white12 : Colors.black12,
+      highlightColor: isDark ? Colors.white24 : Colors.black26,
+      child: Container(
+        width: width,
+        height: height,
+        decoration: BoxDecoration(
+          color: isDark ? Colors.white : Colors.black,
+          borderRadius: BorderRadius.circular(radius),
+        ),
+      ),
+    );
+  }
+
   final ChatMessage msg;
   final bool isMe;
   final String roomId;
@@ -461,7 +481,15 @@ class _MessageBubble extends ConsumerWidget {
                   padding: const EdgeInsets.only(bottom: 8.0),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-                    child: Image.network(msg.imageUrl!, fit: BoxFit.cover),
+                    child: CachedNetworkImage(
+                      imageUrl: msg.imageUrl!,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => _buildShimmerBox(context, double.infinity, 200),
+                      errorWidget: (context, url, error) => const SizedBox(
+                        height: 100,
+                        child: Center(child: Icon(Icons.error_outline)),
+                      ),
+                    ),
                   ),
                 ),
               if (msg.sharedJourneyId != null)
@@ -532,13 +560,9 @@ class _MessageBubble extends ConsumerWidget {
     if (isJourney) {
       final journey = mediaState.journeys[id];
       if (journey == null) {
-        return const Padding(
-          padding: EdgeInsets.all(8.0),
-          child: SizedBox(
-            width: 20,
-            height: 20,
-            child: CircularProgressIndicator(strokeWidth: 2),
-          ),
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: _buildShimmerBox(context, double.infinity, 80, radius: 12),
         );
       }
       imageUrl = null;
@@ -546,13 +570,9 @@ class _MessageBubble extends ConsumerWidget {
     } else {
       final story = mediaState.stories[id];
       if (story == null) {
-        return const Padding(
-          padding: EdgeInsets.all(8.0),
-          child: SizedBox(
-            width: 20,
-            height: 20,
-            child: CircularProgressIndicator(strokeWidth: 2),
-          ),
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: _buildShimmerBox(context, double.infinity, 160, radius: 12),
         );
       }
       imageUrl = story.mainImage;
@@ -591,11 +611,16 @@ class _MessageBubble extends ConsumerWidget {
           if (imageUrl != null && imageUrl.isNotEmpty)
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                imageUrl,
+              child: CachedNetworkImage(
+                imageUrl: imageUrl,
                 height: 120,
                 width: double.infinity,
                 fit: BoxFit.cover,
+                placeholder: (context, url) => _buildShimmerBox(context, double.infinity, 120),
+                errorWidget: (context, url, error) => const SizedBox(
+                  height: 120,
+                  child: Center(child: Icon(Icons.error_outline)),
+                ),
               ),
             ),
           const SizedBox(height: 8),
@@ -672,7 +697,7 @@ class _MessageBubble extends ConsumerWidget {
             ],
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => _buildShimmerBox(context, double.infinity, 60, radius: 12),
         error: (_, __) => const Text('Error loading profile'),
       ),
     );
