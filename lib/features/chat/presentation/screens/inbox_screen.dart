@@ -1,6 +1,7 @@
 import 'package:healing_milestones/features/auth/data/auth_provider.dart';
 import 'package:healing_milestones/shared/widgets/app_avatar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:healing_milestones/features/chat/presentation/providers/chat_providers.dart';
 import 'package:healing_milestones/features/chat/presentation/screens/chat_room_screen.dart';
@@ -216,6 +217,7 @@ class _ActiveChatsList extends ConsumerWidget {
                           margin: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
                             color: theme.colorScheme.surface,
+
                             borderRadius: BorderRadius.circular(24),
                           ),
                           child: Column(
@@ -231,19 +233,8 @@ class _ActiveChatsList extends ConsumerWidget {
                                   borderRadius: BorderRadius.circular(2),
                                 ),
                               ),
+
                               const SizedBox(height: 24),
-                              AppAvatar(
-                                imageUrl: otherUser.profilePicture,
-                                radius: 32,
-                              ),
-                              const SizedBox(height: 12),
-                              Text(
-                                otherUser.displayName,
-                                style: theme.textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 12),
                               Padding(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 32,
@@ -288,7 +279,7 @@ class _ActiveChatsList extends ConsumerWidget {
                                         style: theme.textTheme.titleMedium
                                             ?.copyWith(
                                               color: Colors.redAccent,
-                                              fontWeight: FontWeight.w600,
+                                              fontWeight: FontWeight.w400,
                                             ),
                                       ),
                                     ],
@@ -312,7 +303,10 @@ class _ActiveChatsList extends ConsumerWidget {
                                     children: [
                                       Text(
                                         'Cancel',
-                                        style: theme.textTheme.titleMedium,
+                                        style: theme.textTheme.titleMedium
+                                            ?.copyWith(
+                                              fontWeight: FontWeight.w400,
+                                            ),
                                       ),
                                     ],
                                   ),
