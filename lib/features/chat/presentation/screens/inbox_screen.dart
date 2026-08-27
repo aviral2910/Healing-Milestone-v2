@@ -62,110 +62,203 @@ class _ActiveChatsList extends ConsumerWidget {
 
     return activeChatsAsync.when(
       data: (chats) {
-        if (chats.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(24),
+        return CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            // Search Bar
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+                child: Container(
+                  height: 44,
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.surface,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: theme.dividerColor),
+                    color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(Icons.send_rounded, size: 48, color: theme.colorScheme.primary),
+                  child: TextField(
+                    style: theme.textTheme.bodyMedium,
+                    decoration: InputDecoration(
+                      hintText: 'Search...',
+                      hintStyle: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                      prefixIcon: Icon(Icons.search, size: 20, color: theme.colorScheme.onSurfaceVariant),
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
+                  ),
                 ),
-                const SizedBox(height: 24),
-                Text('Your Messages', style: theme.textTheme.titleLarge),
-                const SizedBox(height: 8),
-                Text('Send private messages to friends.', 
-                  style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-                ),
-              ],
+              ),
             ),
-          );
-        }
-        return ListView.builder(
-          itemCount: chats.length,
-          padding: const EdgeInsets.only(top: 8, bottom: 24),
-          itemBuilder: (context, index) {
-            final chat = chats[index];
-            final currentUser = ref.watch(currentUserProvider);
-            if (currentUser == null) return const SizedBox.shrink();
-
-            final otherUserId = chat.participants.firstWhere(
-              (id) => id != currentUser.userId,
-              orElse: () => chat.participants.first,
-            );
-
-            if (chat.type == 'support') {
-              return _ChatListTile(
-                title: 'Support',
-                subtitle: chat.lastMessageText.isEmpty ? 'No messages yet' : chat.lastMessageText,
-                time: chat.lastMessageTime,
-                isUnread: false,
-                isSentRequest: false,
-                leading: Container(
-                  width: 56, height: 56,
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.primary,
-                    shape: BoxShape.circle,
+            
+            // Empty State
+            if (chats.isEmpty)
+              SliverFillRemaining(
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.surface,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: theme.dividerColor.withValues(alpha: 0.1)),
+                        ),
+                        child: Icon(Icons.maps_ugc_rounded, size: 48, color: theme.colorScheme.primary),
+                      ),
+                      const SizedBox(height: 24),
+                      Text('No Messages Yet', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
+                      Text('Send private messages to friends.', 
+                        style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                      ),
+                    ],
                   ),
-                  child: Icon(Icons.support_agent, color: theme.colorScheme.onPrimary, size: 28),
                 ),
-                onTap: () => _navigateToChat(context, chat.id, chat.type),
-              );
-            }
+              )
+            else
+              SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final chat = chats[index];
+                    final currentUser = ref.watch(currentUserProvider);
+                    if (currentUser == null) return const SizedBox.shrink();
 
-            final otherUserAsync = ref.watch(userByIdProvider(otherUserId));
+                    final otherUserId = chat.participants.firstWhere(
+                      (id) => id != currentUser.userId,
+                      orElse: () => chat.participants.first,
+                    );
 
-            return otherUserAsync.when(
-              data: (otherUser) {
-                if (otherUser == null) return const SizedBox.shrink();
-                final isSentRequest = chat.status == 'pending' && chat.initiatorId == currentUser.userId;
-                final isUnread = (chat.unreadCount[currentUser.userId] ?? 0) > 0;
-                
-                return _ChatListTile(
-                  title: otherUser.displayName,
-                  subtitle: isSentRequest
-                        ? 'Request sent · ${chat.lastMessageText.isEmpty ? "Say hi!" : chat.lastMessageText}'
-                        : (chat.lastMessageText.isEmpty ? 'Say hi!' : chat.lastMessageText),
-                  time: chat.lastMessageTime,
-                  isUnread: isUnread,
-                  isSentRequest: isSentRequest,
-                  leading: AppAvatar(imageUrl: otherUser.profilePicture, radius: 28),
-                  onTap: () => _navigateToChat(context, chat.id, chat.type),
-                  onLongPress: () {
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext ctx) {
-                        return AlertDialog(
-                          title: const Text("Delete Chat?"),
-                          content: const Text("This will permanently delete the chat for you."),
-                          actions: <Widget>[
-                            TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text("Cancel")),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.of(ctx).pop();
-                                ref.read(chatRepositoryProvider).deleteChatRoom(chat.id);
-                              },
-                              child: const Text("Delete", style: TextStyle(color: Colors.redAccent)),
-                            ),
-                          ],
+                    if (chat.type == 'support') {
+                      return _ChatListTile(
+                        title: 'Support',
+                        subtitle: chat.lastMessageText.isEmpty ? 'No messages yet' : chat.lastMessageText,
+                        time: chat.lastMessageTime,
+                        isUnread: false,
+                        isSentRequest: false,
+                        leading: Container(
+                          width: 56, height: 56,
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primary,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(Icons.support_agent, color: theme.colorScheme.onPrimary, size: 28),
+                        ),
+                        onTap: () => _navigateToChat(context, chat.id, chat.type),
+                      );
+                    }
+
+                    final otherUserAsync = ref.watch(userByIdProvider(otherUserId));
+
+                    return otherUserAsync.when(
+                      data: (otherUser) {
+                        if (otherUser == null) return const SizedBox.shrink();
+                        final isSentRequest = chat.status == 'pending' && chat.initiatorId == currentUser.userId;
+                        final isUnread = (chat.unreadCount[currentUser.userId] ?? 0) > 0;
+                        
+                        return _ChatListTile(
+                          title: otherUser.displayName,
+                          subtitle: isSentRequest
+                                ? 'Request sent · ${chat.lastMessageText.isEmpty ? "Say hi!" : chat.lastMessageText}'
+                                : (chat.lastMessageText.isEmpty ? 'Say hi!' : chat.lastMessageText),
+                          time: chat.lastMessageTime,
+                          isUnread: isUnread,
+                          isSentRequest: isSentRequest,
+                          leading: AppAvatar(imageUrl: otherUser.profilePicture, radius: 28),
+                          onTap: () => _navigateToChat(context, chat.id, chat.type),
+                          onLongPress: () {
+                            showModalBottomSheet(
+                              context: context,
+                              backgroundColor: Colors.transparent,
+                              builder: (ctx) {
+                                return Container(
+                                  margin: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: theme.colorScheme.surface,
+                                    borderRadius: BorderRadius.circular(24),
+                                  ),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const SizedBox(height: 12),
+                                      Container(
+                                        width: 40,
+                                        height: 4,
+                                        decoration: BoxDecoration(
+                                          color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                                          borderRadius: BorderRadius.circular(2),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 24),
+                                      AppAvatar(imageUrl: otherUser.profilePicture, radius: 32),
+                                      const SizedBox(height: 12),
+                                      Text(
+                                        otherUser.displayName,
+                                        style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                                      ),
+                                      const SizedBox(height: 24),
+                                      Divider(height: 1, color: theme.dividerColor.withValues(alpha: 0.1)),
+                                      InkWell(
+                                        onTap: () {
+                                          Navigator.of(ctx).pop();
+                                          ref.read(chatRepositoryProvider).deleteChatRoom(chat.id);
+                                        },
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(vertical: 16),
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              const Icon(Icons.delete_outline, color: Colors.redAccent),
+                                              const SizedBox(width: 8),
+                                              Text(
+                                                'Delete Chat',
+                                                style: theme.textTheme.titleMedium?.copyWith(
+                                                  color: Colors.redAccent,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      Divider(height: 1, color: theme.dividerColor.withValues(alpha: 0.1)),
+                                      InkWell(
+                                        onTap: () => Navigator.of(ctx).pop(),
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(vertical: 16),
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              Text(
+                                                'Cancel',
+                                                style: theme.textTheme.titleMedium,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(height: MediaQuery.of(context).padding.bottom + 8),
+                                    ],
+                                  ),
+                                );
+                              }
+                            );
+                          },
                         );
                       },
+                      loading: () => const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        child: Row(children: [AppLoader.small(), SizedBox(width: 16), Text('Loading...')]),
+                      ),
+                      error: (_, __) => const SizedBox.shrink(),
                     );
                   },
-                );
-              },
-              loading: () => const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                child: Row(children: [AppLoader.small(), SizedBox(width: 16), Text('Loading...')]),
+                  childCount: chats.length,
+                ),
               ),
-              error: (_, __) => const SizedBox.shrink(),
-            );
-          },
+            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+          ],
         );
       },
       loading: () => const Center(child: AppLoader()),
@@ -202,12 +295,12 @@ class _PendingRequestsList extends ConsumerWidget {
                   decoration: BoxDecoration(
                     color: theme.colorScheme.surface,
                     shape: BoxShape.circle,
-                    border: Border.all(color: theme.dividerColor),
+                    border: Border.all(color: theme.dividerColor.withValues(alpha: 0.1)),
                   ),
-                  child: Icon(Icons.mark_email_read_outlined, size: 48, color: theme.colorScheme.primary),
+                  child: Icon(Icons.mark_email_read_rounded, size: 48, color: theme.colorScheme.primary),
                 ),
                 const SizedBox(height: 24),
-                Text('No message requests', style: theme.textTheme.titleLarge),
+                Text('No Message Requests', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
               ],
             ),
           );
@@ -341,7 +434,7 @@ class _ChatListTile extends StatelessWidget {
                         const SizedBox(width: 8),
                         Text(
                           '· ${timeago.format(time!, locale: 'en_short')}',
-                          style: theme.textTheme.bodySmall,
+                          style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                         ),
                       ],
                     ],
