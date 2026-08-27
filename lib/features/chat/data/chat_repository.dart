@@ -15,7 +15,7 @@ class ChatRepository {
 
   // --- API Methods for Permissions ---
 
-  Future<void> requestChat(String targetUserId, {bool isMutual = false}) async {
+  Future<String> requestChat(String targetUserId, {bool isMutual = false}) async {
     final myUid = FirebaseAuth.instance.currentUser?.uid;
     if (myUid == null) throw Exception('Not authenticated');
 
@@ -40,6 +40,7 @@ class ChatRepository {
         'createdAt': FieldValue.serverTimestamp(),
       });
     }
+    return roomId;
   }
 
   Future<void> acceptChat(String roomId) async {

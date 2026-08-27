@@ -1,37 +1,49 @@
 with open('lib/features/chat/data/chat_repository.dart', 'r') as f:
     content = f.read()
 
-new_methods = """  Future<void> deleteMessage(String roomId, String messageId) async {
-    await _firestore
-        .collection('chat_rooms')
-        .doc(roomId)
-        .collection('messages')
-        .doc(messageId)
-        .delete();
-  }
-
-  Future<void> deleteChatRoom(String roomId) async {
-    // Delete all messages first (batch delete)
-    final messages = await _firestore
-        .collection('chat_rooms')
-        .doc(roomId)
-        .collection('messages')
-        .get();
-        
-    final batch = _firestore.batch();
-    for (var doc in messages.docs) {
-      batch.delete(doc.reference);
+# Fix requestChat return
+old_req_chat = """    if (!doc.exists) {
+      await docRef.set({
+        'participants': [myUid, targetUserId],
+        'type': 'peer',
+        'status': isMutual ? 'accepted' : 'pending',
+        'initiatorId': myUid,
+        'lastMessageText': '',
+        'lastMessageTime': FieldValue.serverTimestamp(),
+        'unreadCount': {
+          myUid: 0,
+          targetUserId: 0,
+        },
+        'createdAt': FieldValue.serverTimestamp(),
+      });
     }
-    
-    // Delete the room document itself
-    batch.delete(_firestore.collection('chat_rooms').doc(roomId));
-    
-    await batch.commit();
-  }
-"""
+  }"""
+new_req_chat = """    if (!doc.exists) {
+      await docRef.set({
+        'participants': [myUid, targetUserId],
+        'type': 'peer',
+        'status': isMutual ? 'accepted' : 'pending',
+        'initiatorId': myUid,
+        'lastMessageText': '',
+        'lastMessageTime': FieldValue.serverTimestamp(),
+        'unreadCount': {
+          myUid: 0,
+          targetUserId: 0,
+        },
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    }
+    return roomId;
+  }"""
+content = content.replace(old_req_chat, new_req_chat)
 
-# Insert before the last brace
-content = content.rsplit('}', 1)[0] + new_methods + '}\n'
+# Fix deleteChatRoom
+old_del_chat = """    await batch.commit();
+    return roomRef.id;
+  }"""
+new_del_chat = """    await batch.commit();
+  }"""
+content = content.replace(old_del_chat, new_del_chat)
 
 with open('lib/features/chat/data/chat_repository.dart', 'w') as f:
     f.write(content)

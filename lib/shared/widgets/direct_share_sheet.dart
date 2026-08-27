@@ -33,11 +33,12 @@ class DirectShareSheet extends ConsumerStatefulWidget {
 
 class _DirectShareSheetState extends ConsumerState<DirectShareSheet> {
   String _searchQuery = '';
-  final Set<String> _sentRoomIds = {};
+  final Set<String> _selectedUserIds = {};
+  final Set<String> _sentUserIds = {};
   bool _isSending = false;
 
-  void _sendToRoom(String roomId, String targetUserId) async {
-    if (_sentRoomIds.contains(roomId)) return;
+  void _sendToSelected(List<dynamic> rooms) async {
+    if (_selectedUserIds.isEmpty || _isSending) return;
 
     setState(() {
       _isSending = true;
@@ -45,24 +46,42 @@ class _DirectShareSheetState extends ConsumerState<DirectShareSheet> {
 
     try {
       final repo = ref.read(chatRepositoryProvider);
-      
-      // Ensure the chat room actually exists or is requested first
-      await repo.requestChat(targetUserId, isMutual: false); // safe to call multiple times
+      final currentUid = FirebaseAuth.instance.currentUser!.uid;
 
-      await repo.sendMessage(
-        roomId: roomId,
-        senderId: FirebaseAuth.instance.currentUser!.uid,
-        text: widget.journeyId != null
-            ? "Check out this Journey!"
-            : widget.storyId != null ? "Check out this Story!" : "Check out this profile!",
-        sharedJourneyId: widget.journeyId,
-        sharedStoryId: widget.storyId,
-      );
+      for (final targetUserId in _selectedUserIds) {
+        // Find existing room or request one
+        String? roomId;
+        try {
+          final existingRoom = rooms.firstWhere(
+            (r) => r.participants.contains(targetUserId) && r.participants.contains(currentUid),
+          );
+          roomId = existingRoom.id;
+        } catch (_) {
+          roomId = await repo.requestChat(targetUserId, isMutual: false);
+        }
+
+        if (roomId != null) {
+          await repo.sendMessage(
+            roomId: roomId,
+            senderId: currentUid,
+            text: widget.journeyId != null
+                ? "Check out this Journey!"
+                : widget.storyId != null ? "Check out this Story!" : "Check out this profile!",
+            sharedJourneyId: widget.journeyId,
+            sharedStoryId: widget.storyId,
+          );
+        }
+      }
 
       if (mounted) {
         setState(() {
-          _sentRoomIds.add(roomId);
+          _sentUserIds.addAll(_selectedUserIds);
+          _selectedUserIds.clear();
         });
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Sent successfully!')),
+        );
       }
     } catch (e) {
       if (mounted) {
@@ -77,6 +96,17 @@ class _DirectShareSheetState extends ConsumerState<DirectShareSheet> {
         });
       }
     }
+  }
+
+  void _toggleSelection(String userId) {
+    if (_sentUserIds.contains(userId)) return;
+    setState(() {
+      if (_selectedUserIds.contains(userId)) {
+        _selectedUserIds.remove(userId);
+      } else {
+        _selectedUserIds.add(userId);
+      }
+    });
   }
 
   @override
@@ -151,7 +181,7 @@ class _DirectShareSheetState extends ConsumerState<DirectShareSheet> {
             ),
             const SizedBox(height: 16),
 
-            // Vertical Users List
+            // Multi-select Users Grid
             Expanded(
               child: currentUser == null
                   ? Center(child: Text("Please log in to share to DMs", style: theme.textTheme.bodyLarge))
@@ -172,8 +202,14 @@ class _DirectShareSheetState extends ConsumerState<DirectShareSheet> {
                           );
                         }
 
-                        return ListView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                        return GridView.builder(
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 4,
+                            mainAxisSpacing: 16,
+                            crossAxisSpacing: 12,
+                            childAspectRatio: 0.7, // Adjust for avatar + text
+                          ),
                           itemCount: validRooms.length,
                           itemBuilder: (context, index) {
                             final room = validRooms[index];
@@ -195,49 +231,60 @@ class _DirectShareSheetState extends ConsumerState<DirectShareSheet> {
                                   return const SizedBox.shrink();
                                 }
 
-                                final isSent = _sentRoomIds.contains(room.id);
+                                final isSelected = _selectedUserIds.contains(otherUserId);
+                                final isSent = _sentUserIds.contains(otherUserId);
 
-                                return Padding(
-                                  padding: const EdgeInsets.only(bottom: 16.0),
-                                  child: Row(
+                                return GestureDetector(
+                                  onTap: () => _toggleSelection(otherUserId),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      AppAvatar(imageUrl: user.profilePicture, radius: 24),
-                                      const SizedBox(width: 16),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(user.displayName, style: theme.textTheme.titleMedium),
-                                            Text('@${user.username}', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
-                                          ],
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      ElevatedButton(
-                                        onPressed: isSent ? null : () => _sendToRoom(room.id, otherUserId),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: isSent ? theme.colorScheme.surface : theme.colorScheme.primary,
-                                          foregroundColor: isSent ? theme.colorScheme.onSurfaceVariant : theme.colorScheme.onPrimary,
-                                          elevation: 0,
-                                          minimumSize: const Size(80, 36),
-                                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(20),
-                                            side: isSent ? BorderSide(color: theme.dividerColor) : BorderSide.none,
+                                      Stack(
+                                        alignment: Alignment.bottomRight,
+                                        children: [
+                                          Opacity(
+                                            opacity: isSent ? 0.5 : 1.0,
+                                            child: AppAvatar(imageUrl: user.profilePicture, radius: 32),
                                           ),
+                                          if (isSelected)
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                color: theme.colorScheme.primary,
+                                                shape: BoxShape.circle,
+                                                border: Border.all(color: theme.scaffoldBackgroundColor, width: 2),
+                                              ),
+                                              padding: const EdgeInsets.all(2),
+                                              child: Icon(Icons.check, size: 14, color: theme.colorScheme.onPrimary),
+                                            ),
+                                          if (isSent)
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                color: Colors.grey,
+                                                shape: BoxShape.circle,
+                                                border: Border.all(color: theme.scaffoldBackgroundColor, width: 2),
+                                              ),
+                                              padding: const EdgeInsets.all(2),
+                                              child: const Icon(Icons.send, size: 12, color: Colors.white),
+                                            ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        user.displayName.split(' ').first, // First name only
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        textAlign: TextAlign.center,
+                                        style: theme.textTheme.titleMedium?.copyWith(
+                                          fontSize: 12,
+                                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                          color: isSent ? theme.colorScheme.onSurfaceVariant : theme.colorScheme.onSurface,
                                         ),
-                                        child: Text(isSent ? 'Sent' : 'Send', style: theme.textTheme.titleMedium?.copyWith(
-                                          color: isSent ? theme.colorScheme.onSurfaceVariant : theme.colorScheme.onPrimary,
-                                        )),
                                       ),
                                     ],
                                   ),
                                 );
                               },
-                              loading: () => const Padding(
-                                padding: EdgeInsets.only(bottom: 16.0),
-                                child: Row(children: [AppLoader.small(), SizedBox(width: 16), Text('Loading...')]),
-                              ),
+                              loading: () => const Center(child: AppLoader.small()),
                               error: (_, __) => const SizedBox.shrink(),
                             );
                           },
@@ -247,6 +294,28 @@ class _DirectShareSheetState extends ConsumerState<DirectShareSheet> {
                       error: (e, _) => Center(child: Text("Error loading chats")),
                     ),
             ),
+
+            // Big Send Button (only visible when items selected)
+            if (_selectedUserIds.isNotEmpty) ...[
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+                child: activeChatsAsync.whenOrNull(
+                  data: (rooms) => ElevatedButton(
+                    onPressed: _isSending ? null : () => _sendToSelected(rooms),
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 50),
+                      backgroundColor: theme.colorScheme.primary,
+                      foregroundColor: theme.colorScheme.onPrimary,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    ),
+                    child: _isSending
+                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                        : Text('Send to ${_selectedUserIds.length}', style: theme.textTheme.titleMedium?.copyWith(color: theme.colorScheme.onPrimary)),
+                  ),
+                ),
+              ),
+            ],
 
             Divider(height: 1, color: theme.dividerColor.withValues(alpha: 0.5)),
 

@@ -36,21 +36,27 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   }
 
   Future<void> _pickAndSendImage() async {
-    final pickedFile = await _imagePicker.pickImage(source: ImageSource.gallery);
+    final pickedFile = await _imagePicker.pickImage(
+      source: ImageSource.gallery,
+    );
     if (pickedFile == null) return;
-    
+
     final user = ref.read(currentUserProvider);
     if (user == null || user.userId == null) return;
 
     setState(() => _isSending = true);
     try {
-      await ref.read(chatRepositoryProvider).sendMessage(
+      await ref
+          .read(chatRepositoryProvider)
+          .sendMessage(
             roomId: widget.roomId,
             senderId: user.userId!,
             imageFile: File(pickedFile.path),
           );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to send image: $e')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to send image: $e')));
     } finally {
       setState(() => _isSending = false);
     }
@@ -65,15 +71,19 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
     _textController.clear();
     setState(() => _isSending = true);
-    
+
     try {
-      await ref.read(chatRepositoryProvider).sendMessage(
+      await ref
+          .read(chatRepositoryProvider)
+          .sendMessage(
             roomId: widget.roomId,
             senderId: user.userId!,
             text: text,
           );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to send message: $e')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to send message: $e')));
     } finally {
       setState(() => _isSending = false);
     }
@@ -90,13 +100,24 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         title: Builder(
           builder: (context) {
             final theme = Theme.of(context);
-            
+
             if (widget.roomType == 'support') {
               return Row(
                 children: [
-                  CircleAvatar(radius: 18, backgroundColor: theme.colorScheme.primary, child: Icon(Icons.support_agent, color: theme.colorScheme.onPrimary, size: 20)),
+                  CircleAvatar(
+                    radius: 18,
+                    backgroundColor: theme.colorScheme.primary,
+                    child: Icon(
+                      Icons.support_agent,
+                      color: theme.colorScheme.onPrimary,
+                      size: 20,
+                    ),
+                  ),
                   const SizedBox(width: 12),
-                  Text('Healing Milestones Support', style: theme.textTheme.titleMedium),
+                  Text(
+                    'Healing Milestones Support',
+                    style: theme.textTheme.titleMedium,
+                  ),
                 ],
               );
             }
@@ -105,29 +126,40 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             if (widget.roomId.startsWith('chat_') && currentUser != null) {
               final parts = widget.roomId.split('_');
               if (parts.length == 3) {
-                if (parts[1] == currentUser.userId) otherUserId = parts[2];
-                else if (parts[2] == currentUser.userId) otherUserId = parts[1];
+                if (parts[1] == currentUser.userId)
+                  otherUserId = parts[2];
+                else if (parts[2] == currentUser.userId)
+                  otherUserId = parts[1];
               }
             }
 
-            if (otherUserId == null) return Text('Chat', style: theme.textTheme.titleMedium);
+            if (otherUserId == null)
+              return Text('Chat', style: theme.textTheme.titleMedium);
 
             final otherUserAsync = ref.watch(userByIdProvider(otherUserId));
             return otherUserAsync.when(
               data: (user) {
-                if (user == null) return Text('User', style: theme.textTheme.titleMedium);
+                if (user == null)
+                  return Text('User', style: theme.textTheme.titleMedium);
                 return Row(
                   children: [
                     AppAvatar(imageUrl: user.profilePicture, radius: 18),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: Text(user.displayName, style: theme.textTheme.titleMedium, maxLines: 1, overflow: TextOverflow.ellipsis),
+                      child: Text(
+                        user.displayName,
+                        style: theme.textTheme.titleMedium,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ],
                 );
               },
-              loading: () => Text('Loading...', style: theme.textTheme.titleMedium),
-              error: (_, __) => Text('Chat', style: theme.textTheme.titleMedium),
+              loading: () =>
+                  Text('Loading...', style: theme.textTheme.titleMedium),
+              error: (_, __) =>
+                  Text('Chat', style: theme.textTheme.titleMedium),
             );
           },
         ),
@@ -144,11 +176,23 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             child: messagesAsync.when(
               data: (messages) {
                 // Trigger batch fetch
-                final journeyIds = messages.map((m) => m.sharedJourneyId).whereType<String>().toSet().toList();
-                final storyIds = messages.map((m) => m.sharedStoryId).whereType<String>().toSet().toList();
+                final journeyIds = messages
+                    .map((m) => m.sharedJourneyId)
+                    .whereType<String>()
+                    .toSet()
+                    .toList();
+                final storyIds = messages
+                    .map((m) => m.sharedStoryId)
+                    .whereType<String>()
+                    .toSet()
+                    .toList();
                 WidgetsBinding.instance.addPostFrameCallback((_) {
-                  if (journeyIds.isNotEmpty) ref.read(batchMediaProvider.notifier).loadJourneys(journeyIds);
-                  if (storyIds.isNotEmpty) ref.read(batchMediaProvider.notifier).loadStories(storyIds);
+                  if (journeyIds.isNotEmpty)
+                    ref
+                        .read(batchMediaProvider.notifier)
+                        .loadJourneys(journeyIds);
+                  if (storyIds.isNotEmpty)
+                    ref.read(batchMediaProvider.notifier).loadStories(storyIds);
                 });
 
                 if (messages.isEmpty) {
@@ -160,7 +204,11 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   itemBuilder: (context, index) {
                     final msg = messages[index];
                     final isMe = msg.senderId == currentUser?.userId;
-                    return _MessageBubble(msg: msg, isMe: isMe, roomId: widget.roomId);
+                    return _MessageBubble(
+                      msg: msg,
+                      isMe: isMe,
+                      roomId: widget.roomId,
+                    );
                   },
                 );
               },
@@ -176,17 +224,25 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
   Widget _buildInputArea(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return SafeArea(
       child: Container(
-        padding: const EdgeInsets.only(left: 8.0, right: 8.0, bottom: 12.0, top: 8.0),
+        padding: const EdgeInsets.only(
+          left: 8.0,
+          right: 8.0,
+          bottom: 12.0,
+          top: 8.0,
+        ),
         color: theme.scaffoldBackgroundColor,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             IconButton(
               padding: const EdgeInsets.all(12),
-              icon: Icon(Icons.camera_alt_outlined, color: theme.colorScheme.onSurface),
+              icon: Icon(
+                Icons.camera_alt_outlined,
+                color: theme.colorScheme.onSurface,
+              ),
               onPressed: _isSending ? null : _pickAndSendImage,
             ),
             Expanded(
@@ -206,9 +262,14 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                         maxLines: 4,
                         decoration: InputDecoration(
                           hintText: 'Message...',
-                          hintStyle: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                          hintStyle: theme.textTheme.bodyLarge?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
                           border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
                         ),
                         textCapitalization: TextCapitalization.sentences,
                         onSubmitted: (_) => _sendTextMessage(),
@@ -217,11 +278,18 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                     if (_isSending)
                       const Padding(
                         padding: EdgeInsets.all(12.0),
-                        child: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2)),
+                        child: SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
                       )
                     else
                       IconButton(
-                        icon: Icon(Icons.send_rounded, color: theme.colorScheme.primary),
+                        icon: Icon(
+                          Icons.send_rounded,
+                          color: theme.colorScheme.primary,
+                        ),
                         onPressed: _sendTextMessage,
                       ),
                   ],
@@ -240,95 +308,123 @@ class _MessageBubble extends ConsumerWidget {
   final bool isMe;
   final String roomId;
 
-  const _MessageBubble({required this.msg, required this.isMe, required this.roomId});
+  const _MessageBubble({
+    required this.msg,
+    required this.isMe,
+    required this.roomId,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    
+
     return GestureDetector(
-      onLongPress: isMe ? () {
-        showDialog(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            title: const Text('Unsend Message?'),
-            content: const Text('This will permanently delete the message for everyone.'),
-            actions: [
-              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(ctx);
-                  ref.read(chatRepositoryProvider).deleteMessage(roomId, msg.id);
-                },
-                child: const Text('Unsend', style: TextStyle(color: Colors.red)),
-              ),
-            ],
-          ),
-        );
-      } : null,
+      onLongPress: isMe
+          ? () {
+              showDialog(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  title: const Text('Unsend Message?'),
+                  content: const Text(
+                    'This will permanently delete the message for everyone.',
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      child: const Text('Cancel'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        ref
+                            .read(chatRepositoryProvider)
+                            .deleteMessage(roomId, msg.id);
+                      },
+                      child: const Text(
+                        'Unsend',
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
+          : null,
       child: Align(
         alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
         child: Container(
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
-          color: isMe ? theme.colorScheme.primary : theme.colorScheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(16).copyWith(
-            bottomRight: isMe ? const Radius.circular(4) : const Radius.circular(16),
-            bottomLeft: isMe ? const Radius.circular(16) : const Radius.circular(4),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            color: isMe
+                ? theme.colorScheme.primary
+                : theme.colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(16).copyWith(
+              bottomRight: isMe
+                  ? const Radius.circular(4)
+                  : const Radius.circular(16),
+              bottomLeft: isMe
+                  ? const Radius.circular(16)
+                  : const Radius.circular(4),
+            ),
           ),
-        ),
-        constraints: BoxConstraints(
-          maxWidth: MediaQuery.of(context).size.width * 0.75,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (msg.imageUrl != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.network(msg.imageUrl!, fit: BoxFit.cover),
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.of(context).size.width * 0.75,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (msg.imageUrl != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(msg.imageUrl!, fit: BoxFit.cover),
+                  ),
                 ),
-              ),
-            if (msg.sharedJourneyId != null)
-              _buildSharedCard(
-                context: context,
-                ref: ref,
-                id: msg.sharedJourneyId!,
-                isJourney: true,
-                isMe: isMe,
-              ),
-            if (msg.sharedStoryId != null)
-              _buildSharedCard(
-                context: context,
-                ref: ref,
-                id: msg.sharedStoryId!,
-                isJourney: false,
-                isMe: isMe,
-              ),
-            if (msg.text != null && msg.text!.isNotEmpty)
-              Text(
-                msg.text!,
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  color: isMe ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface,
+              if (msg.sharedJourneyId != null)
+                _buildSharedCard(
+                  context: context,
+                  ref: ref,
+                  id: msg.sharedJourneyId!,
+                  isJourney: true,
+                  isMe: isMe,
                 ),
-              ),
-            const SizedBox(height: 4),
-            if (msg.createdAt != null)
-              Text(
-                timeago.format(msg.createdAt!),
-                style: theme.textTheme.bodySmall?.copyWith(
-                  fontSize: 11,
-                  color: isMe ? theme.colorScheme.onPrimary.withOpacity(0.7) : theme.colorScheme.onSurfaceVariant,
+              if (msg.sharedStoryId != null)
+                _buildSharedCard(
+                  context: context,
+                  ref: ref,
+                  id: msg.sharedStoryId!,
+                  isJourney: false,
+                  isMe: isMe,
                 ),
-              ),
-          ],
+              if (msg.text != null && msg.text!.isNotEmpty)
+                Text(
+                  msg.text!,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    color: isMe
+                        ? theme.colorScheme.onPrimary
+                        : theme.colorScheme.onSurface,
+                  ),
+                ),
+              const SizedBox(height: 4),
+              if (msg.createdAt != null)
+                Text(
+                  timeago.format(msg.createdAt!),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontSize: 11,
+                    color: isMe
+                        ? theme.colorScheme.onPrimary.withOpacity(0.7)
+                        : theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
   }
+
   Widget _buildSharedCard({
     required BuildContext context,
     required WidgetRef ref,
@@ -338,7 +434,9 @@ class _MessageBubble extends ConsumerWidget {
   }) {
     final mediaState = ref.watch(batchMediaProvider);
     final fgColor = isMe ? Colors.white : Colors.black87;
-    final bgColor = isMe ? Colors.white.withValues(alpha: 0.15) : Colors.black.withValues(alpha: 0.05);
+    final bgColor = isMe
+        ? Colors.white.withValues(alpha: 0.15)
+        : Colors.black.withValues(alpha: 0.05);
 
     String? imageUrl;
     String? title;
@@ -346,14 +444,28 @@ class _MessageBubble extends ConsumerWidget {
     if (isJourney) {
       final journey = mediaState.journeys[id];
       if (journey == null) {
-        return const Padding(padding: EdgeInsets.all(8.0), child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)));
+        return const Padding(
+          padding: EdgeInsets.all(8.0),
+          child: SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        );
       }
       imageUrl = null;
       title = journey.title;
     } else {
       final story = mediaState.stories[id];
       if (story == null) {
-        return const Padding(padding: EdgeInsets.all(8.0), child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)));
+        return const Padding(
+          padding: EdgeInsets.all(8.0),
+          child: SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        );
       }
       imageUrl = story.mainImage;
       title = story.heading;
@@ -362,22 +474,53 @@ class _MessageBubble extends ConsumerWidget {
     return Container(
       margin: const EdgeInsets.only(top: 8, bottom: 8),
       padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(12)),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(isJourney ? Icons.map_rounded : Icons.menu_book_rounded, size: 14, color: fgColor.withValues(alpha: 0.7)),
+              Icon(
+                isJourney ? Icons.map_rounded : Icons.menu_book_rounded,
+                size: 14,
+                color: fgColor.withValues(alpha: 0.7),
+              ),
               const SizedBox(width: 4),
-              Text(isJourney ? 'Shared Journey' : 'Shared Story', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: fgColor.withValues(alpha: 0.8))),
+              Text(
+                isJourney ? 'Shared Journey' : 'Shared Story',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: fgColor.withValues(alpha: 0.8),
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 8),
           if (imageUrl != null && imageUrl.isNotEmpty)
-            ClipRRect(borderRadius: BorderRadius.circular(8), child: Image.network(imageUrl, height: 120, width: double.infinity, fit: BoxFit.cover)),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.network(
+                imageUrl,
+                height: 120,
+                width: double.infinity,
+                fit: BoxFit.cover,
+              ),
+            ),
           const SizedBox(height: 8),
-          Text(title ?? 'Untitled', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: fgColor), maxLines: 2, overflow: TextOverflow.ellipsis),
+          Text(
+            title ?? 'Untitled',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: fgColor,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
         ],
       ),
     );
