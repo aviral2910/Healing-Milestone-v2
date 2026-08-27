@@ -112,6 +112,7 @@ class ChatRepository {
     File? imageFile,
     String? sharedJourneyId,
     String? sharedStoryId,
+    String? sharedProfileId,
   }) async {
     String? imageUrl;
     
@@ -137,6 +138,7 @@ class ChatRepository {
         'imageUrl': imageUrl,
         'sharedJourneyId': sharedJourneyId,
         'sharedStoryId': sharedStoryId,
+        'sharedProfileId': sharedProfileId,
         'createdAt': now,
         'readBy': [senderId],
       });
@@ -144,7 +146,7 @@ class ChatRepository {
       // 3. WRITE room update
       final snippet = text?.isNotEmpty == true 
           ? text 
-          : (imageUrl != null ? '📷 Image' : (sharedJourneyId != null ? '🔗 Shared a Journey' : '🔗 Shared a Story'));
+          : (imageUrl != null ? '📷 Image' : (sharedJourneyId != null ? '🔗 Shared a Journey' : (sharedStoryId != null ? '🔗 Shared a Post' : '👤 Shared a Profile')));
 
       if (roomDoc.exists) {
         final data = roomDoc.data();

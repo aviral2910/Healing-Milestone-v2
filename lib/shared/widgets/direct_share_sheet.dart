@@ -69,10 +69,11 @@ class _DirectShareSheetState extends ConsumerState<DirectShareSheet> {
             text: widget.journeyId != null
                 ? "Check out this Journey!"
                 : widget.storyId != null
-                ? "Check out this Story!"
+                ? "Check out this Post!"
                 : "Check out this profile!",
             sharedJourneyId: widget.journeyId,
             sharedStoryId: widget.storyId,
+            sharedProfileId: widget.profileId,
           );
         }
       }

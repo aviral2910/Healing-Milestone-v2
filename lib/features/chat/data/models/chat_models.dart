@@ -61,6 +61,7 @@ abstract class ChatMessage with _$ChatMessage {
     String? imageUrl,
     String? sharedJourneyId,
     String? sharedStoryId,
+    String? sharedProfileId,
     @TimestampConverter() DateTime? createdAt,
     @Default([]) List<String> readBy,
   }) = _ChatMessage;

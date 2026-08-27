@@ -176,16 +176,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             );
           },
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.local_phone_outlined),
-            onPressed: () {}, 
-          ),
-          IconButton(
-            icon: const Icon(Icons.videocam_outlined),
-            onPressed: () {}, 
-          ),
-        ],
+        actions: [],
       ),
       body: Column(
         children: [
@@ -254,21 +245,6 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Padding(
-              padding: const EdgeInsets.only(bottom: 4, right: 12),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primary,
-                  shape: BoxShape.circle,
-                ),
-                child: IconButton(
-                  icon: Icon(Icons.camera_alt, color: theme.colorScheme.onPrimary, size: 22),
-                  onPressed: () {}, // Future camera integration
-                  constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
-                  padding: EdgeInsets.zero,
-                ),
-              ),
-            ),
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
@@ -493,6 +469,13 @@ class _MessageBubble extends ConsumerWidget {
                   isJourney: false,
                   isMe: isMe,
                 ),
+              if (msg.sharedProfileId != null)
+                _buildSharedProfileCard(
+                  context: context,
+                  ref: ref,
+                  profileId: msg.sharedProfileId!,
+                  isMe: isMe,
+                ),
               if (msg.text != null && msg.text!.isNotEmpty)
                 Text(
                   msg.text!,
@@ -617,6 +600,69 @@ class _MessageBubble extends ConsumerWidget {
             overflow: TextOverflow.ellipsis,
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSharedProfileCard({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String profileId,
+    required bool isMe,
+  }) {
+    final fgColor = isMe ? Colors.white : Colors.black87;
+    final bgColor = isMe
+        ? Colors.white.withValues(alpha: 0.15)
+        : Colors.black.withValues(alpha: 0.05);
+
+    final userAsync = ref.watch(userByIdProvider(profileId));
+
+    return Container(
+      margin: const EdgeInsets.only(top: 8, bottom: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: userAsync.when(
+        data: (user) {
+          if (user == null) return const Text('User not found');
+          return Row(
+            children: [
+              AppAvatar(imageUrl: user.profilePicture, radius: 20),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      user.displayName,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: fgColor,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (user.username != null)
+                      Text(
+                        '@${user.username}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: fgColor.withValues(alpha: 0.8),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (_, __) => const Text('Error loading profile'),
       ),
     );
   }
