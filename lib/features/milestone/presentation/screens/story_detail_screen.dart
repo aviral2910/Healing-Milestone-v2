@@ -17,7 +17,6 @@ import '../../../../core/presentation/widgets/user_badge.dart';
 import '../../../../core/presentation/widgets/verified_story_badge.dart';
 import '../../../posts/presentation/widgets/post_display_widget.dart';
 import '../widgets/milestone_media_gallery.dart';
-import '../widgets/comments_thread.dart';
 import '../../../accessibility/data/accessibility_providers.dart';
 import '../../../auth/data/auth_provider.dart';
 import '../../../posts/data/story_providers.dart';

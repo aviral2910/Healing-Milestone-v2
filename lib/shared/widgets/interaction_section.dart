@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:healing_milestones/shared/utils/share_utils.dart';
-import '../../features/milestone/presentation/widgets/comments_thread.dart';
+import 'package:healing_milestones/shared/widgets/universal_comments_thread.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -204,7 +204,12 @@ class InteractionSection extends HookConsumerWidget {
             labelShadows: iconShadows,
             onTap: () {
               FocusManager.instance.primaryFocus?.unfocus();
-              showCommentsBottomSheet(context, story);
+              showUniversalCommentsBottomSheet(
+                context,
+                targetId: story.storyId,
+                ownerId: story.authorId,
+                threadType: CommentThreadType.story,
+              );
             },
           ),
 
@@ -440,15 +445,18 @@ class InteractionSection extends HookConsumerWidget {
                   color: theme.textTheme.bodySmall?.color,
                   size: 20,
                 ),
-                label: story.commentCount > 0
-                    ? '${story.commentCount}'
-                    : 'Comment',
+                label: story.commentCount > 0 ? '${story.commentCount}' : '',
                 labelColor: theme.textTheme.bodySmall?.color,
                 showLabel: true,
 
                 onTap: () {
                   FocusManager.instance.primaryFocus?.unfocus();
-                  showCommentsBottomSheet(context, story);
+                  showUniversalCommentsBottomSheet(
+                    context,
+                    targetId: story.storyId,
+                    ownerId: story.authorId,
+                    threadType: CommentThreadType.story,
+                  );
                 },
               ),
               // REACT BUTTON

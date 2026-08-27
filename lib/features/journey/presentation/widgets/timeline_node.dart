@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/presentation/widgets/healing_snackbar.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:healing_milestones/features/journey/presentation/widgets/journey_comments_thread.dart';
+import 'package:healing_milestones/shared/widgets/universal_comments_thread.dart';
 import '../../data/models/journey_models.dart';
 import '../../data/providers/journey_providers.dart';
 import '../../data/providers/paginated_journey_milestones_provider.dart';
@@ -591,7 +591,13 @@ class TimelineNode extends ConsumerWidget {
                 if (milestone.areCommentsEnabled) ...[
                   GestureDetector(
                     onTap: () {
-                      showCommentsBottomSheet(context, milestone);
+                      showUniversalCommentsBottomSheet(
+                        context,
+                        targetId: milestone.id,
+                        ownerId: milestone.userId,
+                        threadType: CommentThreadType.journey,
+                        journeyId: milestone.journeyId,
+                      );
                       // from story comments, but it takes a StoryModel.
                       // Wait! The prompt says "if user enable it while creating it .and later to user can disable that tooo"
                       // We need to implement a bottom sheet for Milestone Comments.

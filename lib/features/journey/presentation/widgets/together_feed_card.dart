@@ -12,7 +12,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/journey_models.dart';
-import 'journey_comments_thread.dart';
+import 'package:healing_milestones/shared/widgets/universal_comments_thread.dart';
 import '../../data/providers/journey_providers.dart';
 import 'public_journey_detail_overlay.dart';
 
@@ -794,9 +794,12 @@ class _TogetherFeedCardState extends ConsumerState<TogetherFeedCard>
                         if (widget.milestone.areCommentsEnabled) ...[
                           GestureDetector(
                             onTap: () {
-                              showCommentsBottomSheet(
+                              showUniversalCommentsBottomSheet(
                                 context,
-                                widget.milestone,
+                                targetId: widget.milestone.id,
+                                ownerId: widget.milestone.userId,
+                                threadType: CommentThreadType.journey,
+                                journeyId: widget.milestone.journeyId,
                               );
                             },
                             child: Container(
