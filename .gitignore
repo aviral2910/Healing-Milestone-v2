@@ -52,3 +52,4 @@ admin_script/node_modules/
 # Generated files
 *.g.dart
 *.freezed.dart
+*.py
