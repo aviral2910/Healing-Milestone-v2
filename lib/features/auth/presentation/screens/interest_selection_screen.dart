@@ -137,20 +137,17 @@ class _InterestSelectionScreenState
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'What are you navigating right now?',
+                              'What brings you here?',
                               style: theme.textTheme.headlineMedium?.copyWith(
-                                fontWeight: FontWeight.w900,
+                                fontWeight: FontWeight.bold,
                                 color: theme.colorScheme.onSurface,
-                                height: 1.2,
-                                letterSpacing: -0.5,
                               ),
                             ),
-                            const SizedBox(height: 12),
+                            const SizedBox(height: 8),
                             Text(
-                              'Select at least 3 topics so we can build a personalized feed of stories and journeys that matter to you.',
-                              style: theme.textTheme.bodyLarge?.copyWith(
-                                color: theme.colorScheme.onSurfaceVariant,
-                                height: 1.4,
+                              'Pick at least 3 topics to personalize your feed.',
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                               ),
                             ),
                           ],
