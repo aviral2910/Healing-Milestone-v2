@@ -223,7 +223,13 @@ class _DirectShareSheetState extends ConsumerState<DirectShareSheet> {
                                           ),
                                         ),
                                         child: Text(
-                                          'Share',
+                                          widget.journeyId != null
+                                              ? 'Share Journey'
+                                              : widget.storyId != null
+                                              ? 'Share Story'
+                                              : widget.profileId != null
+                                              ? 'Share Profile'
+                                              : 'Share',
                                           style: theme.textTheme.labelMedium
                                               ?.copyWith(
                                                 color:
