@@ -3,13 +3,21 @@ import re
 with open('lib/features/chat/presentation/screens/inbox_screen.dart', 'r') as f:
     content = f.read()
 
-old_logic = """                        if (isSentRequest) {
-                          displaySubtitle = 'Request sent · $displaySubtitle';
-                        } else if (isMine) {
+old_logic = """                        if (displaySubtitle.isEmpty) {
+                          displaySubtitle = isMine ? 'Sent a message' : 'Say hi!';
+                        }
+                        
+                        if (isMine) {
                           displaySubtitle = 'Sent · $displaySubtitle';
                         }"""
 
-new_logic = """                        if (isMine) {
+new_logic = """                        if (displaySubtitle.isEmpty) {
+                          displaySubtitle = isMine ? 'Sent a message' : 'Say hi!';
+                        }
+                        
+                        if (isSentRequest) {
+                          displaySubtitle = 'Request sent';
+                        } else if (isMine) {
                           displaySubtitle = 'Sent · $displaySubtitle';
                         }"""
 

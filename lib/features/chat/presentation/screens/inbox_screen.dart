@@ -137,7 +137,9 @@ class _ActiveChatsList extends ConsumerWidget {
                           displaySubtitle = isMine ? 'Sent a message' : 'Say hi!';
                         }
                         
-                        if (isMine) {
+                        if (isSentRequest) {
+                          displaySubtitle = 'Request sent';
+                        } else if (isMine) {
                           displaySubtitle = 'Sent · $displaySubtitle';
                         }
 
