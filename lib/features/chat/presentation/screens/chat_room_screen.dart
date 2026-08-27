@@ -867,22 +867,19 @@ class _MessageBubble extends ConsumerWidget {
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: isJourney
-                        ? [
-                            theme.colorScheme.primary.withValues(alpha: 0.8),
-                            theme.colorScheme.primary.withValues(alpha: 0.4),
-                          ]
-                        : [
-                            Colors.grey.withValues(alpha: 0.3),
-                            Colors.grey.withValues(alpha: 0.1),
-                          ],
+                    colors: [
+                      Colors.black.withValues(alpha: 0.3),
+                      Colors.black.withValues(alpha: 0.1),
+                    ],
                   ),
                 ),
                 child: Center(
                   child: Icon(
                     isJourney ? Icons.folder_special_rounded : Icons.menu_book_rounded,
                     size: 48,
-                    color: Colors.white.withValues(alpha: 0.9),
+                    color: isJourney 
+                        ? theme.colorScheme.primary.withValues(alpha: 0.8) 
+                        : Colors.white.withValues(alpha: 0.5),
                   ),
                 ),
               ),
