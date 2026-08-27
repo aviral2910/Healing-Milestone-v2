@@ -858,6 +858,33 @@ class _MessageBubble extends ConsumerWidget {
                   height: 140,
                   child: Center(child: Icon(Icons.error_outline)),
                 ),
+              )
+            else
+              Container(
+                height: 120,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: isJourney
+                        ? [
+                            theme.colorScheme.primary.withValues(alpha: 0.8),
+                            theme.colorScheme.primary.withValues(alpha: 0.4),
+                          ]
+                        : [
+                            Colors.grey.withValues(alpha: 0.3),
+                            Colors.grey.withValues(alpha: 0.1),
+                          ],
+                  ),
+                ),
+                child: Center(
+                  child: Icon(
+                    isJourney ? Icons.folder_special_rounded : Icons.menu_book_rounded,
+                    size: 48,
+                    color: Colors.white.withValues(alpha: 0.9),
+                  ),
+                ),
               ),
             Padding(
               padding: const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 16),
@@ -867,7 +894,7 @@ class _MessageBubble extends ConsumerWidget {
                   Row(
                     children: [
                       Icon(
-                        isJourney ? Icons.map_rounded : Icons.menu_book_rounded,
+                        isJourney ? Icons.folder_special_rounded : Icons.menu_book_rounded,
                         size: 14,
                         color: fgColor.withValues(alpha: 0.7),
                       ),
