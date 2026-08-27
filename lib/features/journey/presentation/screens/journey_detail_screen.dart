@@ -1,4 +1,5 @@
 import '../../data/models/journey_models.dart';
+import 'package:healing_milestones/shared/utils/share_utils.dart';
 import 'package:healing_milestones/shared/widgets/qr_share_preview.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/presentation/widgets/healing_error_view.dart';
