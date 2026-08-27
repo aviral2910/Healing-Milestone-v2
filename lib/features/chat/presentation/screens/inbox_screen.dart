@@ -401,7 +401,7 @@ class _ChatListTile extends StatelessWidget {
                   const SizedBox(height: 3),
                   Row(
                     children: [
-                      Expanded(
+                      Flexible(
                         child: Text(
                           subtitle,
                           maxLines: 1,
@@ -415,16 +415,14 @@ class _ChatListTile extends StatelessWidget {
                           ),
                         ),
                       ),
-                      if (time != null) ...[
-                        const SizedBox(width: 8),
+                      if (time != null)
                         Text(
-                          '· ${timeago.format(time!, locale: 'en_short')}',
+                          ' · ${timeago.format(time!, locale: 'en_short')}',
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
-                            fontSize: 12,
+                            fontSize: 13,
                           ),
                         ),
-                      ],
                     ],
                   ),
                 ],
