@@ -395,12 +395,12 @@ class _MessageBubble extends ConsumerWidget {
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
-          children: const [
-            Icon(Icons.timer_rounded, color: Colors.blue, size: 20),
-            SizedBox(width: 8),
+          children: [
+            Icon(Icons.timer_rounded, color: Theme.of(context).colorScheme.primary, size: 20),
+            const SizedBox(width: 8),
             Text(
               'Photo Sent',
-              style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
+              style: TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold),
             ),
           ],
         ),
@@ -443,7 +443,10 @@ class _MessageBubble extends ConsumerWidget {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(colors: [Colors.blue, Colors.purple]),
+          gradient: LinearGradient(colors: [
+            Theme.of(context).colorScheme.primary,
+            Theme.of(context).colorScheme.secondary,
+          ]),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
@@ -978,6 +981,7 @@ class _ImagePreviewScreenState extends State<_ImagePreviewScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -1025,9 +1029,9 @@ class _ImagePreviewScreenState extends State<_ImagePreviewScreen> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       decoration: BoxDecoration(
-                        color: isViewOnce ? Colors.blue : Colors.white.withValues(alpha: 0.15),
+                        color: isViewOnce ? theme.colorScheme.primary : Colors.white.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(30),
-                        border: Border.all(color: isViewOnce ? Colors.blue : Colors.white54),
+                        border: Border.all(color: isViewOnce ? theme.colorScheme.primary : Colors.white54),
                       ),
                       child: Row(
                         children: [
@@ -1049,7 +1053,7 @@ class _ImagePreviewScreenState extends State<_ImagePreviewScreen> {
                   // Send Button
                   FloatingActionButton(
                     onPressed: () => Navigator.pop(context, isViewOnce),
-                    backgroundColor: Colors.blue,
+                    backgroundColor: theme.colorScheme.primary,
                     elevation: 0,
                     shape: const CircleBorder(),
                     child: const Icon(Icons.send_rounded, color: Colors.white),
