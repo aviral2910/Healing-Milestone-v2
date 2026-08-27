@@ -6,6 +6,7 @@ import 'package:healing_milestones/features/milestone/presentation/screens/story
 import 'package:healing_milestones/features/profile/presentation/screens/public_profile_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:healing_milestones/shared/widgets/quick_emoji_bar.dart';
 import 'package:flutter/cupertino.dart';
 import 'dart:ui';
 import 'package:shimmer/shimmer.dart';
@@ -352,10 +353,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          AnimatedSize(
-            duration: const Duration(milliseconds: 250),
-            curve: Curves.easeOutCubic,
-            child: _focusNode.hasFocus ? _buildQuickEmojis(context) : const SizedBox(width: double.infinity),
+          QuickEmojiBar(
+            textController: _textController,
+            focusNode: _focusNode,
+            onEmojiTapped: () => setState(() {}),
           ),
           Container(
             padding: const EdgeInsets.only(

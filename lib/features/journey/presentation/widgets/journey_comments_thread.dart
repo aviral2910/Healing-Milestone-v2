@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:healing_milestones/core/models/user_model.dart';
 import 'package:healing_milestones/core/router/app_routes.dart';
 import 'package:flutter/material.dart';
+import 'package:healing_milestones/shared/widgets/quick_emoji_bar.dart';
 import 'package:healing_milestones/features/journey/data/providers/paginated_journey_milestones_provider.dart';
 import 'package:healing_milestones/shared/widgets/app_avatar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -25,10 +26,20 @@ class JourneyCommentsThread extends ConsumerStatefulWidget {
 
 class _JourneyCommentsThreadState extends ConsumerState<JourneyCommentsThread> {
   final TextEditingController _commentController = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode.addListener(() {
+      setState(() {});
+    });
+  }
 
   @override
   void dispose() {
     _commentController.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -137,8 +148,16 @@ class _JourneyCommentsThreadState extends ConsumerState<JourneyCommentsThread> {
             padding: EdgeInsets.only(
               bottom: MediaQuery.of(context).viewInsets.bottom,
             ),
-            child: Container(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                QuickEmojiBar(
+                  textController: _commentController,
+                  focusNode: _focusNode,
+                  onEmojiTapped: () => setState(() {}),
+                ),
+                Container(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
               decoration: BoxDecoration(
                 color: theme.scaffoldBackgroundColor,
                 border: Border(
@@ -153,6 +172,7 @@ class _JourneyCommentsThreadState extends ConsumerState<JourneyCommentsThread> {
                   Expanded(
                     child: TextField(
                       controller: _commentController,
+                      focusNode: _focusNode,
                       textInputAction: TextInputAction.send,
                       onSubmitted: (_) => _submitComment(),
                       style: TextStyle(
@@ -210,6 +230,8 @@ class _JourneyCommentsThreadState extends ConsumerState<JourneyCommentsThread> {
                   ),
                 ],
               ),
+            ),
+              ],
             ),
           ),
         ],
