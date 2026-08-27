@@ -659,7 +659,7 @@ class _DirectShareSheetState extends ConsumerState<DirectShareSheet> {
                               Navigator.pop(context);
                               // ignore: deprecated_member_use
                               Share.share(
-                                widget.shareText,
+                                '${widget.shareText}\n\n${widget.shareUrl}',
                                 subject: 'Healing Milestones',
                               );
                             },
