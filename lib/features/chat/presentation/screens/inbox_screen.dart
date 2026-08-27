@@ -13,6 +13,8 @@ class InboxScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final pendingRequestsAsync = ref.watch(pendingRequestsProvider);
+    final pendingCount = pendingRequestsAsync.value?.length ?? 0;
     
     return DefaultTabController(
       length: 2,
@@ -41,9 +43,34 @@ class InboxScreen extends ConsumerWidget {
             unselectedLabelStyle: theme.textTheme.titleMedium?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
             ),
-            tabs: const [
-              Tab(text: 'Primary'),
-              Tab(text: 'Requests'),
+            tabs: [
+              const Tab(text: 'Primary'),
+              Tab(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('Requests'),
+                    if (pendingCount > 0) ...[
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.error,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          pendingCount > 99 ? '99+' : pendingCount.toString(),
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: theme.colorScheme.onError,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
             ],
           ),
         ),
