@@ -9,19 +9,33 @@ class InterestSelectionScreen extends ConsumerStatefulWidget {
   const InterestSelectionScreen({super.key});
 
   @override
-  ConsumerState<InterestSelectionScreen> createState() => _InterestSelectionScreenState();
+  ConsumerState<InterestSelectionScreen> createState() =>
+      _InterestSelectionScreenState();
 }
 
-class _InterestSelectionScreenState extends ConsumerState<InterestSelectionScreen> {
+class _InterestSelectionScreenState
+    extends ConsumerState<InterestSelectionScreen> {
   final List<String> _availableInterests = [
-    'Anxiety', 'Depression', 'Migraines', 'Diabetes', 
-    'Chronic Pain', 'Fitness', 'Sleep', 'Gut Health', 
-    'Heart Health', 'Pregnancy', 'Menopause', 'PCOS',
-    'ADHD', 'PTSD', 'Weight Loss', 'Nutrition'
+    'Anxiety',
+    'Depression',
+    'Migraines',
+    'Diabetes',
+    'Chronic Pain',
+    'Fitness',
+    'Sleep',
+    'Heart Health',
+    'Pregnancy',
+    'Menopause',
+    'ADHD',
+    'PTSD',
+    'Weight Loss',
   ];
-  
+
   final Set<String> _selectedInterests = {};
   bool _isSaving = false;
+  
+  List<String>? _cachedTags;
+  List<String> _previousTrending = [];
 
   void _toggleInterest(String interest) {
     setState(() {
@@ -48,22 +62,22 @@ class _InterestSelectionScreenState extends ConsumerState<InterestSelectionScree
     try {
       final authState = ref.read(authProvider).value;
       final userModel = authState?.userModel;
-      
+
       if (userModel != null) {
         final updatedUser = userModel.copyWith(
           interests: _selectedInterests.toList(),
         );
         await ref.read(authProvider.notifier).updateProfile(updatedUser);
       }
-      
+
       if (mounted) {
         context.push(AppRoutes.suggestedFollows);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save interests: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to save interests: $e')));
       }
     } finally {
       if (mounted) {
@@ -79,13 +93,29 @@ class _InterestSelectionScreenState extends ConsumerState<InterestSelectionScree
     final theme = Theme.of(context);
     final trendingAsync = ref.watch(trendingHashtagsProvider);
     final trendingTags = trendingAsync.value ?? [];
-    
-    // Combine core and trending tags
-    final combinedList = <String>[..._availableInterests];
-    for (final tag in trendingTags) {
-        if (!combinedList.any((t) => t.toLowerCase() == tag.toLowerCase())) {
-            combinedList.add(tag);
+
+    // Only rebuild and shuffle the list if trending tags finish loading
+    if (_cachedTags == null || trendingTags.length != _previousTrending.length) {
+      _previousTrending = trendingTags;
+      
+      final combinedList = <String>[..._availableInterests];
+      
+      final int maxTotalTags = 30;
+      final int spotsLeft = maxTotalTags - combinedList.length;
+      
+      if (spotsLeft > 0) {
+        int added = 0;
+        for (final tag in trendingTags) {
+          if (added >= spotsLeft) break;
+          if (!combinedList.any((t) => t.toLowerCase() == tag.toLowerCase())) {
+              combinedList.add(tag);
+              added++;
+          }
         }
+      }
+      
+      combinedList.shuffle();
+      _cachedTags = combinedList;
     }
     
     return Scaffold(
@@ -94,7 +124,10 @@ class _InterestSelectionScreenState extends ConsumerState<InterestSelectionScree
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_rounded, color: theme.colorScheme.onSurface),
+          icon: Icon(
+            Icons.arrow_back_rounded,
+            color: theme.colorScheme.onSurface,
+          ),
           onPressed: () => context.pop(),
         ),
       ),
@@ -125,18 +158,24 @@ class _InterestSelectionScreenState extends ConsumerState<InterestSelectionScree
                   child: Wrap(
                     spacing: 12.0,
                     runSpacing: 16.0,
-                    children: combinedList.map((interest) {
-                      final isTrending = trendingTags.contains(interest) && !_availableInterests.contains(interest);
-                      final displayLabel = isTrending ? '🔥 $interest' : interest;
+                    children: _cachedTags!.map((interest) {
+                      final isTrending =
+                          trendingTags.contains(interest) &&
+                          !_availableInterests.contains(interest);
+                      final displayLabel = isTrending
+                          ? '🔥 $interest'
+                          : interest;
                       final isSelected = _selectedInterests.contains(interest);
                       return ChoiceChip(
                         label: Text(
                           displayLabel,
                           style: TextStyle(
-                            color: isSelected 
-                                ? theme.colorScheme.onPrimary 
+                            color: isSelected
+                                ? theme.colorScheme.onPrimary
                                 : theme.colorScheme.onSurface,
-                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                            fontWeight: isSelected
+                                ? FontWeight.w600
+                                : FontWeight.w400,
                           ),
                         ),
                         selected: isSelected,
@@ -146,12 +185,15 @@ class _InterestSelectionScreenState extends ConsumerState<InterestSelectionScree
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
                           side: BorderSide(
-                            color: isSelected 
-                                ? Colors.transparent 
+                            color: isSelected
+                                ? Colors.transparent
                                 : theme.dividerColor,
                           ),
                         ),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                       );
                     }).toList(),
                   ),
