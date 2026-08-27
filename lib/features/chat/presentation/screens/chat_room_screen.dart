@@ -427,9 +427,16 @@ class _MessageBubble extends ConsumerWidget {
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: BoxDecoration(
+            gradient: isMe
+                ? const LinearGradient(
+                    colors: [Color(0xFF007AFF), Color(0xFF0056FF)], // Sleek iOS/Messenger Blue
+                    begin: Alignment.bottomLeft,
+                    end: Alignment.topRight,
+                  )
+                : null,
             color: isMe
-                ? theme.colorScheme.primary
-                : theme.colorScheme.surfaceContainerHighest,
+                ? null
+                : theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(22).copyWith(
               bottomRight: isMe
                   ? const Radius.circular(6)
@@ -481,7 +488,7 @@ class _MessageBubble extends ConsumerWidget {
                   msg.text!,
                   style: theme.textTheme.bodyLarge?.copyWith(
                     color: isMe
-                        ? theme.colorScheme.onPrimary
+                        ? Colors.white
                         : theme.colorScheme.onSurface,
                   ),
                 ),
@@ -492,7 +499,7 @@ class _MessageBubble extends ConsumerWidget {
                   style: theme.textTheme.bodySmall?.copyWith(
                     fontSize: 11,
                     color: isMe
-                        ? theme.colorScheme.onPrimary.withOpacity(0.7)
+                        ? Colors.white70
                         : theme.colorScheme.onSurfaceVariant,
                   ),
                 ),
@@ -510,11 +517,12 @@ class _MessageBubble extends ConsumerWidget {
     required bool isJourney,
     required bool isMe,
   }) {
+    final theme = Theme.of(context);
     final mediaState = ref.watch(batchMediaProvider);
-    final fgColor = isMe ? Colors.white : Colors.black87;
+    final fgColor = isMe ? Colors.white : theme.colorScheme.onSurface;
     final bgColor = isMe
-        ? Colors.white.withValues(alpha: 0.15)
-        : Colors.black.withValues(alpha: 0.05);
+        ? Colors.white.withValues(alpha: 0.2)
+        : theme.colorScheme.onSurface.withValues(alpha: 0.08);
 
     String? imageUrl;
     String? title;
@@ -610,10 +618,11 @@ class _MessageBubble extends ConsumerWidget {
     required String profileId,
     required bool isMe,
   }) {
-    final fgColor = isMe ? Colors.white : Colors.black87;
+    final theme = Theme.of(context);
+    final fgColor = isMe ? Colors.white : theme.colorScheme.onSurface;
     final bgColor = isMe
-        ? Colors.white.withValues(alpha: 0.15)
-        : Colors.black.withValues(alpha: 0.05);
+        ? Colors.white.withValues(alpha: 0.2)
+        : theme.colorScheme.onSurface.withValues(alpha: 0.08);
 
     final userAsync = ref.watch(userByIdProvider(profileId));
 
