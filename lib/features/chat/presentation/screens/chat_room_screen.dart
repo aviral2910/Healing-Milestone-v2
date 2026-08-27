@@ -1045,7 +1045,7 @@ class _ImagePreviewScreenState extends State<_ImagePreviewScreen> {
                               ),
                               const SizedBox(width: 6),
                               Text(
-                                isViewOnce ? 'View Once' : 'Permanent',
+                                'View Once',
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.w600,
