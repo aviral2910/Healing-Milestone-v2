@@ -200,9 +200,9 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         ),
         actions: [],
       ),
-      body: Column(
+      body: Stack(
         children: [
-          Expanded(
+          Positioned.fill(
             child: messagesAsync.when(
               data: (messages) {
                 // Trigger batch fetch
@@ -236,6 +236,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   return const Center(child: Text('Say hi!'));
                 }
                 return ListView.builder(
+                  padding: const EdgeInsets.only(bottom: 130, top: 16),
                   reverse: true, // Newest at bottom
                   itemCount: messages.length,
                   itemBuilder: (context, index) {
@@ -253,7 +254,12 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               error: (e, st) => Center(child: Text('Error: $e')),
             ),
           ),
-          _buildInputArea(context),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: _buildInputArea(context),
+          ),
         ],
       ),
     );
@@ -266,7 +272,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     
     return Container(
       width: double.infinity,
-      color: theme.scaffoldBackgroundColor,
+      color: Colors.transparent,
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
