@@ -764,8 +764,8 @@ class _MessageBubble extends ConsumerWidget {
     final mediaState = ref.watch(batchMediaProvider);
     final fgColor = isMe ? Colors.white : theme.colorScheme.onSurface;
     final bgColor = isMe
-        ? Colors.white.withValues(alpha: 0.2)
-        : theme.colorScheme.onSurface.withValues(alpha: 0.08);
+        ? Colors.black.withValues(alpha: 0.15)
+        : Colors.black.withValues(alpha: 0.1);
 
     String? imageUrl;
     String? title;
@@ -832,11 +832,10 @@ class _MessageBubble extends ConsumerWidget {
         }
       },
       child: Container(
-        margin: const EdgeInsets.only(top: 8, bottom: 8),
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: bgColor,
-          borderRadius: BorderRadius.circular(12),
+          // No border radius here since the outer bubble clips it now!
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -902,8 +901,8 @@ class _MessageBubble extends ConsumerWidget {
     final theme = Theme.of(context);
     final fgColor = isMe ? Colors.white : theme.colorScheme.onSurface;
     final bgColor = isMe
-        ? Colors.white.withValues(alpha: 0.2)
-        : theme.colorScheme.onSurface.withValues(alpha: 0.08);
+        ? Colors.black.withValues(alpha: 0.15)
+        : Colors.black.withValues(alpha: 0.1);
 
     final userAsync = ref.watch(userByIdProvider(profileId));
 
@@ -917,11 +916,10 @@ class _MessageBubble extends ConsumerWidget {
         );
       },
       child: Container(
-        margin: const EdgeInsets.only(top: 8, bottom: 8),
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: bgColor,
-          borderRadius: BorderRadius.circular(12),
+          // No border radius here since the outer bubble clips it now!
         ),
         child: userAsync.when(
           data: (user) {
