@@ -147,7 +147,7 @@ class ChatRepository {
       // 3. WRITE room update
       final snippet = text?.isNotEmpty == true 
           ? text 
-          : (imageUrl != null ? '📷 Image' : (sharedJourneyId != null ? '🔗 Shared a Journey' : (sharedStoryId != null ? '🔗 Shared a Post' : '👤 Shared a Profile')));
+          : (imageUrl != null ? (isViewOnce ? '⏱️ View Once Photo' : '📷 Image') : (sharedJourneyId != null ? '🔗 Shared a Journey' : (sharedStoryId != null ? '🔗 Shared a Post' : '👤 Shared a Profile')));
 
       if (roomDoc.exists) {
         final data = roomDoc.data();

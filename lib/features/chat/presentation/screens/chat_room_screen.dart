@@ -398,6 +398,7 @@ class _MessageBubble extends ConsumerWidget {
 
     return GestureDetector(
       onTap: () async {
+        if (msg.imageUrl == null) return;
         // View the photo
         await Navigator.push(context, MaterialPageRoute(builder: (_) => Scaffold(
           backgroundColor: Colors.black,
@@ -596,13 +597,14 @@ class _MessageBubble extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (msg.imageUrl != null)
+              if (msg.imageUrl != null || msg.isViewOnce)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 8.0),
                   child: msg.isViewOnce
                       ? _buildViewOnceImage(context, ref, msg, isMe)
                       : GestureDetector(
                           onTap: () {
+                            if (msg.imageUrl == null) return;
                             Navigator.push(context, MaterialPageRoute(builder: (_) => Scaffold(
                               backgroundColor: Colors.black,
                               extendBodyBehindAppBar: true,
@@ -624,7 +626,7 @@ class _MessageBubble extends ConsumerWidget {
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(8),
                             child: CachedNetworkImage(
-                              imageUrl: msg.imageUrl!,
+                              imageUrl: msg.imageUrl ?? '',
                               fit: BoxFit.cover,
                               placeholder: (context, url) => _buildShimmerBox(context, double.infinity, 200),
                               errorWidget: (context, url, error) => const SizedBox(
