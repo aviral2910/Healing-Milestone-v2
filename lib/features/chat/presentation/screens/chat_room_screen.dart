@@ -34,6 +34,7 @@ class ChatRoomScreen extends ConsumerStatefulWidget {
 
 class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   final _textController = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
   final _imagePicker = ImagePicker();
   bool _isSending = false;
   bool _hasText = false;
@@ -41,6 +42,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   @override
   void initState() {
     super.initState();
+    _focusNode.addListener(() { setState(() {}); });
     _textController.addListener(() {
       if (_hasText != _textController.text.isNotEmpty) {
         setState(() {
@@ -53,6 +55,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   @override
   void dispose() {
     _textController.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -265,11 +268,22 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     );
   }
 
-  final List<String> _quickEmojis = ['❤️', '🫂', '🙌', '✨', '🌻', '🔥', '👏', '💯', '💪', '🙏'];
+  final List<String> _quickEmojis = [
+    '❤️',
+    '🫂',
+    '🙌',
+    '✨',
+    '🌻',
+    '🔥',
+    '👏',
+    '💯',
+    '💪',
+    '🙏',
+  ];
 
   Widget _buildQuickEmojis(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Container(
       width: double.infinity,
       color: Colors.transparent,
@@ -286,33 +300,41 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   final currentText = _textController.text;
                   final selection = _textController.selection;
                   if (selection.isValid && selection.start >= 0) {
-                    final newText = currentText.replaceRange(selection.start, selection.end, emoji);
+                    final newText = currentText.replaceRange(
+                      selection.start,
+                      selection.end,
+                      emoji,
+                    );
                     _textController.value = TextEditingValue(
                       text: newText,
-                      selection: TextSelection.collapsed(offset: selection.start + emoji.length),
+                      selection: TextSelection.collapsed(
+                        offset: selection.start + emoji.length,
+                      ),
                     );
                   } else {
                     _textController.text = currentText + emoji;
-                    _textController.selection = TextSelection.collapsed(offset: _textController.text.length);
+                    _textController.selection = TextSelection.collapsed(
+                      offset: _textController.text.length,
+                    );
                   }
-                  
+
                   // Trigger state update to show send button
                   setState(() {});
                 },
                 borderRadius: BorderRadius.circular(16),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.05),
+                    color: theme.colorScheme.surface.withValues(alpha: 1),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
+                      color: theme.colorScheme.primary.withValues(alpha: 0.1),
                     ),
                   ),
-                  child: Text(
-                    emoji,
-                    style: const TextStyle(fontSize: 18),
-                  ),
+                  child: Text(emoji, style: const TextStyle(fontSize: 18)),
                 ),
               ),
             );
@@ -326,82 +348,99 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     final theme = Theme.of(context);
 
     return SafeArea(
+      bottom: false,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _buildQuickEmojis(context),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeOutCubic,
+            child: _focusNode.hasFocus ? _buildQuickEmojis(context) : const SizedBox(width: double.infinity),
+          ),
           Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-        color: theme.scaffoldBackgroundColor,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.15),
-                  ),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _textController,
-                        style: theme.textTheme.bodyLarge,
-                        minLines: 1,
-                        maxLines: 5,
-                        decoration: InputDecoration(
-                          hintText: 'Message...',
-                          hintStyle: theme.textTheme.bodyLarge?.copyWith(
-                            color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
-                          ),
-                          border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 10,
-                          ),
+            padding: const EdgeInsets.only(
+              left: 12.0,
+              right: 12.0,
+              bottom: 24.0,
+            ),
+            color: theme.scaffoldBackgroundColor,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.onSurface.withValues(
+                        alpha: 0.08,
+                      ),
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.15,
                         ),
-                        textCapitalization: TextCapitalization.sentences,
                       ),
                     ),
-                    if (_isSending)
-                      const Padding(
-                        padding: EdgeInsets.all(12.0),
-                        child: SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _textController,
+                            style: theme.textTheme.bodyLarge,
+                            minLines: 1,
+                            maxLines: 5,
+                            decoration: InputDecoration(
+                              hintText: 'Message...',
+                              hintStyle: theme.textTheme.bodyLarge?.copyWith(
+                                color: theme.colorScheme.onSurface.withValues(
+                                  alpha: 0.4,
+                                ),
+                              ),
+                              border: InputBorder.none,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 10,
+                              ),
+                            ),
+                            textCapitalization: TextCapitalization.sentences,
+                          ),
                         ),
-                      )
-                    else if (_hasText)
-                      IconButton(
-                        onPressed: _sendTextMessage,
-                        icon: Icon(
-                          Icons.send_rounded,
-                          color: theme.colorScheme.primary,
-                        ),
-                      )
-                    else ...[
-                      IconButton(
-                        icon: Icon(
-                          Icons.image_outlined,
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-                        ),
-                        onPressed: _pickAndSendImage,
-                      ),
-                      const SizedBox(width: 4),
-                    ],
-                  ],
+                        if (_isSending)
+                          const Padding(
+                            padding: EdgeInsets.all(12.0),
+                            child: SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          )
+                        else if (_hasText)
+                          IconButton(
+                            onPressed: _sendTextMessage,
+                            icon: Icon(
+                              Icons.send_rounded,
+                              color: theme.colorScheme.primary,
+                            ),
+                          )
+                        else ...[
+                          IconButton(
+                            icon: Icon(
+                              Icons.image_outlined,
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: 0.7,
+                              ),
+                            ),
+                            onPressed: _pickAndSendImage,
+                          ),
+                          const SizedBox(width: 4),
+                        ],
+                      ],
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
         ],
       ),
     );
@@ -453,11 +492,18 @@ class _MessageBubble extends ConsumerWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.timer_rounded, color: Theme.of(context).colorScheme.primary, size: 20),
+            Icon(
+              Icons.timer_rounded,
+              color: Theme.of(context).colorScheme.primary,
+              size: 20,
+            ),
             const SizedBox(width: 8),
             Text(
               'Photo Sent',
-              style: TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.primary,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ],
         ),
@@ -500,10 +546,12 @@ class _MessageBubble extends ConsumerWidget {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          gradient: LinearGradient(colors: [
-            Theme.of(context).colorScheme.primary,
-            Theme.of(context).colorScheme.secondary,
-          ]),
+          gradient: LinearGradient(
+            colors: [
+              Theme.of(context).colorScheme.primary,
+              Theme.of(context).colorScheme.secondary,
+            ],
+          ),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
@@ -784,7 +832,12 @@ class _MessageBubble extends ConsumerWidget {
                 ),
               if (msg.text != null && msg.text!.isNotEmpty)
                 Padding(
-                  padding: const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 4),
+                  padding: const EdgeInsets.only(
+                    left: 16,
+                    right: 16,
+                    top: 12,
+                    bottom: 4,
+                  ),
                   child: Text(
                     msg.text!,
                     style: theme.textTheme.titleSmall?.copyWith(
@@ -797,7 +850,12 @@ class _MessageBubble extends ConsumerWidget {
               const SizedBox(height: 4),
               if (msg.createdAt != null)
                 Padding(
-                  padding: const EdgeInsets.only(left: 12, right: 12, bottom: 8, top: 2),
+                  padding: const EdgeInsets.only(
+                    left: 12,
+                    right: 12,
+                    bottom: 8,
+                    top: 2,
+                  ),
                   child: Text(
                     timeago.format(msg.createdAt!),
                     style: theme.textTheme.bodySmall?.copyWith(
@@ -930,23 +988,32 @@ class _MessageBubble extends ConsumerWidget {
                 ),
                 child: Center(
                   child: Icon(
-                    isJourney ? Icons.folder_special_rounded : Icons.menu_book_rounded,
+                    isJourney
+                        ? Icons.folder_special_rounded
+                        : Icons.menu_book_rounded,
                     size: 48,
-                    color: isJourney 
-                        ? theme.colorScheme.primary.withValues(alpha: 0.8) 
+                    color: isJourney
+                        ? theme.colorScheme.primary.withValues(alpha: 0.8)
                         : Colors.white.withValues(alpha: 0.5),
                   ),
                 ),
               ),
             Padding(
-              padding: const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 16),
+              padding: const EdgeInsets.only(
+                left: 16,
+                right: 16,
+                top: 12,
+                bottom: 16,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
                       Icon(
-                        isJourney ? Icons.folder_special_rounded : Icons.menu_book_rounded,
+                        isJourney
+                            ? Icons.folder_special_rounded
+                            : Icons.menu_book_rounded,
                         size: 14,
                         color: fgColor.withValues(alpha: 0.7),
                       ),
@@ -1085,7 +1152,7 @@ class _ImagePreviewScreenState extends State<_ImagePreviewScreen> {
               ),
             ),
           ),
-          
+
           // Bottom Controls
           Positioned(
             bottom: 40,
@@ -1101,33 +1168,43 @@ class _ImagePreviewScreenState extends State<_ImagePreviewScreen> {
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.4),
                     borderRadius: BorderRadius.circular(40),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.15),
+                    ),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       // Left: Cancel Button
                       IconButton(
-                        icon: const Icon(Icons.close_rounded, color: Colors.white),
+                        icon: const Icon(
+                          Icons.close_rounded,
+                          color: Colors.white,
+                        ),
                         onPressed: () => Navigator.pop(context, null),
                       ),
-                      
+
                       // Middle: View Once Toggle
                       GestureDetector(
                         onTap: () => setState(() => isViewOnce = !isViewOnce),
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 200),
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 12,
+                          ),
                           decoration: BoxDecoration(
-                            color: isViewOnce 
-                                ? theme.colorScheme.primary 
+                            color: isViewOnce
+                                ? theme.colorScheme.primary
                                 : Colors.white.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(30),
                           ),
                           child: Row(
                             children: [
                               Icon(
-                                isViewOnce ? Icons.timer_rounded : Icons.timer_outlined,
+                                isViewOnce
+                                    ? Icons.timer_rounded
+                                    : Icons.timer_outlined,
                                 color: Colors.white,
                                 size: 18,
                               ),
@@ -1144,7 +1221,7 @@ class _ImagePreviewScreenState extends State<_ImagePreviewScreen> {
                           ),
                         ),
                       ),
-                      
+
                       // Right: Send Button
                       GestureDetector(
                         onTap: () => Navigator.pop(context, isViewOnce),
@@ -1155,7 +1232,11 @@ class _ImagePreviewScreenState extends State<_ImagePreviewScreen> {
                             color: theme.colorScheme.primary,
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.send_rounded, color: Colors.white, size: 22),
+                          child: const Icon(
+                            Icons.send_rounded,
+                            color: Colors.white,
+                            size: 22,
+                          ),
                         ),
                       ),
                     ],
