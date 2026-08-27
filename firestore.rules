@@ -49,7 +49,8 @@ service cloud.firestore {
       match /messages/{messageId} {
         allow read: if request.auth != null && (request.auth.uid in get(/databases/$(database)/documents/chat_rooms/$(chatId)).data.participants || isAdmin());
         allow create: if request.auth != null && (request.auth.uid in get(/databases/$(database)/documents/chat_rooms/$(chatId)).data.participants || isAdmin());
-        allow update, delete: if (request.auth != null && request.auth.uid == resource.data.senderId) || isAdmin();
+        allow update: if (request.auth != null && request.auth.uid == resource.data.senderId) || isAdmin();
+        allow delete: if request.auth != null && (request.auth.uid == resource.data.senderId || request.auth.uid in get(/databases/$(database)/documents/chat_rooms/$(chatId)).data.participants || isAdmin());
       }
     }
   }

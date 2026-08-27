@@ -1,13 +1,14 @@
+import re
+
 with open('firestore.rules', 'r') as f:
     content = f.read()
 
-old_msg_rules = "allow update, delete: if isAdmin();"
-new_msg_rules = "allow update, delete: if (request.auth != null && request.auth.uid == resource.data.senderId) || isAdmin();"
-content = content.replace(old_msg_rules, new_msg_rules)
+old_rule = """        allow update, delete: if (request.auth != null && request.auth.uid == resource.data.senderId) || isAdmin();"""
 
-old_room_rules = "allow delete: if isAdmin();"
-new_room_rules = "allow delete: if (request.auth != null && request.auth.uid in resource.data.participants) || isAdmin();"
-content = content.replace(old_room_rules, new_room_rules)
+new_rule = """        allow update: if (request.auth != null && request.auth.uid == resource.data.senderId) || isAdmin();
+        allow delete: if request.auth != null && (request.auth.uid == resource.data.senderId || request.auth.uid in get(/databases/$(database)/documents/chat_rooms/$(chatId)).data.participants || isAdmin());"""
+
+content = content.replace(old_rule, new_rule)
 
 with open('firestore.rules', 'w') as f:
     f.write(content)
