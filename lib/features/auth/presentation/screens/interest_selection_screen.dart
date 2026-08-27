@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../data/auth_provider.dart';
+import 'package:healing_milestones/features/posts/data/hashtag_repository.dart';
 
 class InterestSelectionScreen extends ConsumerStatefulWidget {
   const InterestSelectionScreen({super.key});
@@ -76,6 +77,16 @@ class _InterestSelectionScreenState extends ConsumerState<InterestSelectionScree
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final trendingAsync = ref.watch(trendingHashtagsProvider);
+    final trendingTags = trendingAsync.value ?? [];
+    
+    // Combine core and trending tags
+    final combinedList = <String>[..._availableInterests];
+    for (final tag in trendingTags) {
+        if (!combinedList.any((t) => t.toLowerCase() == tag.toLowerCase())) {
+            combinedList.add(tag);
+        }
+    }
     
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -114,11 +125,13 @@ class _InterestSelectionScreenState extends ConsumerState<InterestSelectionScree
                   child: Wrap(
                     spacing: 12.0,
                     runSpacing: 16.0,
-                    children: _availableInterests.map((interest) {
+                    children: combinedList.map((interest) {
+                      final isTrending = trendingTags.contains(interest) && !_availableInterests.contains(interest);
+                      final displayLabel = isTrending ? '🔥 $interest' : interest;
                       final isSelected = _selectedInterests.contains(interest);
                       return ChoiceChip(
                         label: Text(
-                          interest,
+                          displayLabel,
                           style: TextStyle(
                             color: isSelected 
                                 ? theme.colorScheme.onPrimary 
