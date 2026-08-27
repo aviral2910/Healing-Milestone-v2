@@ -1,6 +1,9 @@
 import 'package:healing_milestones/shared/widgets/app_loader.dart';
 import 'package:healing_milestones/shared/widgets/app_avatar.dart';
 import 'dart:io';
+import 'package:healing_milestones/features/journey/presentation/screens/journey_detail_screen.dart';
+import 'package:healing_milestones/features/milestone/presentation/screens/story_detail_screen.dart';
+import 'package:healing_milestones/features/profile/presentation/screens/public_profile_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -479,15 +482,33 @@ class _MessageBubble extends ConsumerWidget {
               if (msg.imageUrl != null)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 8.0),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: CachedNetworkImage(
-                      imageUrl: msg.imageUrl!,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => _buildShimmerBox(context, double.infinity, 200),
-                      errorWidget: (context, url, error) => const SizedBox(
-                        height: 100,
-                        child: Center(child: Icon(Icons.error_outline)),
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => Scaffold(
+                        backgroundColor: Colors.black,
+                        appBar: AppBar(
+                          backgroundColor: Colors.transparent,
+                          iconTheme: const IconThemeData(color: Colors.white),
+                        ),
+                        body: Center(
+                          child: InteractiveViewer(
+                            minScale: 1.0,
+                            maxScale: 4.0,
+                            child: CachedNetworkImage(imageUrl: msg.imageUrl!),
+                          ),
+                        ),
+                      )));
+                    },
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: CachedNetworkImage(
+                        imageUrl: msg.imageUrl!,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => _buildShimmerBox(context, double.infinity, 200),
+                        errorWidget: (context, url, error) => const SizedBox(
+                          height: 100,
+                          child: Center(child: Icon(Icons.error_outline)),
+                        ),
                       ),
                     ),
                   ),
@@ -591,14 +612,22 @@ class _MessageBubble extends ConsumerWidget {
       title = story.heading;
     }
 
-    return Container(
-      margin: const EdgeInsets.only(top: 8, bottom: 8),
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
+    return GestureDetector(
+      onTap: () {
+        if (isJourney) {
+          Navigator.push(context, MaterialPageRoute(builder: (_) => JourneyDetailScreen(journeyId: id, title: title ?? 'Shared Journey')));
+        } else {
+          Navigator.push(context, MaterialPageRoute(builder: (_) => StoryDetailScreen(milestoneId: id)));
+        }
+      },
+      child: Container(
+        margin: const EdgeInsets.only(top: 8, bottom: 8),
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
@@ -648,7 +677,7 @@ class _MessageBubble extends ConsumerWidget {
           ),
         ],
       ),
-    );
+    ));
   }
 
   Widget _buildSharedProfileCard({
@@ -665,14 +694,18 @@ class _MessageBubble extends ConsumerWidget {
 
     final userAsync = ref.watch(userByIdProvider(profileId));
 
-    return Container(
-      margin: const EdgeInsets.only(top: 8, bottom: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: userAsync.when(
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(context, MaterialPageRoute(builder: (_) => PublicProfileScreen(userId: profileId)));
+      },
+      child: Container(
+        margin: const EdgeInsets.only(top: 8, bottom: 8),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: userAsync.when(
         data: (user) {
           if (user == null) return const Text('User not found');
           return Row(
@@ -712,6 +745,6 @@ class _MessageBubble extends ConsumerWidget {
         loading: () => _buildShimmerBox(context, double.infinity, 60, radius: 12),
         error: (_, __) => const Text('Error loading profile'),
       ),
-    );
+    ));
   }
 }
