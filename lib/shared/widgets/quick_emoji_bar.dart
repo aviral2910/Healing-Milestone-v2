@@ -5,12 +5,14 @@ class QuickEmojiBar extends StatelessWidget {
   final TextEditingController textController;
   final FocusNode focusNode;
   final VoidCallback? onEmojiTapped;
+  final bool alwaysVisible;
 
   const QuickEmojiBar({
     Key? key,
     required this.textController,
     required this.focusNode,
     this.onEmojiTapped,
+    this.alwaysVisible = false,
   }) : super(key: key);
 
   static const List<String> _quickEmojis = [
@@ -24,7 +26,7 @@ class QuickEmojiBar extends StatelessWidget {
     return AnimatedSize(
       duration: const Duration(milliseconds: 250),
       curve: Curves.easeOutCubic,
-      child: focusNode.hasFocus
+      child: (alwaysVisible || focusNode.hasFocus)
           ? Container(
               width: double.infinity,
               color: Colors.transparent,

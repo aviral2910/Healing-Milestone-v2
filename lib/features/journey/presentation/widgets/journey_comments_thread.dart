@@ -155,6 +155,7 @@ class _JourneyCommentsThreadState extends ConsumerState<JourneyCommentsThread> {
                   textController: _commentController,
                   focusNode: _focusNode,
                   onEmojiTapped: () => setState(() {}),
+                  alwaysVisible: true,
                 ),
                 Container(
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
