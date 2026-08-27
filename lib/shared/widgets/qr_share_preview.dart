@@ -91,7 +91,10 @@ class _QrSharePreviewState extends State<QrSharePreview> {
                 const SizedBox(width: 40), // Balance the close button
                 Text(
                   'Share QR Code',
-                  style: theme.textTheme.headlineLarge?.copyWith(fontSize: 22),
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 IconButton(
                   icon: Icon(Icons.close, color: theme.colorScheme.onSurfaceVariant),
@@ -155,9 +158,8 @@ class _QrSharePreviewState extends State<QrSharePreview> {
                     Text(
                       widget.qrBottomText,
                       textAlign: TextAlign.center,
-                      style: theme.textTheme.bodyLarge?.copyWith(
+                      style: theme.textTheme.bodyMedium?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
-                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
@@ -170,26 +172,27 @@ class _QrSharePreviewState extends State<QrSharePreview> {
               onPressed: _isSharing ? null : _shareQrCode,
               icon: _isSharing
                   ? SizedBox(
-                      width: 20,
-                      height: 20,
+                      width: 18,
+                      height: 18,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
                         color: theme.colorScheme.onPrimary,
                       ),
                     )
-                  : Icon(Icons.ios_share_rounded, color: theme.colorScheme.onPrimary),
+                  : Icon(Icons.ios_share_rounded, size: 20, color: theme.colorScheme.onPrimary),
               label: Text(
                 _isSharing ? 'Sharing...' : 'Share Image',
-                style: theme.textTheme.titleLarge?.copyWith(
+                style: theme.textTheme.titleMedium?.copyWith(
                   color: theme.colorScheme.onPrimary,
-                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 15,
                 ),
               ),
               style: ElevatedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 56),
+                minimumSize: const Size(double.infinity, 48),
                 backgroundColor: theme.colorScheme.primary,
                 foregroundColor: theme.colorScheme.onPrimary,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
                 elevation: 0,
               ),
             ),
