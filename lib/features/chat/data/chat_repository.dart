@@ -126,7 +126,11 @@ class ChatRepository {
     final now = FieldValue.serverTimestamp();
 
     await _firestore.runTransaction((transaction) async {
-      // 1. Create message
+      // 1. READ FIRST: Firestore requires all reads to happen before writes in a transaction
+      final roomRef = _firestore.collection('chat_rooms').doc(roomId);
+      final roomDoc = await transaction.get(roomRef);
+      
+      // 2. WRITE message
       transaction.set(messageRef, {
         'senderId': senderId,
         'text': text,
@@ -137,13 +141,11 @@ class ChatRepository {
         'readBy': [senderId],
       });
 
-      // 2. Update room snippet & unread counts
-      final roomRef = _firestore.collection('chat_rooms').doc(roomId);
+      // 3. WRITE room update
       final snippet = text?.isNotEmpty == true 
           ? text 
           : (imageUrl != null ? '📷 Image' : (sharedJourneyId != null ? '🔗 Shared a Journey' : '🔗 Shared a Story'));
 
-      final roomDoc = await transaction.get(roomRef);
       if (roomDoc.exists) {
         final data = roomDoc.data();
         final participants = List<String>.from(data?['participants'] ?? []);
