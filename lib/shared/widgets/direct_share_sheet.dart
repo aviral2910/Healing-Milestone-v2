@@ -66,11 +66,7 @@ class _DirectShareSheetState extends ConsumerState<DirectShareSheet> {
           await repo.sendMessage(
             roomId: roomId,
             senderId: currentUid,
-            text: widget.journeyId != null
-                ? "Check out this Journey!"
-                : widget.storyId != null
-                ? "Check out this Post!"
-                : "Check out this profile!",
+            text: null,
             sharedJourneyId: widget.journeyId,
             sharedStoryId: widget.storyId,
             sharedProfileId: widget.profileId,
