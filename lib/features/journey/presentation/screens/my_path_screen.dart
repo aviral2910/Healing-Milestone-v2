@@ -26,18 +26,16 @@ class MyPathScreen extends ConsumerWidget {
     final journeysAsync = ref.watch(myJourneysProvider);
 
     return Scaffold(
-      body: 
-      
-      CustomScrollView(
+      body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
           const CommonSliverAppBar(),
-      
+
           // Gratitude Tree Section
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(
-                horizontal: 24.0,
+                horizontal: 12.0,
                 vertical: 12.0,
               ),
               child: Column(
@@ -58,7 +56,7 @@ class MyPathScreen extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-      
+
                   // Time Capsule Vault Entry Card
                   Consumer(
                     builder: (context, ref, child) {
@@ -68,14 +66,14 @@ class MyPathScreen extends ConsumerWidget {
                       final lockedCount = capsules
                           .where((c) => c.isLocked)
                           .length;
-      
+
                       // Find if any capsule is ready to open to prioritize it on the dashboard
                       final readyCapsule = hasCapsules
                           ? capsules
                                 .where((c) => !c.isLocked && !c.isOpened)
                                 .firstOrNull
                           : null;
-      
+
                       return TimeCapsuleCard(
                         activeCapsule: readyCapsule,
                         lockedCount: lockedCount,
@@ -89,7 +87,7 @@ class MyPathScreen extends ConsumerWidget {
               ),
             ),
           ),
-      
+
           // My Journeys (Folders) Title
           SliverToBoxAdapter(
             child: Padding(
@@ -109,7 +107,7 @@ class MyPathScreen extends ConsumerWidget {
               ),
             ),
           ),
-      
+
           // My Journeys Horizontal List
           SliverToBoxAdapter(
             child: SizedBox(
@@ -177,7 +175,7 @@ class MyPathScreen extends ConsumerWidget {
                           ),
                         );
                       }
-      
+
                       final journey = journeys[index - 1];
                       return Padding(
                         padding: const EdgeInsets.symmetric(
@@ -192,7 +190,7 @@ class MyPathScreen extends ConsumerWidget {
                                   journeyId: journey.id,
                                   title: journey.title,
                                   categories: journey.categories,
-                visibility: journey.visibility,
+                                  visibility: journey.visibility,
                                   isMine: true,
                                 ),
                               ),
@@ -308,7 +306,7 @@ class MyPathScreen extends ConsumerWidget {
                                                   ],
                                                 ),
                                               );
-      
+
                                               if (confirm == true) {
                                                 try {
                                                   await ref
@@ -324,8 +322,12 @@ class MyPathScreen extends ConsumerWidget {
                                                   ref.invalidate(
                                                     myFloatingMilestonesProvider,
                                                   );
-                                                  ref.invalidate(recommendedMilestonesProvider);
-                                                  ref.invalidate(followingMilestonesProvider);
+                                                  ref.invalidate(
+                                                    recommendedMilestonesProvider,
+                                                  );
+                                                  ref.invalidate(
+                                                    followingMilestonesProvider,
+                                                  );
                                                 } catch (e) {
                                                   if (context.mounted) {
                                                     ScaffoldMessenger.of(
@@ -392,7 +394,7 @@ class MyPathScreen extends ConsumerWidget {
               ),
             ),
           ),
-      
+
           // Floating Check-ins Title
           SliverToBoxAdapter(
             child: Padding(
@@ -428,7 +430,7 @@ class MyPathScreen extends ConsumerWidget {
               ),
             ),
           ),
-      
+
           // Timeline Milestones (Floating only)
           Consumer(
             builder: (context, ref, child) {
@@ -455,10 +457,10 @@ class MyPathScreen extends ConsumerWidget {
                       ),
                     );
                   }
-      
+
                   // Backend already returns sorted newest first
                   final sortedMilestones = milestones;
-      
+
                   return SliverPadding(
                     padding: const EdgeInsets.only(
                       left: 16,
