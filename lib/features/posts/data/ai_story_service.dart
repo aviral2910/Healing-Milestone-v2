@@ -102,7 +102,7 @@ User's notes:
       }
     } catch (e) {
       print('Error generating story: $e');
-      throw Exception('Failed to generate story. Please try again.');
+      throw Exception('Failed to generate story. Please try again. Error: $e');
     }
   }
 }
