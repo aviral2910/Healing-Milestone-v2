@@ -2,7 +2,11 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     function isAdmin() {
-      return request.auth != null && request.auth.token.admin == true;
+      return request.auth != null && (
+        request.auth.token.admin == true ||
+        request.auth.token.email == 'genesisappsofficial@gmail.com' ||
+        request.auth.token.email == 'healingmilestones@gmail.com'
+      );
     }
 
     match /users/{userId} {

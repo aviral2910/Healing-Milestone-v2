@@ -119,3 +119,36 @@ export const onStoryUpdated = functions.firestore
     await batch.commit();
     return null;
   });
+
+// Scheduled Cron Job to trigger nightly PostgreSQL metrics snapshot
+export const triggerNightlySnapshot = functions.pubsub
+  .schedule("0 1 * * *")
+  .timeZone("UTC")
+  .onRun(async (context) => {
+    try {
+      // Calculate exactly yesterday's date to avoid timezone shift ambiguity
+      const yesterday = new Date();
+      yesterday.setUTCDate(yesterday.getUTCDate() - 1);
+      const targetDate = yesterday.toISOString().split("T")[0]; // format: YYYY-MM-DD
+
+      const backendUrl = "https://healing-milestones-api.onrender.com/api/internal/cron/nightly-snapshot";
+      const cronSecret = process.env.CRON_SECRET || "super-secret-cron-key";
+      
+      console.log(`[cron] Triggering snapshot for target_date=${targetDate}`);
+
+      const response = await fetch(`${backendUrl}?target_date=${targetDate}`, {
+        method: "POST",
+        headers: {
+          "x-cron-secret": cronSecret
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Backend returned status ${response.status}: ${await response.text()}`);
+      }
+
+      console.log("[cron] Successfully triggered nightly snapshot.");
+    } catch (error) {
+      console.error("[cron] Failed to trigger nightly snapshot:", error);
+    }
+  });
