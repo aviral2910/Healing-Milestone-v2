@@ -37,6 +37,8 @@ import '../../features/splash/presentation/screens/splash_screen.dart';
 import '../../logo/healing_milestone_logo.dart';
 import '../../core/models/user_model.dart';
 import 'app_routes.dart';
+import '../../features/milestone/presentation/widgets/mini_player_overlay.dart';
+import 'package:flutter/material.dart';
 
 class RouterNotifier extends ChangeNotifier {
   final Ref _ref;
@@ -53,10 +55,57 @@ class RouterNotifier extends ChangeNotifier {
 
 final routerNotifierProvider = Provider((ref) => RouterNotifier(ref));
 
+
+
+class CurrentRouteNotifier extends Notifier<String> {
+  @override
+  String build() => '/';
+  void updateRoute(String route) => state = route;
+}
+final currentRouteProvider = NotifierProvider<CurrentRouteNotifier, String>(CurrentRouteNotifier.new);
+
+
+class AppRouteObserver extends NavigatorObserver {
+  final Ref ref;
+  AppRouteObserver(this.ref);
+
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    _updateRoute(route);
+  }
+
+  @override
+  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    if (previousRoute != null) _updateRoute(previousRoute);
+  }
+
+  @override
+  void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
+    if (newRoute != null) _updateRoute(newRoute);
+  }
+
+  void _updateRoute(Route<dynamic> route) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      String? location = route.settings.name;
+      if (location == null) {
+        try {
+          final router = ref.read(routerProvider);
+          location = router.routerDelegate.currentConfiguration.last.matchedLocation;
+        } catch (e) {
+          location = 'unknown';
+        }
+      }
+      ref.read(currentRouteProvider.notifier).updateRoute(location);
+    });
+  }
+}
+
 final routerProvider = Provider<GoRouter>((ref) {
+
   final notifier = ref.watch(routerNotifierProvider);
 
   return GoRouter(
+    observers: [AppRouteObserver(ref)],
     refreshListenable: notifier,
     initialLocation: AppRoutes.splash,
     redirect: (context, state) {
@@ -124,6 +173,16 @@ final routerProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
+      ShellRoute(
+        builder: (context, state, child) {
+          return Stack(
+            children: [
+              child,
+              const MiniPlayerOverlay(),
+            ],
+          );
+        },
+        routes: [
       GoRoute(
         path: AppRoutes.splash,
         builder: (context, state) => const SplashScreen(),
@@ -323,6 +382,8 @@ final routerProvider = Provider<GoRouter>((ref) {
             data: data,
           );
         },
+      ),
+    ]
       ),
     ],
   );
