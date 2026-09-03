@@ -25,6 +25,7 @@ import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import '../../../../shared/widgets/interaction_section.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 
 class StoryDetailScreen extends HookConsumerWidget {
   final String milestoneId;
@@ -46,6 +47,93 @@ class StoryDetailScreen extends HookConsumerWidget {
     // Removed currentUser watch
     final theme = Theme.of(context);
     final mainScrollController = useScrollController();
+
+    // Text to Speech
+    final flutterTts = useMemoized(() => FlutterTts());
+    final isPlaying = useState(false);
+    final playbackSpeed = useState<double>(1.0); // UI multiplier (1.0x = normal)
+    final availableVoices = useState<List<Map<String, String>>>([]);
+    final selectedVoice = useState<Map<String, String>?>(null);
+
+    useEffect(() {
+      // Fetch English voices for the Voice Bar
+      flutterTts.getVoices.then((dynamic systemVoices) {
+        try {
+          if (systemVoices is List) {
+            final List<Map<String, String>> engVoices = [];
+            final Set<String> seenLocales = {}; // Take only 1 voice per accent to avoid broken variations
+            
+            final Map<String, String> localeNames = {
+              'en-us': 'American',
+              'en-gb': 'British',
+              'en-in': 'Indian',
+              'en-au': 'Australian',
+              'en-za': 'South African',
+              'en-ng': 'Nigerian',
+              'en-ie': 'Irish',
+              'en-ca': 'Canadian'
+            };
+
+            for (var v in systemVoices) {
+              if (v is Map) {
+                final locale = v["locale"]?.toString().replaceAll('_', '-') ?? "";
+                final name = v["name"]?.toString() ?? "";
+                final lowerLocale = locale.toLowerCase();
+                
+                if (lowerLocale.startsWith("en")) {
+                  // Filter out "network" voices on Android which often fail to play
+                  if (!name.toLowerCase().contains("network")) {
+                     // Only take one working offline voice per region
+                     if (!seenLocales.contains(lowerLocale)) {
+                       seenLocales.add(lowerLocale);
+                       
+                       String friendlyName = localeNames[lowerLocale] ?? 'English ($locale)';
+                       engVoices.add({
+                         "name": name, 
+                         "locale": locale,
+                         "displayName": "$friendlyName Accent"
+                       });
+                     }
+                  }
+                }
+              }
+            }
+            
+            // Limit to max 5 distinct accents
+            availableVoices.value = engVoices.take(5).toList(); 
+          }
+        } catch (e) {
+          debugPrint("Failed to load voices: $e");
+        }
+      });
+
+      // Configure TTS for cross-platform reliability
+      flutterTts.setSharedInstance(true);
+      flutterTts.awaitSpeakCompletion(false); // Force false to prevent native plugin hangs
+      
+      // Override iOS silent switch so audio plays even if phone is on vibrate
+      flutterTts.setIosAudioCategory(
+        IosTextToSpeechAudioCategory.playback,
+        [
+          IosTextToSpeechAudioCategoryOptions.allowBluetooth,
+          IosTextToSpeechAudioCategoryOptions.allowBluetoothA2DP,
+          IosTextToSpeechAudioCategoryOptions.mixWithOthers,
+        ],
+      );
+
+      flutterTts.setCompletionHandler(() {
+        isPlaying.value = false;
+      });
+      flutterTts.setCancelHandler(() {
+        isPlaying.value = false;
+      });
+      flutterTts.setPauseHandler(() {
+        isPlaying.value = false;
+      });
+      return () {
+        flutterTts.stop();
+      };
+    }, const []);
 
     return storyAsync.when(
       loading: () => const Scaffold(body: Center(child: AppLoader())),
@@ -769,8 +857,269 @@ class StoryDetailScreen extends HookConsumerWidget {
                                                     vertical: 20.0,
                                                     horizontal: 8.0,
                                                   ),
-                                              child: PostDisplayWidget(
-                                                content: story.description,
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  // Read Aloud Button
+                                                  if (story.description.isNotEmpty) ...[
+                                                    AnimatedContainer(
+                                                      duration: const Duration(milliseconds: 500),
+                                                      curve: Curves.easeOutQuint,
+                                                      width: double.infinity,
+                                                      decoration: BoxDecoration(
+                                                        color: isPlaying.value 
+                                                          ? theme.colorScheme.primary.withValues(alpha: 0.08)
+                                                          : theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
+                                                        borderRadius: BorderRadius.circular(24),
+                                                        border: Border.all(
+                                                          color: isPlaying.value
+                                                              ? theme.colorScheme.primary.withValues(alpha: 0.4)
+                                                              : theme.colorScheme.primary.withValues(alpha: 0.1),
+                                                          width: isPlaying.value ? 1.5 : 1.0,
+                                                        ),
+                                                        boxShadow: isPlaying.value
+                                                            ? [
+                                                                BoxShadow(
+                                                                  color: theme.colorScheme.primary.withValues(alpha: 0.15),
+                                                                  blurRadius: 20,
+                                                                  spreadRadius: 4,
+                                                                )
+                                                              ]
+                                                            : [],
+                                                      ),
+                                                      child: Column(
+                                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                                        children: [
+                                                          // Top Section: Label
+                                                          Padding(
+                                                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                                                            child: Row(
+                                                              children: [
+                                                                Icon(Icons.headphones_rounded, color: theme.colorScheme.primary, size: 18),
+                                                                const SizedBox(width: 8),
+                                                                Text(
+                                                                  'AUDIO STORY',
+                                                                  style: TextStyle(
+                                                                    color: theme.colorScheme.primary,
+                                                                    fontWeight: FontWeight.w800,
+                                                                    fontSize: 11,
+                                                                    letterSpacing: 1.5,
+                                                                  ),
+                                                                ),
+                                                                const Spacer(),
+                                                                if (isPlaying.value)
+                                                                  Row(
+                                                                    children: [
+                                                                      Icon(Icons.graphic_eq_rounded, color: theme.colorScheme.primary, size: 18),
+                                                                    ],
+                                                                  ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                          
+                                                          // Divider
+                                                          Padding(
+                                                            padding: const EdgeInsets.symmetric(vertical: 12),
+                                                            child: Divider(height: 1, color: theme.dividerColor.withValues(alpha: 0.4), indent: 16, endIndent: 16),
+                                                          ),
+
+                                                          // Bottom Section: Player Controls
+                                                          Padding(
+                                                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                                                            child: Row(
+                                                              children: [
+                                                                // Giant Play Button
+                                                                GestureDetector(
+                                                                  onTap: () async {
+                                                                    if (isPlaying.value) {
+                                                                      await flutterTts.stop();
+                                                                      isPlaying.value = false;
+                                                                    } else {
+                                                                      isPlaying.value = true;
+                                                                      try {
+                                                                        String textToRead = story.description;
+                                                                        if (story.heading.isNotEmpty) {
+                                                                          textToRead = "${story.heading}. $textToRead";
+                                                                        }
+
+                                                                        await flutterTts.setVolume(1.0);
+                                                                        await flutterTts.setSpeechRate(0.5 * playbackSpeed.value);
+                                                                        await flutterTts.setPitch(1.0);
+                                                                        
+                                                                        if (selectedVoice.value != null) {
+                                                                          await flutterTts.setVoice(selectedVoice.value!);
+                                                                        }
+                                                                        
+                                                                        final List<String> chunks = [];
+                                                                        int start = 0;
+                                                                        while (start < textToRead.length) {
+                                                                          int end = start + 3000; 
+                                                                          if (end > textToRead.length) {
+                                                                            chunks.add(textToRead.substring(start));
+                                                                            break;
+                                                                          }
+                                                                          int lastSpace = textToRead.lastIndexOf(RegExp(r'\s'), end);
+                                                                          if (lastSpace <= start) lastSpace = end;
+                                                                          chunks.add(textToRead.substring(start, lastSpace));
+                                                                          start = lastSpace;
+                                                                        }
+
+                                                                        if (Theme.of(context).platform == TargetPlatform.android) {
+                                                                          await flutterTts.setQueueMode(1);
+                                                                        }
+                                                                        
+                                                                        for (var chunk in chunks) {
+                                                                          await flutterTts.speak(chunk);
+                                                                        }
+                                                                      } catch (e) {
+                                                                        isPlaying.value = false;
+                                                                        if (context.mounted) {
+                                                                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                                                                        }
+                                                                      }
+                                                                    }
+                                                                  },
+                                                                  child: AnimatedContainer(
+                                                                    duration: const Duration(milliseconds: 300),
+                                                                    width: 44,
+                                                                    height: 44,
+                                                                    decoration: BoxDecoration(
+                                                                      color: isPlaying.value ? theme.colorScheme.surface : theme.colorScheme.primary,
+                                                                      shape: BoxShape.circle,
+                                                                      border: isPlaying.value ? Border.all(color: theme.colorScheme.primary, width: 2) : null,
+                                                                    ),
+                                                                    child: Center(
+                                                                      child: Padding(
+                                                                        padding: EdgeInsets.only(left: isPlaying.value ? 0 : 2.0),
+                                                                        child: Icon(
+                                                                          isPlaying.value ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                                                                          color: isPlaying.value ? theme.colorScheme.primary : theme.colorScheme.onPrimary,
+                                                                          size: 24,
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                                const SizedBox(width: 16),
+                                                                Expanded(
+                                                                  child: Column(
+                                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                                    children: [
+                                                                      Text(
+                                                                        isPlaying.value ? 'Now Playing' : 'Listen to Story',
+                                                                        style: TextStyle(
+                                                                          fontWeight: FontWeight.bold,
+                                                                          fontSize: 16,
+                                                                          color: isPlaying.value ? theme.colorScheme.primary : theme.textTheme.titleMedium?.color,
+                                                                        ),
+                                                                      ),
+                                                                      const SizedBox(height: 2),
+                                                                      Text(
+                                                                        'Generated on device',
+                                                                        style: TextStyle(
+                                                                          fontSize: 12,
+                                                                          color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.7),
+                                                                        ),
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                ),
+                                                                // Speed Menu
+                                                                PopupMenuButton<double>(
+                                                                  tooltip: 'Playback Speed',
+                                                                  offset: const Offset(0, 40),
+                                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                                                  child: Container(
+                                                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                                                    decoration: BoxDecoration(
+                                                                      color: theme.colorScheme.surface,
+                                                                      borderRadius: BorderRadius.circular(12),
+                                                                      border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.3)),
+                                                                    ),
+                                                                    child: Row(
+                                                                      mainAxisSize: MainAxisSize.min,
+                                                                      children: [
+                                                                        Icon(Icons.speed_rounded, size: 14, color: theme.colorScheme.primary),
+                                                                        const SizedBox(width: 4),
+                                                                        Text(
+                                                                          '${playbackSpeed.value}x',
+                                                                          style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.bold, fontSize: 12),
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                  ),
+                                                                  onSelected: (val) async {
+                                                                    playbackSpeed.value = val;
+                                                                    if (isPlaying.value) {
+                                                                      await flutterTts.stop();
+                                                                      isPlaying.value = false;
+                                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                                        const SnackBar(content: Text('Speed changed. Tap play to resume.'), duration: Duration(seconds: 2))
+                                                                      );
+                                                                    }
+                                                                  },
+                                                                  itemBuilder: (context) => [
+                                                                    const PopupMenuItem(value: 0.8, child: Text('0.8x (Slower)')),
+                                                                    const PopupMenuItem(value: 1.0, child: Text('1.0x (Normal)')),
+                                                                    const PopupMenuItem(value: 1.2, child: Text('1.2x (Faster)')),
+                                                                    const PopupMenuItem(value: 1.5, child: Text('1.5x (Fastest)')),
+                                                                  ],
+                                                                ),
+                                                                const SizedBox(width: 8),
+                                                                // Voice Menu
+                                                                if (availableVoices.value.isNotEmpty)
+                                                                  PopupMenuButton<Map<String, String>>(
+                                                                    tooltip: 'Change Voice',
+                                                                    offset: const Offset(0, 40),
+                                                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                                                    child: Container(
+                                                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                                                      decoration: BoxDecoration(
+                                                                        color: theme.colorScheme.surface,
+                                                                        borderRadius: BorderRadius.circular(12),
+                                                                        border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.3)),
+                                                                      ),
+                                                                      child: Icon(Icons.record_voice_over_rounded, color: theme.colorScheme.primary, size: 16),
+                                                                    ),
+                                                                    onSelected: (val) async {
+                                                                      selectedVoice.value = val;
+                                                                      if (isPlaying.value) {
+                                                                        await flutterTts.stop();
+                                                                        isPlaying.value = false;
+                                                                        ScaffoldMessenger.of(context).showSnackBar(
+                                                                          const SnackBar(content: Text('Voice changed. Tap play to resume.'), duration: Duration(seconds: 2))
+                                                                        );
+                                                                      }
+                                                                    },
+                                                                    itemBuilder: (context) {
+                                                                      return availableVoices.value.map((v) {
+                                                                        final isSelected = selectedVoice.value == v || (selectedVoice.value == null && availableVoices.value.first == v);
+                                                                        final text = v["displayName"] ?? "Voice";
+                                                                        return PopupMenuItem(
+                                                                          value: v,
+                                                                          child: Text(
+                                                                            text,
+                                                                            style: TextStyle(
+                                                                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                                                              color: isSelected ? theme.colorScheme.primary : null,
+                                                                            ),
+                                                                          ),
+                                                                        );
+                                                                      }).toList();
+                                                                    },
+                                                                  ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 24),
+                                                  ],
+                                                  PostDisplayWidget(
+                                                    content: story.description,
+                                                  ),
+                                                ],
                                               ),
                                             ),
                                           ),
