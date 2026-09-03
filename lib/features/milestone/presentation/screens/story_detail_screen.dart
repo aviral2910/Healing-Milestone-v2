@@ -4,6 +4,7 @@ import '../providers/post_creation_state.dart';
 import 'package:healing_milestones/core/router/app_routes.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:healing_milestones/shared/widgets/app_avatar.dart';
 import '../../../../shared/widgets/app_loader.dart';
@@ -52,6 +53,8 @@ class StoryDetailScreen extends HookConsumerWidget {
     final flutterTts = useMemoized(() => FlutterTts());
     final isPlaying = useState(false);
     final playbackSpeed = useState<double>(1.0); // UI multiplier (1.0x = normal)
+    final playbackProgress = useState<double>(0.0);
+    final playbackTimer = useRef<Timer?>(null);
     final availableVoices = useState<List<Map<String, String>>>([]);
     final selectedVoice = useState<Map<String, String>?>(null);
 
@@ -61,8 +64,9 @@ class StoryDetailScreen extends HookConsumerWidget {
         try {
           if (systemVoices is List) {
             final List<Map<String, String>> engVoices = [];
-            final Set<String> seenLocales = {}; // Take only 1 voice per accent to avoid broken variations
-            
+            final Set<String> seenLocales =
+                {}; // Take only 1 voice per accent to avoid broken variations
+
             final Map<String, String> localeNames = {
               'en-us': 'American',
               'en-gb': 'British',
@@ -71,46 +75,48 @@ class StoryDetailScreen extends HookConsumerWidget {
               'en-za': 'South African',
               'en-ng': 'Nigerian',
               'en-ie': 'Irish',
-              'en-ca': 'Canadian'
+              'en-ca': 'Canadian',
             };
 
             for (var v in systemVoices) {
               if (v is Map) {
-                final locale = v["locale"]?.toString().replaceAll('_', '-') ?? "";
+                final locale =
+                    v["locale"]?.toString().replaceAll('_', '-') ?? "";
                 final name = v["name"]?.toString() ?? "";
                 final lowerLocale = locale.toLowerCase();
-                
+
                 if (lowerLocale.startsWith("en")) {
                   // Filter out "network" voices on Android which often fail to play
                   if (!name.toLowerCase().contains("network")) {
-                     // Only take one working offline voice per region
-                     if (!seenLocales.contains(lowerLocale)) {
-                       seenLocales.add(lowerLocale);
-                       
-                       String friendlyName = localeNames[lowerLocale] ?? 'English ($locale)';
-                       engVoices.add({
-                         "name": name, 
-                         "locale": locale,
-                         "displayName": "$friendlyName Accent"
-                       });
-                     }
+                    // Only take one working offline voice per region
+                    if (!seenLocales.contains(lowerLocale)) {
+                      seenLocales.add(lowerLocale);
+
+                      String friendlyName =
+                          localeNames[lowerLocale] ?? 'English ($locale)';
+                      engVoices.add({
+                        "name": name,
+                        "locale": locale,
+                        "displayName": "$friendlyName Accent",
+                      });
+                    }
                   }
                 }
               }
             }
-            
+
             final preferredOrder = [
               "American Accent",
               "British Accent",
               "Indian Accent",
               "Australian Accent",
-              "Nigerian Accent"
+              "Nigerian Accent",
             ];
-            
+
             engVoices.sort((a, b) {
               final indexA = preferredOrder.indexOf(a["displayName"] ?? "");
               final indexB = preferredOrder.indexOf(b["displayName"] ?? "");
-              
+
               if (indexA != -1 && indexB != -1) {
                 return indexA.compareTo(indexB);
               } else if (indexA != -1) {
@@ -118,12 +124,14 @@ class StoryDetailScreen extends HookConsumerWidget {
               } else if (indexB != -1) {
                 return 1;
               } else {
-                return (a["displayName"] ?? "").compareTo(b["displayName"] ?? "");
+                return (a["displayName"] ?? "").compareTo(
+                  b["displayName"] ?? "",
+                );
               }
             });
 
             // Limit to max 5 distinct accents
-            availableVoices.value = engVoices.take(5).toList(); 
+            availableVoices.value = engVoices.take(5).toList();
             if (availableVoices.value.isNotEmpty) {
               selectedVoice.value = availableVoices.value.firstWhere(
                 (v) => v["displayName"] == "American Accent",
@@ -138,28 +146,23 @@ class StoryDetailScreen extends HookConsumerWidget {
 
       // Configure TTS for cross-platform reliability
       flutterTts.setSharedInstance(true);
-      flutterTts.awaitSpeakCompletion(false); // Force false to prevent native plugin hangs
-      
-      // Override iOS silent switch so audio plays even if phone is on vibrate
-      flutterTts.setIosAudioCategory(
-        IosTextToSpeechAudioCategory.playback,
-        [
-          IosTextToSpeechAudioCategoryOptions.allowBluetooth,
-          IosTextToSpeechAudioCategoryOptions.allowBluetoothA2DP,
-          IosTextToSpeechAudioCategoryOptions.mixWithOthers,
-        ],
-      );
+      flutterTts.awaitSpeakCompletion(
+        false,
+      ); // Force false to prevent native plugin hangs
 
-      flutterTts.setCompletionHandler(() {
-        isPlaying.value = false;
-      });
-      flutterTts.setCancelHandler(() {
-        isPlaying.value = false;
-      });
-      flutterTts.setPauseHandler(() {
-        isPlaying.value = false;
-      });
+      // Override iOS silent switch so audio plays even if phone is on vibrate
+      flutterTts.setIosAudioCategory(IosTextToSpeechAudioCategory.playback, [
+        IosTextToSpeechAudioCategoryOptions.allowBluetooth,
+        IosTextToSpeechAudioCategoryOptions.allowBluetoothA2DP,
+        IosTextToSpeechAudioCategoryOptions.mixWithOthers,
+      ]);
+
+      // Overwrite any stale native handlers from previous hot reloads with no-ops
+      flutterTts.setCompletionHandler(() {});
+      flutterTts.setCancelHandler(() {});
+      flutterTts.setPauseHandler(() {});
       return () {
+        playbackTimer.value?.cancel();
         flutterTts.stop();
       };
     }, const []);
@@ -171,6 +174,79 @@ class StoryDetailScreen extends HookConsumerWidget {
       data: (story) {
         if (story == null) {
           return const Scaffold(body: Center(child: Text('Story not found')));
+        }
+        
+        Future<void> startPlaybackFrom(double progressPercentage) async {
+          await flutterTts.stop();
+          playbackTimer.value?.cancel();
+          isPlaying.value = true;
+          
+          try {
+            String fullText = story.description;
+            if (story.heading.isNotEmpty) fullText = "${story.heading}. $fullText";
+            
+            int cutIndex = (fullText.length * progressPercentage).toInt();
+            while (cutIndex > 0 && cutIndex < fullText.length && fullText[cutIndex] != ' ' && fullText[cutIndex] != '\n') {
+              cutIndex--;
+            }
+            String textToRead = fullText.substring(cutIndex);
+            
+            await flutterTts.setVolume(1.0);
+            await flutterTts.setSpeechRate(0.5 * playbackSpeed.value);
+            await flutterTts.setPitch(1.0);
+            
+            if (selectedVoice.value != null) {
+              await flutterTts.setVoice(selectedVoice.value!);
+            }
+            
+            final List<String> chunks = [];
+            int start = 0;
+            while (start < textToRead.length) {
+              int end = start + 3000;
+              if (end > textToRead.length) {
+                chunks.add(textToRead.substring(start));
+                break;
+              }
+              int lastSpace = textToRead.lastIndexOf(RegExp(r'\s'), end);
+              if (lastSpace <= start) lastSpace = end;
+              chunks.add(textToRead.substring(start, lastSpace));
+              start = lastSpace;
+            }
+            
+            if (Theme.of(context).platform == TargetPlatform.android) {
+              await flutterTts.setQueueMode(1);
+            }
+            
+            final totalWordCount = fullText.split(RegExp(r'\s+')).length;
+            final estimatedSeconds = (totalWordCount / (2.5 * playbackSpeed.value)).ceil();
+            
+            playbackProgress.value = progressPercentage;
+            playbackTimer.value = Timer.periodic(const Duration(seconds: 1), (timer) {
+              if (!isPlaying.value) {
+                timer.cancel();
+                return;
+              }
+              final increment = 1.0 / estimatedSeconds;
+              if (playbackProgress.value + increment >= 1.0) {
+                playbackProgress.value = 1.0;
+                timer.cancel();
+                isPlaying.value = false;
+              } else {
+                playbackProgress.value += increment;
+              }
+            });
+            
+            for (var chunk in chunks) {
+              await flutterTts.speak(chunk);
+            }
+          } catch (e) {
+            isPlaying.value = false;
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Error: $e')),
+              );
+            }
+          }
         }
 
         final userAsync = story.author != null
@@ -887,67 +963,150 @@ class StoryDetailScreen extends HookConsumerWidget {
                                                     horizontal: 8.0,
                                                   ),
                                               child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
                                                 children: [
                                                   // Read Aloud Button
-                                                  if (story.description.isNotEmpty) ...[
+                                                  if (story
+                                                      .description
+                                                      .isNotEmpty) ...[
                                                     AnimatedContainer(
-                                                      duration: const Duration(milliseconds: 500),
-                                                      curve: Curves.easeOutQuint,
+                                                      duration: const Duration(
+                                                        milliseconds: 500,
+                                                      ),
+                                                      curve:
+                                                          Curves.easeOutQuint,
                                                       width: double.infinity,
                                                       decoration: BoxDecoration(
-                                                        color: isPlaying.value 
-                                                          ? theme.colorScheme.primary.withValues(alpha: 0.08)
-                                                          : theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
-                                                        borderRadius: BorderRadius.circular(24),
+                                                        color: isPlaying.value
+                                                            ? theme
+                                                                  .colorScheme
+                                                                  .primary
+                                                                  .withValues(
+                                                                    alpha: 0.08,
+                                                                  )
+                                                            : theme
+                                                                  .colorScheme
+                                                                  .surfaceContainerHighest
+                                                                  .withValues(
+                                                                    alpha: 0.2,
+                                                                  ),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              24,
+                                                            ),
                                                         border: Border.all(
                                                           color: isPlaying.value
-                                                              ? theme.colorScheme.primary.withValues(alpha: 0.4)
-                                                              : theme.colorScheme.primary.withValues(alpha: 0.1),
-                                                          width: isPlaying.value ? 1.5 : 1.0,
+                                                              ? theme
+                                                                    .colorScheme
+                                                                    .primary
+                                                                    .withValues(
+                                                                      alpha:
+                                                                          0.4,
+                                                                    )
+                                                              : theme
+                                                                    .colorScheme
+                                                                    .primary
+                                                                    .withValues(
+                                                                      alpha:
+                                                                          0.1,
+                                                                    ),
+                                                          width: isPlaying.value
+                                                              ? 1.5
+                                                              : 1.0,
                                                         ),
-                                                        boxShadow: isPlaying.value
+                                                        boxShadow:
+                                                            isPlaying.value
                                                             ? [
                                                                 BoxShadow(
-                                                                  color: theme.colorScheme.primary.withValues(alpha: 0.15),
-                                                                  blurRadius: 20,
-                                                                  spreadRadius: 4,
-                                                                )
+                                                                  color: theme
+                                                                      .colorScheme
+                                                                      .primary
+                                                                      .withValues(
+                                                                        alpha:
+                                                                            0.15,
+                                                                      ),
+                                                                  blurRadius:
+                                                                      20,
+                                                                  spreadRadius:
+                                                                      4,
+                                                                ),
                                                               ]
                                                             : [],
                                                       ),
                                                       child: Column(
-                                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
                                                         children: [
                                                           // Top Section: Label
                                                           Padding(
-                                                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                                                            padding:
+                                                                const EdgeInsets.fromLTRB(
+                                                                  16,
+                                                                  16,
+                                                                  16,
+                                                                  0,
+                                                                ),
                                                             child: Row(
                                                               children: [
-                                                                Icon(Icons.headphones_rounded, color: theme.colorScheme.primary, size: 18),
-                                                                const SizedBox(width: 8),
+                                                                Icon(
+                                                                  Icons
+                                                                      .headphones_rounded,
+                                                                  color: theme
+                                                                      .colorScheme
+                                                                      .primary,
+                                                                  size: 18,
+                                                                ),
+                                                                const SizedBox(
+                                                                  width: 8,
+                                                                ),
                                                                 Text(
                                                                   'AUDIO STORY',
                                                                   style: TextStyle(
-                                                                    color: theme.colorScheme.primary,
-                                                                    fontWeight: FontWeight.w800,
-                                                                    fontSize: 11,
-                                                                    letterSpacing: 1.5,
+                                                                    color: theme
+                                                                        .colorScheme
+                                                                        .primary,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w800,
+                                                                    fontSize:
+                                                                        11,
+                                                                    letterSpacing:
+                                                                        1.5,
                                                                   ),
                                                                 ),
                                                               ],
                                                             ),
                                                           ),
-                                                          
+
                                                           // Divider
                                                           Padding(
-                                                            padding: const EdgeInsets.symmetric(vertical: 12),
-                                                            child: Divider(height: 1, color: theme.dividerColor.withValues(alpha: 0.4), indent: 16, endIndent: 16),
+                                                            padding:
+                                                                const EdgeInsets.symmetric(
+                                                                  vertical: 12,
+                                                                ),
+                                                            child: Divider(
+                                                              height: 1,
+                                                              color: theme
+                                                                  .dividerColor
+                                                                  .withValues(
+                                                                    alpha: 0.4,
+                                                                  ),
+                                                              indent: 16,
+                                                              endIndent: 16,
+                                                            ),
                                                           ),
 
                                                           // Bottom Section: Player Controls
                                                           Padding(
-                                                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                                                            padding:
+                                                                const EdgeInsets.fromLTRB(
+                                                                  16,
+                                                                  0,
+                                                                  16,
+                                                                  16,
+                                                                ),
                                                             child: Row(
                                                               children: [
                                                                 // Giant Play Button
@@ -956,163 +1115,373 @@ class StoryDetailScreen extends HookConsumerWidget {
                                                                     if (isPlaying.value) {
                                                                       await flutterTts.stop();
                                                                       isPlaying.value = false;
+                                                                      playbackTimer.value?.cancel();
                                                                     } else {
-                                                                      isPlaying.value = true;
-                                                                      try {
-                                                                        String textToRead = story.description;
-                                                                        if (story.heading.isNotEmpty) {
-                                                                          textToRead = "${story.heading}. $textToRead";
-                                                                        }
-
-                                                                        await flutterTts.setVolume(1.0);
-                                                                        await flutterTts.setSpeechRate(0.5 * playbackSpeed.value);
-                                                                        await flutterTts.setPitch(1.0);
-                                                                        
-                                                                        if (selectedVoice.value != null) {
-                                                                          await flutterTts.setVoice(selectedVoice.value!);
-                                                                        }
-                                                                        
-                                                                        final List<String> chunks = [];
-                                                                        int start = 0;
-                                                                        while (start < textToRead.length) {
-                                                                          int end = start + 3000; 
-                                                                          if (end > textToRead.length) {
-                                                                            chunks.add(textToRead.substring(start));
-                                                                            break;
-                                                                          }
-                                                                          int lastSpace = textToRead.lastIndexOf(RegExp(r'\s'), end);
-                                                                          if (lastSpace <= start) lastSpace = end;
-                                                                          chunks.add(textToRead.substring(start, lastSpace));
-                                                                          start = lastSpace;
-                                                                        }
-
-                                                                        if (Theme.of(context).platform == TargetPlatform.android) {
-                                                                          await flutterTts.setQueueMode(1);
-                                                                        }
-                                                                        
-                                                                        for (var chunk in chunks) {
-                                                                          await flutterTts.speak(chunk);
-                                                                        }
-                                                                      } catch (e) {
-                                                                        isPlaying.value = false;
-                                                                        if (context.mounted) {
-                                                                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
-                                                                        }
+                                                                      if (playbackProgress.value >= 1.0) {
+                                                                        playbackProgress.value = 0.0;
                                                                       }
+                                                                      startPlaybackFrom(playbackProgress.value);
                                                                     }
                                                                   },
                                                                   child: AnimatedContainer(
-                                                                    duration: const Duration(milliseconds: 300),
+                                                                    duration: const Duration(
+                                                                      milliseconds:
+                                                                          300,
+                                                                    ),
                                                                     width: 44,
                                                                     height: 44,
                                                                     decoration: BoxDecoration(
-                                                                      color: isPlaying.value ? theme.colorScheme.surface : theme.colorScheme.primary,
-                                                                      shape: BoxShape.circle,
-                                                                      border: isPlaying.value ? Border.all(color: theme.colorScheme.primary, width: 2) : null,
+                                                                      color:
+                                                                          isPlaying
+                                                                              .value
+                                                                          ? theme.colorScheme.surface
+                                                                          : theme.colorScheme.primary,
+                                                                      shape: BoxShape
+                                                                          .circle,
+                                                                      border:
+                                                                          isPlaying
+                                                                              .value
+                                                                          ? Border.all(
+                                                                              color: theme.colorScheme.primary,
+                                                                              width: 2,
+                                                                            )
+                                                                          : null,
                                                                     ),
                                                                     child: Center(
                                                                       child: Padding(
-                                                                        padding: EdgeInsets.only(left: isPlaying.value ? 0 : 2.0),
+                                                                        padding: EdgeInsets.only(
+                                                                          left:
+                                                                              isPlaying.value
+                                                                              ? 0
+                                                                              : 2.0,
+                                                                        ),
                                                                         child: Icon(
-                                                                          isPlaying.value ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                                                                          color: isPlaying.value ? theme.colorScheme.primary : theme.colorScheme.onPrimary,
-                                                                          size: 24,
+                                                                          isPlaying.value
+                                                                              ? Icons.pause_rounded
+                                                                              : Icons.play_arrow_rounded,
+                                                                          color:
+                                                                              isPlaying.value
+                                                                              ? theme.colorScheme.primary
+                                                                              : theme.colorScheme.onPrimary,
+                                                                          size:
+                                                                              24,
                                                                         ),
                                                                       ),
                                                                     ),
                                                                   ),
                                                                 ),
-                                                                const SizedBox(width: 16),
+                                                                const SizedBox(
+                                                                  width: 16,
+                                                                ),
                                                                 Expanded(
                                                                   child: Padding(
                                                                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                                                                    child: AudioVisualizer(
-                                                                      isPlaying: isPlaying.value,
-                                                                      color: theme.colorScheme.primary,
-                                                                      barCount: 20,
+                                                                    child: Column(
+                                                                      mainAxisSize: MainAxisSize.min,
+                                                                      children: [
+                                                                        AudioVisualizer(
+                                                                          isPlaying: isPlaying.value,
+                                                                          color: theme.colorScheme.primary,
+                                                                          barCount: 20,
+                                                                        ),
+                                                                          const SizedBox(height: 6),
+                                                                          Row(
+                                                                            children: [
+                                                                              Expanded(
+                                                                                child: SliderTheme(
+                                                                                  data: SliderTheme.of(context).copyWith(
+                                                                                    trackHeight: 2,
+                                                                                    thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                                                                                    overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
+                                                                                    activeTrackColor: theme.colorScheme.primary,
+                                                                                    inactiveTrackColor: theme.colorScheme.primary.withValues(alpha: 0.1),
+                                                                                    thumbColor: theme.colorScheme.primary,
+                                                                                  ),
+                                                                                  child: Slider(
+                                                                                    value: playbackProgress.value,
+                                                                                    onChanged: (val) {
+                                                                                      playbackTimer.value?.cancel();
+                                                                                      playbackProgress.value = val;
+                                                                                    },
+                                                                                    onChangeEnd: (val) {
+                                                                                      if (isPlaying.value) {
+                                                                                        startPlaybackFrom(val);
+                                                                                      }
+                                                                                    },
+                                                                                  ),
+                                                                                ),
+                                                                              ),
+                                                                              const SizedBox(width: 8),
+                                                                              Text(
+                                                                                '${(playbackProgress.value * 100).toInt()}%',
+                                                                                style: TextStyle(
+                                                                                  fontSize: 10,
+                                                                                  fontWeight: FontWeight.bold,
+                                                                                  color: theme.colorScheme.primary,
+                                                                                ),
+                                                                              ),
+                                                                            ],
+                                                                          ),
+                                                                      ],
                                                                     ),
                                                                   ),
                                                                 ),
                                                                 // Speed Menu
-                                                                PopupMenuButton<double>(
-                                                                  tooltip: 'Playback Speed',
-                                                                  offset: const Offset(0, 40),
-                                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                                                PopupMenuButton<
+                                                                  double
+                                                                >(
+                                                                  tooltip:
+                                                                      'Playback Speed',
+                                                                  offset:
+                                                                      const Offset(
+                                                                        0,
+                                                                        40,
+                                                                      ),
+                                                                  shape: RoundedRectangleBorder(
+                                                                    borderRadius:
+                                                                        BorderRadius.circular(
+                                                                          16,
+                                                                        ),
+                                                                  ),
                                                                   child: Container(
-                                                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                                                    padding: const EdgeInsets.symmetric(
+                                                                      horizontal:
+                                                                          10,
+                                                                      vertical:
+                                                                          6,
+                                                                    ),
                                                                     decoration: BoxDecoration(
-                                                                      color: theme.colorScheme.surface,
-                                                                      borderRadius: BorderRadius.circular(12),
-                                                                      border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.3)),
+                                                                      color: theme
+                                                                          .colorScheme
+                                                                          .surface,
+                                                                      borderRadius:
+                                                                          BorderRadius.circular(
+                                                                            12,
+                                                                          ),
+                                                                      border: Border.all(
+                                                                        color: theme
+                                                                            .colorScheme
+                                                                            .primary
+                                                                            .withValues(
+                                                                              alpha: 0.3,
+                                                                            ),
+                                                                      ),
                                                                     ),
                                                                     child: Row(
-                                                                      mainAxisSize: MainAxisSize.min,
+                                                                      mainAxisSize:
+                                                                          MainAxisSize
+                                                                              .min,
                                                                       children: [
-                                                                        Icon(Icons.speed_rounded, size: 14, color: theme.colorScheme.primary),
-                                                                        const SizedBox(width: 4),
+                                                                        Icon(
+                                                                          Icons
+                                                                              .speed_rounded,
+                                                                          size:
+                                                                              14,
+                                                                          color: theme
+                                                                              .colorScheme
+                                                                              .primary,
+                                                                        ),
+                                                                        const SizedBox(
+                                                                          width:
+                                                                              4,
+                                                                        ),
                                                                         Text(
                                                                           '${playbackSpeed.value}x',
-                                                                          style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.bold, fontSize: 12),
+                                                                          style: TextStyle(
+                                                                            color:
+                                                                                theme.colorScheme.primary,
+                                                                            fontWeight:
+                                                                                FontWeight.bold,
+                                                                            fontSize:
+                                                                                12,
+                                                                          ),
                                                                         ),
                                                                       ],
                                                                     ),
                                                                   ),
                                                                   onSelected: (val) async {
-                                                                    playbackSpeed.value = val;
-                                                                    if (isPlaying.value) {
-                                                                      await flutterTts.stop();
-                                                                      isPlaying.value = false;
-                                                                      ScaffoldMessenger.of(context).showSnackBar(
-                                                                        const SnackBar(content: Text('Speed changed. Tap play to resume.'), duration: Duration(seconds: 2))
+                                                                    playbackSpeed
+                                                                            .value =
+                                                                        val;
+                                                                    if (isPlaying
+                                                                        .value) {
+                                                                      await flutterTts
+                                                                          .stop();
+                                                                      isPlaying
+                                                                              .value =
+                                                                          false;
+                                                                      playbackTimer.value?.cancel();
+                                                                      ScaffoldMessenger.of(
+                                                                        context,
+                                                                      ).showSnackBar(
+                                                                        const SnackBar(
+                                                                          content: Text(
+                                                                            'Speed changed. Tap play to resume.',
+                                                                          ),
+                                                                          duration: Duration(
+                                                                            seconds:
+                                                                                2,
+                                                                          ),
+                                                                        ),
                                                                       );
                                                                     }
                                                                   },
                                                                   itemBuilder: (context) => [
-                                                                    const PopupMenuItem(value: 0.8, child: Text('0.8x (Slower)')),
-                                                                    const PopupMenuItem(value: 1.0, child: Text('1.0x (Normal)')),
-                                                                    const PopupMenuItem(value: 1.2, child: Text('1.2x')),
-                                                                    const PopupMenuItem(value: 1.5, child: Text('1.5x')),
-                                                                    const PopupMenuItem(value: 1.75, child: Text('1.75x')),
-                                                                    const PopupMenuItem(value: 2.0, child: Text('2.0x (Fastest)')),
+                                                                    const PopupMenuItem(
+                                                                      value:
+                                                                          0.8,
+                                                                      child: Text(
+                                                                        '0.8x (Slower)',
+                                                                      ),
+                                                                    ),
+                                                                    const PopupMenuItem(
+                                                                      value:
+                                                                          1.0,
+                                                                      child: Text(
+                                                                        '1.0x (Normal)',
+                                                                      ),
+                                                                    ),
+                                                                    const PopupMenuItem(
+                                                                      value:
+                                                                          1.2,
+                                                                      child: Text(
+                                                                        '1.2x',
+                                                                      ),
+                                                                    ),
+                                                                    const PopupMenuItem(
+                                                                      value:
+                                                                          1.5,
+                                                                      child: Text(
+                                                                        '1.5x',
+                                                                      ),
+                                                                    ),
+                                                                    const PopupMenuItem(
+                                                                      value:
+                                                                          1.75,
+                                                                      child: Text(
+                                                                        '1.75x',
+                                                                      ),
+                                                                    ),
+                                                                    const PopupMenuItem(
+                                                                      value:
+                                                                          2.0,
+                                                                      child: Text(
+                                                                        '2.0x (Fastest)',
+                                                                      ),
+                                                                    ),
                                                                   ],
                                                                 ),
-                                                                const SizedBox(width: 8),
+                                                                const SizedBox(
+                                                                  width: 8,
+                                                                ),
                                                                 // Voice Menu
-                                                                if (availableVoices.value.isNotEmpty)
-                                                                  PopupMenuButton<Map<String, String>>(
-                                                                    tooltip: 'Change Voice',
-                                                                    offset: const Offset(0, 40),
-                                                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                                                if (availableVoices
+                                                                    .value
+                                                                    .isNotEmpty)
+                                                                  PopupMenuButton<
+                                                                    Map<
+                                                                      String,
+                                                                      String
+                                                                    >
+                                                                  >(
+                                                                    tooltip:
+                                                                        'Change Voice',
+                                                                    offset:
+                                                                        const Offset(
+                                                                          0,
+                                                                          40,
+                                                                        ),
+                                                                    shape: RoundedRectangleBorder(
+                                                                      borderRadius:
+                                                                          BorderRadius.circular(
+                                                                            16,
+                                                                          ),
+                                                                    ),
                                                                     child: Container(
-                                                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                                                      decoration: BoxDecoration(
-                                                                        color: theme.colorScheme.surface,
-                                                                        borderRadius: BorderRadius.circular(12),
-                                                                        border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.3)),
+                                                                      padding: const EdgeInsets.symmetric(
+                                                                        horizontal:
+                                                                            10,
+                                                                        vertical:
+                                                                            6,
                                                                       ),
-                                                                      child: Icon(Icons.record_voice_over_rounded, color: theme.colorScheme.primary, size: 16),
+                                                                      decoration: BoxDecoration(
+                                                                        color: theme
+                                                                            .colorScheme
+                                                                            .surface,
+                                                                        borderRadius:
+                                                                            BorderRadius.circular(
+                                                                              12,
+                                                                            ),
+                                                                        border: Border.all(
+                                                                          color: theme
+                                                                              .colorScheme
+                                                                              .primary
+                                                                              .withValues(
+                                                                                alpha: 0.3,
+                                                                              ),
+                                                                        ),
+                                                                      ),
+                                                                      child: Icon(
+                                                                        Icons
+                                                                            .record_voice_over_rounded,
+                                                                        color: theme
+                                                                            .colorScheme
+                                                                            .primary,
+                                                                        size:
+                                                                            16,
+                                                                      ),
                                                                     ),
                                                                     onSelected: (val) async {
-                                                                      selectedVoice.value = val;
-                                                                      if (isPlaying.value) {
-                                                                        await flutterTts.stop();
-                                                                        isPlaying.value = false;
-                                                                        ScaffoldMessenger.of(context).showSnackBar(
-                                                                          const SnackBar(content: Text('Voice changed. Tap play to resume.'), duration: Duration(seconds: 2))
+                                                                      selectedVoice
+                                                                              .value =
+                                                                          val;
+                                                                      if (isPlaying
+                                                                          .value) {
+                                                                        await flutterTts
+                                                                            .stop();
+                                                                        isPlaying.value =
+                                                                            false;
+                                                                        playbackTimer.value?.cancel();
+                                                                        ScaffoldMessenger.of(
+                                                                          context,
+                                                                        ).showSnackBar(
+                                                                          const SnackBar(
+                                                                            content: Text(
+                                                                              'Voice changed. Tap play to resume.',
+                                                                            ),
+                                                                            duration: Duration(
+                                                                              seconds: 2,
+                                                                            ),
+                                                                          ),
                                                                         );
                                                                       }
                                                                     },
                                                                     itemBuilder: (context) {
-                                                                      return availableVoices.value.map((v) {
-                                                                        final isSelected = selectedVoice.value == v || (selectedVoice.value == null && availableVoices.value.first == v);
-                                                                        final text = v["displayName"] ?? "Voice";
+                                                                      return availableVoices.value.map((
+                                                                        v,
+                                                                      ) {
+                                                                        final isSelected =
+                                                                            selectedVoice.value ==
+                                                                                v ||
+                                                                            (selectedVoice.value ==
+                                                                                    null &&
+                                                                                availableVoices.value.first ==
+                                                                                    v);
+                                                                        final text =
+                                                                            v["displayName"] ??
+                                                                            "Voice";
                                                                         return PopupMenuItem(
-                                                                          value: v,
+                                                                          value:
+                                                                              v,
                                                                           child: Text(
                                                                             text,
                                                                             style: TextStyle(
-                                                                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                                                                              color: isSelected ? theme.colorScheme.primary : null,
+                                                                              fontWeight: isSelected
+                                                                                  ? FontWeight.bold
+                                                                                  : FontWeight.normal,
+                                                                              color: isSelected
+                                                                                  ? theme.colorScheme.primary
+                                                                                  : null,
                                                                             ),
                                                                           ),
                                                                         );
@@ -1403,15 +1772,47 @@ class AudioVisualizer extends StatefulWidget {
   State<AudioVisualizer> createState() => _AudioVisualizerState();
 }
 
-class _AudioVisualizerState extends State<AudioVisualizer> with TickerProviderStateMixin {
+class _AudioVisualizerState extends State<AudioVisualizer>
+    with TickerProviderStateMixin {
   late List<AnimationController> _controllers;
   late List<Animation<double>> _animations;
 
   @override
   void initState() {
     super.initState();
-    final heights = [14.0, 22.0, 10.0, 30.0, 18.0, 25.0, 12.0, 20.0, 28.0, 16.0, 35.0, 18.0, 24.0, 14.0, 22.0, 12.0, 28.0, 15.0, 32.0, 20.0, 10.0, 26.0, 14.0, 18.0, 22.0, 30.0, 16.0, 24.0, 12.0, 20.0];
-    
+    final heights = [
+      14.0,
+      22.0,
+      10.0,
+      30.0,
+      18.0,
+      25.0,
+      12.0,
+      20.0,
+      28.0,
+      16.0,
+      35.0,
+      18.0,
+      24.0,
+      14.0,
+      22.0,
+      12.0,
+      28.0,
+      15.0,
+      32.0,
+      20.0,
+      10.0,
+      26.0,
+      14.0,
+      18.0,
+      22.0,
+      30.0,
+      16.0,
+      24.0,
+      12.0,
+      20.0,
+    ];
+
     _controllers = List.generate(
       widget.barCount,
       (index) => AnimationController(
@@ -1419,15 +1820,18 @@ class _AudioVisualizerState extends State<AudioVisualizer> with TickerProviderSt
         vsync: this,
       ),
     );
-    
+
     _animations = List.generate(widget.barCount, (index) {
-      return Tween<double>(begin: 3.0, end: heights[index % heights.length]).animate(
+      return Tween<double>(
+        begin: 3.0,
+        end: heights[index % heights.length],
+      ).animate(
         CurvedAnimation(parent: _controllers[index], curve: Curves.easeInOut),
       );
     });
 
     if (widget.isPlaying) {
-       for (var c in _controllers) c.repeat(reverse: true);
+      for (var c in _controllers) c.repeat(reverse: true);
     }
   }
 
@@ -1436,9 +1840,10 @@ class _AudioVisualizerState extends State<AudioVisualizer> with TickerProviderSt
     super.didUpdateWidget(oldWidget);
     if (widget.isPlaying != oldWidget.isPlaying) {
       if (widget.isPlaying) {
-         for (var c in _controllers) c.repeat(reverse: true);
+        for (var c in _controllers) c.repeat(reverse: true);
       } else {
-         for (var c in _controllers) c.animateTo(0, duration: const Duration(milliseconds: 300));
+        for (var c in _controllers)
+          c.animateTo(0, duration: const Duration(milliseconds: 300));
       }
     }
   }
@@ -1466,7 +1871,9 @@ class _AudioVisualizerState extends State<AudioVisualizer> with TickerProviderSt
                 width: 3,
                 height: widget.isPlaying ? _animations[index].value : 3.0,
                 decoration: BoxDecoration(
-                  color: widget.color.withValues(alpha: widget.isPlaying ? 0.8 : 0.2),
+                  color: widget.color.withValues(
+                    alpha: widget.isPlaying ? 0.8 : 0.2,
+                  ),
                   borderRadius: BorderRadius.circular(1.5),
                 ),
               );
