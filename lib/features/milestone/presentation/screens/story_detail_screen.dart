@@ -1035,78 +1035,129 @@ class StoryDetailScreen extends HookConsumerWidget {
                                                             : [],
                                                       ),
                                                       child: Column(
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .start,
+                                                        crossAxisAlignment: CrossAxisAlignment.stretch,
                                                         children: [
-                                                          // Top Section: Label
+                                                          // Top Section: Label & Menus
                                                           Padding(
-                                                            padding:
-                                                                const EdgeInsets.fromLTRB(
-                                                                  16,
-                                                                  16,
-                                                                  16,
-                                                                  0,
-                                                                ),
+                                                            padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
                                                             child: Row(
                                                               children: [
                                                                 Icon(
-                                                                  Icons
-                                                                      .headphones_rounded,
-                                                                  color: theme
-                                                                      .colorScheme
-                                                                      .primary,
-                                                                  size: 18,
+                                                                  Icons.headphones_rounded,
+                                                                  size: 20,
+                                                                  color: theme.colorScheme.primary,
                                                                 ),
-                                                                const SizedBox(
-                                                                  width: 8,
-                                                                ),
+                                                                const SizedBox(width: 8),
                                                                 Text(
                                                                   'AUDIO STORY',
                                                                   style: TextStyle(
-                                                                    color: theme
-                                                                        .colorScheme
-                                                                        .primary,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w800,
-                                                                    fontSize:
-                                                                        11,
-                                                                    letterSpacing:
-                                                                        1.5,
+                                                                    color: theme.colorScheme.primary,
+                                                                    fontWeight: FontWeight.w800,
+                                                                    fontSize: 11,
+                                                                    letterSpacing: 1.5,
                                                                   ),
                                                                 ),
+                                                                const Spacer(),
+                                                                // Speed Menu
+                                                                PopupMenuButton<double>(
+                                                                  tooltip: 'Playback Speed',
+                                                                  offset: const Offset(0, 30),
+                                                                  child: Container(
+                                                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                                                    decoration: BoxDecoration(
+                                                                      color: theme.colorScheme.surface,
+                                                                      borderRadius: BorderRadius.circular(12),
+                                                                      border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.2)),
+                                                                    ),
+                                                                    child: Row(
+                                                                      children: [
+                                                                        Icon(Icons.speed_rounded, size: 14, color: theme.colorScheme.primary),
+                                                                        const SizedBox(width: 4),
+                                                                        Text(
+                                                                          '${playbackSpeed.value}x',
+                                                                          style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.bold, fontSize: 12),
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                  ),
+                                                                  onSelected: (val) async {
+                                                                    playbackSpeed.value = val;
+                                                                    if (isPlaying.value) {
+                                                                      await flutterTts.stop();
+                                                                      isPlaying.value = false;
+                                                                      playbackTimer.value?.cancel();
+                                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                                        const SnackBar(content: Text('Speed changed. Tap play to resume.'), duration: Duration(seconds: 2)),
+                                                                      );
+                                                                    }
+                                                                  },
+                                                                  itemBuilder: (context) => [
+                                                                    const PopupMenuItem(value: 0.8, child: Text('0.8x (Slower)')),
+                                                                    const PopupMenuItem(value: 1.0, child: Text('1.0x (Normal)')),
+                                                                    const PopupMenuItem(value: 1.2, child: Text('1.2x')),
+                                                                    const PopupMenuItem(value: 1.5, child: Text('1.5x')),
+                                                                    const PopupMenuItem(value: 1.75, child: Text('1.75x')),
+                                                                    const PopupMenuItem(value: 2.0, child: Text('2.0x (Fastest)')),
+                                                                  ],
+                                                                ),
+                                                                const SizedBox(width: 8),
+                                                                // Voice Menu
+                                                                if (availableVoices.value.isNotEmpty)
+                                                                  PopupMenuButton<Map<String, String>>(
+                                                                    tooltip: 'Change Voice',
+                                                                    offset: const Offset(0, 30),
+                                                                    child: Container(
+                                                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                                                      decoration: BoxDecoration(
+                                                                        color: theme.colorScheme.surface,
+                                                                        borderRadius: BorderRadius.circular(12),
+                                                                        border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.2)),
+                                                                      ),
+                                                                      child: Row(
+                                                                        children: [
+                                                                          Icon(Icons.record_voice_over_rounded, size: 14, color: theme.colorScheme.primary),
+                                                                          const SizedBox(width: 2),
+                                                                          Icon(Icons.arrow_drop_down_rounded, size: 16, color: theme.colorScheme.primary),
+                                                                        ],
+                                                                      ),
+                                                                    ),
+                                                                    onSelected: (val) async {
+                                                                      selectedVoice.value = val;
+                                                                      if (isPlaying.value) {
+                                                                        await flutterTts.stop();
+                                                                        isPlaying.value = false;
+                                                                        playbackTimer.value?.cancel();
+                                                                        ScaffoldMessenger.of(context).showSnackBar(
+                                                                          const SnackBar(content: Text('Voice changed. Tap play to resume.'), duration: Duration(seconds: 2)),
+                                                                        );
+                                                                      }
+                                                                    },
+                                                                    itemBuilder: (context) {
+                                                                      return availableVoices.value.map((v) {
+                                                                        final isSelected = selectedVoice.value == v || (selectedVoice.value == null && availableVoices.value.first == v);
+                                                                        final text = v["displayName"] ?? "Voice";
+                                                                        return PopupMenuItem(
+                                                                          value: v,
+                                                                          child: Text(text, style: TextStyle(fontWeight: isSelected ? FontWeight.bold : FontWeight.normal, color: isSelected ? theme.colorScheme.primary : null)),
+                                                                        );
+                                                                      }).toList();
+                                                                    },
+                                                                  ),
                                                               ],
                                                             ),
                                                           ),
 
                                                           // Divider
-                                                          Padding(
-                                                            padding:
-                                                                const EdgeInsets.symmetric(
-                                                                  vertical: 12,
-                                                                ),
-                                                            child: Divider(
-                                                              height: 1,
-                                                              color: theme
-                                                                  .dividerColor
-                                                                  .withValues(
-                                                                    alpha: 0.4,
-                                                                  ),
-                                                              indent: 16,
-                                                              endIndent: 16,
-                                                            ),
+                                                          Divider(
+                                                            height: 1,
+                                                            color: theme.dividerColor.withValues(alpha: 0.2),
+                                                            indent: 16,
+                                                            endIndent: 16,
                                                           ),
 
                                                           // Bottom Section: Player Controls
                                                           Padding(
-                                                            padding:
-                                                                const EdgeInsets.fromLTRB(
-                                                                  16,
-                                                                  0,
-                                                                  16,
-                                                                  16,
-                                                                ),
+                                                            padding: const EdgeInsets.all(16),
                                                             child: Row(
                                                               children: [
                                                                 // Giant Play Button
@@ -1124,370 +1175,78 @@ class StoryDetailScreen extends HookConsumerWidget {
                                                                     }
                                                                   },
                                                                   child: AnimatedContainer(
-                                                                    duration: const Duration(
-                                                                      milliseconds:
-                                                                          300,
-                                                                    ),
-                                                                    width: 44,
-                                                                    height: 44,
+                                                                    duration: const Duration(milliseconds: 300),
+                                                                    width: 48,
+                                                                    height: 48,
                                                                     decoration: BoxDecoration(
-                                                                      color:
-                                                                          isPlaying
-                                                                              .value
-                                                                          ? theme.colorScheme.surface
-                                                                          : theme.colorScheme.primary,
-                                                                      shape: BoxShape
-                                                                          .circle,
-                                                                      border:
-                                                                          isPlaying
-                                                                              .value
-                                                                          ? Border.all(
-                                                                              color: theme.colorScheme.primary,
-                                                                              width: 2,
-                                                                            )
-                                                                          : null,
+                                                                      color: isPlaying.value ? theme.colorScheme.surface : theme.colorScheme.primary,
+                                                                      shape: BoxShape.circle,
+                                                                      border: isPlaying.value ? Border.all(color: theme.colorScheme.primary, width: 2) : null,
                                                                     ),
                                                                     child: Center(
                                                                       child: Padding(
-                                                                        padding: EdgeInsets.only(
-                                                                          left:
-                                                                              isPlaying.value
-                                                                              ? 0
-                                                                              : 2.0,
-                                                                        ),
+                                                                        padding: EdgeInsets.only(left: isPlaying.value ? 0 : 2.0),
                                                                         child: Icon(
-                                                                          isPlaying.value
-                                                                              ? Icons.pause_rounded
-                                                                              : Icons.play_arrow_rounded,
-                                                                          color:
-                                                                              isPlaying.value
-                                                                              ? theme.colorScheme.primary
-                                                                              : theme.colorScheme.onPrimary,
-                                                                          size:
-                                                                              24,
+                                                                          isPlaying.value ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                                                                          color: isPlaying.value ? theme.colorScheme.primary : theme.colorScheme.onPrimary,
+                                                                          size: 28,
                                                                         ),
                                                                       ),
                                                                     ),
                                                                   ),
                                                                 ),
-                                                                const SizedBox(
-                                                                  width: 16,
-                                                                ),
+                                                                const SizedBox(width: 16),
+                                                                // Visualizer and Slider Stack
                                                                 Expanded(
-                                                                  child: Padding(
-                                                                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                                                                    child: Column(
-                                                                      mainAxisSize: MainAxisSize.min,
-                                                                      children: [
-                                                                        AudioVisualizer(
-                                                                          isPlaying: isPlaying.value,
-                                                                          color: theme.colorScheme.primary,
-                                                                          barCount: 20,
-                                                                        ),
-                                                                          const SizedBox(height: 6),
-                                                                          Row(
-                                                                            children: [
-                                                                              Expanded(
-                                                                                child: SliderTheme(
-                                                                                  data: SliderTheme.of(context).copyWith(
-                                                                                    trackHeight: 2,
-                                                                                    thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-                                                                                    overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
-                                                                                    activeTrackColor: theme.colorScheme.primary,
-                                                                                    inactiveTrackColor: theme.colorScheme.primary.withValues(alpha: 0.1),
-                                                                                    thumbColor: theme.colorScheme.primary,
-                                                                                  ),
-                                                                                  child: Slider(
-                                                                                    value: playbackProgress.value,
-                                                                                    onChanged: (val) {
-                                                                                      playbackTimer.value?.cancel();
-                                                                                      playbackProgress.value = val;
-                                                                                    },
-                                                                                    onChangeEnd: (val) {
-                                                                                      if (isPlaying.value) {
-                                                                                        startPlaybackFrom(val);
-                                                                                      }
-                                                                                    },
-                                                                                  ),
-                                                                                ),
+                                                                  child: Column(
+                                                                    mainAxisSize: MainAxisSize.min,
+                                                                    children: [
+                                                                      AudioVisualizer(
+                                                                        isPlaying: isPlaying.value,
+                                                                        color: theme.colorScheme.primary,
+                                                                        barCount: 24,
+                                                                      ),
+                                                                      const SizedBox(height: 6),
+                                                                      Row(
+                                                                        children: [
+                                                                          Expanded(
+                                                                            child: SliderTheme(
+                                                                              data: SliderTheme.of(context).copyWith(
+                                                                                trackHeight: 2,
+                                                                                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                                                                                overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
+                                                                                activeTrackColor: theme.colorScheme.primary,
+                                                                                inactiveTrackColor: theme.colorScheme.primary.withValues(alpha: 0.1),
+                                                                                thumbColor: theme.colorScheme.primary,
                                                                               ),
-                                                                              const SizedBox(width: 8),
-                                                                              Text(
-                                                                                '${(playbackProgress.value * 100).toInt()}%',
-                                                                                style: TextStyle(
-                                                                                  fontSize: 10,
-                                                                                  fontWeight: FontWeight.bold,
-                                                                                  color: theme.colorScheme.primary,
-                                                                                ),
+                                                                              child: Slider(
+                                                                                value: playbackProgress.value,
+                                                                                onChanged: (val) {
+                                                                                  playbackTimer.value?.cancel();
+                                                                                  playbackProgress.value = val;
+                                                                                },
+                                                                                onChangeEnd: (val) {
+                                                                                  if (isPlaying.value) {
+                                                                                    startPlaybackFrom(val);
+                                                                                  }
+                                                                                },
                                                                               ),
-                                                                            ],
-                                                                          ),
-                                                                      ],
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                                // Speed Menu
-                                                                PopupMenuButton<
-                                                                  double
-                                                                >(
-                                                                  tooltip:
-                                                                      'Playback Speed',
-                                                                  offset:
-                                                                      const Offset(
-                                                                        0,
-                                                                        40,
-                                                                      ),
-                                                                  shape: RoundedRectangleBorder(
-                                                                    borderRadius:
-                                                                        BorderRadius.circular(
-                                                                          16,
-                                                                        ),
-                                                                  ),
-                                                                  child: Container(
-                                                                    padding: const EdgeInsets.symmetric(
-                                                                      horizontal:
-                                                                          10,
-                                                                      vertical:
-                                                                          6,
-                                                                    ),
-                                                                    decoration: BoxDecoration(
-                                                                      color: theme
-                                                                          .colorScheme
-                                                                          .surface,
-                                                                      borderRadius:
-                                                                          BorderRadius.circular(
-                                                                            12,
-                                                                          ),
-                                                                      border: Border.all(
-                                                                        color: theme
-                                                                            .colorScheme
-                                                                            .primary
-                                                                            .withValues(
-                                                                              alpha: 0.3,
-                                                                            ),
-                                                                      ),
-                                                                    ),
-                                                                    child: Row(
-                                                                      mainAxisSize:
-                                                                          MainAxisSize
-                                                                              .min,
-                                                                      children: [
-                                                                        Icon(
-                                                                          Icons
-                                                                              .speed_rounded,
-                                                                          size:
-                                                                              14,
-                                                                          color: theme
-                                                                              .colorScheme
-                                                                              .primary,
-                                                                        ),
-                                                                        const SizedBox(
-                                                                          width:
-                                                                              4,
-                                                                        ),
-                                                                        Text(
-                                                                          '${playbackSpeed.value}x',
-                                                                          style: TextStyle(
-                                                                            color:
-                                                                                theme.colorScheme.primary,
-                                                                            fontWeight:
-                                                                                FontWeight.bold,
-                                                                            fontSize:
-                                                                                12,
-                                                                          ),
-                                                                        ),
-                                                                      ],
-                                                                    ),
-                                                                  ),
-                                                                  onSelected: (val) async {
-                                                                    playbackSpeed
-                                                                            .value =
-                                                                        val;
-                                                                    if (isPlaying
-                                                                        .value) {
-                                                                      await flutterTts
-                                                                          .stop();
-                                                                      isPlaying
-                                                                              .value =
-                                                                          false;
-                                                                      playbackTimer.value?.cancel();
-                                                                      ScaffoldMessenger.of(
-                                                                        context,
-                                                                      ).showSnackBar(
-                                                                        const SnackBar(
-                                                                          content: Text(
-                                                                            'Speed changed. Tap play to resume.',
-                                                                          ),
-                                                                          duration: Duration(
-                                                                            seconds:
-                                                                                2,
-                                                                          ),
-                                                                        ),
-                                                                      );
-                                                                    }
-                                                                  },
-                                                                  itemBuilder: (context) => [
-                                                                    const PopupMenuItem(
-                                                                      value:
-                                                                          0.8,
-                                                                      child: Text(
-                                                                        '0.8x (Slower)',
-                                                                      ),
-                                                                    ),
-                                                                    const PopupMenuItem(
-                                                                      value:
-                                                                          1.0,
-                                                                      child: Text(
-                                                                        '1.0x (Normal)',
-                                                                      ),
-                                                                    ),
-                                                                    const PopupMenuItem(
-                                                                      value:
-                                                                          1.2,
-                                                                      child: Text(
-                                                                        '1.2x',
-                                                                      ),
-                                                                    ),
-                                                                    const PopupMenuItem(
-                                                                      value:
-                                                                          1.5,
-                                                                      child: Text(
-                                                                        '1.5x',
-                                                                      ),
-                                                                    ),
-                                                                    const PopupMenuItem(
-                                                                      value:
-                                                                          1.75,
-                                                                      child: Text(
-                                                                        '1.75x',
-                                                                      ),
-                                                                    ),
-                                                                    const PopupMenuItem(
-                                                                      value:
-                                                                          2.0,
-                                                                      child: Text(
-                                                                        '2.0x (Fastest)',
-                                                                      ),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                                const SizedBox(
-                                                                  width: 8,
-                                                                ),
-                                                                // Voice Menu
-                                                                if (availableVoices
-                                                                    .value
-                                                                    .isNotEmpty)
-                                                                  PopupMenuButton<
-                                                                    Map<
-                                                                      String,
-                                                                      String
-                                                                    >
-                                                                  >(
-                                                                    tooltip:
-                                                                        'Change Voice',
-                                                                    offset:
-                                                                        const Offset(
-                                                                          0,
-                                                                          40,
-                                                                        ),
-                                                                    shape: RoundedRectangleBorder(
-                                                                      borderRadius:
-                                                                          BorderRadius.circular(
-                                                                            16,
-                                                                          ),
-                                                                    ),
-                                                                    child: Container(
-                                                                      padding: const EdgeInsets.symmetric(
-                                                                        horizontal:
-                                                                            10,
-                                                                        vertical:
-                                                                            6,
-                                                                      ),
-                                                                      decoration: BoxDecoration(
-                                                                        color: theme
-                                                                            .colorScheme
-                                                                            .surface,
-                                                                        borderRadius:
-                                                                            BorderRadius.circular(
-                                                                              12,
-                                                                            ),
-                                                                        border: Border.all(
-                                                                          color: theme
-                                                                              .colorScheme
-                                                                              .primary
-                                                                              .withValues(
-                                                                                alpha: 0.3,
-                                                                              ),
-                                                                        ),
-                                                                      ),
-                                                                      child: Icon(
-                                                                        Icons
-                                                                            .record_voice_over_rounded,
-                                                                        color: theme
-                                                                            .colorScheme
-                                                                            .primary,
-                                                                        size:
-                                                                            16,
-                                                                      ),
-                                                                    ),
-                                                                    onSelected: (val) async {
-                                                                      selectedVoice
-                                                                              .value =
-                                                                          val;
-                                                                      if (isPlaying
-                                                                          .value) {
-                                                                        await flutterTts
-                                                                            .stop();
-                                                                        isPlaying.value =
-                                                                            false;
-                                                                        playbackTimer.value?.cancel();
-                                                                        ScaffoldMessenger.of(
-                                                                          context,
-                                                                        ).showSnackBar(
-                                                                          const SnackBar(
-                                                                            content: Text(
-                                                                              'Voice changed. Tap play to resume.',
-                                                                            ),
-                                                                            duration: Duration(
-                                                                              seconds: 2,
                                                                             ),
                                                                           ),
-                                                                        );
-                                                                      }
-                                                                    },
-                                                                    itemBuilder: (context) {
-                                                                      return availableVoices.value.map((
-                                                                        v,
-                                                                      ) {
-                                                                        final isSelected =
-                                                                            selectedVoice.value ==
-                                                                                v ||
-                                                                            (selectedVoice.value ==
-                                                                                    null &&
-                                                                                availableVoices.value.first ==
-                                                                                    v);
-                                                                        final text =
-                                                                            v["displayName"] ??
-                                                                            "Voice";
-                                                                        return PopupMenuItem(
-                                                                          value:
-                                                                              v,
-                                                                          child: Text(
-                                                                            text,
+                                                                          const SizedBox(width: 8),
+                                                                          Text(
+                                                                            '${(playbackProgress.value * 100).toInt()}%',
                                                                             style: TextStyle(
-                                                                              fontWeight: isSelected
-                                                                                  ? FontWeight.bold
-                                                                                  : FontWeight.normal,
-                                                                              color: isSelected
-                                                                                  ? theme.colorScheme.primary
-                                                                                  : null,
+                                                                              fontSize: 11,
+                                                                              fontWeight: FontWeight.bold,
+                                                                              color: theme.colorScheme.primary,
                                                                             ),
                                                                           ),
-                                                                        );
-                                                                      }).toList();
-                                                                    },
+                                                                        ],
+                                                                      ),
+                                                                    ],
                                                                   ),
+                                                                ),
                                                               ],
                                                             ),
                                                           ),
