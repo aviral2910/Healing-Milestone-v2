@@ -58,6 +58,58 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
     }
   }
 
+  void _showFullScreenGallery(int initialIndex) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.9),
+      builder: (context) {
+        final pageController = PageController(initialPage: initialIndex);
+        return Scaffold(
+          backgroundColor: Colors.transparent,
+          body: Stack(
+            children: [
+              PageView.builder(
+                controller: pageController,
+                itemCount: _selectedFiles.length,
+                itemBuilder: (context, index) {
+                  final file = _selectedFiles[index];
+                  final isImage = file.name.toLowerCase().endsWith('.jpg') || 
+                                  file.name.toLowerCase().endsWith('.jpeg') || 
+                                  file.name.toLowerCase().endsWith('.png');
+                  if (isImage && file.path != null) {
+                    return InteractiveViewer(
+                      child: Center(
+                        child: Image.file(File(file.path!), fit: BoxFit.contain),
+                      ),
+                    );
+                  }
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.picture_as_pdf_rounded, size: 80, color: Colors.white.withValues(alpha: 0.5)),
+                        const SizedBox(height: 16),
+                        Text(file.name, style: const TextStyle(color: Colors.white, fontSize: 16)),
+                      ],
+                    ),
+                  );
+                },
+              ),
+              Positioned(
+                top: MediaQuery.of(context).padding.top + 16,
+                right: 16,
+                child: IconButton(
+                  icon: const Icon(Icons.close_rounded, color: Colors.white, size: 30),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   void _removeFile(int index) {
     setState(() {
       _selectedFiles.removeAt(index);
@@ -335,14 +387,20 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
                                       child: ClipRRect(
                                         borderRadius: BorderRadius.circular(20),
                                         child: isImage && file.path != null
-                                            ? Image.file(File(file.path!), fit: BoxFit.cover)
-                                            : Center(
-                                                child: Icon(
-                                                  Icons.picture_as_pdf_rounded,
-                                                  size: 48,
-                                                  color: Colors.redAccent.withValues(alpha: 0.8),
+                                            ? InkWell(
+                                                onTap: () => _showFullScreenGallery(index),
+                                                child: Image.file(File(file.path!), fit: BoxFit.cover),
+                                              )
+                                            : InkWell(
+                                                onTap: () => _showFullScreenGallery(index),
+                                                child: Center(
+                                                  child: Icon(
+                                                    Icons.picture_as_pdf_rounded,
+                                                    size: 48,
+                                                    color: Colors.redAccent.withValues(alpha: 0.8),
+                                                  ),
                                                 ),
-                                              ),
+                                              )
                                       ),
                                     ),
                                     Positioned(

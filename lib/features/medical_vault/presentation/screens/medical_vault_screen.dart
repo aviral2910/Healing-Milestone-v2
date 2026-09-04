@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../providers/medical_vault_providers.dart';
 import '../widgets/upload_report_overlay.dart';
+import '../widgets/report_timeline_node.dart';
 import '../../data/models/medical_vault_models.dart';
 
 class MedicalVaultScreen extends ConsumerStatefulWidget {
@@ -76,67 +77,23 @@ class _MedicalVaultScreenState extends ConsumerState<MedicalVaultScreen> {
                       style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                     ),
                   ),
-                  ...dateRecords.map((r) => Card(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                child: Text(r.title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.delete_outline, color: Colors.red),
-                                onPressed: () {
-                                  ref.read(medicalRecordsProvider.notifier).deleteReport(r.id);
-                                },
-                              ),
-                            ],
-                          ),
-                          Text('Added ${DateFormat('MMM d').format(r.createdAt)}', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
-                          const SizedBox(height: 12),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: r.files.map((file) {
-                              final isPdf = file.fileType.contains('pdf');
-                              return Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                decoration: BoxDecoration(
-                                  color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      isPdf ? Icons.picture_as_pdf : Icons.image,
-                                      color: theme.colorScheme.primary,
-                                      size: 16,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      file.fileName,
-                                      style: TextStyle(
-                                        color: theme.colorScheme.primary,
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                        ],
-                      ),
-                    ),
-                  )),
+                  ...List.generate(dateRecords.length, (i) {
+                    final isFirst = i == 0;
+                    final isLast = i == dateRecords.length - 1;
+                    TimelinePosition position = TimelinePosition.middle;
+                    if (dateRecords.length == 1) {
+                      position = TimelinePosition.standalone;
+                    } else if (isFirst) {
+                      position = TimelinePosition.start;
+                    } else if (isLast) {
+                      position = TimelinePosition.end;
+                    }
+
+                    return ReportTimelineNode(
+                      report: dateRecords[i],
+                      position: position,
+                    );
+                  }),
                   const SizedBox(height: 16),
                 ],
               );
