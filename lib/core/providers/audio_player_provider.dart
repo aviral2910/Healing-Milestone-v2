@@ -140,7 +140,14 @@ class AudioPlayerNotifier extends Notifier<AudioPlayerState> {
 
   Future<void> closePlayer() async {
     stop();
-    state = AudioPlayerState(isPlaying: false, progress: 0.0, playbackSpeed: state.playbackSpeed, selectedVoice: state.selectedVoice, availableVoices: state.availableVoices, currentStory: null);
+    state = AudioPlayerState(
+      isPlaying: false,
+      progress: 0.0,
+      playbackSpeed: state.playbackSpeed,
+      selectedVoice: state.selectedVoice,
+      availableVoices: state.availableVoices,
+      currentStory: null,
+    );
   }
 
   void updateProgress(double value) {
@@ -193,7 +200,14 @@ class AudioPlayerNotifier extends Notifier<AudioPlayerState> {
     try {
       final story = state.currentStory!;
       String fullText = story.description;
-      if (story.heading.isNotEmpty) fullText = "${story.heading}. $fullText";
+      if (story.heading.isNotEmpty) {
+        String authorName = (!story.displayAuthorName)
+            ? "Anonymous"
+            : (story.author?.displayName ?? "Anonymous");
+        String intro =
+            "${story.heading}. A story by $authorName.\n\n...\n\n...\n\n";
+        fullText = "$intro$fullText";
+      }
 
       int cutIndex = (fullText.length * progressPercentage).toInt();
       while (cutIndex > 0 &&
@@ -229,7 +243,8 @@ class AudioPlayerNotifier extends Notifier<AudioPlayerState> {
       await _flutterTts.setQueueMode(1);
 
       final totalWordCount = fullText.split(RegExp(r'\s+')).length;
-      final estimatedSeconds = (totalWordCount / (2.5 * state.playbackSpeed)).ceil();
+      final estimatedSeconds = (totalWordCount / (2.5 * state.playbackSpeed))
+          .ceil();
 
       _playbackTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
         if (!state.isPlaying) {
@@ -255,4 +270,7 @@ class AudioPlayerNotifier extends Notifier<AudioPlayerState> {
   }
 }
 
-final audioPlayerProvider = NotifierProvider<AudioPlayerNotifier, AudioPlayerState>(AudioPlayerNotifier.new);
+final audioPlayerProvider =
+    NotifierProvider<AudioPlayerNotifier, AudioPlayerState>(
+      AudioPlayerNotifier.new,
+    );
