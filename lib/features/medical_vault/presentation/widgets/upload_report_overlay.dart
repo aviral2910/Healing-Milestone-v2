@@ -3,8 +3,10 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:async';
 import 'package:intl/intl.dart';
 import '../providers/medical_vault_providers.dart';
+import '../../data/repositories/medical_vault_repository.dart';
 import 'package:healing_milestones/shared/widgets/app_loader.dart';
 
 class UploadReportOverlay extends ConsumerStatefulWidget {
@@ -43,7 +45,59 @@ class UploadReportOverlay extends ConsumerStatefulWidget {
 class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
   final _customTypeController = TextEditingController();
   List<String> _reportTypes = [];
-  final List<String> _suggestedTypes = ['CBC', 'LFT', 'KFT', 'Lipid Profile', 'X-Ray', 'MRI', 'Prescription', 'Note'];
+  List<String> _suggestedTypes = ['CBC', 'LFT', 'KFT', 'Lipid Profile', 'X-Ray', 'MRI', 'Prescription', 'Note'];
+  Timer? _debounce;
+  bool _isLoadingTags = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchTags('');
+  }
+
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    _customTypeController.dispose();
+    super.dispose();
+  }
+
+  void _onSearchChanged(String query) {
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _debounce = Timer(const Duration(milliseconds: 300), () {
+      _fetchTags(query);
+    });
+  }
+
+  Future<void> _fetchTags(String query) async {
+    setState(() => _isLoadingTags = true);
+    try {
+      final repo = ref.read(medicalVaultRepositoryProvider);
+      final tags = await repo.searchReportTags(query);
+      if (mounted) {
+        setState(() {
+          // If query is empty, keep default ones at front if they don't exist
+          if (query.isEmpty) {
+            for (var tag in tags) {
+              if (!_suggestedTypes.map((e) => e.toLowerCase()).contains(tag.toLowerCase())) {
+                _suggestedTypes.add(tag);
+              }
+            }
+          } else {
+            _suggestedTypes = tags;
+            // Always allow the exactly typed query to be easily selected
+            if (query.isNotEmpty && !tags.any((t) => t.toLowerCase() == query.toLowerCase())) {
+              _suggestedTypes.insert(0, query);
+            }
+          }
+          _isLoadingTags = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isLoadingTags = false);
+    }
+  }
+
   DateTime _encounterDate = DateTime.now();
   List<PlatformFile> _selectedFiles = [];
   bool _isUploading = false;
@@ -281,72 +335,39 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          physics: const BouncingScrollPhysics(),
-                          clipBehavior: Clip.none,
-                          child: Row(
-                            children: [
-                              ..._suggestedTypes.map((type) {
-                                final isSelected = _reportTypes.contains(type);
-                                return Padding(
-                                  padding: const EdgeInsets.only(right: 8.0),
-                                  child: FilterChip(
-                                    label: Text(type),
-                                    selected: isSelected,
-                                    onSelected: (selected) {
-                                      setState(() {
-                                        if (selected) {
-                                          _reportTypes.add(type);
-                                        } else {
-                                          _reportTypes.remove(type);
-                                        }
-                                      });
-                                    },
-                                    backgroundColor: theme.colorScheme.surface,
-                                    selectedColor: theme.colorScheme.primary.withValues(alpha: 0.2),
-                                    checkmarkColor: theme.colorScheme.primary,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                      side: BorderSide(
-                                        color: isSelected 
-                                            ? theme.colorScheme.primary.withValues(alpha: 0.5) 
-                                            : theme.dividerColor.withValues(alpha: 0.2),
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              }),
-                              ..._reportTypes.where((t) => !_suggestedTypes.contains(t)).map((type) {
-                                return Padding(
-                                  padding: const EdgeInsets.only(right: 8.0),
-                                  child: Chip(
-                                    label: Text(type),
-                                    onDeleted: () {
-                                      setState(() {
-                                        _reportTypes.remove(type);
-                                      });
-                                    },
-                                    backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.2),
-                                    deleteIconColor: theme.colorScheme.primary,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                      side: BorderSide(color: theme.colorScheme.primary.withValues(alpha: 0.5)),
-                                    ),
-                                  ),
-                                );
-                              }),
-                            ],
+                        // Selected Tags
+                        if (_reportTypes.isNotEmpty) ...[
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: _reportTypes.map((type) {
+                              return Chip(
+                                label: Text(type),
+                                onDeleted: () {
+                                  setState(() {
+                                    _reportTypes.remove(type);
+                                  });
+                                },
+                                backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.2),
+                                deleteIconColor: theme.colorScheme.primary,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  side: BorderSide(color: theme.colorScheme.primary.withValues(alpha: 0.5)),
+                                ),
+                              );
+                            }).toList(),
                           ),
-                        ),
-                        const SizedBox(height: 12),
+                          const SizedBox(height: 16),
+                        ],
+                        // Type Input Field
                         TextField(
                           controller: _customTypeController,
+                          onChanged: _onSearchChanged,
                           style: theme.textTheme.bodyLarge?.copyWith(
                             height: 1.5,
                           ),
                           decoration: InputDecoration(
-                            hintText: 'Add custom type (e.g. ECG) and press enter...',
+                            hintText: 'Search or add custom type...',
                             hintStyle: TextStyle(
                               color: theme.hintColor.withValues(alpha: 0.5),
                             ),
@@ -357,13 +378,54 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
                             filled: true,
                             fillColor: theme.colorScheme.surface,
                             contentPadding: const EdgeInsets.all(20),
-                            suffixIcon: IconButton(
-                              icon: Icon(Icons.add_circle, color: theme.colorScheme.primary),
-                              onPressed: () => _addCustomType(_customTypeController.text),
+                            suffixIcon: _isLoadingTags 
+                              ? const Padding(
+                                  padding: EdgeInsets.all(12.0),
+                                  child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+                                )
+                              : IconButton(
+                                  icon: Icon(Icons.add_circle, color: theme.colorScheme.primary),
+                                  onPressed: () {
+                                    _addCustomType(_customTypeController.text);
+                                    _fetchTags('');
+                                  },
+                                ),
+                          ),
+                          onSubmitted: (val) {
+                            _addCustomType(val);
+                            _fetchTags('');
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        // Suggestions horizontally scrollable
+                        if (_suggestedTypes.where((t) => !_reportTypes.contains(t)).isNotEmpty)
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            physics: const BouncingScrollPhysics(),
+                            clipBehavior: Clip.none,
+                            child: Row(
+                              children: _suggestedTypes.where((t) => !_reportTypes.contains(t)).map((type) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(right: 8.0),
+                                  child: ActionChip(
+                                    label: Text(type),
+                                    onPressed: () {
+                                      setState(() {
+                                        _reportTypes.add(type);
+                                        _customTypeController.clear();
+                                      });
+                                      _fetchTags('');
+                                    },
+                                    backgroundColor: theme.colorScheme.surface,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.2)),
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
                             ),
                           ),
-                          onSubmitted: _addCustomType,
-                        ),
                         const SizedBox(height: 24),
 
                         // Encounter Date

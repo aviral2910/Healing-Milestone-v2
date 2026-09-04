@@ -157,6 +157,14 @@ class MedicalVaultRepository {
     if (fileName.toLowerCase().endsWith('.jpg') || fileName.toLowerCase().endsWith('.jpeg')) return 'image/jpeg';
     return 'application/octet-stream';
   }
+
+  Future<List<String>> searchReportTags(String query) async {
+    final response = await _apiClient.dio.get(
+      '/api/reports/tags',
+      queryParameters: {'q': query},
+    );
+    return (response.data as List).map((e) => e.toString()).toList();
+  }
 }
 
 @riverpod
