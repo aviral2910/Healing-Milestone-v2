@@ -1,6 +1,8 @@
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:healing_milestones/core/network/api_client.dart';
 import '../models/medical_vault_models.dart';
@@ -23,12 +25,54 @@ class MedicalVaultRepository {
     required String title,
     required DateTime encounterDate,
   }) async {
-    // 1. Get Presigned URLs for all files
-    final requestFiles = files.map((f) => {
-      'fileName': f.name,
-      'fileType': _getFileType(f.name),
-    }).toList();
+    final processedFiles = <File>[];
+    final requestFiles = <Map<String, dynamic>>[];
     
+    // 1. Process files (compress images)
+    final tempDir = await getTemporaryDirectory();
+    
+    for (int i = 0; i < files.length; i++) {
+      final pf = files[i];
+      final originalFile = File(pf.path!);
+      final ext = pf.name.split('.').last.toLowerCase();
+      
+      if (['jpg', 'jpeg', 'png'].contains(ext)) {
+        final targetPath = '${tempDir.path}/compressed_${DateTime.now().millisecondsSinceEpoch}_$i.jpg';
+        final compressedFile = await FlutterImageCompress.compressAndGetFile(
+          originalFile.absolute.path,
+          targetPath,
+          minWidth: 1440,
+          minHeight: 1440,
+          quality: 85,
+          format: CompressFormat.jpeg,
+        );
+        
+        if (compressedFile != null) {
+          final fileObj = File(compressedFile.path);
+          processedFiles.add(fileObj);
+          
+          final originalNameWithoutExt = pf.name.substring(0, pf.name.lastIndexOf('.'));
+          requestFiles.add({
+            'fileName': '${originalNameWithoutExt}.jpg',
+            'fileType': 'image/jpeg',
+          });
+        } else {
+          processedFiles.add(originalFile);
+          requestFiles.add({
+            'fileName': pf.name,
+            'fileType': _getFileType(pf.name),
+          });
+        }
+      } else {
+        processedFiles.add(originalFile);
+        requestFiles.add({
+          'fileName': pf.name,
+          'fileType': _getFileType(pf.name),
+        });
+      }
+    }
+    
+    // 2. Get Presigned URLs for all files
     final presignedResponse = await _apiClient.dio.post(
       '/api/reports/upload-urls',
       data: {'files': requestFiles},
@@ -37,11 +81,11 @@ class MedicalVaultRepository {
     final urlsList = presignedResponse.data['urls'] as List;
     final uploadedFiles = <Map<String, dynamic>>[];
 
-    // 2. Upload directly to Cloudflare R2 concurrently
+    // 3. Upload directly to Cloudflare R2 concurrently
     await Future.wait(urlsList.asMap().entries.map((entry) async {
       final index = entry.key;
       final urlData = entry.value;
-      final file = File(files[index].path!);
+      final file = processedFiles[index];
       
       await _dio.put(
         urlData['uploadUrl'],
