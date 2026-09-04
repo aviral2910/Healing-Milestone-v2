@@ -214,173 +214,260 @@ class ReportTimelineNode extends ConsumerWidget {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        Builder(builder: (context) {
-                          final indexedFiles = report.files.asMap().entries.toList();
-                          final imageEntries = indexedFiles.where((e) => e.value.fileType.startsWith('image/')).toList();
-                          final docEntries = indexedFiles.where((e) => !e.value.fileType.startsWith('image/')).toList();
-                          
-                          Widget buildSectionHeader(String title, int count) {
-                            return Padding(
-                              padding: const EdgeInsets.only(left: 20, right: 20, bottom: 10),
-                              child: Row(
-                                children: [
-                                  Text(
-                                    title,
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                      color: theme.colorScheme.onSurfaceVariant,
-                                      letterSpacing: 0.2,
+                        Builder(
+                          builder: (context) {
+                            final indexedFiles = report.files
+                                .asMap()
+                                .entries
+                                .toList();
+                            final imageEntries = indexedFiles
+                                .where(
+                                  (e) => e.value.fileType.startsWith('image/'),
+                                )
+                                .toList();
+                            final docEntries = indexedFiles
+                                .where(
+                                  (e) => !e.value.fileType.startsWith('image/'),
+                                )
+                                .toList();
+
+                            Widget buildSectionHeader(IconData icon, int count) {
+                              return Padding(
+                                padding: const EdgeInsets.only(
+                                  left: 20,
+                                  right: 20,
+                                  bottom: 16,
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      icon,
+                                      size: 18,
+                                      color: theme.colorScheme.primary,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 2,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: theme.colorScheme.primary
+                                            .withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Text(
+                                        '$count',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w800,
+                                          color: theme.colorScheme.primary,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }
+
+                            Widget buildImageItem(
+                              MapEntry<int, dynamic> entry,
+                              bool isLast,
+                            ) {
+                              final index = entry.key;
+                              final file = entry.value;
+                              return Padding(
+                                padding: EdgeInsets.only(
+                                  right: isLast ? 0 : 12.0,
+                                ),
+                                child: InkWell(
+                                  onTap: () =>
+                                      _showFullScreenGallery(context, index),
+                                  borderRadius: BorderRadius.circular(16),
+                                  child: Container(
+                                    width: 110,
+                                    height: 110,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(
+                                        color: theme.colorScheme.primary
+                                            .withValues(alpha: 0.15),
+                                      ),
+                                      color: theme.colorScheme.surface,
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(16),
+                                      child: CachedNetworkImage(
+                                        imageUrl: file.url,
+                                        fit: BoxFit.cover,
+                                        placeholder: (context, url) =>
+                                            Shimmer.fromColors(
+                                              baseColor: theme
+                                                  .colorScheme
+                                                  .primary
+                                                  .withValues(alpha: 0.1),
+                                              highlightColor: theme
+                                                  .colorScheme
+                                                  .primary
+                                                  .withValues(alpha: 0.25),
+                                              child: Container(
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                        errorWidget: (context, url, error) =>
+                                            const Icon(Icons.error),
+                                      ),
                                     ),
                                   ),
-                                  const SizedBox(width: 8),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                ),
+                              );
+                            }
+
+                            Widget buildDocItem(
+                              MapEntry<int, dynamic> entry,
+                              bool isLast,
+                            ) {
+                              final index = entry.key;
+                              final file = entry.value;
+                              return Padding(
+                                padding: EdgeInsets.only(
+                                  right: isLast ? 0 : 12.0,
+                                ),
+                                child: InkWell(
+                                  onTap: () =>
+                                      _showFullScreenGallery(context, index),
+                                  borderRadius: BorderRadius.circular(16),
+                                  child: Container(
+                                    width: 220,
+                                    padding: const EdgeInsets.all(10),
                                     decoration: BoxDecoration(
-                                      color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: Text(
-                                      '$count',
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w800,
-                                        color: theme.colorScheme.primary,
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(
+                                        color: theme.colorScheme.primary
+                                            .withValues(alpha: 0.15),
                                       ),
+                                      color: theme.colorScheme.primary
+                                          .withValues(alpha: 0.03),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.all(8),
+                                          decoration: BoxDecoration(
+                                            color: theme.colorScheme.primary
+                                                .withValues(alpha: 0.1),
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                          ),
+                                          child: Icon(
+                                            Icons.description_rounded,
+                                            color: theme.colorScheme.primary,
+                                            size: 24,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Text(
+                                                file.fileName,
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: theme
+                                                    .textTheme
+                                                    .labelMedium
+                                                    ?.copyWith(
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                      color: theme
+                                                          .colorScheme
+                                                          .onSurface,
+                                                    ),
+                                              ),
+                                              const SizedBox(height: 2),
+                                              Text(
+                                                'Document',
+                                                style: theme.textTheme.bodySmall
+                                                    ?.copyWith(
+                                                      color: theme
+                                                          .colorScheme
+                                                          .primary,
+                                                      fontSize: 10,
+                                                    ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }
+
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (imageEntries.isNotEmpty) ...[
+                                  buildSectionHeader(
+                                    Icons.image_outlined,
+                                    imageEntries.length,
+                                  ),
+                                  SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    physics: const BouncingScrollPhysics(),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 20,
+                                    ),
+                                    child: Row(
+                                      children: imageEntries
+                                          .asMap()
+                                          .entries
+                                          .map((e) {
+                                            return buildImageItem(
+                                              e.value,
+                                              e.key == imageEntries.length - 1,
+                                            );
+                                          })
+                                          .toList(),
                                     ),
                                   ),
                                 ],
-                              ),
-                            );
-                          }
-                          
-                          Widget buildImageItem(MapEntry<int, dynamic> entry, bool isLast) {
-                            final index = entry.key;
-                            final file = entry.value;
-                            return Padding(
-                              padding: EdgeInsets.only(right: isLast ? 0 : 12.0),
-                              child: InkWell(
-                                onTap: () => _showFullScreenGallery(context, index),
-                                borderRadius: BorderRadius.circular(16),
-                                child: Container(
-                                  width: 110,
-                                  height: 110,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.15)),
-                                    color: theme.colorScheme.surface,
+                                if (imageEntries.isNotEmpty &&
+                                    docEntries.isNotEmpty)
+                                  const SizedBox(height: 16),
+                                if (docEntries.isNotEmpty) ...[
+                                  buildSectionHeader(
+                                    Icons.description_outlined,
+                                    docEntries.length,
                                   ),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(16),
-                                    child: CachedNetworkImage(
-                                      imageUrl: file.url,
-                                      fit: BoxFit.cover,
-                                      placeholder: (context, url) => Shimmer.fromColors(
-                                        baseColor: theme.colorScheme.primary.withValues(alpha: 0.1),
-                                        highlightColor: theme.colorScheme.primary.withValues(alpha: 0.25),
-                                        child: Container(color: Colors.white),
-                                      ),
-                                      errorWidget: (context, url, error) => const Icon(Icons.error),
+                                  SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    physics: const BouncingScrollPhysics(),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 20,
+                                    ),
+                                    child: Row(
+                                      children: docEntries.asMap().entries.map((
+                                        e,
+                                      ) {
+                                        return buildDocItem(
+                                          e.value,
+                                          e.key == docEntries.length - 1,
+                                        );
+                                      }).toList(),
                                     ),
                                   ),
-                                ),
-                              ),
-                            );
-                          }
-                          
-                          Widget buildDocItem(MapEntry<int, dynamic> entry, bool isLast) {
-                            final index = entry.key;
-                            final file = entry.value;
-                            return Padding(
-                              padding: EdgeInsets.only(right: isLast ? 0 : 12.0),
-                              child: InkWell(
-                                onTap: () => _showFullScreenGallery(context, index),
-                                borderRadius: BorderRadius.circular(16),
-                                child: Container(
-                                  width: 220,
-                                  padding: const EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.15)),
-                                    color: theme.colorScheme.primary.withValues(alpha: 0.03),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.all(8),
-                                        decoration: BoxDecoration(
-                                          color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                                          borderRadius: BorderRadius.circular(12),
-                                        ),
-                                        child: Icon(Icons.description_rounded, color: theme.colorScheme.primary, size: 24),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            Text(
-                                              file.fileName,
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: theme.textTheme.labelMedium?.copyWith(
-                                                fontWeight: FontWeight.w600,
-                                                color: theme.colorScheme.onSurface,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 2),
-                                            Text(
-                                              'Document',
-                                              style: theme.textTheme.bodySmall?.copyWith(
-                                                color: theme.colorScheme.primary,
-                                                fontSize: 10,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            );
-                          }
-                          
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (imageEntries.isNotEmpty) ...[
-                                buildSectionHeader('Images', imageEntries.length),
-                                SingleChildScrollView(
-                                  scrollDirection: Axis.horizontal,
-                                  physics: const BouncingScrollPhysics(),
-                                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                                  child: Row(
-                                    children: imageEntries.asMap().entries.map((e) {
-                                      return buildImageItem(e.value, e.key == imageEntries.length - 1);
-                                    }).toList(),
-                                  ),
-                                ),
+                                ],
                               ],
-                              if (imageEntries.isNotEmpty && docEntries.isNotEmpty)
-                                const SizedBox(height: 16),
-                              if (docEntries.isNotEmpty) ...[
-                                buildSectionHeader('Documents', docEntries.length),
-                                SingleChildScrollView(
-                                  scrollDirection: Axis.horizontal,
-                                  physics: const BouncingScrollPhysics(),
-                                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                                  child: Row(
-                                    children: docEntries.asMap().entries.map((e) {
-                                      return buildDocItem(e.value, e.key == docEntries.length - 1);
-                                    }).toList(),
-                                  ),
-                                ),
-                              ],
-                            ],
-                          );
-                        }),
+                            );
+                          },
+                        ),
                       ],
                     ),
                     Positioned(
