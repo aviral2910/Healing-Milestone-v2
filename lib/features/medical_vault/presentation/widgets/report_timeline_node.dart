@@ -225,18 +225,22 @@ class ReportTimelineNode extends ConsumerWidget {
                       ],
                     ),
                     const SizedBox(height: 16),
-                      Wrap(
-                        spacing: 12,
-                        runSpacing: 12,
-                        children: report.files.map((file) {
-                          final isImage = file.fileType.startsWith('image/');
-                          final index = report.files.indexOf(file);
-                          return InkWell(
-                            onTap: () => _showFullScreenGallery(context, index),
-                            borderRadius: BorderRadius.circular(16),
-                            child: Container(
-                              width: 90,
-                              height: 90,
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        physics: const BouncingScrollPhysics(),
+                        child: Row(
+                          children: report.files.asMap().entries.map((entry) {
+                            final index = entry.key;
+                            final file = entry.value;
+                            final isImage = file.fileType.startsWith('image/');
+                            return Padding(
+                              padding: EdgeInsets.only(right: index == report.files.length - 1 ? 0 : 12.0),
+                              child: InkWell(
+                                onTap: () => _showFullScreenGallery(context, index),
+                                borderRadius: BorderRadius.circular(16),
+                                child: Container(
+                                  width: 90,
+                                  height: 90,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(color: theme.dividerColor.withValues(alpha: 0.2)),
@@ -289,9 +293,11 @@ class ReportTimelineNode extends ConsumerWidget {
                                       ),
                               ),
                             ),
+                          ),
                           );
                         }).toList(),
                       ),
+                    ),
                   ],
                 ),
               ),
