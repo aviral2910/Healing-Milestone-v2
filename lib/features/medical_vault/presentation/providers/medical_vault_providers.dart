@@ -1,4 +1,5 @@
-import 'dart:io';
+import 'package:file_picker/file_picker.dart';
+
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../data/models/medical_vault_models.dart';
 import '../../data/repositories/medical_vault_repository.dart';
@@ -13,16 +14,14 @@ class MedicalRecordsNotifier extends _$MedicalRecordsNotifier {
   }
 
   Future<void> uploadReport({
-    required File file,
-    required String fileName,
+    required List<PlatformFile> files,
     required String title,
     required DateTime encounterDate,
   }) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
       final newRecord = await ref.read(medicalVaultRepositoryProvider).uploadReport(
-        file: file,
-        fileName: fileName,
+        files: files,
         title: title,
         encounterDate: encounterDate,
       );

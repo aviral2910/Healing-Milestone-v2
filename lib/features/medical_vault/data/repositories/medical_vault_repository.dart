@@ -1,3 +1,4 @@
+import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -18,37 +19,47 @@ class MedicalVaultRepository {
   }
 
   Future<MedicalRecord> uploadReport({
-    required File file,
-    required String fileName,
+    required List<PlatformFile> files,
     required String title,
     required DateTime encounterDate,
   }) async {
-    final fileType = _getFileType(fileName);
-
-    // 1. Get Presigned URL
-    final presignedResponse = await _apiClient.dio.get(
-      '/api/reports/upload-url',
-      queryParameters: {
-        'file_name': fileName,
-        'file_type': fileType,
-      },
+    // 1. Get Presigned URLs for all files
+    final requestFiles = files.map((f) => {
+      'fileName': f.name,
+      'fileType': _getFileType(f.name),
+    }).toList();
+    
+    final presignedResponse = await _apiClient.dio.post(
+      '/api/reports/upload-urls',
+      data: {'files': requestFiles},
     );
     
-    final uploadUrl = presignedResponse.data['uploadUrl'];
-    final fileUrl = presignedResponse.data['fileUrl'];
+    final urlsList = presignedResponse.data['urls'] as List;
+    final uploadedFiles = <Map<String, dynamic>>[];
 
-    // 2. Upload directly to Cloudflare R2
-    // We use a raw Dio instance here so our API interceptors (Auth headers) don't break the S3 signature
-    await _dio.put(
-      uploadUrl,
-      data: file.openRead(),
-      options: Options(
-        headers: {
-          Headers.contentLengthHeader: await file.length(),
-          Headers.contentTypeHeader: fileType,
-        },
-      ),
-    );
+    // 2. Upload directly to Cloudflare R2 concurrently
+    await Future.wait(urlsList.asMap().entries.map((entry) async {
+      final index = entry.key;
+      final urlData = entry.value;
+      final file = File(files[index].path!);
+      
+      await _dio.put(
+        urlData['uploadUrl'],
+        data: file.openRead(),
+        options: Options(
+          headers: {
+            Headers.contentLengthHeader: await file.length(),
+            Headers.contentTypeHeader: urlData['fileType'],
+          },
+        ),
+      );
+      
+      uploadedFiles.add({
+        'url': urlData['fileUrl'],
+        'fileType': urlData['fileType'],
+        'fileName': urlData['fileName'],
+      });
+    }));
 
     // 3. Save to backend
     final response = await _apiClient.dio.post(
@@ -56,8 +67,7 @@ class MedicalVaultRepository {
       data: {
         'encounterDate': encounterDate.toIso8601String().split('T').first,
         'title': title,
-        'fileUrl': fileUrl,
-        'fileType': fileType,
+        'files': uploadedFiles,
       },
     );
 

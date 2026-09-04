@@ -1,11 +1,10 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:file_picker/file_picker.dart';
 import 'package:intl/intl.dart';
 
 import '../providers/medical_vault_providers.dart';
+import '../widgets/upload_report_overlay.dart';
 import '../../data/models/medical_vault_models.dart';
 
 class MedicalVaultScreen extends ConsumerStatefulWidget {
@@ -16,34 +15,7 @@ class MedicalVaultScreen extends ConsumerStatefulWidget {
 }
 
 class _MedicalVaultScreenState extends ConsumerState<MedicalVaultScreen> {
-  Future<void> _pickAndUploadReport() async {
-    final result = await FilePicker.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['pdf', 'png', 'jpg', 'jpeg'],
-    );
 
-    if (result.isEmpty || result.single.path == null) return;
-    
-    final file = File(result.single.path!);
-    final fileName = result.single.name;
-
-    if (!mounted) return;
-    
-    // Show dialog to get Encounter Date and Title
-    final details = await showDialog<Map<String, dynamic>>(
-      context: context,
-      builder: (context) => _ReportDetailsDialog(fileName: fileName),
-    );
-    
-    if (details == null) return;
-
-    ref.read(medicalRecordsProvider.notifier).uploadReport(
-      file: file,
-      fileName: fileName,
-      title: details['title'],
-      encounterDate: details['encounterDate'],
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +31,7 @@ class _MedicalVaultScreenState extends ConsumerState<MedicalVaultScreen> {
         iconTheme: IconThemeData(color: theme.colorScheme.onSurface),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: _pickAndUploadReport,
+        onPressed: () => UploadReportOverlay.show(context),
         backgroundColor: theme.colorScheme.primary,
         icon: Icon(Icons.add, color: theme.colorScheme.onPrimary),
         label: Text('Add Report', style: TextStyle(color: theme.colorScheme.onPrimary)),
@@ -107,23 +79,62 @@ class _MedicalVaultScreenState extends ConsumerState<MedicalVaultScreen> {
                   ...dateRecords.map((r) => Card(
                     margin: const EdgeInsets.only(bottom: 12),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    child: ListTile(
-                      leading: Icon(
-                        r.fileType.contains('pdf') ? Icons.picture_as_pdf : Icons.image,
-                        color: Colors.blueAccent,
-                        size: 32,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(r.title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete_outline, color: Colors.red),
+                                onPressed: () {
+                                  ref.read(medicalRecordsProvider.notifier).deleteReport(r.id);
+                                },
+                              ),
+                            ],
+                          ),
+                          Text('Added ${DateFormat('MMM d').format(r.createdAt)}', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+                          const SizedBox(height: 12),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: r.files.map((file) {
+                              final isPdf = file.fileType.contains('pdf');
+                              return Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      isPdf ? Icons.picture_as_pdf : Icons.image,
+                                      color: theme.colorScheme.primary,
+                                      size: 16,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      file.fileName,
+                                      style: TextStyle(
+                                        color: theme.colorScheme.primary,
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ],
                       ),
-                      title: Text(r.title, style: const TextStyle(fontWeight: FontWeight.w600)),
-                      subtitle: Text('Added ${DateFormat('MMM d').format(r.createdAt)}'),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.delete_outline, color: Colors.red),
-                        onPressed: () {
-                          ref.read(medicalRecordsProvider.notifier).deleteReport(r.id);
-                        },
-                      ),
-                      onTap: () {
-                        // Launch URL or show preview
-                      },
                     ),
                   )),
                   const SizedBox(height: 16),
@@ -137,66 +148,6 @@ class _MedicalVaultScreenState extends ConsumerState<MedicalVaultScreen> {
   }
 }
 
-class _ReportDetailsDialog extends StatefulWidget {
-  final String fileName;
-  const _ReportDetailsDialog({required this.fileName});
 
-  @override
-  State<_ReportDetailsDialog> createState() => _ReportDetailsDialogState();
-}
 
-class _ReportDetailsDialogState extends State<_ReportDetailsDialog> {
-  final _titleController = TextEditingController();
-  DateTime _selectedDate = DateTime.now();
 
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return AlertDialog(
-      title: const Text('Report Details'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          TextField(
-            controller: _titleController,
-            decoration: const InputDecoration(labelText: 'Title (e.g., Brain MRI)'),
-          ),
-          const SizedBox(height: 16),
-          ListTile(
-            title: const Text('Encounter Date'),
-            subtitle: Text(DateFormat('MMM d, yyyy').format(_selectedDate)),
-            trailing: const Icon(Icons.calendar_today),
-            onTap: () async {
-              final date = await showDatePicker(
-                context: context,
-                initialDate: _selectedDate,
-                firstDate: DateTime(1900),
-                lastDate: DateTime.now(),
-              );
-              if (date != null) {
-                setState(() => _selectedDate = date);
-              }
-            },
-          ),
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
-        ),
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(backgroundColor: theme.colorScheme.primary),
-          onPressed: () {
-            if (_titleController.text.isEmpty) return;
-            Navigator.pop(context, {
-              'title': _titleController.text,
-              'encounterDate': _selectedDate,
-            });
-          },
-          child: Text('Upload', style: TextStyle(color: theme.colorScheme.onPrimary)),
-        ),
-      ],
-    );
-  }
-}

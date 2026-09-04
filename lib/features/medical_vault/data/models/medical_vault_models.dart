@@ -4,14 +4,24 @@ part 'medical_vault_models.freezed.dart';
 part 'medical_vault_models.g.dart';
 
 @freezed
+abstract class MedicalRecordFile with _$MedicalRecordFile {
+  const factory MedicalRecordFile({
+    required String url,
+    required String fileType,
+    required String fileName,
+  }) = _MedicalRecordFile;
+
+  factory MedicalRecordFile.fromJson(Map<String, dynamic> json) => _$MedicalRecordFileFromJson(json);
+}
+
+@freezed
 abstract class MedicalRecord with _$MedicalRecord {
   const factory MedicalRecord({
     required String id,
     required String userId,
     required DateTime encounterDate,
     required String title,
-    required String fileUrl,
-    required String fileType,
+    required List<MedicalRecordFile> files,
     required DateTime createdAt,
   }) = _MedicalRecord;
 
