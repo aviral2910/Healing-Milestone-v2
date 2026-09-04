@@ -174,26 +174,38 @@ class _EditReportOverlayState extends ConsumerState<EditReportOverlay> {
                                   fileName.toLowerCase().endsWith('.png');
                   
                   if (isImage && filePath != null) {
-                    return InteractiveViewer(
-                      minScale: 1.0,
-                      maxScale: 5.0,
-                      panEnabled: true,
-                      scaleEnabled: true,
-                      child: Center(
-                        child: isExisting ? CachedNetworkImage(
-                          imageUrl: filePath, 
-                          fit: BoxFit.contain,
-                          placeholder: (context, url) => Center(
-                            child: SizedBox(
-                              width: 40, height: 40,
-                              child: CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
-                              ),
-                            )
+                    if (isExisting) {
+                      return CachedNetworkImage(
+                        imageUrl: filePath, 
+                        imageBuilder: (context, imageProvider) => InteractiveViewer(
+                          minScale: 1.0,
+                          maxScale: 5.0,
+                          panEnabled: true,
+                          scaleEnabled: true,
+                          child: Center(
+                            child: Image(image: imageProvider, fit: BoxFit.contain),
                           ),
-                        ) : Image.file(File(filePath), fit: BoxFit.contain),
-                      ),
-                    );
+                        ),
+                        placeholder: (context, url) => Center(
+                          child: SizedBox(
+                            width: 40, height: 40,
+                            child: CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
+                            ),
+                          )
+                        ),
+                      );
+                    } else {
+                      return InteractiveViewer(
+                        minScale: 1.0,
+                        maxScale: 5.0,
+                        panEnabled: true,
+                        scaleEnabled: true,
+                        child: Center(
+                          child: Image.file(File(filePath), fit: BoxFit.contain),
+                        ),
+                      );
+                    }
                   }
                   if (filePath != null && fileName.toLowerCase().endsWith('.pdf')) {
                     return isExisting 

@@ -39,24 +39,24 @@ class ReportTimelineNode extends ConsumerWidget {
                   final file = report.files[index];
                   final isImage = file.fileType.startsWith('image/');
                   if (isImage) {
-                    return InteractiveViewer(
-                      minScale: 1.0,
-                      maxScale: 5.0,
-                      panEnabled: true,
-                      scaleEnabled: true,
-                      child: Center(
-                        child: CachedNetworkImage(
-                          imageUrl: file.url, 
-                          fit: BoxFit.contain,
-                          placeholder: (context, url) => Center(
-                            child: SizedBox(
-                              width: 40, height: 40,
-                              child: CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
-                              ),
-                            )
-                          ),
+                    return CachedNetworkImage(
+                      imageUrl: file.url, 
+                      imageBuilder: (context, imageProvider) => InteractiveViewer(
+                        minScale: 1.0,
+                        maxScale: 5.0,
+                        panEnabled: true,
+                        scaleEnabled: true,
+                        child: Center(
+                          child: Image(image: imageProvider, fit: BoxFit.contain),
                         ),
+                      ),
+                      placeholder: (context, url) => Center(
+                        child: SizedBox(
+                          width: 40, height: 40,
+                          child: CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
+                          ),
+                        )
                       ),
                     );
                   }
