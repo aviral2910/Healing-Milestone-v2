@@ -268,14 +268,16 @@ class _EditReportOverlayState extends ConsumerState<EditReportOverlay> {
     setState(() => _isUploading = true);
 
     try {
-      await ref.read(medicalRecordsProvider.notifier).uploadReport(
-        files: _selectedFiles,
+      await ref.read(medicalRecordsProvider.notifier).updateReport(
+        id: widget.report.id,
+        existingFiles: _existingFiles,
+        newFiles: _selectedFiles,
         reportTypes: _reportTypes,
         encounterDate: _encounterDate,
       );
       if (mounted) {
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Report uploaded securely!')));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Report updated securely!')));
       }
     } catch (e) {
       if (mounted) {
