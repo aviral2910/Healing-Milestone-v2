@@ -1,9 +1,11 @@
 import 'dart:io';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../providers/medical_vault_providers.dart';
+import 'package:healing_milestones/shared/widgets/app_loader.dart';
 
 class UploadReportOverlay extends ConsumerStatefulWidget {
   const UploadReportOverlay({super.key});
@@ -13,7 +15,7 @@ class UploadReportOverlay extends ConsumerStatefulWidget {
       context: context,
       barrierDismissible: true,
       barrierLabel: 'Dismiss',
-      barrierColor: Colors.black.withValues(alpha: 0.6),
+      barrierColor: Colors.transparent, // Using BackdropFilter instead
       transitionDuration: const Duration(milliseconds: 400),
       pageBuilder: (context, animation, secondaryAnimation) {
         return const UploadReportOverlay();
@@ -47,7 +49,6 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
     final result = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf', 'png', 'jpg', 'jpeg'],
-      
     );
 
     if (result.isNotEmpty) {
@@ -111,175 +112,316 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final primaryGlow = theme.colorScheme.primary;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: Center(
-        child: SingleChildScrollView(
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 24),
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: theme.scaffoldBackgroundColor,
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.2),
-                  blurRadius: 30,
-                  offset: const Offset(0, 10),
-                )
-              ],
+      body: Stack(
+        children: [
+          // Full screen glassmorphism background
+          BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+            child: Container(
+              color: theme.scaffoldBackgroundColor.withValues(alpha: 0.85),
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('Upload Report', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-                    IconButton(
-                      icon: const Icon(Icons.close),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                
-                // Form Fields
-                Text('Title', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: _titleController,
-                  decoration: InputDecoration(
-                    hintText: 'e.g. Lab Results, X-Ray...',
-                    filled: true,
-                    fillColor: isDark ? Colors.grey[900] : Colors.grey[100],
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                  ),
-                ),
-                const SizedBox(height: 20),
+          ),
 
-                Text('Encounter Date', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
-                const SizedBox(height: 8),
-                InkWell(
-                  onTap: _selectDate,
-                  borderRadius: BorderRadius.circular(12),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                    decoration: BoxDecoration(
-                      color: isDark ? Colors.grey[900] : Colors.grey[100],
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(DateFormat('MMMM d, yyyy').format(_encounterDate), style: theme.textTheme.bodyLarge),
-                        Icon(Icons.calendar_today, color: theme.colorScheme.primary),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-
-                // File Selector
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('Attachments', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
-                    TextButton.icon(
-                      onPressed: _pickFiles,
-                      icon: const Icon(Icons.add_circle_outline),
-                      label: const Text('Add Files'),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                
-                // File Previews
-                if (_selectedFiles.isEmpty)
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(32),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey.withValues(alpha: 0.3), style: BorderStyle.solid),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
+          SafeArea(
+            child: CustomScrollView(
+              physics: const BouncingScrollPhysics(),
+              slivers: [
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(Icons.upload_file, size: 48, color: Colors.grey.withValues(alpha: 0.5)),
-                        const SizedBox(height: 16),
-                        Text('No files selected', style: TextStyle(color: Colors.grey.withValues(alpha: 0.8))),
-                      ],
-                    ),
-                  )
-                else
-                  SizedBox(
-                    height: 120,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: _selectedFiles.length,
-                      itemBuilder: (context, index) {
-                        final file = _selectedFiles[index];
-                        final isImage = file.name.toLowerCase().endsWith('.jpg') || 
-                                        file.name.toLowerCase().endsWith('.jpeg') || 
-                                        file.name.toLowerCase().endsWith('.png');
-                        return Stack(
+                        // Header
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Container(
-                              width: 100,
-                              margin: const EdgeInsets.only(right: 12, top: 10),
                               decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Colors.grey.withValues(alpha: 0.3)),
-                                color: isDark ? Colors.grey[900] : Colors.grey[100],
+                                shape: BoxShape.circle,
+                                color: theme.colorScheme.surface,
+                                border: Border.all(
+                                  color: theme.dividerColor.withValues(alpha: 0.2),
+                                ),
                               ),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(12),
-                                child: isImage && file.path != null
-                                    ? Image.file(File(file.path!), fit: BoxFit.cover)
-                                    : const Center(child: Icon(Icons.picture_as_pdf, size: 40, color: Colors.redAccent)),
+                              child: IconButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                                icon: const Icon(Icons.close_rounded, size: 24),
+                                style: IconButton.styleFrom(
+                                  padding: const EdgeInsets.all(12),
+                                ),
                               ),
                             ),
-                            Positioned(
-                              top: 0,
-                              right: 0,
-                              child: InkWell(
-                                onTap: () => _removeFile(index),
-                                child: Container(
-                                  padding: const EdgeInsets.all(4),
-                                  decoration: const BoxDecoration(color: Colors.black87, shape: BoxShape.circle),
-                                  child: const Icon(Icons.close, size: 16, color: Colors.white),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    theme.colorScheme.primary.withValues(alpha: 0.15),
+                                    theme.colorScheme.secondary.withValues(alpha: 0.05),
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                border: Border.all(
+                                  color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                                ),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                'Upload Report',
+                                style: theme.textTheme.labelMedium?.copyWith(
+                                  color: theme.colorScheme.primary,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ),
                           ],
-                        );
-                      },
-                    ),
-                  ),
+                        ),
+                        const SizedBox(height: 32),
+                        
+                        // Title Input
+                        Text(
+                          'Title',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        TextField(
+                          controller: _titleController,
+                          style: theme.textTheme.bodyLarge?.copyWith(
+                            height: 1.5,
+                          ),
+                          decoration: InputDecoration(
+                            hintText: 'e.g. Blood Test Results, MRI Scan...',
+                            hintStyle: TextStyle(
+                              color: theme.hintColor.withValues(alpha: 0.5),
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              borderSide: BorderSide.none,
+                            ),
+                            filled: true,
+                            fillColor: theme.colorScheme.surface,
+                            contentPadding: const EdgeInsets.all(20),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
 
-                const SizedBox(height: 32),
-                SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: theme.colorScheme.primary,
-                      foregroundColor: theme.colorScheme.onPrimary,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        // Encounter Date
+                        Text(
+                          'Encounter Date',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        InkWell(
+                          onTap: _selectDate,
+                          borderRadius: BorderRadius.circular(20),
+                          child: Container(
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.surface,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  DateFormat('MMMM d, yyyy').format(_encounterDate),
+                                  style: theme.textTheme.bodyLarge,
+                                ),
+                                Icon(Icons.calendar_today_rounded, color: theme.colorScheme.primary),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 32),
+
+                        // File Selector
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Attachments',
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            TextButton.icon(
+                              onPressed: _pickFiles,
+                              icon: const Icon(Icons.add_circle_outline),
+                              label: const Text('Add Files', style: TextStyle(fontWeight: FontWeight.w600)),
+                              style: TextButton.styleFrom(
+                                foregroundColor: theme.colorScheme.primary,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        
+                        // File Previews
+                        if (_selectedFiles.isEmpty)
+                          InkWell(
+                            onTap: _pickFiles,
+                            borderRadius: BorderRadius.circular(20),
+                            child: Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(40),
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.surface,
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: theme.dividerColor.withValues(alpha: 0.3),
+                                  style: BorderStyle.solid,
+                                ),
+                              ),
+                              child: Column(
+                                children: [
+                                  Icon(
+                                    Icons.upload_file_rounded,
+                                    size: 48,
+                                    color: theme.colorScheme.primary.withValues(alpha: 0.5),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'Tap to select files',
+                                    style: TextStyle(
+                                      color: theme.hintColor.withValues(alpha: 0.7),
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
+                        else
+                          SizedBox(
+                            height: 140,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              physics: const BouncingScrollPhysics(),
+                              clipBehavior: Clip.none,
+                              itemCount: _selectedFiles.length,
+                              itemBuilder: (context, index) {
+                                final file = _selectedFiles[index];
+                                final isImage = file.name.toLowerCase().endsWith('.jpg') || 
+                                                file.name.toLowerCase().endsWith('.jpeg') || 
+                                                file.name.toLowerCase().endsWith('.png');
+                                return Stack(
+                                  clipBehavior: Clip.none,
+                                  children: [
+                                    Container(
+                                      width: 110,
+                                      margin: const EdgeInsets.only(right: 16, top: 8),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(20),
+                                        border: Border.all(color: theme.dividerColor.withValues(alpha: 0.2)),
+                                        color: theme.colorScheme.surface,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withValues(alpha: 0.05),
+                                            blurRadius: 10,
+                                            offset: const Offset(0, 4),
+                                          )
+                                        ],
+                                      ),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(20),
+                                        child: isImage && file.path != null
+                                            ? Image.file(File(file.path!), fit: BoxFit.cover)
+                                            : Center(
+                                                child: Icon(
+                                                  Icons.picture_as_pdf_rounded,
+                                                  size: 48,
+                                                  color: Colors.redAccent.withValues(alpha: 0.8),
+                                                ),
+                                              ),
+                                      ),
+                                    ),
+                                    Positioned(
+                                      top: 0,
+                                      right: 8,
+                                      child: Material(
+                                        color: Colors.transparent,
+                                        child: InkWell(
+                                          onTap: () => _removeFile(index),
+                                          customBorder: const CircleBorder(),
+                                          child: Container(
+                                            padding: const EdgeInsets.all(6),
+                                            decoration: BoxDecoration(
+                                              color: theme.colorScheme.surface,
+                                              shape: BoxShape.circle,
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.black.withValues(alpha: 0.1),
+                                                  blurRadius: 4,
+                                                )
+                                              ],
+                                            ),
+                                            child: Icon(
+                                              Icons.close_rounded,
+                                              size: 16,
+                                              color: theme.colorScheme.onSurface,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                          ),
+
+                        const SizedBox(height: 48),
+
+                        // Submit Button
+                        SizedBox(
+                          width: double.infinity,
+                          child: FilledButton(
+                            style: FilledButton.styleFrom(
+                              backgroundColor: primaryGlow,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 20),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(24),
+                              ),
+                              elevation: 8,
+                              shadowColor: primaryGlow.withValues(alpha: 0.4),
+                            ),
+                            onPressed: _isUploading ? null : _submit,
+                            child: _isUploading 
+                                ? const SizedBox(
+                                    height: 24,
+                                    width: 24,
+                                    child: AppLoader.small(),
+                                  )
+                                : const Text(
+                                    'Save to Vault',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                      letterSpacing: 0.2,
+                                    ),
+                                  ),
+                          ),
+                        ),
+                        const SizedBox(height: 40),
+                      ],
                     ),
-                    onPressed: _isUploading ? null : _submit,
-                    child: _isUploading 
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text('Save to Vault', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   ),
                 ),
               ],
             ),
           ),
-        ),
+        ],
       ),
     );
   }
