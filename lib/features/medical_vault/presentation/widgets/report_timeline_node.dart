@@ -236,8 +236,8 @@ class ReportTimelineNode extends ConsumerWidget {
                                       _showFullScreenGallery(context, index),
                                   borderRadius: BorderRadius.circular(16),
                                   child: Container(
-                                    width: 90,
-                                    height: 90,
+                                    width: 110,
+                                    height: 110,
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(16),
                                       border: Border.all(
