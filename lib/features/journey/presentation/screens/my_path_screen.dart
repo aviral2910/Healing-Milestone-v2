@@ -88,32 +88,29 @@ class MyPathScreen extends ConsumerWidget {
                   Card(
                     elevation: 0,
                     margin: const EdgeInsets.only(top: 12),
-                    color: theme.colorScheme.surface,
+                    color: theme.colorScheme.primary.withValues(alpha: 0.08),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
-                      side: BorderSide(
-                        color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
-                      ),
+                      borderRadius: BorderRadius.circular(20),
                     ),
                     child: InkWell(
-                      borderRadius: BorderRadius.circular(24),
+                      borderRadius: BorderRadius.circular(20),
                       onTap: () {
                         context.push('/medical-vault');
                       },
                       child: Padding(
-                        padding: const EdgeInsets.all(20.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
                         child: Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.all(16),
+                              padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: theme.colorScheme.primary.withValues(alpha: 0.08),
-                                borderRadius: BorderRadius.circular(20),
+                                color: theme.colorScheme.primary,
+                                shape: BoxShape.circle,
                               ),
                               child: Icon(
                                 Icons.medical_information_rounded,
-                                color: theme.colorScheme.primary,
-                                size: 28,
+                                color: theme.colorScheme.onPrimary,
+                                size: 22,
                               ),
                             ),
                             const SizedBox(width: 16),
@@ -121,28 +118,18 @@ class MyPathScreen extends ConsumerWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Row(
-                                    children: [
-                                      Text(
-                                        'Medical Vault',
-                                        style: theme.textTheme.titleMedium?.copyWith(
-                                          fontWeight: FontWeight.bold,
-                                          color: theme.colorScheme.onSurface,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 6),
-                                      Icon(
-                                        Icons.verified_user_rounded,
-                                        size: 14,
-                                        color: theme.colorScheme.primary,
-                                      ),
-                                    ],
+                                  Text(
+                                    'Medical Vault',
+                                    style: theme.textTheme.titleMedium?.copyWith(
+                                      fontWeight: FontWeight.w700,
+                                      color: theme.colorScheme.onSurface,
+                                    ),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    'Securely store and share clinical reports.',
-                                    style: theme.textTheme.bodyMedium?.copyWith(
-                                      color: theme.colorScheme.onSurfaceVariant,
+                                    'Securely store and share your clinical reports.',
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                                       height: 1.3,
                                     ),
                                   ),
@@ -150,7 +137,11 @@ class MyPathScreen extends ConsumerWidget {
                               ),
                             ),
                             const SizedBox(width: 8),
-                            Icon(Icons.chevron_right_rounded, color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5)),
+                            Icon(
+                              Icons.arrow_forward_ios_rounded,
+                              size: 14,
+                              color: theme.colorScheme.primary,
+                            ),
                           ],
                         ),
                       ),
