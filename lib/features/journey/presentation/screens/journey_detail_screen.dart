@@ -1,3 +1,5 @@
+import 'package:go_router/go_router.dart';
+
 import '../../data/models/journey_models.dart';
 import 'package:healing_milestones/shared/utils/share_utils.dart';
 import 'package:healing_milestones/shared/widgets/qr_share_preview.dart';
@@ -148,6 +150,15 @@ class _JourneyDetailScreenState extends ConsumerState<JourneyDetailScreen> {
               alpha: 0.8,
             ),
             actions: [
+              if (widget.isMine)
+                IconButton(
+                  icon: const Icon(Icons.medical_information_outlined),
+                  tooltip: 'Create Clinical View',
+                  onPressed: () {
+                    context.push('/medical-vault/create-mix/${widget.journeyId}');
+                  },
+                ),
+
               if (widget.isMine)
                 _isUpdatingVisibility
                     ? const Padding(

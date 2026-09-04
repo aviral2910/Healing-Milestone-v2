@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+
+import '../../features/medical_vault/presentation/screens/medical_vault_screen.dart';
+import '../../features/medical_vault/presentation/screens/mix_view_builder_screen.dart';
+import '../../features/medical_vault/presentation/screens/mix_view_share_screen.dart';
+
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/journey/presentation/screens/time_capsule_list_screen.dart';
@@ -39,6 +44,11 @@ import '../../core/models/user_model.dart';
 import 'app_routes.dart';
 import '../../features/milestone/presentation/widgets/mini_player_overlay.dart';
 import 'package:flutter/material.dart';
+
+import '../../features/medical_vault/presentation/screens/medical_vault_screen.dart';
+import '../../features/medical_vault/presentation/screens/mix_view_builder_screen.dart';
+import '../../features/medical_vault/presentation/screens/mix_view_share_screen.dart';
+
 
 class RouterNotifier extends ChangeNotifier {
   final Ref _ref;
@@ -183,6 +193,20 @@ final routerProvider = Provider<GoRouter>((ref) {
           );
         },
         routes: [
+
+      GoRoute(
+        path: '/medical-vault',
+        builder: (context, state) => const MedicalVaultScreen(),
+      ),
+      GoRoute(
+        path: '/medical-vault/create-mix/:journeyId',
+        builder: (context, state) => MixViewBuilderScreen(journeyId: state.pathParameters['journeyId']!),
+      ),
+      GoRoute(
+        path: '/medical-vault/share/:viewId',
+        builder: (context, state) => MixViewShareScreen(viewId: state.pathParameters['viewId']!),
+      ),
+
       GoRoute(
         path: AppRoutes.splash,
         builder: (context, state) => const SplashScreen(),
