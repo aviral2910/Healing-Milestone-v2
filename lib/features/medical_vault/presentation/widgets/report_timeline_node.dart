@@ -169,7 +169,7 @@ class ReportTimelineNode extends ConsumerWidget {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 16),
                         SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
                           physics: const BouncingScrollPhysics(),
@@ -213,7 +213,7 @@ class ReportTimelineNode extends ConsumerWidget {
                             }).toList(),
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 16),
                         SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
                           physics: const BouncingScrollPhysics(),
@@ -329,7 +329,7 @@ class ReportTimelineNode extends ConsumerWidget {
                       ],
                     ),
                     Positioned(
-                      top: -4,
+                      top: -16,
                       right: 16,
                       child: PopupMenuButton<String>(
                         icon: Icon(
