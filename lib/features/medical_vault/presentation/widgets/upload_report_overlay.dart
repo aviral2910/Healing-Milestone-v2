@@ -53,7 +53,6 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
   @override
   void initState() {
     super.initState();
-    _fetchTags('');
   }
 
   @override
@@ -72,19 +71,25 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
 
 
   Future<void> _fetchTags(String query) async {
+    if (query.trim().isEmpty) {
+      if (mounted) {
+        setState(() {
+          _suggestedTypes = [];
+          _isLoadingTags = false;
+        });
+      }
+      return;
+    }
+    
     setState(() => _isLoadingTags = true);
     try {
       final repo = ref.read(medicalVaultRepositoryProvider);
       final tags = await repo.searchReportTags(query);
       if (mounted) {
         setState(() {
-          if (query.isEmpty) {
-            _suggestedTypes = tags;
-          } else {
-            _suggestedTypes = tags;
-            if (!tags.any((t) => t.toLowerCase() == query.toLowerCase())) {
-              _suggestedTypes.insert(0, query);
-            }
+          _suggestedTypes = tags;
+          if (!tags.any((t) => t.toLowerCase() == query.trim().toLowerCase())) {
+            _suggestedTypes.insert(0, query.trim());
           }
           _isLoadingTags = false;
         });
@@ -367,7 +372,7 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
                             height: 1.5,
                           ),
                           decoration: InputDecoration(
-                            hintText: 'Search or add custom type...',
+                            hintText: 'Search tags (e.g. CBC, MRI, Prescription)...',
                             hintStyle: TextStyle(
                               color: theme.hintColor.withValues(alpha: 0.5),
                             ),
@@ -387,14 +392,12 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
                                   icon: Icon(Icons.add_circle, color: theme.colorScheme.primary),
                                   onPressed: () {
                                     _addCustomType(_customTypeController.text);
-                                    _fetchTags('');
-                                  },
+                                                                  },
                                 ),
                           ),
                           onSubmitted: (val) {
                             _addCustomType(val);
-                            _fetchTags('');
-                          },
+                                                  },
                         ),
                         const SizedBox(height: 12),
                         // Suggestions horizontally scrollable
@@ -414,8 +417,7 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
                                         _reportTypes.add(type);
                                         _customTypeController.clear();
                                       });
-                                      _fetchTags('');
-                                    },
+                                                                      },
                                     backgroundColor: theme.colorScheme.surface,
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(12),

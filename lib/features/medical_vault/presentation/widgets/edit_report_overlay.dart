@@ -69,7 +69,6 @@ class _EditReportOverlayState extends ConsumerState<EditReportOverlay> {
     super.initState();
     _reportTypes = List.from(widget.report.reportTypes);
     _encounterDate = widget.report.encounterDate;
-    _fetchTags('');
   }
 
   @override
@@ -87,24 +86,25 @@ class _EditReportOverlayState extends ConsumerState<EditReportOverlay> {
   }
 
   Future<void> _fetchTags(String query) async {
+    if (query.trim().isEmpty) {
+      if (mounted) {
+        setState(() {
+          _suggestedTypes = [];
+          _isLoadingTags = false;
+        });
+      }
+      return;
+    }
+    
     setState(() => _isLoadingTags = true);
     try {
       final repo = ref.read(medicalVaultRepositoryProvider);
       final tags = await repo.searchReportTags(query);
       if (mounted) {
         setState(() {
-          if (query.isEmpty) {
-            _suggestedTypes = tags;
-for (var tag in tags) {
-              if (!_suggestedTypes.map((e) => e.toLowerCase()).contains(tag.toLowerCase())) {
-                _suggestedTypes.add(tag);
-              }
-            }
-          } else {
-            _suggestedTypes = tags;
-            if (!tags.any((t) => t.toLowerCase() == query.toLowerCase())) {
-              _suggestedTypes.insert(0, query);
-            }
+          _suggestedTypes = tags;
+          if (!tags.any((t) => t.toLowerCase() == query.trim().toLowerCase())) {
+            _suggestedTypes.insert(0, query.trim());
           }
           _isLoadingTags = false;
         });
@@ -256,7 +256,7 @@ for (var tag in tags) {
                               height: 1.5,
                             ),
                             decoration: InputDecoration(
-                              hintText: 'Search or add custom type...',
+                              hintText: 'Search tags (e.g. CBC, MRI, Prescription)...',
                               hintStyle: TextStyle(
                                 color: theme.hintColor.withValues(alpha: 0.5),
                               ),
@@ -276,14 +276,12 @@ for (var tag in tags) {
                                     icon: Icon(Icons.add_circle, color: theme.colorScheme.primary),
                                     onPressed: () {
                                       _addCustomType(_customTypeController.text);
-                                      _fetchTags('');
-                                    },
+                                                                      },
                                   ),
                             ),
                             onSubmitted: (val) {
                               _addCustomType(val);
-                              _fetchTags('');
-                            },
+                                                      },
                           ),
                           const SizedBox(height: 12),
                           
@@ -303,8 +301,7 @@ for (var tag in tags) {
                                           _reportTypes.add(type);
                                           _customTypeController.clear();
                                         });
-                                        _fetchTags('');
-                                      },
+                                                                          },
                                       backgroundColor: theme.colorScheme.surface,
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(12),
