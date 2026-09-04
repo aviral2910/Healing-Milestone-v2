@@ -8,9 +8,50 @@ part 'medical_vault_providers.g.dart';
 
 @riverpod
 class MedicalRecordsNotifier extends _$MedicalRecordsNotifier {
+  bool _hasMore = true;
+  bool get hasMore => _hasMore;
+  bool _isLoadingMore = false;
+  bool get isLoadingMore => _isLoadingMore;
+
   @override
-  FutureOr<List<MedicalRecord>> build() {
-    return ref.watch(medicalVaultRepositoryProvider).getMedicalRecords();
+  FutureOr<List<MedicalRecord>> build() async {
+    _hasMore = true;
+    _isLoadingMore = false;
+    final items = await ref.watch(medicalVaultRepositoryProvider).getMedicalRecords(skip: 0, limit: 20);
+    if (items.length < 20) {
+      _hasMore = false;
+    }
+    return items;
+  }
+
+  Future<void> loadMore() async {
+    if (_isLoadingMore || !_hasMore) return;
+    
+    final currentList = state.value;
+    if (currentList == null) return;
+
+    _isLoadingMore = true;
+    // Tell listeners we are loading more without wiping out the existing data
+    ref.notifyListeners(); 
+
+    try {
+      final newItems = await ref.read(medicalVaultRepositoryProvider).getMedicalRecords(
+        skip: currentList.length, 
+        limit: 20,
+      );
+      
+      if (newItems.length < 20) {
+        _hasMore = false;
+      }
+      
+      state = AsyncData([...currentList, ...newItems]);
+    } catch (e, st) {
+      // Handle error gently
+      print('Failed to load more records: $e');
+    } finally {
+      _isLoadingMore = false;
+      ref.notifyListeners();
+    }
   }
 
   Future<void> uploadReport({

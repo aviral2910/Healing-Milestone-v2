@@ -16,6 +16,25 @@ class MedicalVaultScreen extends ConsumerStatefulWidget {
 }
 
 class _MedicalVaultScreenState extends ConsumerState<MedicalVaultScreen> {
+  final _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+      ref.read(medicalRecordsProvider.notifier).loadMore();
+    }
+  }
 
 
   @override
@@ -61,9 +80,32 @@ class _MedicalVaultScreenState extends ConsumerState<MedicalVaultScreen> {
           final sortedDates = grouped.keys.toList()..sort((a, b) => b.compareTo(a));
 
           return ListView.builder(
+            controller: _scrollController,
             padding: const EdgeInsets.all(16),
-            itemCount: sortedDates.length,
+            itemCount: sortedDates.length + 1, // +1 for loading indicator
             itemBuilder: (context, index) {
+              if (index == sortedDates.length) {
+                final notifier = ref.read(medicalRecordsProvider.notifier);
+                if (notifier.isLoadingMore) {
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 24),
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                }
+                if (!notifier.hasMore && sortedDates.isNotEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 24),
+                    child: Center(
+                      child: Text(
+                        'No more reports',
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    ),
+                  );
+                }
+                return const SizedBox.shrink();
+              }
+
               final date = sortedDates[index];
               final dateRecords = grouped[date]!;
               

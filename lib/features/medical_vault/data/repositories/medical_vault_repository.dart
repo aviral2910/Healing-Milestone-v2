@@ -15,8 +15,8 @@ class MedicalVaultRepository {
 
   MedicalVaultRepository(this._apiClient);
 
-  Future<List<MedicalRecord>> getMedicalRecords() async {
-    final response = await _apiClient.dio.get('/api/reports');
+  Future<List<MedicalRecord>> getMedicalRecords({int skip = 0, int limit = 20}) async {
+    final response = await _apiClient.dio.get('/api/reports?skip=$skip&limit=$limit');
     return (response.data as List).map((json) => MedicalRecord.fromJson(json)).toList();
   }
 
