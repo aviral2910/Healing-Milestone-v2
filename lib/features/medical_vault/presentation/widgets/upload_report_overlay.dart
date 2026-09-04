@@ -48,6 +48,25 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
   List<PlatformFile> _selectedFiles = [];
   bool _isUploading = false;
 
+  void _addCustomType(String value) {
+    final custom = value.trim();
+    if (custom.isEmpty) return;
+
+    // Check if it matches a suggested type case-insensitively
+    final suggestedMatch = _suggestedTypes.where((s) => s.toLowerCase() == custom.toLowerCase()).toList();
+    final typeToAdd = suggestedMatch.isNotEmpty ? suggestedMatch.first : custom;
+
+    // Check if we already have it in the selected list
+    final alreadyAdded = _reportTypes.any((t) => t.toLowerCase() == typeToAdd.toLowerCase());
+
+    setState(() {
+      if (!alreadyAdded) {
+        _reportTypes.add(typeToAdd);
+      }
+      _customTypeController.clear();
+    });
+  }
+
   Future<void> _pickFiles() async {
     final result = await FilePicker.pickFiles(
       type: FileType.custom,
@@ -148,9 +167,7 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
 
   Future<void> _submit() async {
     if (_customTypeController.text.trim().isNotEmpty) {
-      if (!_reportTypes.contains(_customTypeController.text.trim())) {
-        _reportTypes.add(_customTypeController.text.trim());
-      }
+      _addCustomType(_customTypeController.text);
     }
     if (_reportTypes.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select at least one report type')));
@@ -264,54 +281,63 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: [
-                            ..._suggestedTypes.map((type) {
-                              final isSelected = _reportTypes.contains(type);
-                              return FilterChip(
-                                label: Text(type),
-                                selected: isSelected,
-                                onSelected: (selected) {
-                                  setState(() {
-                                    if (selected) {
-                                      _reportTypes.add(type);
-                                    } else {
-                                      _reportTypes.remove(type);
-                                    }
-                                  });
-                                },
-                                backgroundColor: theme.colorScheme.surface,
-                                selectedColor: theme.colorScheme.primary.withValues(alpha: 0.2),
-                                checkmarkColor: theme.colorScheme.primary,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  side: BorderSide(
-                                    color: isSelected 
-                                        ? theme.colorScheme.primary.withValues(alpha: 0.5) 
-                                        : theme.dividerColor.withValues(alpha: 0.2),
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          physics: const BouncingScrollPhysics(),
+                          clipBehavior: Clip.none,
+                          child: Row(
+                            children: [
+                              ..._suggestedTypes.map((type) {
+                                final isSelected = _reportTypes.contains(type);
+                                return Padding(
+                                  padding: const EdgeInsets.only(right: 8.0),
+                                  child: FilterChip(
+                                    label: Text(type),
+                                    selected: isSelected,
+                                    onSelected: (selected) {
+                                      setState(() {
+                                        if (selected) {
+                                          _reportTypes.add(type);
+                                        } else {
+                                          _reportTypes.remove(type);
+                                        }
+                                      });
+                                    },
+                                    backgroundColor: theme.colorScheme.surface,
+                                    selectedColor: theme.colorScheme.primary.withValues(alpha: 0.2),
+                                    checkmarkColor: theme.colorScheme.primary,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      side: BorderSide(
+                                        color: isSelected 
+                                            ? theme.colorScheme.primary.withValues(alpha: 0.5) 
+                                            : theme.dividerColor.withValues(alpha: 0.2),
+                                      ),
+                                    ),
                                   ),
-                                ),
-                              );
-                            }),
-                            ..._reportTypes.where((t) => !_suggestedTypes.contains(t)).map((type) {
-                              return Chip(
-                                label: Text(type),
-                                onDeleted: () {
-                                  setState(() {
-                                    _reportTypes.remove(type);
-                                  });
-                                },
-                                backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.2),
-                                deleteIconColor: theme.colorScheme.primary,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  side: BorderSide(color: theme.colorScheme.primary.withValues(alpha: 0.5)),
-                                ),
-                              );
-                            }),
-                          ],
+                                );
+                              }),
+                              ..._reportTypes.where((t) => !_suggestedTypes.contains(t)).map((type) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(right: 8.0),
+                                  child: Chip(
+                                    label: Text(type),
+                                    onDeleted: () {
+                                      setState(() {
+                                        _reportTypes.remove(type);
+                                      });
+                                    },
+                                    backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.2),
+                                    deleteIconColor: theme.colorScheme.primary,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      side: BorderSide(color: theme.colorScheme.primary.withValues(alpha: 0.5)),
+                                    ),
+                                  ),
+                                );
+                              }),
+                            ],
+                          ),
                         ),
                         const SizedBox(height: 12),
                         TextField(
@@ -333,26 +359,10 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
                             contentPadding: const EdgeInsets.all(20),
                             suffixIcon: IconButton(
                               icon: Icon(Icons.add_circle, color: theme.colorScheme.primary),
-                              onPressed: () {
-                                final custom = _customTypeController.text.trim();
-                                if (custom.isNotEmpty && !_reportTypes.contains(custom)) {
-                                  setState(() {
-                                    _reportTypes.add(custom);
-                                    _customTypeController.clear();
-                                  });
-                                }
-                              },
+                              onPressed: () => _addCustomType(_customTypeController.text),
                             ),
                           ),
-                          onSubmitted: (value) {
-                            final custom = value.trim();
-                            if (custom.isNotEmpty && !_reportTypes.contains(custom)) {
-                              setState(() {
-                                _reportTypes.add(custom);
-                                _customTypeController.clear();
-                              });
-                            }
-                          },
+                          onSubmitted: _addCustomType,
                         ),
                         const SizedBox(height: 24),
 
