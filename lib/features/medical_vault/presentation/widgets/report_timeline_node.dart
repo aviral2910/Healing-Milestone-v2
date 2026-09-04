@@ -21,74 +21,97 @@ class ReportTimelineNode extends ConsumerWidget {
   }) : super(key: key);
 
   void _showFullScreenGallery(BuildContext context, int initialIndex) {
-    
     Navigator.of(context, rootNavigator: false).push(
       PageRouteBuilder(
         opaque: false,
         barrierColor: Colors.black.withValues(alpha: 0.9),
         barrierDismissible: true,
         pageBuilder: (context, _, __) {
-        return Scaffold(
-          backgroundColor: Colors.transparent,
-          body: Stack(
-            children: [
-              Positioned.fill(
-                child: Builder(
-                  builder: (context) {
-                    final file = report.files[initialIndex];
-                    final isImage = file.fileType.startsWith('image/');
-                    
-                    if (isImage) {
-                      return InteractiveViewer(
-                        minScale: 1.0,
-                        maxScale: 5.0,
-                        panEnabled: true,
-                        scaleEnabled: true,
-                        child: Center(
-                          child: CachedNetworkImage(
-                            imageUrl: file.url,
-                            fit: BoxFit.contain,
-                            placeholder: (context, url) => Center(
-                              child: SizedBox(
-                                width: 40, height: 40,
-                                child: CircularProgressIndicator(
-                                  valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
+          return Scaffold(
+            backgroundColor: Colors.transparent,
+            body: Stack(
+              children: [
+                Positioned.fill(
+                  child: Builder(
+                    builder: (context) {
+                      final file = report.files[initialIndex];
+                      final isImage = file.fileType.startsWith('image/');
+
+                      if (isImage) {
+                        return InteractiveViewer(
+                          minScale: 1.0,
+                          maxScale: 5.0,
+                          panEnabled: true,
+                          scaleEnabled: true,
+                          child: Center(
+                            child: CachedNetworkImage(
+                              imageUrl: file.url,
+                              fit: BoxFit.contain,
+                              placeholder: (context, url) => Center(
+                                child: SizedBox(
+                                  width: 40,
+                                  height: 40,
+                                  child: CircularProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Theme.of(context).colorScheme.primary,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
                           ),
+                        );
+                      }
+                      if (file.fileType == 'application/pdf') {
+                        return SfPdfViewer.network(
+                          file.url,
+                          canShowScrollHead: false,
+                          canShowScrollStatus: false,
+                          pageSpacing: 2,
+                        );
+                      }
+
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.insert_drive_file_rounded,
+                              size: 80,
+                              color: Colors.white.withValues(alpha: 0.5),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              file.fileName,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
                         ),
                       );
-                    }
-                    if (file.fileType == 'application/pdf') {
-                      return SfPdfViewer.network(file.url, canShowScrollHead: false, canShowScrollStatus: false, pageSpacing: 2);
-                    }
-                    
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.insert_drive_file_rounded, size: 80, color: Colors.white.withValues(alpha: 0.5)),
-                          const SizedBox(height: 16),
-                          Text(file.fileName, style: const TextStyle(color: Colors.white, fontSize: 16)),
-                        ],
-                      ),
-                    );
-                  }
+                    },
+                  ),
                 ),
-              ),
-              Positioned(
-                top: MediaQuery.of(context).padding.top + 16,
-                right: 16,
-                child: IconButton(
-                  icon: const Icon(Icons.close_rounded, color: Colors.white, size: 30),
-                  onPressed: () => Navigator.pop(context),
+                Positioned(
+                  top: MediaQuery.of(context).padding.top + 16,
+                  right: 16,
+                  child: IconButton(
+                    icon: const Icon(
+                      Icons.close_rounded,
+                      color: Colors.white,
+                      size: 30,
+                    ),
+                    onPressed: () => Navigator.pop(context),
+                  ),
                 ),
-              ),            ],
-          ),
-        );
-      },
-    ));
+              ],
+            ),
+          );
+        },
+      ),
+    );
   }
 
   @override
@@ -142,18 +165,30 @@ class ReportTimelineNode extends ConsumerWidget {
                           physics: const BouncingScrollPhysics(),
                           padding: const EdgeInsets.only(left: 20, right: 40),
                           child: Row(
-                            children: report.reportTypes.asMap().entries.map((entry) {
+                            children: report.reportTypes.asMap().entries.map((
+                              entry,
+                            ) {
                               final index = entry.key;
                               final type = entry.value;
                               return Padding(
-                                padding: EdgeInsets.only(right: index == report.reportTypes.length - 1 ? 0 : 8.0),
+                                padding: EdgeInsets.only(
+                                  right: index == report.reportTypes.length - 1
+                                      ? 0
+                                      : 8.0,
+                                ),
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 4,
+                                  ),
                                   decoration: BoxDecoration(
-                                    color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                                    color: theme.colorScheme.primary.withValues(
+                                      alpha: 0.1,
+                                    ),
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(
-                                      color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                                      color: theme.colorScheme.primary
+                                          .withValues(alpha: 0.2),
                                     ),
                                   ),
                                   child: Text(
@@ -168,7 +203,7 @@ class ReportTimelineNode extends ConsumerWidget {
                             }).toList(),
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 12),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 20),
                           child: Text(
@@ -178,7 +213,7 @@ class ReportTimelineNode extends ConsumerWidget {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                         SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
                           physics: const BouncingScrollPhysics(),
@@ -187,25 +222,38 @@ class ReportTimelineNode extends ConsumerWidget {
                             children: report.files.asMap().entries.map((entry) {
                               final index = entry.key;
                               final file = entry.value;
-                              final isImage = file.fileType.startsWith('image/');
+                              final isImage = file.fileType.startsWith(
+                                'image/',
+                              );
                               return Padding(
-                                padding: EdgeInsets.only(right: index == report.files.length - 1 ? 0 : 12.0),
+                                padding: EdgeInsets.only(
+                                  right: index == report.files.length - 1
+                                      ? 0
+                                      : 12.0,
+                                ),
                                 child: InkWell(
-                                  onTap: () => _showFullScreenGallery(context, index),
+                                  onTap: () =>
+                                      _showFullScreenGallery(context, index),
                                   borderRadius: BorderRadius.circular(16),
                                   child: Container(
                                     width: 90,
                                     height: 90,
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(16),
-                                      border: Border.all(color: theme.dividerColor.withValues(alpha: 0.2)),
+                                      border: Border.all(
+                                        color: theme.dividerColor.withValues(
+                                          alpha: 0.2,
+                                        ),
+                                      ),
                                       color: theme.colorScheme.surface,
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.black.withValues(alpha: 0.05),
+                                          color: Colors.black.withValues(
+                                            alpha: 0.05,
+                                          ),
                                           blurRadius: 8,
                                           offset: const Offset(0, 2),
-                                        )
+                                        ),
                                       ],
                                     ),
                                     child: ClipRRect(
@@ -214,32 +262,57 @@ class ReportTimelineNode extends ConsumerWidget {
                                           ? CachedNetworkImage(
                                               imageUrl: file.url,
                                               fit: BoxFit.cover,
-                                              placeholder: (context, url) => Shimmer.fromColors(
-                                                baseColor: theme.colorScheme.primary.withValues(alpha: 0.1),
-                                                highlightColor: theme.colorScheme.primary.withValues(alpha: 0.25),
-                                                child: Container(color: Colors.white),
-                                              ),
-                                              errorWidget: (context, url, error) => const Icon(Icons.error),
+                                              placeholder: (context, url) =>
+                                                  Shimmer.fromColors(
+                                                    baseColor: theme
+                                                        .colorScheme
+                                                        .primary
+                                                        .withValues(alpha: 0.1),
+                                                    highlightColor: theme
+                                                        .colorScheme
+                                                        .primary
+                                                        .withValues(
+                                                          alpha: 0.25,
+                                                        ),
+                                                    child: Container(
+                                                      color: Colors.white,
+                                                    ),
+                                                  ),
+                                              errorWidget:
+                                                  (context, url, error) =>
+                                                      const Icon(Icons.error),
                                             )
                                           : Center(
                                               child: Column(
-                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
                                                 children: [
                                                   Icon(
-                                                    Icons.picture_as_pdf_rounded,
+                                                    Icons
+                                                        .picture_as_pdf_rounded,
                                                     size: 36,
-                                                    color: Colors.redAccent.withValues(alpha: 0.8),
+                                                    color: Colors.redAccent
+                                                        .withValues(alpha: 0.8),
                                                   ),
                                                   const SizedBox(height: 4),
                                                   Padding(
-                                                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                          horizontal: 4.0,
+                                                        ),
                                                     child: Text(
                                                       file.fileName,
                                                       maxLines: 1,
-                                                      overflow: TextOverflow.ellipsis,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
                                                       style: TextStyle(
                                                         fontSize: 10,
-                                                        color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                                                        color: theme
+                                                            .colorScheme
+                                                            .onSurface
+                                                            .withValues(
+                                                              alpha: 0.6,
+                                                            ),
                                                       ),
                                                     ),
                                                   ),
@@ -256,8 +329,8 @@ class ReportTimelineNode extends ConsumerWidget {
                       ],
                     ),
                     Positioned(
-                      top: -12,
-                      right: 8,
+                      top: -4,
+                      right: 16,
                       child: PopupMenuButton<String>(
                         icon: Icon(
                           Icons.more_vert_rounded,
@@ -273,21 +346,30 @@ class ReportTimelineNode extends ConsumerWidget {
                               context: context,
                               builder: (context) => AlertDialog(
                                 title: const Text('Delete Report'),
-                                content: const Text('Are you sure you want to permanently delete this report and its files?'),
+                                content: const Text(
+                                  'Are you sure you want to permanently delete this report and its files?',
+                                ),
                                 actions: [
                                   TextButton(
-                                    onPressed: () => Navigator.pop(context, false),
+                                    onPressed: () =>
+                                        Navigator.pop(context, false),
                                     child: const Text('Cancel'),
                                   ),
                                   TextButton(
-                                    onPressed: () => Navigator.pop(context, true),
-                                    child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                                    onPressed: () =>
+                                        Navigator.pop(context, true),
+                                    child: const Text(
+                                      'Delete',
+                                      style: TextStyle(color: Colors.red),
+                                    ),
                                   ),
                                 ],
                               ),
                             );
                             if (confirm == true) {
-                              ref.read(medicalRecordsProvider.notifier).deleteReport(report.id);
+                              ref
+                                  .read(medicalRecordsProvider.notifier)
+                                  .deleteReport(report.id);
                             }
                           }
                         },
@@ -389,5 +471,3 @@ class _ReportTimelinePainter extends CustomPainter {
         oldDelegate.dotColor != dotColor;
   }
 }
-
-
