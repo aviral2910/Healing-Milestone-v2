@@ -143,51 +143,66 @@ class ReportTimelineNode extends ConsumerWidget {
                       ),
                       const SizedBox(height: 16),
                       Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
+                        spacing: 12,
+                        runSpacing: 12,
                         children: report.files.map((file) {
-                          final isPdf = file.fileType.contains('pdf');
+                          final isImage = file.fileType.startsWith('image/');
                           final index = report.files.indexOf(file);
                           return InkWell(
-                            onTap: () {
-                              if (isPdf) {
-                                // For PDF, we could launch a URL or show it in a PDF viewer.
-                                // For now, we will just open the gallery which has a placeholder for PDFs.
-                                _showFullScreenGallery(context, index);
-                              } else {
-                                _showFullScreenGallery(context, index);
-                              }
-                            },
-                            borderRadius: BorderRadius.circular(12),
+                            onTap: () => _showFullScreenGallery(context, index),
+                            borderRadius: BorderRadius.circular(16),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              width: 90,
+                              height: 90,
                               decoration: BoxDecoration(
-                                color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.2)),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    isPdf ? Icons.picture_as_pdf_rounded : Icons.image_rounded,
-                                    color: theme.colorScheme.primary,
-                                    size: 16,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Flexible(
-                                    child: Text(
-                                      file.fileName,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        color: theme.colorScheme.primary,
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: theme.dividerColor.withValues(alpha: 0.2)),
+                                color: theme.colorScheme.surface,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.05),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  )
                                 ],
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(16),
+                                child: isImage
+                                    ? CachedNetworkImage(
+                                        imageUrl: file.url,
+                                        fit: BoxFit.cover,
+                                        placeholder: (context, url) => Container(
+                                          color: theme.dividerColor.withValues(alpha: 0.1),
+                                          child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                                        ),
+                                        errorWidget: (context, url, error) => const Icon(Icons.error),
+                                      )
+                                    : Center(
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Icon(
+                                              Icons.picture_as_pdf_rounded,
+                                              size: 36,
+                                              color: Colors.redAccent.withValues(alpha: 0.8),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Padding(
+                                              padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                                              child: Text(
+                                                file.fileName,
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(
+                                                  fontSize: 10,
+                                                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
                               ),
                             ),
                           );
