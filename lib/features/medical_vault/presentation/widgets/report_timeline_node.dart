@@ -219,10 +219,29 @@ class ReportTimelineNode extends ConsumerWidget {
                           final imageEntries = indexedFiles.where((e) => e.value.fileType.startsWith('image/')).toList();
                           final docEntries = indexedFiles.where((e) => !e.value.fileType.startsWith('image/')).toList();
                           
-                          Widget buildFileItem(MapEntry<int, dynamic> entry, bool isLast) {
+                          Widget buildSectionHeader(String title, IconData icon) {
+                            return Padding(
+                              padding: const EdgeInsets.only(left: 20, right: 20, bottom: 8),
+                              child: Row(
+                                children: [
+                                  Icon(icon, size: 14, color: theme.colorScheme.onSurfaceVariant),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    title.toUpperCase(),
+                                    style: theme.textTheme.labelSmall?.copyWith(
+                                      color: theme.colorScheme.onSurfaceVariant,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 1.2,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
+                          
+                          Widget buildImageItem(MapEntry<int, dynamic> entry, bool isLast) {
                             final index = entry.key;
                             final file = entry.value;
-                            final isImage = file.fileType.startsWith('image/');
                             return Padding(
                               padding: EdgeInsets.only(right: isLast ? 0 : 12.0),
                               child: InkWell(
@@ -245,42 +264,73 @@ class ReportTimelineNode extends ConsumerWidget {
                                   ),
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(16),
-                                    child: isImage
-                                        ? CachedNetworkImage(
-                                            imageUrl: file.url,
-                                            fit: BoxFit.cover,
-                                            placeholder: (context, url) => Shimmer.fromColors(
-                                              baseColor: theme.colorScheme.primary.withValues(alpha: 0.1),
-                                              highlightColor: theme.colorScheme.primary.withValues(alpha: 0.25),
-                                              child: Container(color: Colors.white),
+                                    child: CachedNetworkImage(
+                                      imageUrl: file.url,
+                                      fit: BoxFit.cover,
+                                      placeholder: (context, url) => Shimmer.fromColors(
+                                        baseColor: theme.colorScheme.primary.withValues(alpha: 0.1),
+                                        highlightColor: theme.colorScheme.primary.withValues(alpha: 0.25),
+                                        child: Container(color: Colors.white),
+                                      ),
+                                      errorWidget: (context, url, error) => const Icon(Icons.error),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          }
+                          
+                          Widget buildDocItem(MapEntry<int, dynamic> entry, bool isLast) {
+                            final index = entry.key;
+                            final file = entry.value;
+                            return Padding(
+                              padding: EdgeInsets.only(right: isLast ? 0 : 12.0),
+                              child: InkWell(
+                                onTap: () => _showFullScreenGallery(context, index),
+                                borderRadius: BorderRadius.circular(16),
+                                child: Container(
+                                  width: 220,
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(color: theme.dividerColor.withValues(alpha: 0.2)),
+                                    color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(10),
+                                        decoration: BoxDecoration(
+                                          color: Colors.redAccent.withValues(alpha: 0.1),
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        child: const Icon(Icons.picture_as_pdf_rounded, color: Colors.redAccent, size: 24),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              file.fileName,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: theme.textTheme.bodyMedium?.copyWith(
+                                                fontWeight: FontWeight.w600,
+                                              ),
                                             ),
-                                            errorWidget: (context, url, error) => const Icon(Icons.error),
-                                          )
-                                        : Center(
-                                            child: Column(
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                                              children: [
-                                                Icon(
-                                                  Icons.picture_as_pdf_rounded,
-                                                  size: 36,
-                                                  color: Colors.redAccent.withValues(alpha: 0.8),
-                                                ),
-                                                const SizedBox(height: 4),
-                                                Padding(
-                                                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                                                  child: Text(
-                                                    file.fileName,
-                                                    maxLines: 1,
-                                                    overflow: TextOverflow.ellipsis,
-                                                    style: TextStyle(
-                                                      fontSize: 10,
-                                                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              'PDF Document',
+                                              style: theme.textTheme.labelSmall?.copyWith(
+                                                color: theme.colorScheme.onSurfaceVariant,
+                                              ),
                                             ),
-                                          ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
@@ -290,30 +340,34 @@ class ReportTimelineNode extends ConsumerWidget {
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              if (imageEntries.isNotEmpty)
+                              if (imageEntries.isNotEmpty) ...[
+                                buildSectionHeader('Images', Icons.image_outlined),
                                 SingleChildScrollView(
                                   scrollDirection: Axis.horizontal,
                                   physics: const BouncingScrollPhysics(),
                                   padding: const EdgeInsets.symmetric(horizontal: 20),
                                   child: Row(
                                     children: imageEntries.asMap().entries.map((e) {
-                                      return buildFileItem(e.value, e.key == imageEntries.length - 1);
+                                      return buildImageItem(e.value, e.key == imageEntries.length - 1);
                                     }).toList(),
                                   ),
                                 ),
+                              ],
                               if (imageEntries.isNotEmpty && docEntries.isNotEmpty)
-                                const SizedBox(height: 16),
-                              if (docEntries.isNotEmpty)
+                                const SizedBox(height: 20),
+                              if (docEntries.isNotEmpty) ...[
+                                buildSectionHeader('Documents', Icons.description_outlined),
                                 SingleChildScrollView(
                                   scrollDirection: Axis.horizontal,
                                   physics: const BouncingScrollPhysics(),
                                   padding: const EdgeInsets.symmetric(horizontal: 20),
                                   child: Row(
                                     children: docEntries.asMap().entries.map((e) {
-                                      return buildFileItem(e.value, e.key == docEntries.length - 1);
+                                      return buildDocItem(e.value, e.key == docEntries.length - 1);
                                     }).toList(),
                                   ),
                                 ),
+                              ],
                             ],
                           );
                         }),
