@@ -231,7 +231,10 @@ class ReportTimelineNode extends ConsumerWidget {
                                 )
                                 .toList();
 
-                            Widget buildSectionHeader(IconData icon, int count) {
+                            Widget buildSectionHeader(
+                              IconData icon,
+                              int count,
+                            ) {
                               return Padding(
                                 padding: const EdgeInsets.only(
                                   left: 20,
@@ -239,6 +242,8 @@ class ReportTimelineNode extends ConsumerWidget {
                                   bottom: 16,
                                 ),
                                 child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
                                     Icon(
                                       icon,
