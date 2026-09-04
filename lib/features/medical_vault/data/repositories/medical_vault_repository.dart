@@ -13,7 +13,7 @@ class MedicalVaultRepository {
   MedicalVaultRepository(this._apiClient);
 
   Future<List<MedicalRecord>> getMedicalRecords() async {
-    final response = await _apiClient.dio.get('/reports');
+    final response = await _apiClient.dio.get('/api/reports');
     return (response.data as List).map((json) => MedicalRecord.fromJson(json)).toList();
   }
 
@@ -27,7 +27,7 @@ class MedicalVaultRepository {
 
     // 1. Get Presigned URL
     final presignedResponse = await _apiClient.dio.get(
-      '/reports/upload-url',
+      '/api/reports/upload-url',
       queryParameters: {
         'file_name': fileName,
         'file_type': fileType,
@@ -52,7 +52,7 @@ class MedicalVaultRepository {
 
     // 3. Save to backend
     final response = await _apiClient.dio.post(
-      '/reports',
+      '/api/reports',
       data: {
         'encounterDate': encounterDate.toIso8601String().split('T').first,
         'title': title,
@@ -65,13 +65,13 @@ class MedicalVaultRepository {
   }
 
   Future<void> deleteReport(String id) async {
-    await _apiClient.dio.delete('/reports/$id');
+    await _apiClient.dio.delete('/api/reports/$id');
   }
 
   // --- Mix Views ---
 
   Future<List<MixView>> getMixViews() async {
-    final response = await _apiClient.dio.get('/mix-views');
+    final response = await _apiClient.dio.get('/api/mix-views');
     return (response.data as List).map((json) => MixView.fromJson(json)).toList();
   }
 
@@ -82,7 +82,7 @@ class MedicalVaultRepository {
     required int durationHours,
   }) async {
     final response = await _apiClient.dio.post(
-      '/mix-views',
+      '/api/mix-views',
       data: {
         'name': name,
         'journeyId': journeyId,
@@ -94,7 +94,7 @@ class MedicalVaultRepository {
   }
 
   Future<void> revokeMixView(String id) async {
-    await _apiClient.dio.delete('/mix-views/$id');
+    await _apiClient.dio.delete('/api/mix-views/$id');
   }
 
   String _getFileType(String fileName) {
