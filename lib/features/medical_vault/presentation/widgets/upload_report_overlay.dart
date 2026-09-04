@@ -341,25 +341,32 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
                         const SizedBox(height: 16),
                         // Selected Tags
                         if (_reportTypes.isNotEmpty) ...[
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: _reportTypes.map((type) {
-                              return Chip(
-                                label: Text(type),
-                                onDeleted: () {
-                                  setState(() {
-                                    _reportTypes.remove(type);
-                                  });
-                                },
-                                backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.2),
-                                deleteIconColor: theme.colorScheme.primary,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  side: BorderSide(color: theme.colorScheme.primary.withValues(alpha: 0.5)),
-                                ),
-                              );
-                            }).toList(),
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            physics: const BouncingScrollPhysics(),
+                            child: Row(
+                              children: _reportTypes.asMap().entries.map((entry) {
+                                final index = entry.key;
+                                final type = entry.value;
+                                return Padding(
+                                  padding: EdgeInsets.only(right: index == _reportTypes.length - 1 ? 0 : 8.0),
+                                  child: Chip(
+                                    label: Text(type),
+                                    onDeleted: () {
+                                      setState(() {
+                                        _reportTypes.remove(type);
+                                      });
+                                    },
+                                    backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.2),
+                                    deleteIconColor: theme.colorScheme.primary,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      side: BorderSide(color: theme.colorScheme.primary.withValues(alpha: 0.5)),
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
                           ),
                           const SizedBox(height: 16),
                         ],
