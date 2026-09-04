@@ -214,118 +214,109 @@ class ReportTimelineNode extends ConsumerWidget {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          physics: const BouncingScrollPhysics(),
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: Row(
-                            children: report.files.asMap().entries.map((entry) {
-                              final index = entry.key;
-                              final file = entry.value;
-                              final isImage = file.fileType.startsWith(
-                                'image/',
-                              );
-                              return Padding(
-                                padding: EdgeInsets.only(
-                                  right: index == report.files.length - 1
-                                      ? 0
-                                      : 12.0,
-                                ),
-                                child: InkWell(
-                                  onTap: () =>
-                                      _showFullScreenGallery(context, index),
-                                  borderRadius: BorderRadius.circular(16),
-                                  child: Container(
-                                    width: 110,
-                                    height: 110,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(16),
-                                      border: Border.all(
-                                        color: theme.dividerColor.withValues(
-                                          alpha: 0.2,
-                                        ),
-                                      ),
-                                      color: theme.colorScheme.surface,
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withValues(
-                                            alpha: 0.05,
-                                          ),
-                                          blurRadius: 8,
-                                          offset: const Offset(0, 2),
-                                        ),
-                                      ],
-                                    ),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(16),
-                                      child: isImage
-                                          ? CachedNetworkImage(
-                                              imageUrl: file.url,
-                                              fit: BoxFit.cover,
-                                              placeholder: (context, url) =>
-                                                  Shimmer.fromColors(
-                                                    baseColor: theme
-                                                        .colorScheme
-                                                        .primary
-                                                        .withValues(alpha: 0.1),
-                                                    highlightColor: theme
-                                                        .colorScheme
-                                                        .primary
-                                                        .withValues(
-                                                          alpha: 0.25,
-                                                        ),
-                                                    child: Container(
-                                                      color: Colors.white,
-                                                    ),
-                                                  ),
-                                              errorWidget:
-                                                  (context, url, error) =>
-                                                      const Icon(Icons.error),
-                                            )
-                                          : Center(
-                                              child: Column(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  Icon(
-                                                    Icons
-                                                        .picture_as_pdf_rounded,
-                                                    size: 36,
-                                                    color: Colors.redAccent
-                                                        .withValues(alpha: 0.8),
-                                                  ),
-                                                  const SizedBox(height: 4),
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.symmetric(
-                                                          horizontal: 4.0,
-                                                        ),
-                                                    child: Text(
-                                                      file.fileName,
-                                                      maxLines: 1,
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                      style: TextStyle(
-                                                        fontSize: 10,
-                                                        color: theme
-                                                            .colorScheme
-                                                            .onSurface
-                                                            .withValues(
-                                                              alpha: 0.6,
-                                                            ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
+                        Builder(builder: (context) {
+                          final indexedFiles = report.files.asMap().entries.toList();
+                          final imageEntries = indexedFiles.where((e) => e.value.fileType.startsWith('image/')).toList();
+                          final docEntries = indexedFiles.where((e) => !e.value.fileType.startsWith('image/')).toList();
+                          
+                          Widget buildFileItem(MapEntry<int, dynamic> entry, bool isLast) {
+                            final index = entry.key;
+                            final file = entry.value;
+                            final isImage = file.fileType.startsWith('image/');
+                            return Padding(
+                              padding: EdgeInsets.only(right: isLast ? 0 : 12.0),
+                              child: InkWell(
+                                onTap: () => _showFullScreenGallery(context, index),
+                                borderRadius: BorderRadius.circular(16),
+                                child: Container(
+                                  width: 110,
+                                  height: 110,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(color: theme.dividerColor.withValues(alpha: 0.2)),
+                                    color: theme.colorScheme.surface,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withValues(alpha: 0.05),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 2),
+                                      )
+                                    ],
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(16),
+                                    child: isImage
+                                        ? CachedNetworkImage(
+                                            imageUrl: file.url,
+                                            fit: BoxFit.cover,
+                                            placeholder: (context, url) => Shimmer.fromColors(
+                                              baseColor: theme.colorScheme.primary.withValues(alpha: 0.1),
+                                              highlightColor: theme.colorScheme.primary.withValues(alpha: 0.25),
+                                              child: Container(color: Colors.white),
                                             ),
-                                    ),
+                                            errorWidget: (context, url, error) => const Icon(Icons.error),
+                                          )
+                                        : Center(
+                                            child: Column(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                Icon(
+                                                  Icons.picture_as_pdf_rounded,
+                                                  size: 36,
+                                                  color: Colors.redAccent.withValues(alpha: 0.8),
+                                                ),
+                                                const SizedBox(height: 4),
+                                                Padding(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                                                  child: Text(
+                                                    file.fileName,
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    style: TextStyle(
+                                                      fontSize: 10,
+                                                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
                                   ),
                                 ),
-                              );
-                            }).toList(),
-                          ),
-                        ),
+                              ),
+                            );
+                          }
+                          
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (imageEntries.isNotEmpty)
+                                SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  physics: const BouncingScrollPhysics(),
+                                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                                  child: Row(
+                                    children: imageEntries.asMap().entries.map((e) {
+                                      return buildFileItem(e.value, e.key == imageEntries.length - 1);
+                                    }).toList(),
+                                  ),
+                                ),
+                              if (imageEntries.isNotEmpty && docEntries.isNotEmpty)
+                                const SizedBox(height: 16),
+                              if (docEntries.isNotEmpty)
+                                SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  physics: const BouncingScrollPhysics(),
+                                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                                  child: Row(
+                                    children: docEntries.asMap().entries.map((e) {
+                                      return buildFileItem(e.value, e.key == docEntries.length - 1);
+                                    }).toList(),
+                                  ),
+                                ),
+                            ],
+                          );
+                        }),
                       ],
                     ),
                     Positioned(
