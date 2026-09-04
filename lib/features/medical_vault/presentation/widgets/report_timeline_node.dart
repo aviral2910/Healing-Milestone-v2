@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../data/models/medical_vault_models.dart';
 import '../providers/medical_vault_providers.dart';
+import 'edit_report_overlay.dart';
 
 enum TimelinePosition { standalone, start, middle, end }
 
@@ -177,7 +178,9 @@ class ReportTimelineNode extends ConsumerWidget {
                           ),
                           padding: EdgeInsets.zero,
                           onSelected: (value) async {
-                            if (value == 'delete') {
+                            if (value == 'edit') {
+                              EditReportOverlay.show(context, report);
+                            } else if (value == 'delete') {
                               final confirm = await showDialog<bool>(
                                 context: context,
                                 builder: (context) => AlertDialog(
@@ -201,6 +204,10 @@ class ReportTimelineNode extends ConsumerWidget {
                             }
                           },
                           itemBuilder: (context) => [
+                            const PopupMenuItem(
+                              value: 'edit',
+                              child: Text('Edit Tags & Date'),
+                            ),
                             const PopupMenuItem(
                               value: 'delete',
                               child: Text(

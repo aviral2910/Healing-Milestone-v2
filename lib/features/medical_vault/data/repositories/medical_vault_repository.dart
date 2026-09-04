@@ -118,6 +118,21 @@ class MedicalVaultRepository {
     return MedicalRecord.fromJson(response.data);
   }
 
+  Future<MedicalRecord> updateReport({
+    required String id,
+    required List<String> reportTypes,
+    required DateTime encounterDate,
+  }) async {
+    final response = await _apiClient.dio.put(
+      '/api/reports/$id',
+      data: {
+        'encounterDate': encounterDate.toIso8601String().split('T').first,
+        'reportTypes': reportTypes,
+      },
+    );
+    return MedicalRecord.fromJson(response.data);
+  }
+
   Future<void> deleteReport(String id) async {
     await _apiClient.dio.delete('/api/reports/$id');
   }

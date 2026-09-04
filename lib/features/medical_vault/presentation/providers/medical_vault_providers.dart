@@ -30,6 +30,23 @@ class MedicalRecordsNotifier extends _$MedicalRecordsNotifier {
     });
   }
 
+  Future<void> updateReport({
+    required String id,
+    required List<String> reportTypes,
+    required DateTime encounterDate,
+  }) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      final updatedRecord = await ref.read(medicalVaultRepositoryProvider).updateReport(
+        id: id,
+        reportTypes: reportTypes,
+        encounterDate: encounterDate,
+      );
+      final currentList = state.value ?? [];
+      return currentList.map((r) => r.id == id ? updatedRecord : r).toList();
+    });
+  }
+
   Future<void> deleteReport(String id) async {
     await ref.read(medicalVaultRepositoryProvider).deleteReport(id);
     if (state.hasValue) {
