@@ -160,10 +160,20 @@ class ReportTimelineNode extends ConsumerWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        Padding(
+                          padding: const EdgeInsets.only(left: 20, right: 40),
+                          child: Text(
+                            'Added ${DateFormat('MMM d, yyyy').format(report.createdAt)}',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
                         SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
                           physics: const BouncingScrollPhysics(),
-                          padding: const EdgeInsets.only(left: 20, right: 40),
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
                           child: Row(
                             children: report.reportTypes.asMap().entries.map((
                               entry,
@@ -201,16 +211,6 @@ class ReportTimelineNode extends ConsumerWidget {
                                 ),
                               );
                             }).toList(),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: Text(
-                            'Added ${DateFormat('MMM d, yyyy').format(report.createdAt)}',
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
-                            ),
                           ),
                         ),
                         const SizedBox(height: 12),
