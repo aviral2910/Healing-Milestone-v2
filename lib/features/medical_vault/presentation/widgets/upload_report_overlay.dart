@@ -47,6 +47,7 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
   final _customTypeController = TextEditingController();
   List<String> _reportTypes = [];
   List<String> _suggestedTypes = [];
+  List<String> _backendTags = [];
   Timer? _debounce;
   bool _isLoadingTags = false;
 
@@ -75,6 +76,7 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
       if (mounted) {
         setState(() {
           _suggestedTypes = [];
+          _backendTags = [];
           _isLoadingTags = false;
         });
       }
@@ -87,7 +89,8 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
       final tags = await repo.searchReportTags(query);
       if (mounted) {
         setState(() {
-          _suggestedTypes = tags;
+          _backendTags = tags;
+          _suggestedTypes = tags.toList();
           if (!tags.any((t) => t.toLowerCase() == query.trim().toLowerCase())) {
             _suggestedTypes.insert(0, query.trim());
           }
@@ -392,12 +395,20 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
                                   icon: Icon(Icons.add_circle, color: theme.colorScheme.primary),
                                   onPressed: () {
                                     _addCustomType(_customTypeController.text);
-                                                                  },
+                                    setState(() {
+                                      _suggestedTypes = [];
+                                      _backendTags = [];
+                                    });
+                                  },
                                 ),
                           ),
                           onSubmitted: (val) {
                             _addCustomType(val);
-                                                  },
+                            setState(() {
+                              _suggestedTypes = [];
+                              _backendTags = [];
+                            });
+                          },
                         ),
                         const SizedBox(height: 12),
                         // Suggestions horizontally scrollable
@@ -410,19 +421,41 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
                               children: _suggestedTypes.where((t) => !_reportTypes.contains(t)).map((type) {
                                 return Padding(
                                   padding: const EdgeInsets.only(right: 8.0),
-                                  child: ActionChip(
-                                    label: Text(type),
-                                    onPressed: () {
-                                      setState(() {
-                                        _reportTypes.add(type);
-                                        _customTypeController.clear();
-                                      });
-                                                                      },
-                                    backgroundColor: theme.colorScheme.surface,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                      side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.2)),
-                                    ),
+                                  child: Builder(
+                                    builder: (context) {
+                                      final isSystem = _backendTags.contains(type);
+                                      return ActionChip(
+                                        avatar: isSystem 
+                                            ? Icon(Icons.check_circle_outline, size: 16, color: theme.colorScheme.primary) 
+                                            : Icon(Icons.add, size: 16, color: theme.colorScheme.onSurface),
+                                        label: Text(
+                                          isSystem ? type : 'Add "$type"',
+                                          style: TextStyle(
+                                            color: isSystem ? theme.colorScheme.primary : theme.colorScheme.onSurface,
+                                            fontWeight: isSystem ? FontWeight.w600 : FontWeight.normal,
+                                          ),
+                                        ),
+                                        onPressed: () {
+                                          setState(() {
+                                            _reportTypes.add(type);
+                                            _customTypeController.clear();
+                                            _suggestedTypes = [];
+                                            _backendTags = [];
+                                          });
+                                        },
+                                        backgroundColor: isSystem 
+                                            ? theme.colorScheme.primary.withValues(alpha: 0.1) 
+                                            : theme.colorScheme.surface,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                          side: BorderSide(
+                                            color: isSystem 
+                                                ? theme.colorScheme.primary.withValues(alpha: 0.3) 
+                                                : theme.dividerColor.withValues(alpha: 0.2),
+                                          ),
+                                        ),
+                                      );
+                                    }
                                   ),
                                 );
                               }).toList(),

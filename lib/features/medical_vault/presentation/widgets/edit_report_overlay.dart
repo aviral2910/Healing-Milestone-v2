@@ -59,6 +59,7 @@ class _EditReportOverlayState extends ConsumerState<EditReportOverlay> {
   late DateTime _encounterDate;
   
   List<String> _suggestedTypes = [];
+  List<String> _backendTags = [];
   
   Timer? _debounce;
   bool _isLoadingTags = false;
@@ -90,6 +91,7 @@ class _EditReportOverlayState extends ConsumerState<EditReportOverlay> {
       if (mounted) {
         setState(() {
           _suggestedTypes = [];
+          _backendTags = [];
           _isLoadingTags = false;
         });
       }
@@ -102,7 +104,8 @@ class _EditReportOverlayState extends ConsumerState<EditReportOverlay> {
       final tags = await repo.searchReportTags(query);
       if (mounted) {
         setState(() {
-          _suggestedTypes = tags;
+          _backendTags = tags;
+          _suggestedTypes = tags.toList();
           if (!tags.any((t) => t.toLowerCase() == query.trim().toLowerCase())) {
             _suggestedTypes.insert(0, query.trim());
           }
@@ -275,13 +278,21 @@ class _EditReportOverlayState extends ConsumerState<EditReportOverlay> {
                                 : IconButton(
                                     icon: Icon(Icons.add_circle, color: theme.colorScheme.primary),
                                     onPressed: () {
-                                      _addCustomType(_customTypeController.text);
-                                                                      },
+                                    _addCustomType(_customTypeController.text);
+                                    setState(() {
+                                      _suggestedTypes = [];
+                                      _backendTags = [];
+                                    });
+                                  },
                                   ),
                             ),
                             onSubmitted: (val) {
-                              _addCustomType(val);
-                                                      },
+                            _addCustomType(val);
+                            setState(() {
+                              _suggestedTypes = [];
+                              _backendTags = [];
+                            });
+                          },
                           ),
                           const SizedBox(height: 12),
                           
