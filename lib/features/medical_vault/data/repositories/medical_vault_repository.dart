@@ -22,7 +22,7 @@ class MedicalVaultRepository {
 
   Future<MedicalRecord> uploadReport({
     required List<PlatformFile> files,
-    required String title,
+    required List<String> reportTypes,
     required DateTime encounterDate,
   }) async {
     final processedFiles = <File>[];
@@ -110,7 +110,7 @@ class MedicalVaultRepository {
       '/api/reports',
       data: {
         'encounterDate': encounterDate.toIso8601String().split('T').first,
-        'title': title,
+        'reportTypes': reportTypes,
         'files': uploadedFiles,
       },
     );

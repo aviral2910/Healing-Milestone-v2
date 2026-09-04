@@ -150,7 +150,7 @@ class _MixViewBuilderScreenState extends ConsumerState<MixViewBuilderScreen> {
                     
                     return CheckboxListTile(
                       contentPadding: EdgeInsets.zero,
-                      title: Text(r.title, style: const TextStyle(fontWeight: FontWeight.w600)),
+                      title: Text(r.reportTypes.join(', '), style: const TextStyle(fontWeight: FontWeight.w600)),
                       subtitle: Text(DateFormat('MMM d, yyyy').format(r.encounterDate)),
                       value: isSelected,
                       activeColor: theme.colorScheme.primary,

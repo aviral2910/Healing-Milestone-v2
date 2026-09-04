@@ -41,7 +41,9 @@ class UploadReportOverlay extends ConsumerStatefulWidget {
 }
 
 class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
-  final _titleController = TextEditingController();
+  final _customTypeController = TextEditingController();
+  List<String> _reportTypes = [];
+  final List<String> _suggestedTypes = ['CBC', 'LFT', 'KFT', 'Lipid Profile', 'X-Ray', 'MRI', 'Prescription', 'Note'];
   DateTime _encounterDate = DateTime.now();
   List<PlatformFile> _selectedFiles = [];
   bool _isUploading = false;
@@ -145,9 +147,13 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
   }
 
   Future<void> _submit() async {
-    final title = _titleController.text.trim();
-    if (title.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter a title')));
+    if (_customTypeController.text.trim().isNotEmpty) {
+      if (!_reportTypes.contains(_customTypeController.text.trim())) {
+        _reportTypes.add(_customTypeController.text.trim());
+      }
+    }
+    if (_reportTypes.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select at least one report type')));
       return;
     }
     if (_selectedFiles.isEmpty) {
@@ -160,7 +166,7 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
     try {
       await ref.read(medicalRecordsProvider.notifier).uploadReport(
         files: _selectedFiles,
-        title: title,
+        reportTypes: _reportTypes,
         encounterDate: _encounterDate,
       );
       if (mounted) {
@@ -250,21 +256,71 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
                         ),
                         const SizedBox(height: 32),
                         
-                        // Title Input
+                        // Report Types Input
                         Text(
-                          'Title',
+                          'Report Types',
                           style: theme.textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.w500,
                           ),
                         ),
                         const SizedBox(height: 16),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            ..._suggestedTypes.map((type) {
+                              final isSelected = _reportTypes.contains(type);
+                              return FilterChip(
+                                label: Text(type),
+                                selected: isSelected,
+                                onSelected: (selected) {
+                                  setState(() {
+                                    if (selected) {
+                                      _reportTypes.add(type);
+                                    } else {
+                                      _reportTypes.remove(type);
+                                    }
+                                  });
+                                },
+                                backgroundColor: theme.colorScheme.surface,
+                                selectedColor: theme.colorScheme.primary.withValues(alpha: 0.2),
+                                checkmarkColor: theme.colorScheme.primary,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  side: BorderSide(
+                                    color: isSelected 
+                                        ? theme.colorScheme.primary.withValues(alpha: 0.5) 
+                                        : theme.dividerColor.withValues(alpha: 0.2),
+                                  ),
+                                ),
+                              );
+                            }),
+                            ..._reportTypes.where((t) => !_suggestedTypes.contains(t)).map((type) {
+                              return Chip(
+                                label: Text(type),
+                                onDeleted: () {
+                                  setState(() {
+                                    _reportTypes.remove(type);
+                                  });
+                                },
+                                backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.2),
+                                deleteIconColor: theme.colorScheme.primary,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  side: BorderSide(color: theme.colorScheme.primary.withValues(alpha: 0.5)),
+                                ),
+                              );
+                            }),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
                         TextField(
-                          controller: _titleController,
+                          controller: _customTypeController,
                           style: theme.textTheme.bodyLarge?.copyWith(
                             height: 1.5,
                           ),
                           decoration: InputDecoration(
-                            hintText: 'e.g. Blood Test Results, MRI Scan...',
+                            hintText: 'Add custom type (e.g. ECG) and press enter...',
                             hintStyle: TextStyle(
                               color: theme.hintColor.withValues(alpha: 0.5),
                             ),
@@ -275,7 +331,28 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
                             filled: true,
                             fillColor: theme.colorScheme.surface,
                             contentPadding: const EdgeInsets.all(20),
+                            suffixIcon: IconButton(
+                              icon: Icon(Icons.add_circle, color: theme.colorScheme.primary),
+                              onPressed: () {
+                                final custom = _customTypeController.text.trim();
+                                if (custom.isNotEmpty && !_reportTypes.contains(custom)) {
+                                  setState(() {
+                                    _reportTypes.add(custom);
+                                    _customTypeController.clear();
+                                  });
+                                }
+                              },
+                            ),
                           ),
+                          onSubmitted: (value) {
+                            final custom = value.trim();
+                            if (custom.isNotEmpty && !_reportTypes.contains(custom)) {
+                              setState(() {
+                                _reportTypes.add(custom);
+                                _customTypeController.clear();
+                              });
+                            }
+                          },
                         ),
                         const SizedBox(height: 24),
 

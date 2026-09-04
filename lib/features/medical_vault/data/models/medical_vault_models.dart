@@ -20,7 +20,7 @@ abstract class MedicalRecord with _$MedicalRecord {
     required String id,
     required String userId,
     required DateTime encounterDate,
-    required String title,
+    required List<String> reportTypes,
     required List<MedicalRecordFile> files,
     required DateTime createdAt,
   }) = _MedicalRecord;

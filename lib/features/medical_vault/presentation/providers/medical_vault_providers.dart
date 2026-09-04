@@ -15,14 +15,14 @@ class MedicalRecordsNotifier extends _$MedicalRecordsNotifier {
 
   Future<void> uploadReport({
     required List<PlatformFile> files,
-    required String title,
+    required List<String> reportTypes,
     required DateTime encounterDate,
   }) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
       final newRecord = await ref.read(medicalVaultRepositoryProvider).uploadReport(
         files: files,
-        title: title,
+        reportTypes: reportTypes,
         encounterDate: encounterDate,
       );
       final currentList = state.value ?? [];
