@@ -145,52 +145,50 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
         barrierColor: Colors.black.withValues(alpha: 0.9),
         barrierDismissible: true,
         pageBuilder: (context, _, __) {
-        final pageController = PageController(initialPage: initialIndex);
         return Scaffold(
           backgroundColor: Colors.transparent,
           body: Stack(
             children: [
-              PageView.builder(
-                controller: pageController,
-                itemCount: _selectedFiles.length,
-                itemBuilder: (context, index) {
-                  final file = _selectedFiles[index];
-                  final isImage = file.name.toLowerCase().endsWith('.jpg') || 
-                                  file.name.toLowerCase().endsWith('.jpeg') || 
-                                  file.name.toLowerCase().endsWith('.png');
-                  if (isImage && file.path != null) {
-                    return InteractiveViewer(
-                      minScale: 1.0,
-                      maxScale: 5.0,
-                      panEnabled: true,
-                      scaleEnabled: true,
-                      child: Center(
-                        child: Image.file(File(file.path!), fit: BoxFit.contain),
+              Positioned.fill(
+                child: Builder(
+                  builder: (context) {
+                    final file = _selectedFiles[initialIndex];
+                    final isImage = file.name.toLowerCase().endsWith('.jpg') || 
+                                    file.name.toLowerCase().endsWith('.jpeg') || 
+                                    file.name.toLowerCase().endsWith('.png');
+                    if (isImage && file.path != null) {
+                      return InteractiveViewer(
+                        minScale: 1.0,
+                        maxScale: 5.0,
+                        panEnabled: true,
+                        scaleEnabled: true,
+                        child: Center(
+                          child: Image.file(File(file.path!), fit: BoxFit.contain),
+                        ),
+                      );
+                    }
+                    if (file.path != null && file.name.toLowerCase().endsWith('.pdf')) {
+                      return SfPdfViewer.file(
+                        File(file.path!),
+                        canShowScrollHead: false,
+                        canShowScrollStatus: false,
+                        pageSpacing: 2,
+                      );
+                    }
+                    
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.insert_drive_file_rounded, size: 80, color: Colors.white.withValues(alpha: 0.5)),
+                          const SizedBox(height: 16),
+                          Text(file.name, style: const TextStyle(color: Colors.white, fontSize: 16)),
+                        ],
                       ),
                     );
                   }
-                  if (file.path != null && file.name.toLowerCase().endsWith('.pdf')) {
-                    return SfPdfViewer.file(
-                      File(file.path!),
-                      canShowScrollHead: false,
-                      canShowScrollStatus: false,
-                      pageSpacing: 2,
-                    );
-                  }
-                  
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.insert_drive_file_rounded, size: 80, color: Colors.white.withValues(alpha: 0.5)),
-                        const SizedBox(height: 16),
-                        Text(file.name, style: const TextStyle(color: Colors.white, fontSize: 16)),
-                      ],
-                    ),
-                  );
-                },
+                ),
               ),
-
               Positioned(
                 top: MediaQuery.of(context).padding.top + 16,
                 right: 16,
@@ -198,9 +196,7 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
                   icon: const Icon(Icons.close_rounded, color: Colors.white, size: 30),
                   onPressed: () => Navigator.pop(context),
                 ),
-              ),
-
-            ],
+              ),            ],
           ),
         );
       },

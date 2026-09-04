@@ -21,7 +21,6 @@ class ReportTimelineNode extends ConsumerWidget {
   }) : super(key: key);
 
   void _showFullScreenGallery(BuildContext context, int initialIndex) {
-    final isZoomedNotifier = ValueNotifier<bool>(false);
     
     Navigator.of(context, rootNavigator: false).push(
       PageRouteBuilder(
@@ -29,51 +28,55 @@ class ReportTimelineNode extends ConsumerWidget {
         barrierColor: Colors.black.withValues(alpha: 0.9),
         barrierDismissible: true,
         pageBuilder: (context, _, __) {
-        final pageController = PageController(initialPage: initialIndex);
         return Scaffold(
           backgroundColor: Colors.transparent,
           body: Stack(
             children: [
-              ValueListenableBuilder<bool>(
-                valueListenable: isZoomedNotifier,
-                builder: (context, isZoomed, child) {
-                  return PageView.builder(
-                    physics: isZoomed ? const NeverScrollableScrollPhysics() : const BouncingScrollPhysics(),
-                    controller: pageController,
-                    itemCount: report.files.length,
-                itemBuilder: (context, index) {
-                  final file = report.files[index];
-                  final isImage = file.fileType.startsWith('image/');
-                  if (isImage) {
-                    return _GalleryImageItem(
-                      imageUrl: file.url, 
-                      isZoomed: isZoomedNotifier,
+              Positioned.fill(
+                child: Builder(
+                  builder: (context) {
+                    final file = report.files[initialIndex];
+                    final isImage = file.fileType.startsWith('image/');
+                    
+                    if (isImage) {
+                      return InteractiveViewer(
+                        minScale: 1.0,
+                        maxScale: 5.0,
+                        panEnabled: true,
+                        scaleEnabled: true,
+                        child: Center(
+                          child: CachedNetworkImage(
+                            imageUrl: file.url,
+                            fit: BoxFit.contain,
+                            placeholder: (context, url) => Center(
+                              child: SizedBox(
+                                width: 40, height: 40,
+                                child: CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }
+                    if (file.fileType == 'application/pdf') {
+                      return SfPdfViewer.network(file.url, canShowScrollHead: false, canShowScrollStatus: false, pageSpacing: 2);
+                    }
+                    
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.insert_drive_file_rounded, size: 80, color: Colors.white.withValues(alpha: 0.5)),
+                          const SizedBox(height: 16),
+                          Text(file.fileName, style: const TextStyle(color: Colors.white, fontSize: 16)),
+                        ],
+                      ),
                     );
                   }
-                  if (file.fileType == 'application/pdf') {
-                    return SfPdfViewer.network(
-                      file.url,
-                      canShowScrollHead: false,
-                      canShowScrollStatus: false,
-                      pageSpacing: 2,
-                    );
-                  }
-                  
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.insert_drive_file_rounded, size: 80, color: Colors.white.withValues(alpha: 0.5)),
-                        const SizedBox(height: 16),
-                        Text(file.fileName, style: const TextStyle(color: Colors.white, fontSize: 16)),
-                      ],
-                    ),
-                  );
-                },
-              );
-                },
+                ),
               ),
-
               Positioned(
                 top: MediaQuery.of(context).padding.top + 16,
                 right: 16,
@@ -81,9 +84,7 @@ class ReportTimelineNode extends ConsumerWidget {
                   icon: const Icon(Icons.close_rounded, color: Colors.white, size: 30),
                   onPressed: () => Navigator.pop(context),
                 ),
-              ),
-
-            ],
+              ),            ],
           ),
         );
       },
@@ -375,68 +376,4 @@ class _ReportTimelinePainter extends CustomPainter {
   }
 }
 
-class _GalleryImageItem extends StatefulWidget {
-  final String imageUrl;
-  final ValueNotifier<bool> isZoomed;
 
-  const _GalleryImageItem({required this.imageUrl, required this.isZoomed});
-
-  @override
-  State<_GalleryImageItem> createState() => _GalleryImageItemState();
-}
-
-class _GalleryImageItemState extends State<_GalleryImageItem> {
-  final TransformationController _controller = TransformationController();
-
-  @override
-  void initState() {
-    super.initState();
-    _controller.addListener(_onTransformation);
-  }
-
-  void _onTransformation() {
-    final scale = _controller.value.getMaxScaleOnAxis();
-    final isZoomed = scale > 1.01;
-    if (widget.isZoomed.value != isZoomed) {
-      widget.isZoomed.value = isZoomed;
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller.removeListener(_onTransformation);
-    _controller.dispose();
-    if (widget.isZoomed.value) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) return;
-        widget.isZoomed.value = false;
-      });
-    }
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return CachedNetworkImage(
-      imageUrl: widget.imageUrl,
-      imageBuilder: (context, imageProvider) => InteractiveViewer(
-        transformationController: _controller,
-        minScale: 1.0,
-        maxScale: 5.0,
-        panEnabled: true,
-        scaleEnabled: true,
-        child: Center(
-          child: Image(image: imageProvider, fit: BoxFit.contain),
-        ),
-      ),
-      placeholder: (context, url) => Center(
-        child: SizedBox(
-          width: 40, height: 40,
-          child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
-          ),
-        ),
-      ),
-    );
-  }
-}
