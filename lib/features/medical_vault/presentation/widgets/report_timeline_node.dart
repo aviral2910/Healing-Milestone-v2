@@ -219,19 +219,32 @@ class ReportTimelineNode extends ConsumerWidget {
                           final imageEntries = indexedFiles.where((e) => e.value.fileType.startsWith('image/')).toList();
                           final docEntries = indexedFiles.where((e) => !e.value.fileType.startsWith('image/')).toList();
                           
-                          Widget buildSectionHeader(String title, IconData icon) {
+                          Widget buildSectionHeader(String title, int count) {
                             return Padding(
-                              padding: const EdgeInsets.only(left: 20, right: 20, bottom: 8),
+                              padding: const EdgeInsets.only(left: 20, right: 20, bottom: 12),
                               child: Row(
                                 children: [
-                                  Icon(icon, size: 14, color: theme.colorScheme.onSurfaceVariant),
-                                  const SizedBox(width: 6),
                                   Text(
-                                    title.toUpperCase(),
-                                    style: theme.textTheme.labelSmall?.copyWith(
-                                      color: theme.colorScheme.onSurfaceVariant,
-                                      fontWeight: FontWeight.w700,
-                                      letterSpacing: 1.2,
+                                    title,
+                                    style: theme.textTheme.titleSmall?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      color: theme.colorScheme.onSurface,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Text(
+                                      '$count',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: theme.colorScheme.primary,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -252,15 +265,8 @@ class ReportTimelineNode extends ConsumerWidget {
                                   height: 110,
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(color: theme.dividerColor.withValues(alpha: 0.2)),
+                                    border: Border.all(color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3)),
                                     color: theme.colorScheme.surface,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withValues(alpha: 0.05),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 2),
-                                      )
-                                    ],
                                   ),
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(16),
@@ -289,12 +295,19 @@ class ReportTimelineNode extends ConsumerWidget {
                                 onTap: () => _showFullScreenGallery(context, index),
                                 borderRadius: BorderRadius.circular(16),
                                 child: Container(
-                                  width: 220,
+                                  width: 240,
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(color: theme.dividerColor.withValues(alpha: 0.2)),
-                                    color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
+                                    border: Border.all(color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5)),
+                                    color: theme.colorScheme.surface,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withValues(alpha: 0.02),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 2),
+                                      )
+                                    ],
                                   ),
                                   child: Row(
                                     children: [
@@ -320,7 +333,7 @@ class ReportTimelineNode extends ConsumerWidget {
                                                 fontWeight: FontWeight.w600,
                                               ),
                                             ),
-                                            const SizedBox(height: 2),
+                                            const SizedBox(height: 4),
                                             Text(
                                               'PDF Document',
                                               style: theme.textTheme.labelSmall?.copyWith(
@@ -341,7 +354,7 @@ class ReportTimelineNode extends ConsumerWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               if (imageEntries.isNotEmpty) ...[
-                                buildSectionHeader('Images', Icons.image_outlined),
+                                buildSectionHeader('Attached Images', imageEntries.length),
                                 SingleChildScrollView(
                                   scrollDirection: Axis.horizontal,
                                   physics: const BouncingScrollPhysics(),
@@ -354,9 +367,9 @@ class ReportTimelineNode extends ConsumerWidget {
                                 ),
                               ],
                               if (imageEntries.isNotEmpty && docEntries.isNotEmpty)
-                                const SizedBox(height: 20),
+                                const SizedBox(height: 24),
                               if (docEntries.isNotEmpty) ...[
-                                buildSectionHeader('Documents', Icons.description_outlined),
+                                buildSectionHeader('Documents', docEntries.length),
                                 SingleChildScrollView(
                                   scrollDirection: Axis.horizontal,
                                   physics: const BouncingScrollPhysics(),
