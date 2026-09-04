@@ -175,24 +175,11 @@ class MyPathScreen extends ConsumerWidget {
                                       const SizedBox(height: 24),
                                       
                                       // BOTTOM: Info Area
-                                      Row(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Icon(
-                                            Icons.folder_shared_outlined,
-                                            size: 20,
-                                            color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Expanded(
-                                            child: Text(
-                                              "Store, organize, and securely share your clinical reports and tests.",
-                                              style: theme.textTheme.bodyMedium?.copyWith(
-                                                color: theme.colorScheme.onSurfaceVariant,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
+                                      Text(
+                                        "Store, organize, and securely share your clinical reports and tests.",
+                                        style: theme.textTheme.bodyMedium?.copyWith(
+                                          color: theme.colorScheme.onSurfaceVariant,
+                                        ),
                                       ),
                                     ],
                                   ),
