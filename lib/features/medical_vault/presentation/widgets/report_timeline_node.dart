@@ -28,13 +28,9 @@ class ReportTimelineNode extends ConsumerWidget {
         final pageController = PageController(initialPage: initialIndex);
         return Scaffold(
           backgroundColor: Colors.transparent,
-          body: Dismissible(
-            key: const Key('gallery_dismiss'),
-            direction: DismissDirection.vertical,
-            onDismissed: (_) => Navigator.pop(context),
-            child: Stack(
-              children: [
-                PageView.builder(
+          body: Stack(
+            children: [
+              PageView.builder(
                 controller: pageController,
                 itemCount: report.files.length,
                 itemBuilder: (context, index) {
@@ -83,7 +79,6 @@ class ReportTimelineNode extends ConsumerWidget {
               ),
 
             ],
-          ),
           ),
         );
       },

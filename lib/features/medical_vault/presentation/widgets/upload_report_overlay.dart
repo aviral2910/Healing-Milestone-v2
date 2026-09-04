@@ -145,13 +145,9 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
         final pageController = PageController(initialPage: initialIndex);
         return Scaffold(
           backgroundColor: Colors.transparent,
-          body: Dismissible(
-            key: const Key('gallery_dismiss'),
-            direction: DismissDirection.vertical,
-            onDismissed: (_) => Navigator.pop(context),
-            child: Stack(
-              children: [
-                PageView.builder(
+          body: Stack(
+            children: [
+              PageView.builder(
                 controller: pageController,
                 itemCount: _selectedFiles.length,
                 itemBuilder: (context, index) {
@@ -202,7 +198,6 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
               ),
 
             ],
-          ),
           ),
         );
       },
