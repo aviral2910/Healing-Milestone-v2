@@ -58,8 +58,7 @@ class _EditReportOverlayState extends ConsumerState<EditReportOverlay> {
   late List<String> _reportTypes;
   late DateTime _encounterDate;
   
-  static const List<String> _defaultSuggestions = ['CBC', 'LFT', 'KFT', 'Lipid Profile', 'X-Ray', 'MRI', 'Prescription', 'Note'];
-  List<String> _suggestedTypes = List.from(_defaultSuggestions);
+  List<String> _suggestedTypes = [];
   
   Timer? _debounce;
   bool _isLoadingTags = false;
@@ -95,8 +94,8 @@ class _EditReportOverlayState extends ConsumerState<EditReportOverlay> {
       if (mounted) {
         setState(() {
           if (query.isEmpty) {
-            _suggestedTypes = List.from(_defaultSuggestions);
-            for (var tag in tags) {
+            _suggestedTypes = tags;
+for (var tag in tags) {
               if (!_suggestedTypes.map((e) => e.toLowerCase()).contains(tag.toLowerCase())) {
                 _suggestedTypes.add(tag);
               }

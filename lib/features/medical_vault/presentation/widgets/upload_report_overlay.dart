@@ -46,7 +46,7 @@ class UploadReportOverlay extends ConsumerStatefulWidget {
 class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
   final _customTypeController = TextEditingController();
   List<String> _reportTypes = [];
-  List<String> _suggestedTypes = List.from(_defaultSuggestions);
+  List<String> _suggestedTypes = [];
   Timer? _debounce;
   bool _isLoadingTags = false;
 
@@ -70,7 +70,6 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
     });
   }
 
-  static const List<String> _defaultSuggestions = ['CBC', 'LFT', 'KFT', 'Lipid Profile', 'X-Ray', 'MRI', 'Prescription', 'Note'];
 
   Future<void> _fetchTags(String query) async {
     setState(() => _isLoadingTags = true);
@@ -80,13 +79,7 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
       if (mounted) {
         setState(() {
           if (query.isEmpty) {
-            // Restore defaults when query is empty
-            _suggestedTypes = List.from(_defaultSuggestions);
-            for (var tag in tags) {
-              if (!_suggestedTypes.map((e) => e.toLowerCase()).contains(tag.toLowerCase())) {
-                _suggestedTypes.add(tag);
-              }
-            }
+            _suggestedTypes = tags;
           } else {
             _suggestedTypes = tags;
             if (!tags.any((t) => t.toLowerCase() == query.toLowerCase())) {
