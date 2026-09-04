@@ -18,16 +18,22 @@ class ReportTimelineNode extends ConsumerWidget {
   }) : super(key: key);
 
   void _showFullScreenGallery(BuildContext context, int initialIndex) {
-    showDialog(
-      context: context,
-      barrierColor: Colors.black.withValues(alpha: 0.9),
-      builder: (context) {
+    Navigator.of(context, rootNavigator: true).push(
+      PageRouteBuilder(
+        opaque: false,
+        barrierColor: Colors.black.withValues(alpha: 0.9),
+        barrierDismissible: true,
+        pageBuilder: (context, _, __) {
         final pageController = PageController(initialPage: initialIndex);
         return Scaffold(
           backgroundColor: Colors.transparent,
-          body: Stack(
-            children: [
-              PageView.builder(
+          body: Dismissible(
+            key: const Key('gallery_dismiss'),
+            direction: DismissDirection.vertical,
+            onDismissed: (_) => Navigator.pop(context),
+            child: Stack(
+              children: [
+                PageView.builder(
                 controller: pageController,
                 itemCount: report.files.length,
                 itemBuilder: (context, index) {
@@ -66,9 +72,10 @@ class ReportTimelineNode extends ConsumerWidget {
               ),
             ],
           ),
+          ),
         );
       },
-    );
+    ));
   }
 
   @override

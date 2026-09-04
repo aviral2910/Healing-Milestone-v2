@@ -59,16 +59,22 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
   }
 
   void _showFullScreenGallery(int initialIndex) {
-    showDialog(
-      context: context,
-      barrierColor: Colors.black.withValues(alpha: 0.9),
-      builder: (context) {
+    Navigator.of(context, rootNavigator: true).push(
+      PageRouteBuilder(
+        opaque: false,
+        barrierColor: Colors.black.withValues(alpha: 0.9),
+        barrierDismissible: true,
+        pageBuilder: (context, _, __) {
         final pageController = PageController(initialPage: initialIndex);
         return Scaffold(
           backgroundColor: Colors.transparent,
-          body: Stack(
-            children: [
-              PageView.builder(
+          body: Dismissible(
+            key: const Key('gallery_dismiss'),
+            direction: DismissDirection.vertical,
+            onDismissed: (_) => Navigator.pop(context),
+            child: Stack(
+              children: [
+                PageView.builder(
                 controller: pageController,
                 itemCount: _selectedFiles.length,
                 itemBuilder: (context, index) {
@@ -109,9 +115,10 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
               ),
             ],
           ),
+          ),
         );
       },
-    );
+    ));
   }
 
   void _removeFile(int index) {
