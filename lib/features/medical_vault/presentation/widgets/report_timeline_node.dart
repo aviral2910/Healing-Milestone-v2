@@ -62,12 +62,28 @@ class ReportTimelineNode extends ConsumerWidget {
                   );
                 },
               ),
+
               Positioned(
                 top: MediaQuery.of(context).padding.top + 16,
                 right: 16,
                 child: IconButton(
                   icon: const Icon(Icons.close_rounded, color: Colors.white, size: 30),
                   onPressed: () => Navigator.pop(context),
+                ),
+              ),
+              // Left edge swipe detector to pop the gallery
+              Positioned(
+                left: 0,
+                top: 0,
+                bottom: 0,
+                width: 25,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onHorizontalDragUpdate: (details) {
+                    if (details.delta.dx > 5) {
+                      Navigator.pop(context);
+                    }
+                  },
                 ),
               ),
             ],
