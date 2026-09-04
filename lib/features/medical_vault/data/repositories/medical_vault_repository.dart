@@ -13,7 +13,7 @@ class MedicalVaultRepository {
   MedicalVaultRepository(this._apiClient);
 
   Future<List<MedicalRecord>> getMedicalRecords() async {
-    final response = await _apiClient.get('/reports');
+    final response = await _apiClient.dio.get('/reports');
     return (response.data as List).map((json) => MedicalRecord.fromJson(json)).toList();
   }
 
@@ -26,7 +26,7 @@ class MedicalVaultRepository {
     final fileType = _getFileType(fileName);
 
     // 1. Get Presigned URL
-    final presignedResponse = await _apiClient.get(
+    final presignedResponse = await _apiClient.dio.get(
       '/reports/upload-url',
       queryParameters: {
         'file_name': fileName,
@@ -51,7 +51,7 @@ class MedicalVaultRepository {
     );
 
     // 3. Save to backend
-    final response = await _apiClient.post(
+    final response = await _apiClient.dio.post(
       '/reports',
       data: {
         'encounterDate': encounterDate.toIso8601String().split('T').first,
@@ -65,13 +65,13 @@ class MedicalVaultRepository {
   }
 
   Future<void> deleteReport(String id) async {
-    await _apiClient.delete('/reports/$id');
+    await _apiClient.dio.delete('/reports/$id');
   }
 
   // --- Mix Views ---
 
   Future<List<MixView>> getMixViews() async {
-    final response = await _apiClient.get('/mix-views');
+    final response = await _apiClient.dio.get('/mix-views');
     return (response.data as List).map((json) => MixView.fromJson(json)).toList();
   }
 
@@ -81,7 +81,7 @@ class MedicalVaultRepository {
     required List<String> selectedReportIds,
     required int durationHours,
   }) async {
-    final response = await _apiClient.post(
+    final response = await _apiClient.dio.post(
       '/mix-views',
       data: {
         'name': name,
@@ -94,7 +94,7 @@ class MedicalVaultRepository {
   }
 
   Future<void> revokeMixView(String id) async {
-    await _apiClient.delete('/mix-views/$id');
+    await _apiClient.dio.delete('/mix-views/$id');
   }
 
   String _getFileType(String fileName) {
@@ -106,6 +106,6 @@ class MedicalVaultRepository {
 }
 
 @riverpod
-MedicalVaultRepository medicalVaultRepository(MedicalVaultRepositoryRef ref) {
+MedicalVaultRepository medicalVaultRepository(Ref ref) {
   return MedicalVaultRepository(ref.watch(apiClientProvider));
 }

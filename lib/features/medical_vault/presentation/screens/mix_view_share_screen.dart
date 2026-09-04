@@ -12,7 +12,7 @@ class MixViewShareScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final viewsAsync = ref.watch(mixViewsNotifierProvider);
+    final viewsAsync = ref.watch(mixViewsProvider);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -63,14 +63,14 @@ class MixViewShareScreen extends ConsumerWidget {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
-                      BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 20, offset: const Offset(0, 10)),
+                      BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 20, offset: const Offset(0, 10)),
                     ],
                   ),
                   child: QrImageView(
                     data: shareUrl,
                     version: QrVersions.auto,
                     size: 250.0,
-                    foregroundColor: isExpired ? Colors.grey : Colors.black,
+                    dataModuleStyle: QrDataModuleStyle(dataModuleShape: QrDataModuleShape.square, color: isExpired ? Colors.grey : Colors.black), eyeStyle: QrEyeStyle(eyeShape: QrEyeShape.square, color: isExpired ? Colors.grey : Colors.black), // isExpired ? Colors.grey : Colors.black,
                   ),
                 ),
                 const SizedBox(height: 32),
@@ -94,7 +94,7 @@ class MixViewShareScreen extends ConsumerWidget {
                 const SizedBox(height: 16),
                 OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.red,
+                    dataModuleStyle: QrDataModuleStyle(dataModuleShape: QrDataModuleShape.square, color: isExpired ? Colors.grey : Colors.black), eyeStyle: QrEyeStyle(eyeShape: QrEyeShape.square, color: isExpired ? Colors.grey : Colors.black), // Colors.red,
                     side: const BorderSide(color: Colors.red),
                     minimumSize: const Size(double.infinity, 56),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -116,7 +116,7 @@ class MixViewShareScreen extends ConsumerWidget {
                     );
                     
                     if (confirm == true) {
-                      ref.read(mixViewsNotifierProvider.notifier).revokeMixView(view.id);
+                      ref.read(mixViewsProvider.notifier).revokeMixView(view.id);
                       if (context.mounted) Navigator.pop(context); // Go back
                     }
                   },

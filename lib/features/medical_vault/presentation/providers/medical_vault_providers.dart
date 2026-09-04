@@ -26,7 +26,7 @@ class MedicalRecordsNotifier extends _$MedicalRecordsNotifier {
         title: title,
         encounterDate: encounterDate,
       );
-      final currentList = state.valueOrNull ?? [];
+      final currentList = state.value ?? [];
       return [newRecord, ...currentList];
     });
   }

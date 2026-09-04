@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:intl/intl.dart';
 
@@ -17,15 +17,15 @@ class MedicalVaultScreen extends ConsumerStatefulWidget {
 
 class _MedicalVaultScreenState extends ConsumerState<MedicalVaultScreen> {
   Future<void> _pickAndUploadReport() async {
-    final result = await FilePicker.platform.pickFiles(
+    final result = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf', 'png', 'jpg', 'jpeg'],
     );
 
-    if (result == null || result.files.single.path == null) return;
+    if (result.isEmpty || result.single.path == null) return;
     
-    final file = File(result.files.single.path!);
-    final fileName = result.files.single.name;
+    final file = File(result.single.path!);
+    final fileName = result.single.name;
 
     if (!mounted) return;
     
@@ -37,7 +37,7 @@ class _MedicalVaultScreenState extends ConsumerState<MedicalVaultScreen> {
     
     if (details == null) return;
 
-    ref.read(medicalRecordsNotifierProvider.notifier).uploadReport(
+    ref.read(medicalRecordsProvider.notifier).uploadReport(
       file: file,
       fileName: fileName,
       title: details['title'],
@@ -47,7 +47,7 @@ class _MedicalVaultScreenState extends ConsumerState<MedicalVaultScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final recordsAsync = ref.watch(medicalRecordsNotifierProvider);
+    final recordsAsync = ref.watch(medicalRecordsProvider);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -117,7 +117,7 @@ class _MedicalVaultScreenState extends ConsumerState<MedicalVaultScreen> {
                       trailing: IconButton(
                         icon: const Icon(Icons.delete_outline, color: Colors.red),
                         onPressed: () {
-                          ref.read(medicalRecordsNotifierProvider.notifier).deleteReport(r.id);
+                          ref.read(medicalRecordsProvider.notifier).deleteReport(r.id);
                         },
                       ),
                       onTap: () {

@@ -4,7 +4,7 @@ part 'medical_vault_models.freezed.dart';
 part 'medical_vault_models.g.dart';
 
 @freezed
-class MedicalRecord with _$MedicalRecord {
+abstract class MedicalRecord with _$MedicalRecord {
   const factory MedicalRecord({
     required String id,
     required String userId,
@@ -19,7 +19,7 @@ class MedicalRecord with _$MedicalRecord {
 }
 
 @freezed
-class MixView with _$MixView {
+abstract class MixView with _$MixView {
   const factory MixView({
     required String id,
     required String userId,

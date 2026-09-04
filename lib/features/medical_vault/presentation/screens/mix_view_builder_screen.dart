@@ -37,7 +37,7 @@ class _MixViewBuilderScreenState extends ConsumerState<MixViewBuilderScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final newView = await ref.read(mixViewsNotifierProvider.notifier).createMixView(
+      final newView = await ref.read(mixViewsProvider.notifier).createMixView(
         name: _nameController.text.trim(),
         journeyId: widget.journeyId,
         selectedReportIds: _selectedReportIds.toList(),
@@ -61,7 +61,7 @@ class _MixViewBuilderScreenState extends ConsumerState<MixViewBuilderScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final recordsAsync = ref.watch(medicalRecordsNotifierProvider);
+    final recordsAsync = ref.watch(medicalRecordsProvider);
 
     return Scaffold(
       backgroundColor: Colors.white,
