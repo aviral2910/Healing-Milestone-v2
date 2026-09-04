@@ -12,15 +12,16 @@ class MixViewShareScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
     final viewsAsync = ref.watch(mixViewsProvider);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Share Clinical View', style: TextStyle(color: Colors.black)),
-        backgroundColor: Colors.white,
+        title: Text('Share Clinical View', style: TextStyle(color: theme.colorScheme.onSurface)),
+        backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
+        iconTheme: IconThemeData(color: theme.colorScheme.onSurface),
       ),
       body: viewsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -60,7 +61,7 @@ class MixViewShareScreen extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: theme.colorScheme.onPrimary,
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 20, offset: const Offset(0, 10)),
@@ -70,8 +71,8 @@ class MixViewShareScreen extends ConsumerWidget {
                     data: shareUrl,
                     version: QrVersions.auto,
                     size: 250.0,
-                    dataModuleStyle: QrDataModuleStyle(dataModuleShape: QrDataModuleShape.square, color: isExpired ? Colors.grey : Colors.black),
-                    eyeStyle: QrEyeStyle(eyeShape: QrEyeShape.square, color: isExpired ? Colors.grey : Colors.black),
+                    dataModuleStyle: QrDataModuleStyle(dataModuleShape: QrDataModuleShape.square, color: isExpired ? Colors.grey : theme.colorScheme.onSurface),
+                    eyeStyle: QrEyeStyle(eyeShape: QrEyeShape.square, color: isExpired ? Colors.grey : theme.colorScheme.onSurface),
                   ),
                 ),
                 const SizedBox(height: 32),
@@ -79,7 +80,7 @@ class MixViewShareScreen extends ConsumerWidget {
                 // Actions
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black,
+                    backgroundColor: theme.colorScheme.primary,
                     minimumSize: const Size(double.infinity, 56),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   ),
@@ -89,8 +90,8 @@ class MixViewShareScreen extends ConsumerWidget {
                       const SnackBar(content: Text('Link copied to clipboard')),
                     );
                   },
-                  icon: const Icon(Icons.copy, color: Colors.white),
-                  label: const Text('Copy Link', style: TextStyle(color: Colors.white, fontSize: 16)),
+                  icon: Icon(Icons.copy, color: theme.colorScheme.onPrimary),
+                  label: Text('Copy Link', style: TextStyle(color: theme.colorScheme.onPrimary, fontSize: 16)),
                 ),
                 const SizedBox(height: 16),
                 OutlinedButton.icon(

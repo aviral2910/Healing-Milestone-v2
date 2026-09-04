@@ -47,24 +47,25 @@ class _MedicalVaultScreenState extends ConsumerState<MedicalVaultScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final recordsAsync = ref.watch(medicalRecordsProvider);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('My Medical Vault', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
+        title: Text('My Medical Vault', style: TextStyle(color: theme.colorScheme.onSurface, fontWeight: FontWeight.bold)),
+        backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
+        iconTheme: IconThemeData(color: theme.colorScheme.onSurface),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _pickAndUploadReport,
-        backgroundColor: Colors.black,
-        icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text('Add Report', style: TextStyle(color: Colors.white)),
+        backgroundColor: theme.colorScheme.primary,
+        icon: Icon(Icons.add, color: theme.colorScheme.onPrimary),
+        label: Text('Add Report', style: TextStyle(color: theme.colorScheme.onPrimary)),
       ),
       body: recordsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator(color: Colors.black)),
+        loading: () => Center(child: CircularProgressIndicator(color: theme.colorScheme.onSurface)),
         error: (err, stack) => Center(child: Text('Error: $err')),
         data: (records) {
           if (records.isEmpty) {
@@ -150,6 +151,7 @@ class _ReportDetailsDialogState extends State<_ReportDetailsDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return AlertDialog(
       title: const Text('Report Details'),
       content: Column(
@@ -184,7 +186,7 @@ class _ReportDetailsDialogState extends State<_ReportDetailsDialog> {
           child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
         ),
         ElevatedButton(
-          style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
+          style: ElevatedButton.styleFrom(backgroundColor: theme.colorScheme.primary),
           onPressed: () {
             if (_titleController.text.isEmpty) return;
             Navigator.pop(context, {
@@ -192,7 +194,7 @@ class _ReportDetailsDialogState extends State<_ReportDetailsDialog> {
               'encounterDate': _selectedDate,
             });
           },
-          child: const Text('Upload', style: TextStyle(color: Colors.white)),
+          child: Text('Upload', style: TextStyle(color: theme.colorScheme.onPrimary)),
         ),
       ],
     );

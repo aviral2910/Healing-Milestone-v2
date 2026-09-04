@@ -61,29 +61,30 @@ class _MixViewBuilderScreenState extends ConsumerState<MixViewBuilderScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final recordsAsync = ref.watch(medicalRecordsProvider);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Create Clinical View', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
+        title: Text('Create Clinical View', style: TextStyle(color: theme.colorScheme.onSurface, fontWeight: FontWeight.bold)),
+        backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
+        iconTheme: IconThemeData(color: theme.colorScheme.onSurface),
       ),
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.black,
+              backgroundColor: theme.colorScheme.primary,
               minimumSize: const Size(double.infinity, 56),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             ),
             onPressed: _isLoading ? null : _generateView,
             child: _isLoading 
-                ? const CircularProgressIndicator(color: Colors.white)
-                : const Text('Generate QR Code', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                ? CircularProgressIndicator(color: theme.colorScheme.onPrimary)
+                : Text('Generate QR Code', style: TextStyle(color: theme.colorScheme.onPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
           ),
         ),
       ),
@@ -152,7 +153,7 @@ class _MixViewBuilderScreenState extends ConsumerState<MixViewBuilderScreen> {
                       title: Text(r.title, style: const TextStyle(fontWeight: FontWeight.w600)),
                       subtitle: Text(DateFormat('MMM d, yyyy').format(r.encounterDate)),
                       value: isSelected,
-                      activeColor: Colors.black,
+                      activeColor: theme.colorScheme.primary,
                       onChanged: (val) {
                         setState(() {
                           if (val == true) {
