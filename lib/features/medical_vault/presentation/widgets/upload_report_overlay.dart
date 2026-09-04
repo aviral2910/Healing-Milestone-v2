@@ -78,6 +78,10 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
                                   file.name.toLowerCase().endsWith('.png');
                   if (isImage && file.path != null) {
                     return InteractiveViewer(
+                      minScale: 1.0,
+                      maxScale: 5.0,
+                      panEnabled: true,
+                      scaleEnabled: true,
                       child: Center(
                         child: Image.file(File(file.path!), fit: BoxFit.contain),
                       ),

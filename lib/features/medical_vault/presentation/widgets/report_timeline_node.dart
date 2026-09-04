@@ -35,6 +35,10 @@ class ReportTimelineNode extends ConsumerWidget {
                   final isImage = file.fileType.startsWith('image/');
                   if (isImage) {
                     return InteractiveViewer(
+                      minScale: 1.0,
+                      maxScale: 5.0,
+                      panEnabled: true,
+                      scaleEnabled: true,
                       child: Center(
                         child: CachedNetworkImage(imageUrl: file.url, fit: BoxFit.contain),
                       ),
