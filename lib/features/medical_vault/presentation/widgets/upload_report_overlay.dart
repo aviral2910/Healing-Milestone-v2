@@ -13,6 +13,7 @@ class UploadReportOverlay extends ConsumerStatefulWidget {
   static Future<void> show(BuildContext context) {
     return showGeneralDialog(
       context: context,
+      useRootNavigator: false,
       barrierDismissible: true,
       barrierLabel: 'Dismiss',
       barrierColor: Colors.transparent, // Using BackdropFilter instead
@@ -59,7 +60,7 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
   }
 
   void _showFullScreenGallery(int initialIndex) {
-    Navigator.of(context, rootNavigator: true).push(
+    Navigator.of(context, rootNavigator: false).push(
       PageRouteBuilder(
         opaque: false,
         barrierColor: Colors.black.withValues(alpha: 0.9),
@@ -114,21 +115,7 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
                   onPressed: () => Navigator.pop(context),
                 ),
               ),
-              // Left edge swipe detector to pop the gallery
-              Positioned(
-                left: 0,
-                top: 0,
-                bottom: 0,
-                width: 25,
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onHorizontalDragUpdate: (details) {
-                    if (details.delta.dx > 5) {
-                      Navigator.pop(context);
-                    }
-                  },
-                ),
-              ),
+
             ],
           ),
           ),
@@ -506,21 +493,7 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
               ],
             ),
           ),
-          // Left edge swipe detector to pop the overlay
-          Positioned(
-            left: 0,
-            top: 0,
-            bottom: 0,
-            width: 25,
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onHorizontalDragUpdate: (details) {
-                if (details.delta.dx > 5) {
-                  Navigator.pop(context);
-                }
-              },
-            ),
-          ),
+
         ],
       ),
     );

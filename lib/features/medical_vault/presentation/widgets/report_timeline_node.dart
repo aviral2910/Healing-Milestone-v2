@@ -18,7 +18,7 @@ class ReportTimelineNode extends ConsumerWidget {
   }) : super(key: key);
 
   void _showFullScreenGallery(BuildContext context, int initialIndex) {
-    Navigator.of(context, rootNavigator: true).push(
+    Navigator.of(context, rootNavigator: false).push(
       PageRouteBuilder(
         opaque: false,
         barrierColor: Colors.black.withValues(alpha: 0.9),
@@ -71,21 +71,7 @@ class ReportTimelineNode extends ConsumerWidget {
                   onPressed: () => Navigator.pop(context),
                 ),
               ),
-              // Left edge swipe detector to pop the gallery
-              Positioned(
-                left: 0,
-                top: 0,
-                bottom: 0,
-                width: 25,
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onHorizontalDragUpdate: (details) {
-                    if (details.delta.dx > 5) {
-                      Navigator.pop(context);
-                    }
-                  },
-                ),
-              ),
+
             ],
           ),
           ),
