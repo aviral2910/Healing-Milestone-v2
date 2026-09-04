@@ -165,28 +165,28 @@ class _EditReportOverlayState extends ConsumerState<EditReportOverlay> {
                 controller: pageController,
                 itemCount: _existingFiles.length + _selectedFiles.length,
                 itemBuilder: (context, index) {
-                  final file = _selectedFiles[index];
-                  final isImage = file.name.toLowerCase().endsWith('.jpg') || 
-                                  file.name.toLowerCase().endsWith('.jpeg') || 
-                                  file.name.toLowerCase().endsWith('.png');
-                  if (isImage && file.path != null) {
+                  final isExisting = index < _existingFiles.length;
+                  final fileName = isExisting ? _existingFiles[index].fileName : _selectedFiles[index - _existingFiles.length].name;
+                  final filePath = isExisting ? _existingFiles[index].url : _selectedFiles[index - _existingFiles.length].path;
+                  final isImage = fileName.toLowerCase().endsWith('.jpg') || 
+                                  fileName.toLowerCase().endsWith('.jpeg') || 
+                                  fileName.toLowerCase().endsWith('.png');
+                  
+                  if (isImage && filePath != null) {
                     return InteractiveViewer(
                       minScale: 1.0,
                       maxScale: 5.0,
                       panEnabled: true,
                       scaleEnabled: true,
                       child: Center(
-                        child: Image.file(File(file.path!), fit: BoxFit.contain),
+                        child: isExisting ? CachedNetworkImage(imageUrl: filePath, fit: BoxFit.contain) : Image.file(File(filePath), fit: BoxFit.contain),
                       ),
                     );
                   }
-                  if (file.path != null && file.name.toLowerCase().endsWith('.pdf')) {
-                    return SfPdfViewer.file(
-                      File(file.path!),
-                      canShowScrollHead: false,
-                      canShowScrollStatus: false,
-                      pageSpacing: 2,
-                    );
+                  if (filePath != null && fileName.toLowerCase().endsWith('.pdf')) {
+                    return isExisting 
+                        ? SfPdfViewer.network(filePath, canShowScrollHead: false, canShowScrollStatus: false, pageSpacing: 2)
+                        : SfPdfViewer.file(File(filePath), canShowScrollHead: false, canShowScrollStatus: false, pageSpacing: 2);
                   }
                   
                   return Center(
@@ -195,7 +195,7 @@ class _EditReportOverlayState extends ConsumerState<EditReportOverlay> {
                       children: [
                         Icon(Icons.insert_drive_file_rounded, size: 80, color: Colors.white.withValues(alpha: 0.5)),
                         const SizedBox(height: 16),
-                        Text(file.name, style: const TextStyle(color: Colors.white, fontSize: 16)),
+                        Text(fileName, style: const TextStyle(color: Colors.white, fontSize: 16)),
                       ],
                     ),
                   );
