@@ -85,111 +85,72 @@ class MyPathScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 12),
                   // Medical Vault Card
-                  Container(
+                  Card(
+                    elevation: 0,
                     margin: const EdgeInsets.only(top: 12),
-                    decoration: BoxDecoration(
+                    color: theme.colorScheme.surface,
+                    shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(24),
-                      gradient: LinearGradient(
-                        colors: [
-                          const Color(0xFF1E3A8A), // Deep Blue
-                          theme.colorScheme.primary,
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
+                      side: BorderSide(
+                        color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: theme.colorScheme.primary.withValues(alpha: 0.3),
-                          blurRadius: 15,
-                          offset: const Offset(0, 8),
-                        ),
-                      ],
                     ),
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(24),
-                        onTap: () {
-                          context.push('/medical-vault');
-                        },
-                        child: Stack(
-                          clipBehavior: Clip.none,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(24),
+                      onTap: () {
+                        context.push('/medical-vault');
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Row(
                           children: [
-                            // Background decorative icon
-                            Positioned(
-                              right: -15,
-                              bottom: -20,
+                            Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.primary.withValues(alpha: 0.08),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
                               child: Icon(
-                                Icons.health_and_safety_rounded,
-                                size: 120,
-                                color: Colors.white.withValues(alpha: 0.15),
+                                Icons.medical_information_rounded,
+                                color: theme.colorScheme.primary,
+                                size: 28,
                               ),
                             ),
-                            Padding(
-                              padding: const EdgeInsets.all(24.0),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(16),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withValues(alpha: 0.2),
-                                      borderRadius: BorderRadius.circular(20),
-                                      border: Border.all(
-                                        color: Colors.white.withValues(alpha: 0.4),
-                                        width: 1,
+                                  Row(
+                                    children: [
+                                      Text(
+                                        'Medical Vault',
+                                        style: theme.textTheme.titleMedium?.copyWith(
+                                          fontWeight: FontWeight.bold,
+                                          color: theme.colorScheme.onSurface,
+                                        ),
                                       ),
-                                    ),
-                                    child: const Icon(Icons.medical_information_rounded, color: Colors.white, size: 28),
+                                      const SizedBox(width: 6),
+                                      Icon(
+                                        Icons.verified_user_rounded,
+                                        size: 14,
+                                        color: theme.colorScheme.primary,
+                                      ),
+                                    ],
                                   ),
-                                  const SizedBox(width: 20),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Text(
-                                              'Medical Vault',
-                                              style: theme.textTheme.titleLarge?.copyWith(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.bold,
-                                                letterSpacing: 0.5,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 12),
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                              decoration: BoxDecoration(
-                                                color: Colors.white,
-                                                borderRadius: BorderRadius.circular(8),
-                                              ),
-                                              child: Text(
-                                                'SECURE',
-                                                style: TextStyle(
-                                                  color: theme.colorScheme.primary,
-                                                  fontSize: 10,
-                                                  fontWeight: FontWeight.w900,
-                                                  letterSpacing: 1,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 8),
-                                        Text(
-                                          'Store, organize, and securely share your clinical reports and tests.',
-                                          style: theme.textTheme.bodyMedium?.copyWith(
-                                            color: Colors.white.withValues(alpha: 0.9),
-                                            height: 1.4,
-                                          ),
-                                        ),
-                                      ],
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Securely store and share clinical reports.',
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                      color: theme.colorScheme.onSurfaceVariant,
+                                      height: 1.3,
                                     ),
                                   ),
                                 ],
                               ),
                             ),
+                            const SizedBox(width: 8),
+                            Icon(Icons.chevron_right_rounded, color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5)),
                           ],
                         ),
                       ),
