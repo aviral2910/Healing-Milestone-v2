@@ -34,13 +34,24 @@ class MedicalRecordsNotifier extends _$MedicalRecordsNotifier {
     required String id,
     required List<String> reportTypes,
     required DateTime encounterDate,
+    required List<MedicalRecordFile> existingFiles,
+    required List<PlatformFile> newFiles,
   }) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
-      final updatedRecord = await ref.read(medicalVaultRepositoryProvider).updateReport(
+      final repo = ref.read(medicalVaultRepositoryProvider);
+      
+      List<MedicalRecordFile> uploadedFiles = [];
+      if (newFiles.isNotEmpty) {
+        uploadedFiles = await repo.uploadFiles(newFiles);
+      }
+      final combinedFiles = [...existingFiles, ...uploadedFiles];
+
+      final updatedRecord = await repo.updateReport(
         id: id,
         reportTypes: reportTypes,
         encounterDate: encounterDate,
+        files: combinedFiles,
       );
       final currentList = state.value ?? [];
       return currentList.map((r) => r.id == id ? updatedRecord : r).toList();

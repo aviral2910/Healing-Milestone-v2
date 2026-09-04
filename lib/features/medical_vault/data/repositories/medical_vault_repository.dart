@@ -20,11 +20,7 @@ class MedicalVaultRepository {
     return (response.data as List).map((json) => MedicalRecord.fromJson(json)).toList();
   }
 
-  Future<MedicalRecord> uploadReport({
-    required List<PlatformFile> files,
-    required List<String> reportTypes,
-    required DateTime encounterDate,
-  }) async {
+  Future<List<MedicalRecordFile>> uploadFiles(List<PlatformFile> files) async {
     final processedFiles = <File>[];
     final requestFiles = <Map<String, dynamic>>[];
     
@@ -101,20 +97,34 @@ class MedicalVaultRepository {
       uploadedFiles.add({
         'url': urlData['fileUrl'],
         'fileType': urlData['fileType'],
-        'fileName': urlData['fileName'],
+        'fileName': requestFiles[index]['fileName'],
       });
     }));
 
-    // 3. Save to backend
+    return uploadedFiles.map((f) => MedicalRecordFile(
+      url: f['url'],
+      fileName: f['fileName'],
+      fileType: f['fileType']
+    )).toList();
+  }
+
+  Future<MedicalRecord> uploadReport({
+    required List<PlatformFile> files,
+    required List<String> reportTypes,
+    required DateTime encounterDate,
+  }) async {
+    final uploadedFiles = await uploadFiles(files);
+    
+    // 4. Create record in DB
     final response = await _apiClient.dio.post(
       '/api/reports',
       data: {
         'encounterDate': encounterDate.toIso8601String().split('T').first,
         'reportTypes': reportTypes,
-        'files': uploadedFiles,
+        'files': uploadedFiles.map((f) => f.toJson()).toList(),
       },
     );
-
+    
     return MedicalRecord.fromJson(response.data);
   }
 
@@ -122,12 +132,14 @@ class MedicalVaultRepository {
     required String id,
     required List<String> reportTypes,
     required DateTime encounterDate,
+    required List<MedicalRecordFile> files,
   }) async {
     final response = await _apiClient.dio.put(
       '/api/reports/$id',
       data: {
         'encounterDate': encounterDate.toIso8601String().split('T').first,
         'reportTypes': reportTypes,
+        'files': files.map((f) => f.toJson()).toList(),
       },
     );
     return MedicalRecord.fromJson(response.data);
