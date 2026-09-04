@@ -1,3 +1,4 @@
+import 'package:shimmer/shimmer.dart';
 import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
@@ -179,7 +180,18 @@ class _EditReportOverlayState extends ConsumerState<EditReportOverlay> {
                       panEnabled: true,
                       scaleEnabled: true,
                       child: Center(
-                        child: isExisting ? CachedNetworkImage(imageUrl: filePath, fit: BoxFit.contain) : Image.file(File(filePath), fit: BoxFit.contain),
+                        child: isExisting ? CachedNetworkImage(
+                          imageUrl: filePath, 
+                          fit: BoxFit.contain,
+                          placeholder: (context, url) => Center(
+                            child: SizedBox(
+                              width: 40, height: 40,
+                              child: CircularProgressIndicator(
+                                valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
+                              ),
+                            )
+                          ),
+                        ) : Image.file(File(filePath), fit: BoxFit.contain),
                       ),
                     );
                   }
@@ -642,7 +654,15 @@ class _EditReportOverlayState extends ConsumerState<EditReportOverlay> {
                                             ? InkWell(
                                                 onTap: () => _showFullScreenGallery(index),
                                                 child: isExisting 
-                                                    ? CachedNetworkImage(imageUrl: filePath, fit: BoxFit.cover)
+                                                    ? CachedNetworkImage(
+                                                        imageUrl: filePath, 
+                                                        fit: BoxFit.cover,
+                                                        placeholder: (context, url) => Shimmer.fromColors(
+                                                          baseColor: theme.colorScheme.primary.withValues(alpha: 0.1),
+                                                          highlightColor: theme.colorScheme.primary.withValues(alpha: 0.25),
+                                                          child: Container(color: Colors.white),
+                                                        ),
+                                                      )
                                                     : Image.file(File(filePath), fit: BoxFit.cover),
                                               )
                                             : InkWell(

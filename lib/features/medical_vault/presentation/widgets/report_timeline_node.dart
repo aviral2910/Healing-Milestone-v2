@@ -1,3 +1,4 @@
+import 'package:shimmer/shimmer.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -44,7 +45,18 @@ class ReportTimelineNode extends ConsumerWidget {
                       panEnabled: true,
                       scaleEnabled: true,
                       child: Center(
-                        child: CachedNetworkImage(imageUrl: file.url, fit: BoxFit.contain),
+                        child: CachedNetworkImage(
+                          imageUrl: file.url, 
+                          fit: BoxFit.contain,
+                          placeholder: (context, url) => Center(
+                            child: SizedBox(
+                              width: 40, height: 40,
+                              child: CircularProgressIndicator(
+                                valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
+                              ),
+                            )
+                          ),
+                        ),
                       ),
                     );
                   }
@@ -250,9 +262,10 @@ class ReportTimelineNode extends ConsumerWidget {
                                     ? CachedNetworkImage(
                                         imageUrl: file.url,
                                         fit: BoxFit.cover,
-                                        placeholder: (context, url) => Container(
-                                          color: theme.dividerColor.withValues(alpha: 0.1),
-                                          child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                                        placeholder: (context, url) => Shimmer.fromColors(
+                                          baseColor: theme.colorScheme.primary.withValues(alpha: 0.1),
+                                          highlightColor: theme.colorScheme.primary.withValues(alpha: 0.25),
+                                          child: Container(color: Colors.white),
                                         ),
                                         errorWidget: (context, url, error) => const Icon(Icons.error),
                                       )
