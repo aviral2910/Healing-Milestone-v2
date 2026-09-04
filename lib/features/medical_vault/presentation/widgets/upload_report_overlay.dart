@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:async';
@@ -169,11 +170,20 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
                       ),
                     );
                   }
+                  if (file.path != null && file.name.toLowerCase().endsWith('.pdf')) {
+                    return SfPdfViewer.file(
+                      File(file.path!),
+                      canShowScrollHead: false,
+                      canShowScrollStatus: false,
+                      pageSpacing: 2,
+                    );
+                  }
+                  
                   return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.picture_as_pdf_rounded, size: 80, color: Colors.white.withValues(alpha: 0.5)),
+                        Icon(Icons.insert_drive_file_rounded, size: 80, color: Colors.white.withValues(alpha: 0.5)),
                         const SizedBox(height: 16),
                         Text(file.name, style: const TextStyle(color: Colors.white, fontSize: 16)),
                       ],

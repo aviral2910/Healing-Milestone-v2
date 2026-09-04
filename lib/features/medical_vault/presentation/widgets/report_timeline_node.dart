@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -50,11 +51,20 @@ class ReportTimelineNode extends ConsumerWidget {
                       ),
                     );
                   }
+                  if (file.fileType == 'application/pdf') {
+                    return SfPdfViewer.network(
+                      file.url,
+                      canShowScrollHead: false,
+                      canShowScrollStatus: false,
+                      pageSpacing: 2,
+                    );
+                  }
+                  
                   return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.picture_as_pdf_rounded, size: 80, color: Colors.white.withValues(alpha: 0.5)),
+                        Icon(Icons.insert_drive_file_rounded, size: 80, color: Colors.white.withValues(alpha: 0.5)),
                         const SizedBox(height: 16),
                         Text(file.fileName, style: const TextStyle(color: Colors.white, fontSize: 16)),
                       ],
