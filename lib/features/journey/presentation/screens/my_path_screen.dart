@@ -145,10 +145,8 @@ class MyPathScreen extends ConsumerWidget {
                                             child: Row(
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
-                                                Icon(Icons.shield_rounded, size: 14, color: theme.colorScheme.primary),
-                                                const SizedBox(width: 4),
                                                 Text(
-                                                  "SECURE VAULT",
+                                                  "MEDICAL VAULT",
                                                   style: theme.textTheme.labelSmall?.copyWith(
                                                     fontWeight: FontWeight.w700,
                                                     letterSpacing: 0.5,
@@ -174,21 +172,7 @@ class MyPathScreen extends ConsumerWidget {
                                         ],
                                       ),
                                       
-                                      const SizedBox(height: 20),
-                                      
-                                      // MIDDLE: Title
-                                      Text(
-                                        "Medical Records",
-                                        style: theme.textTheme.headlineSmall?.copyWith(
-                                          fontWeight: FontWeight.w800,
-                                          letterSpacing: -0.5,
-                                          color: theme.colorScheme.onSurface,
-                                        ),
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      
-                                      const SizedBox(height: 12),
+                                      const SizedBox(height: 24),
                                       
                                       // BOTTOM: Info Area
                                       Row(
