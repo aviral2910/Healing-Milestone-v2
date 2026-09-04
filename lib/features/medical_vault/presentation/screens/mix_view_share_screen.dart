@@ -70,7 +70,8 @@ class MixViewShareScreen extends ConsumerWidget {
                     data: shareUrl,
                     version: QrVersions.auto,
                     size: 250.0,
-                    dataModuleStyle: QrDataModuleStyle(dataModuleShape: QrDataModuleShape.square, color: isExpired ? Colors.grey : Colors.black), eyeStyle: QrEyeStyle(eyeShape: QrEyeShape.square, color: isExpired ? Colors.grey : Colors.black), // isExpired ? Colors.grey : Colors.black,
+                    dataModuleStyle: QrDataModuleStyle(dataModuleShape: QrDataModuleShape.square, color: isExpired ? Colors.grey : Colors.black),
+                    eyeStyle: QrEyeStyle(eyeShape: QrEyeShape.square, color: isExpired ? Colors.grey : Colors.black),
                   ),
                 ),
                 const SizedBox(height: 32),
@@ -94,7 +95,7 @@ class MixViewShareScreen extends ConsumerWidget {
                 const SizedBox(height: 16),
                 OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(
-                    dataModuleStyle: QrDataModuleStyle(dataModuleShape: QrDataModuleShape.square, color: isExpired ? Colors.grey : Colors.black), eyeStyle: QrEyeStyle(eyeShape: QrEyeShape.square, color: isExpired ? Colors.grey : Colors.black), // Colors.red,
+                    foregroundColor: Colors.red,
                     side: const BorderSide(color: Colors.red),
                     minimumSize: const Size(double.infinity, 56),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
