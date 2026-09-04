@@ -116,7 +116,7 @@ class ReportTimelineNode extends ConsumerWidget {
             child: Padding(
               padding: const EdgeInsets.only(bottom: 24.0, right: 16.0),
               child: Container(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.symmetric(vertical: 20),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.surface,
                   borderRadius: BorderRadius.circular(24),
@@ -132,177 +132,178 @@ class ReportTimelineNode extends ConsumerWidget {
                     ),
                   ],
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Stack(
                   children: [
-                    Row(
+                    Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              SingleChildScrollView(
-                                scrollDirection: Axis.horizontal,
-                                physics: const BouncingScrollPhysics(),
-                                child: Row(
-                                  children: report.reportTypes.asMap().entries.map((entry) {
-                                    final index = entry.key;
-                                    final type = entry.value;
-                                    return Padding(
-                                      padding: EdgeInsets.only(right: index == report.reportTypes.length - 1 ? 0 : 8.0),
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                        decoration: BoxDecoration(
-                                          color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                                          borderRadius: BorderRadius.circular(12),
-                                          border: Border.all(
-                                            color: theme.colorScheme.primary.withValues(alpha: 0.2),
-                                          ),
-                                        ),
-                                        child: Text(
-                                          type,
-                                          style: theme.textTheme.labelSmall?.copyWith(
-                                            color: theme.colorScheme.primary,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  }).toList(),
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Added ${DateFormat('MMM d, yyyy').format(report.createdAt)}',
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: theme.colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        PopupMenuButton<String>(
-                          icon: Icon(
-                            Icons.more_vert_rounded,
-                            size: 18,
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
-                          padding: EdgeInsets.zero,
-                          onSelected: (value) async {
-                            if (value == 'edit') {
-                              EditReportOverlay.show(context, report);
-                            } else if (value == 'delete') {
-                              final confirm = await showDialog<bool>(
-                                context: context,
-                                builder: (context) => AlertDialog(
-                                  title: const Text('Delete Report'),
-                                  content: const Text('Are you sure you want to permanently delete this report and its files?'),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () => Navigator.pop(context, false),
-                                      child: const Text('Cancel'),
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          physics: const BouncingScrollPhysics(),
+                          padding: const EdgeInsets.only(left: 20, right: 40),
+                          child: Row(
+                            children: report.reportTypes.asMap().entries.map((entry) {
+                              final index = entry.key;
+                              final type = entry.value;
+                              return Padding(
+                                padding: EdgeInsets.only(right: index == report.reportTypes.length - 1 ? 0 : 8.0),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: theme.colorScheme.primary.withValues(alpha: 0.2),
                                     ),
-                                    TextButton(
-                                      onPressed: () => Navigator.pop(context, true),
-                                      child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                                  ),
+                                  child: Text(
+                                    type,
+                                    style: theme.textTheme.labelSmall?.copyWith(
+                                      color: theme.colorScheme.primary,
+                                      fontWeight: FontWeight.bold,
                                     ),
-                                  ],
+                                  ),
                                 ),
                               );
-                              if (confirm == true) {
-                                ref.read(medicalRecordsProvider.notifier).deleteReport(report.id);
-                              }
-                            }
-                          },
-                          itemBuilder: (context) => [
-                            const PopupMenuItem(
-                              value: 'edit',
-                              child: Text('Edit Tags & Date'),
+                            }).toList(),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Text(
+                            'Added ${DateFormat('MMM d, yyyy').format(report.createdAt)}',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
                             ),
-                            const PopupMenuItem(
-                              value: 'delete',
-                              child: Text(
-                                'Delete',
-                                style: TextStyle(color: Colors.red),
-                              ),
-                            ),
-                          ],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          physics: const BouncingScrollPhysics(),
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Row(
+                            children: report.files.asMap().entries.map((entry) {
+                              final index = entry.key;
+                              final file = entry.value;
+                              final isImage = file.fileType.startsWith('image/');
+                              return Padding(
+                                padding: EdgeInsets.only(right: index == report.files.length - 1 ? 0 : 12.0),
+                                child: InkWell(
+                                  onTap: () => _showFullScreenGallery(context, index),
+                                  borderRadius: BorderRadius.circular(16),
+                                  child: Container(
+                                    width: 90,
+                                    height: 90,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(color: theme.dividerColor.withValues(alpha: 0.2)),
+                                      color: theme.colorScheme.surface,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withValues(alpha: 0.05),
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 2),
+                                        )
+                                      ],
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(16),
+                                      child: isImage
+                                          ? CachedNetworkImage(
+                                              imageUrl: file.url,
+                                              fit: BoxFit.cover,
+                                              placeholder: (context, url) => Shimmer.fromColors(
+                                                baseColor: theme.colorScheme.primary.withValues(alpha: 0.1),
+                                                highlightColor: theme.colorScheme.primary.withValues(alpha: 0.25),
+                                                child: Container(color: Colors.white),
+                                              ),
+                                              errorWidget: (context, url, error) => const Icon(Icons.error),
+                                            )
+                                          : Center(
+                                              child: Column(
+                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                children: [
+                                                  Icon(
+                                                    Icons.picture_as_pdf_rounded,
+                                                    size: 36,
+                                                    color: Colors.redAccent.withValues(alpha: 0.8),
+                                                  ),
+                                                  const SizedBox(height: 4),
+                                                  Padding(
+                                                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                                                    child: Text(
+                                                      file.fileName,
+                                                      maxLines: 1,
+                                                      overflow: TextOverflow.ellipsis,
+                                                      style: TextStyle(
+                                                        fontSize: 10,
+                                                        color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        physics: const BouncingScrollPhysics(),
-                        child: Row(
-                          children: report.files.asMap().entries.map((entry) {
-                            final index = entry.key;
-                            final file = entry.value;
-                            final isImage = file.fileType.startsWith('image/');
-                            return Padding(
-                              padding: EdgeInsets.only(right: index == report.files.length - 1 ? 0 : 12.0),
-                              child: InkWell(
-                                onTap: () => _showFullScreenGallery(context, index),
-                                borderRadius: BorderRadius.circular(16),
-                                child: Container(
-                                  width: 90,
-                                  height: 90,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: theme.dividerColor.withValues(alpha: 0.2)),
-                                color: theme.colorScheme.surface,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.05),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 2),
-                                  )
+                    Positioned(
+                      top: -12,
+                      right: 8,
+                      child: PopupMenuButton<String>(
+                        icon: Icon(
+                          Icons.more_vert_rounded,
+                          size: 18,
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                        padding: EdgeInsets.zero,
+                        onSelected: (value) async {
+                          if (value == 'edit') {
+                            EditReportOverlay.show(context, report);
+                          } else if (value == 'delete') {
+                            final confirm = await showDialog<bool>(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: const Text('Delete Report'),
+                                content: const Text('Are you sure you want to permanently delete this report and its files?'),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context, false),
+                                    child: const Text('Cancel'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context, true),
+                                    child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                                  ),
                                 ],
                               ),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(16),
-                                child: isImage
-                                    ? CachedNetworkImage(
-                                        imageUrl: file.url,
-                                        fit: BoxFit.cover,
-                                        placeholder: (context, url) => Shimmer.fromColors(
-                                          baseColor: theme.colorScheme.primary.withValues(alpha: 0.1),
-                                          highlightColor: theme.colorScheme.primary.withValues(alpha: 0.25),
-                                          child: Container(color: Colors.white),
-                                        ),
-                                        errorWidget: (context, url, error) => const Icon(Icons.error),
-                                      )
-                                    : Center(
-                                        child: Column(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            Icon(
-                                              Icons.picture_as_pdf_rounded,
-                                              size: 36,
-                                              color: Colors.redAccent.withValues(alpha: 0.8),
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Padding(
-                                              padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                                              child: Text(
-                                                file.fileName,
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: TextStyle(
-                                                  fontSize: 10,
-                                                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                              ),
+                            );
+                            if (confirm == true) {
+                              ref.read(medicalRecordsProvider.notifier).deleteReport(report.id);
+                            }
+                          }
+                        },
+                        itemBuilder: (context) => [
+                          const PopupMenuItem(
+                            value: 'edit',
+                            child: Text('Edit Tags & Date'),
+                          ),
+                          const PopupMenuItem(
+                            value: 'delete',
+                            child: Text(
+                              'Delete',
+                              style: TextStyle(color: Colors.red),
                             ),
                           ),
-                          );
-                        }).toList(),
+                        ],
                       ),
                     ),
                   ],
