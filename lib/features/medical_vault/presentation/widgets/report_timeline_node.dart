@@ -448,7 +448,7 @@ class ReportTimelineNode extends ConsumerWidget {
                                   const SizedBox(height: 16),
                                 if (docEntries.isNotEmpty) ...[
                                   buildSectionHeader(
-                                    Icons.picture_as_pdf_rounded,
+                                    Icons.description_rounded,
                                     docEntries.length,
                                   ),
                                   SingleChildScrollView(
