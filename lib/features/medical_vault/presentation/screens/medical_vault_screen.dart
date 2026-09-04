@@ -31,11 +31,11 @@ class _MedicalVaultScreenState extends ConsumerState<MedicalVaultScreen> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
       ref.read(medicalRecordsProvider.notifier).loadMore();
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +45,13 @@ class _MedicalVaultScreenState extends ConsumerState<MedicalVaultScreen> {
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text('My Medical Vault', style: TextStyle(color: theme.colorScheme.onSurface, fontWeight: FontWeight.bold)),
+        title: Text(
+          'My Medical Vault',
+          style: TextStyle(
+            color: theme.colorScheme.onSurface,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
         iconTheme: IconThemeData(color: theme.colorScheme.onSurface),
@@ -54,10 +60,15 @@ class _MedicalVaultScreenState extends ConsumerState<MedicalVaultScreen> {
         onPressed: () => UploadReportOverlay.show(context),
         backgroundColor: theme.colorScheme.primary,
         icon: Icon(Icons.add, color: theme.colorScheme.onPrimary),
-        label: Text('Add Report', style: TextStyle(color: theme.colorScheme.onPrimary)),
+        label: Text(
+          'Add Report',
+          style: TextStyle(color: theme.colorScheme.onPrimary),
+        ),
       ),
       body: recordsAsync.when(
-        loading: () => Center(child: CircularProgressIndicator(color: theme.colorScheme.onSurface)),
+        loading: () => Center(
+          child: CircularProgressIndicator(color: theme.colorScheme.onSurface),
+        ),
         error: (err, stack) => Center(child: Text('Error: $err')),
         data: (records) {
           if (records.isEmpty) {
@@ -73,15 +84,20 @@ class _MedicalVaultScreenState extends ConsumerState<MedicalVaultScreen> {
           // Group by encounter date
           final grouped = <DateTime, List<MedicalRecord>>{};
           for (final record in records) {
-            final date = DateTime(record.encounterDate.year, record.encounterDate.month, record.encounterDate.day);
+            final date = DateTime(
+              record.encounterDate.year,
+              record.encounterDate.month,
+              record.encounterDate.day,
+            );
             grouped.putIfAbsent(date, () => []).add(record);
           }
-          
-          final sortedDates = grouped.keys.toList()..sort((a, b) => b.compareTo(a));
+
+          final sortedDates = grouped.keys.toList()
+            ..sort((a, b) => b.compareTo(a));
 
           return ListView.builder(
             controller: _scrollController,
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(0),
             itemCount: sortedDates.length + 1, // +1 for loading indicator
             itemBuilder: (context, index) {
               if (index == sortedDates.length) {
@@ -108,15 +124,21 @@ class _MedicalVaultScreenState extends ConsumerState<MedicalVaultScreen> {
 
               final date = sortedDates[index];
               final dateRecords = grouped[date]!;
-              
+
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 16,
+                      horizontal: 12,
+                    ),
                     child: Text(
                       DateFormat('MMMM d, yyyy').format(date),
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
                     ),
                   ),
                   ...List.generate(dateRecords.length, (i) {
@@ -146,7 +168,3 @@ class _MedicalVaultScreenState extends ConsumerState<MedicalVaultScreen> {
     );
   }
 }
-
-
-
-
