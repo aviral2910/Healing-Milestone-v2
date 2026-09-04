@@ -366,7 +366,7 @@ class ReportTimelineNode extends ConsumerWidget {
                                             ),
                                           ),
                                           child: Icon(
-                                            Icons.description_rounded,
+                                            Icons.picture_as_pdf_rounded,
                                             color: theme.colorScheme.primary,
                                             size: 24,
                                           ),
@@ -448,7 +448,7 @@ class ReportTimelineNode extends ConsumerWidget {
                                   const SizedBox(height: 16),
                                 if (docEntries.isNotEmpty) ...[
                                   buildSectionHeader(
-                                    Icons.description_outlined,
+                                    Icons.picture_as_pdf_rounded,
                                     docEntries.length,
                                   ),
                                   SingleChildScrollView(
