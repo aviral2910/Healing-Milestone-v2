@@ -103,58 +103,94 @@ class ReportTimelineNode extends ConsumerWidget {
           // Content Card
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.only(bottom: 16.0),
+              padding: const EdgeInsets.only(bottom: 24.0, right: 16.0),
               child: Container(
+                padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.surface,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(24),
                   border: Border.all(
-                    color: theme.dividerColor.withValues(alpha: 0.2),
+                    color: theme.colorScheme.primary.withValues(alpha: 0.15),
+                    width: 1,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.02),
-                      blurRadius: 10,
+                      color: theme.colorScheme.primary.withValues(alpha: 0.04),
+                      blurRadius: 24,
                       offset: const Offset(0, 4),
-                    )
+                    ),
                   ],
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              report.title,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 16,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                report.title,
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Added ${DateFormat('MMM d, yyyy').format(report.createdAt)}',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        PopupMenuButton<String>(
+                          icon: Icon(
+                            Icons.more_vert_rounded,
+                            size: 18,
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                          padding: EdgeInsets.zero,
+                          onSelected: (value) async {
+                            if (value == 'delete') {
+                              final confirm = await showDialog<bool>(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  title: const Text('Delete Report'),
+                                  content: const Text('Are you sure you want to permanently delete this report and its files?'),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(context, false),
+                                      child: const Text('Cancel'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(context, true),
+                                      child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                                    ),
+                                  ],
+                                ),
+                              );
+                              if (confirm == true) {
+                                ref.read(medicalRecordsProvider.notifier).deleteReport(report.id);
+                              }
+                            }
+                          },
+                          itemBuilder: (context) => [
+                            const PopupMenuItem(
+                              value: 'delete',
+                              child: Text(
+                                'Delete',
+                                style: TextStyle(color: Colors.red),
                               ),
                             ),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 20),
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                            onPressed: () {
-                              ref.read(medicalRecordsProvider.notifier).deleteReport(report.id);
-                            },
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Added ${DateFormat('MMMM d, yyyy').format(report.createdAt)}',
-                        style: TextStyle(
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
-                          fontSize: 12,
+                          ],
                         ),
-                      ),
-                      const SizedBox(height: 16),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
                       Wrap(
                         spacing: 12,
                         runSpacing: 12,
@@ -221,8 +257,7 @@ class ReportTimelineNode extends ConsumerWidget {
                           );
                         }).toList(),
                       ),
-                    ],
-                  ),
+                  ],
                 ),
               ),
             ),
