@@ -21,6 +21,8 @@ class ReportTimelineNode extends ConsumerWidget {
   }) : super(key: key);
 
   void _showFullScreenGallery(BuildContext context, int initialIndex) {
+    final isZoomedNotifier = ValueNotifier<bool>(false);
+    
     Navigator.of(context, rootNavigator: false).push(
       PageRouteBuilder(
         opaque: false,
@@ -32,32 +34,20 @@ class ReportTimelineNode extends ConsumerWidget {
           backgroundColor: Colors.transparent,
           body: Stack(
             children: [
-              PageView.builder(
-                controller: pageController,
-                itemCount: report.files.length,
+              ValueListenableBuilder<bool>(
+                valueListenable: isZoomedNotifier,
+                builder: (context, isZoomed, child) {
+                  return PageView.builder(
+                    physics: isZoomed ? const NeverScrollableScrollPhysics() : const BouncingScrollPhysics(),
+                    controller: pageController,
+                    itemCount: report.files.length,
                 itemBuilder: (context, index) {
                   final file = report.files[index];
                   final isImage = file.fileType.startsWith('image/');
                   if (isImage) {
-                    return CachedNetworkImage(
+                    return _GalleryImageItem(
                       imageUrl: file.url, 
-                      imageBuilder: (context, imageProvider) => InteractiveViewer(
-                        minScale: 1.0,
-                        maxScale: 5.0,
-                        panEnabled: true,
-                        scaleEnabled: true,
-                        child: Center(
-                          child: Image(image: imageProvider, fit: BoxFit.contain),
-                        ),
-                      ),
-                      placeholder: (context, url) => Center(
-                        child: SizedBox(
-                          width: 40, height: 40,
-                          child: CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
-                          ),
-                        )
-                      ),
+                      isZoomed: isZoomedNotifier,
                     );
                   }
                   if (file.fileType == 'application/pdf') {
@@ -79,6 +69,8 @@ class ReportTimelineNode extends ConsumerWidget {
                       ],
                     ),
                   );
+                },
+              );
                 },
               ),
 
@@ -380,5 +372,71 @@ class _ReportTimelinePainter extends CustomPainter {
     return oldDelegate.position != position ||
         oldDelegate.color != color ||
         oldDelegate.dotColor != dotColor;
+  }
+}
+
+class _GalleryImageItem extends StatefulWidget {
+  final String imageUrl;
+  final ValueNotifier<bool> isZoomed;
+
+  const _GalleryImageItem({required this.imageUrl, required this.isZoomed});
+
+  @override
+  State<_GalleryImageItem> createState() => _GalleryImageItemState();
+}
+
+class _GalleryImageItemState extends State<_GalleryImageItem> {
+  final TransformationController _controller = TransformationController();
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(_onTransformation);
+  }
+
+  void _onTransformation() {
+    final scale = _controller.value.getMaxScaleOnAxis();
+    final isZoomed = scale > 1.01;
+    if (widget.isZoomed.value != isZoomed) {
+      widget.isZoomed.value = isZoomed;
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.removeListener(_onTransformation);
+    _controller.dispose();
+    if (widget.isZoomed.value) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) return;
+        widget.isZoomed.value = false;
+      });
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CachedNetworkImage(
+      imageUrl: widget.imageUrl,
+      imageBuilder: (context, imageProvider) => InteractiveViewer(
+        transformationController: _controller,
+        minScale: 1.0,
+        maxScale: 5.0,
+        panEnabled: true,
+        scaleEnabled: true,
+        child: Center(
+          child: Image(image: imageProvider, fit: BoxFit.contain),
+        ),
+      ),
+      placeholder: (context, url) => Center(
+        child: SizedBox(
+          width: 40, height: 40,
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
+          ),
+        ),
+      ),
+    );
   }
 }

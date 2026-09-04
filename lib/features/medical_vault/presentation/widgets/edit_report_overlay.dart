@@ -151,6 +151,8 @@ class _EditReportOverlayState extends ConsumerState<EditReportOverlay> {
   }
 
   void _showFullScreenGallery(int initialIndex) {
+    final isZoomedNotifier = ValueNotifier<bool>(false);
+    
     Navigator.of(context, rootNavigator: false).push(
       PageRouteBuilder(
         opaque: false,
@@ -162,9 +164,13 @@ class _EditReportOverlayState extends ConsumerState<EditReportOverlay> {
           backgroundColor: Colors.transparent,
           body: Stack(
             children: [
-              PageView.builder(
-                controller: pageController,
-                itemCount: _existingFiles.length + _selectedFiles.length,
+              ValueListenableBuilder<bool>(
+                valueListenable: isZoomedNotifier,
+                builder: (context, isZoomed, child) {
+                  return PageView.builder(
+                    physics: isZoomed ? const NeverScrollableScrollPhysics() : const BouncingScrollPhysics(),
+                    controller: pageController,
+                    itemCount: _existingFiles.length + _selectedFiles.length,
                 itemBuilder: (context, index) {
                   final isExisting = index < _existingFiles.length;
                   final fileName = isExisting ? _existingFiles[index].fileName : _selectedFiles[index - _existingFiles.length].name;
@@ -177,14 +183,9 @@ class _EditReportOverlayState extends ConsumerState<EditReportOverlay> {
                     if (isExisting) {
                       return CachedNetworkImage(
                         imageUrl: filePath, 
-                        imageBuilder: (context, imageProvider) => InteractiveViewer(
-                          minScale: 1.0,
-                          maxScale: 5.0,
-                          panEnabled: true,
-                          scaleEnabled: true,
-                          child: Center(
-                            child: Image(image: imageProvider, fit: BoxFit.contain),
-                          ),
+                        imageBuilder: (context, imageProvider) => _GalleryImageItem(
+                          imageProvider: imageProvider,
+                          isZoomed: isZoomedNotifier,
                         ),
                         placeholder: (context, url) => Center(
                           child: SizedBox(
@@ -196,14 +197,9 @@ class _EditReportOverlayState extends ConsumerState<EditReportOverlay> {
                         ),
                       );
                     } else {
-                      return InteractiveViewer(
-                        minScale: 1.0,
-                        maxScale: 5.0,
-                        panEnabled: true,
-                        scaleEnabled: true,
-                        child: Center(
-                          child: Image.file(File(filePath), fit: BoxFit.contain),
-                        ),
+                      return _GalleryImageItem(
+                        imageProvider: FileImage(File(filePath)),
+                        isZoomed: isZoomedNotifier,
                       );
                     }
                   }
@@ -223,6 +219,8 @@ class _EditReportOverlayState extends ConsumerState<EditReportOverlay> {
                       ],
                     ),
                   );
+                },
+              );
                 },
               ),
 
@@ -767,6 +765,66 @@ class _EditReportOverlayState extends ConsumerState<EditReportOverlay> {
           ),
 
         ],
+      ),
+    );
+  }
+}
+
+class _GalleryImageItem extends StatefulWidget {
+  final ImageProvider imageProvider;
+  final ValueNotifier<bool> isZoomed;
+  final Widget? placeholder;
+
+  const _GalleryImageItem({
+    required this.imageProvider, 
+    required this.isZoomed,
+    this.placeholder,
+  });
+
+  @override
+  State<_GalleryImageItem> createState() => _GalleryImageItemState();
+}
+
+class _GalleryImageItemState extends State<_GalleryImageItem> {
+  final TransformationController _controller = TransformationController();
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(_onTransformation);
+  }
+
+  void _onTransformation() {
+    final scale = _controller.value.getMaxScaleOnAxis();
+    final isZoomed = scale > 1.01;
+    if (widget.isZoomed.value != isZoomed) {
+      widget.isZoomed.value = isZoomed;
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.removeListener(_onTransformation);
+    _controller.dispose();
+    if (widget.isZoomed.value) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) return;
+        widget.isZoomed.value = false;
+      });
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InteractiveViewer(
+      transformationController: _controller,
+      minScale: 1.0,
+      maxScale: 5.0,
+      panEnabled: true,
+      scaleEnabled: true,
+      child: Center(
+        child: Image(image: widget.imageProvider, fit: BoxFit.contain),
       ),
     );
   }
