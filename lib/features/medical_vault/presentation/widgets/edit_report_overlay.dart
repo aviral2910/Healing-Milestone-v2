@@ -349,9 +349,9 @@ class _EditReportOverlayState extends ConsumerState<EditReportOverlay> {
                           const SizedBox(height: 32),
                           
                           Text(
-                            'Encounter Date',
+                            'Report Date',
                             style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w500,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                           const SizedBox(height: 16),
@@ -380,21 +380,55 @@ class _EditReportOverlayState extends ConsumerState<EditReportOverlay> {
                             },
                             borderRadius: BorderRadius.circular(20),
                             child: Container(
-                              padding: const EdgeInsets.all(20),
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                               decoration: BoxDecoration(
                                 color: theme.colorScheme.surface,
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
-                                  color: theme.dividerColor.withValues(alpha: 0.1),
+                                  color: theme.dividerColor.withValues(alpha: 0.15),
                                 ),
                               ),
                               child: Row(
                                 children: [
-                                  Icon(Icons.calendar_today_rounded, color: theme.colorScheme.primary),
+                                  Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: Icon(Icons.calendar_month_rounded, color: theme.colorScheme.primary, size: 24),
+                                  ),
                                   const SizedBox(width: 16),
-                                  Text(
-                                    DateFormat('MMMM d, yyyy').format(_encounterDate),
-                                    style: theme.textTheme.bodyLarge,
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Date of Test / Scan',
+                                          style: theme.textTheme.labelMedium?.copyWith(
+                                            color: theme.hintColor.withValues(alpha: 0.7),
+                                            fontWeight: FontWeight.w500,
+                                            letterSpacing: 0.3,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          DateFormat('MMMM d, yyyy').format(_encounterDate),
+                                          style: theme.textTheme.titleMedium?.copyWith(
+                                            fontWeight: FontWeight.w700,
+                                            letterSpacing: 0.2,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: theme.colorScheme.onSurface.withValues(alpha: 0.05),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(Icons.edit_calendar_rounded, color: theme.colorScheme.onSurface, size: 20),
                                   ),
                                 ],
                               ),
