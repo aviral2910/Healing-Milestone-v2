@@ -427,12 +427,12 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
                                       return ActionChip(
                                         avatar: isSystem 
                                             ? Icon(Icons.check_circle_outline, size: 16, color: theme.colorScheme.primary) 
-                                            : Icon(Icons.add, size: 16, color: theme.colorScheme.onSurface),
+                                            : const Icon(Icons.add, size: 16, color: Colors.white),
                                         label: Text(
-                                          isSystem ? type : 'Add "$type"',
+                                          type,
                                           style: TextStyle(
-                                            color: isSystem ? theme.colorScheme.primary : theme.colorScheme.onSurface,
-                                            fontWeight: isSystem ? FontWeight.w600 : FontWeight.normal,
+                                            color: isSystem ? theme.colorScheme.primary : Colors.white,
+                                            fontWeight: isSystem ? FontWeight.w600 : FontWeight.w500,
                                           ),
                                         ),
                                         onPressed: () {
@@ -445,13 +445,13 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
                                         },
                                         backgroundColor: isSystem 
                                             ? theme.colorScheme.primary.withValues(alpha: 0.1) 
-                                            : theme.colorScheme.surface,
+                                            : Colors.white.withValues(alpha: 0.05),
                                         shape: RoundedRectangleBorder(
                                           borderRadius: BorderRadius.circular(12),
                                           side: BorderSide(
                                             color: isSystem 
                                                 ? theme.colorScheme.primary.withValues(alpha: 0.3) 
-                                                : theme.dividerColor.withValues(alpha: 0.2),
+                                                : Colors.white.withValues(alpha: 0.5),
                                           ),
                                         ),
                                       );

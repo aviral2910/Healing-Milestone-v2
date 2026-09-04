@@ -305,19 +305,41 @@ class _EditReportOverlayState extends ConsumerState<EditReportOverlay> {
                                 children: _suggestedTypes.where((t) => !_reportTypes.contains(t)).map((type) {
                                   return Padding(
                                     padding: const EdgeInsets.only(right: 8.0),
-                                    child: ActionChip(
-                                      label: Text(type),
-                                      onPressed: () {
-                                        setState(() {
-                                          _reportTypes.add(type);
-                                          _customTypeController.clear();
-                                        });
-                                                                          },
-                                      backgroundColor: theme.colorScheme.surface,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                        side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.2)),
-                                      ),
+                                    child: Builder(
+                                      builder: (context) {
+                                        final isSystem = _backendTags.contains(type);
+                                        return ActionChip(
+                                          avatar: isSystem 
+                                              ? Icon(Icons.check_circle_outline, size: 16, color: theme.colorScheme.primary) 
+                                              : const Icon(Icons.add, size: 16, color: Colors.white),
+                                          label: Text(
+                                            type,
+                                            style: TextStyle(
+                                              color: isSystem ? theme.colorScheme.primary : Colors.white,
+                                              fontWeight: isSystem ? FontWeight.w600 : FontWeight.w500,
+                                            ),
+                                          ),
+                                          onPressed: () {
+                                            setState(() {
+                                              _reportTypes.add(type);
+                                              _customTypeController.clear();
+                                              _suggestedTypes = [];
+                                              _backendTags = [];
+                                            });
+                                          },
+                                          backgroundColor: isSystem 
+                                              ? theme.colorScheme.primary.withValues(alpha: 0.1) 
+                                              : Colors.white.withValues(alpha: 0.05),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(12),
+                                            side: BorderSide(
+                                              color: isSystem 
+                                                  ? theme.colorScheme.primary.withValues(alpha: 0.3) 
+                                                  : Colors.white.withValues(alpha: 0.5),
+                                            ),
+                                          ),
+                                        );
+                                      }
                                     ),
                                   );
                                 }).toList(),
