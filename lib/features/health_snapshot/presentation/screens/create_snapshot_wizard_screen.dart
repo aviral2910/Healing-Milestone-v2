@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../journey/data/models/journey_models.dart' hide TimelinePosition;
 import 'package:healing_milestones/features/medical_vault/data/models/medical_vault_models.dart';
-import '../../../medical_vault/data/repositories/medical_vault_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -14,10 +13,12 @@ class CreateSnapshotWizardScreen extends ConsumerStatefulWidget {
   const CreateSnapshotWizardScreen({super.key});
 
   @override
-  ConsumerState<CreateSnapshotWizardScreen> createState() => _CreateSnapshotWizardScreenState();
+  ConsumerState<CreateSnapshotWizardScreen> createState() =>
+      _CreateSnapshotWizardScreenState();
 }
 
-class _CreateSnapshotWizardScreenState extends ConsumerState<CreateSnapshotWizardScreen> {
+class _CreateSnapshotWizardScreenState
+    extends ConsumerState<CreateSnapshotWizardScreen> {
   final _pageController = PageController();
   int _currentPage = 0;
 
@@ -50,10 +51,12 @@ class _CreateSnapshotWizardScreenState extends ConsumerState<CreateSnapshotWizar
       );
       return;
     }
-    
+
     if (_currentPage == 1 && _selectedJourneyIds.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select at least one journey to continue')),
+        const SnackBar(
+          content: Text('Please select at least one journey to continue'),
+        ),
       );
       return;
     }
@@ -67,13 +70,13 @@ class _CreateSnapshotWizardScreenState extends ConsumerState<CreateSnapshotWizar
       setState(() => _isLoading = true);
       try {
         final newView = await ref
-          .read(mixViewsProvider.notifier)
-          .createMixView(
-            name: _nameController.text.trim(),
-            journeyIds: _selectedJourneyIds.toList(),
-            selectedReportIds: _selectedReportIds.toList(),
-            durationHours: _selectedDurationHours,
-          );
+            .read(mixViewsProvider.notifier)
+            .createMixView(
+              name: _nameController.text.trim(),
+              journeyIds: _selectedJourneyIds.toList(),
+              selectedReportIds: _selectedReportIds.toList(),
+              durationHours: _selectedDurationHours,
+            );
         if (!mounted) return;
         context.pushReplacement('/health-snapshot/view/${newView.id}');
       } catch (e) {
@@ -99,7 +102,53 @@ class _CreateSnapshotWizardScreenState extends ConsumerState<CreateSnapshotWizar
     }
   }
 
-  Future<void> _showFilterBottomSheet(BuildContext context, ThemeData theme) async {
+  void _applyLocalFilters() {
+    final allRecords = ref.read(medicalRecordsProvider).value ?? [];
+
+    if (_filterDate == null && _filterTags.isEmpty) {
+      setState(() {
+        _selectedReportIds.clear();
+        _isAllSelected = false;
+      });
+      return;
+    }
+
+    final matchingIds = allRecords
+        .where((r) {
+          if (_filterDate != null) {
+            final utcEnc = r.encounterDate.toUtc();
+            final rDate = DateTime(utcEnc.year, utcEnc.month, utcEnc.day);
+            final fDate = DateTime(
+              _filterDate!.year,
+              _filterDate!.month,
+              _filterDate!.day,
+            );
+            if (rDate.isBefore(fDate)) return false;
+          }
+          if (_filterTags.isNotEmpty) {
+            final hasMatch = r.reportTypes.any((t) => _filterTags.contains(t));
+            if (!hasMatch) return false;
+          }
+          return true;
+        })
+        .map((r) => r.id)
+        .toSet();
+
+    setState(() {
+      _selectedReportIds.clear();
+      _selectedReportIds.addAll(matchingIds);
+      _isAllSelected =
+          (matchingIds.length == allRecords.length) && allRecords.isNotEmpty;
+    });
+  }
+
+  Future<void> _showFilterBottomSheet(
+    BuildContext context,
+    ThemeData theme,
+  ) async {
+    DateTime? tempFilterDate = _filterDate;
+    Set<String> tempFilterTags = Set.from(_filterTags);
+
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -112,8 +161,14 @@ class _CreateSnapshotWizardScreenState extends ConsumerState<CreateSnapshotWizar
           builder: (context, ref, _) {
             final tagsAsync = ref.watch(uniqueMedicalTagsProvider);
             return tagsAsync.when(
-              loading: () => const SizedBox(height: 250, child: Center(child: CircularProgressIndicator())),
-              error: (e, _) => SizedBox(height: 250, child: Center(child: Text('Error: $e'))),
+              loading: () => const SizedBox(
+                height: 250,
+                child: Center(child: CircularProgressIndicator()),
+              ),
+              error: (e, _) => SizedBox(
+                height: 250,
+                child: Center(child: Text('Error: $e')),
+              ),
               data: (availableTags) {
                 return StatefulBuilder(
                   builder: (context, setModalState) {
@@ -128,79 +183,216 @@ class _CreateSnapshotWizardScreenState extends ConsumerState<CreateSnapshotWizar
                           children: [
                             Center(
                               child: Container(
-                                margin: const EdgeInsets.only(top: 12, bottom: 20),
+                                margin: const EdgeInsets.only(
+                                  top: 12,
+                                  bottom: 20,
+                                ),
                                 height: 4,
                                 width: 40,
                                 decoration: BoxDecoration(
-                                  color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
+                                  color: theme.colorScheme.onSurfaceVariant
+                                      .withValues(alpha: 0.3),
                                   borderRadius: BorderRadius.circular(2),
                                 ),
                               ),
                             ),
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24.0,
+                              ),
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    'Filter by Tags',
+                                    'Filters',
                                     style: theme.textTheme.titleLarge?.copyWith(
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                  if (_filterTags.isNotEmpty)
+                                  if (tempFilterDate != null ||
+                                      tempFilterTags.isNotEmpty)
                                     TextButton(
                                       onPressed: () {
                                         setModalState(() {
-                                          _filterTags.clear();
+                                          tempFilterDate = null;
+                                          tempFilterTags.clear();
                                         });
-                                        setState(() {});
                                       },
                                       style: TextButton.styleFrom(
-                                        foregroundColor: theme.colorScheme.error,
+                                        foregroundColor:
+                                            theme.colorScheme.primary,
                                       ),
-                                      child: const Text('Clear', style: TextStyle(fontWeight: FontWeight.w600)),
-                                    )
+                                      child: const Text(
+                                        'Clear All',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
                                 ],
                               ),
                             ),
-                            const SizedBox(height: 16),
-                            if (availableTags.isEmpty)
-                              const Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-                                child: Text('No tags found in your medical records.'),
-                              )
-                            else
+                            const SizedBox(height: 24),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24.0,
+                              ),
+                              child: Text(
+                                'By Date',
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24.0,
+                              ),
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(16),
+                                onTap: () async {
+                                  final date = await showDatePicker(
+                                    context: context,
+                                    initialDate:
+                                        tempFilterDate ?? DateTime.now(),
+                                    firstDate: DateTime(2000),
+                                    lastDate: DateTime.now(),
+                                  );
+                                  if (date != null) {
+                                    setModalState(() => tempFilterDate = date);
+                                  }
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 16,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: tempFilterDate != null
+                                        ? theme.colorScheme.primary.withValues(
+                                            alpha: 0.15,
+                                          )
+                                        : theme
+                                              .colorScheme
+                                              .surfaceContainerHighest
+                                              .withValues(alpha: 0.3),
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: tempFilterDate != null
+                                          ? theme.colorScheme.primary
+                                          : theme.colorScheme.primary.withValues(alpha: 0.2),
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.calendar_month_rounded,
+                                        color: tempFilterDate != null
+                                            ? theme.colorScheme.primary
+                                            : theme
+                                                  .colorScheme
+                                                  .onSurfaceVariant,
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Text(
+                                          tempFilterDate == null
+                                              ? 'Any Date'
+                                              : 'After ${DateFormat('MMMM d, yyyy').format(tempFilterDate!)}',
+                                          style: theme.textTheme.titleSmall
+                                              ?.copyWith(
+                                                color: tempFilterDate != null
+                                                    ? theme.colorScheme.primary
+                                                    : theme
+                                                          .colorScheme
+                                                          .onSurface,
+                                                fontWeight:
+                                                    tempFilterDate != null
+                                                    ? FontWeight.bold
+                                                    : FontWeight.normal,
+                                              ),
+                                        ),
+                                      ),
+                                      if (tempFilterDate != null)
+                                        IconButton(
+                                          icon: const Icon(
+                                            Icons.close_rounded,
+                                            size: 20,
+                                          ),
+                                          padding: EdgeInsets.zero,
+                                          constraints: const BoxConstraints(),
+                                          onPressed: () {
+                                            setModalState(
+                                              () => tempFilterDate = null,
+                                            );
+                                          },
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 32),
+                            if (availableTags.isNotEmpty) ...[
                               Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 24.0,
+                                ),
+                                child: Text(
+                                  'By Tags',
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 24.0,
+                                ),
                                 child: Wrap(
                                   spacing: 12,
                                   runSpacing: 16,
                                   children: availableTags.map((tag) {
-                                    final isSelected = _filterTags.contains(tag);
+                                    final isSelected = tempFilterTags.contains(
+                                      tag,
+                                    );
                                     return GestureDetector(
                                       onTap: () {
                                         setModalState(() {
                                           if (isSelected) {
-                                            _filterTags.remove(tag);
+                                            tempFilterTags.remove(tag);
                                           } else {
-                                            _filterTags.add(tag);
+                                            tempFilterTags.add(tag);
                                           }
                                         });
-                                        setState(() {});
                                       },
                                       child: AnimatedContainer(
-                                        duration: const Duration(milliseconds: 200),
-                                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                        duration: const Duration(
+                                          milliseconds: 200,
+                                        ),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 16,
+                                          vertical: 10,
+                                        ),
                                         decoration: BoxDecoration(
-                                          color: isSelected 
-                                            ? theme.colorScheme.primary.withValues(alpha: 0.15) 
-                                            : theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-                                          borderRadius: BorderRadius.circular(20),
+                                          color: isSelected
+                                              ? theme.colorScheme.primary
+                                                    .withValues(alpha: 0.15)
+                                              : theme
+                                                    .colorScheme
+                                                    .surfaceContainerHighest
+                                                    .withValues(alpha: 0.3),
+                                          borderRadius: BorderRadius.circular(
+                                            20,
+                                          ),
                                           border: Border.all(
-                                            color: isSelected 
-                                              ? theme.colorScheme.primary 
-                                              : theme.dividerColor.withValues(alpha: 0.3),
+                                            color: isSelected
+                                                ? theme.colorScheme.primary
+                                                : theme.colorScheme.primary.withValues(alpha: 0.2),
                                             width: 1.5,
                                           ),
                                         ),
@@ -208,16 +400,30 @@ class _CreateSnapshotWizardScreenState extends ConsumerState<CreateSnapshotWizar
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
                                             if (isSelected) ...[
-                                              Icon(Icons.check_circle_rounded, size: 16, color: theme.colorScheme.primary),
+                                              Icon(
+                                                Icons.check_circle_rounded,
+                                                size: 16,
+                                                color:
+                                                    theme.colorScheme.primary,
+                                              ),
                                               const SizedBox(width: 6),
                                             ],
                                             Text(
                                               tag.toUpperCase(),
-                                              style: theme.textTheme.labelMedium?.copyWith(
-                                                color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant,
-                                                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                                                letterSpacing: 0.5,
-                                              ),
+                                              style: theme.textTheme.labelMedium
+                                                  ?.copyWith(
+                                                    color: isSelected
+                                                        ? theme
+                                                              .colorScheme
+                                                              .primary
+                                                        : theme
+                                                              .colorScheme
+                                                              .onSurfaceVariant,
+                                                    fontWeight: isSelected
+                                                        ? FontWeight.w800
+                                                        : FontWeight.w600,
+                                                    letterSpacing: 0.5,
+                                                  ),
                                             ),
                                           ],
                                         ),
@@ -226,11 +432,20 @@ class _CreateSnapshotWizardScreenState extends ConsumerState<CreateSnapshotWizar
                                   }).toList(),
                                 ),
                               ),
+                            ],
                             const SizedBox(height: 40),
                             Padding(
                               padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
                               child: ElevatedButton(
-                                onPressed: () => Navigator.pop(context),
+                                onPressed: () {
+                                  setState(() {
+                                    _filterDate = tempFilterDate;
+                                    _filterTags.clear();
+                                    _filterTags.addAll(tempFilterTags);
+                                  });
+                                  _applyLocalFilters();
+                                  Navigator.pop(context);
+                                },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: theme.colorScheme.primary,
                                   foregroundColor: theme.colorScheme.onPrimary,
@@ -242,7 +457,10 @@ class _CreateSnapshotWizardScreenState extends ConsumerState<CreateSnapshotWizar
                                 ),
                                 child: const Text(
                                   'Apply Filters',
-                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
                                 ),
                               ),
                             ),
@@ -250,17 +468,14 @@ class _CreateSnapshotWizardScreenState extends ConsumerState<CreateSnapshotWizar
                         ),
                       ),
                     );
-                  }
+                  },
                 );
               },
             );
           },
         );
-      }
+      },
     );
-    
-    // Auto-apply after sheet closes
-    _applyFilters();
   }
 
   @override
@@ -275,10 +490,10 @@ class _CreateSnapshotWizardScreenState extends ConsumerState<CreateSnapshotWizar
           onPressed: _prevPage,
         ),
         title: Text(
-          _currentPage == 0 
-            ? 'Name Your Snapshot' 
-            : _currentPage == 1 
-              ? 'Select Journey' 
+          _currentPage == 0
+              ? 'Name Your Snapshot'
+              : _currentPage == 1
+              ? 'Select Journey'
               : 'Select Records',
           style: TextStyle(
             fontWeight: FontWeight.bold,
@@ -347,33 +562,6 @@ class _CreateSnapshotWizardScreenState extends ConsumerState<CreateSnapshotWizar
       ),
     );
   }
-
-  Future<void> _applyFilters() async {
-    
-    try {
-      final repo = ref.read(medicalVaultRepositoryProvider);
-      final ids = await repo.getMedicalRecordIds(
-        afterDate: _filterDate,
-        tags: _filterTags.toList(),
-      );
-      setState(() {
-        _selectedReportIds.clear();
-        _selectedReportIds.addAll(ids);
-      });
-      
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error: $e')));
-      }
-    } finally {
-      if (mounted) {
-        
-      }
-    }
-  }
-
 
   Widget _buildBasicInfoPage(ThemeData theme) {
     return SingleChildScrollView(
@@ -545,7 +733,6 @@ class _CreateSnapshotWizardScreenState extends ConsumerState<CreateSnapshotWizar
   }
 
   // --- REPLACE _buildJourneysPage
-
 
   Widget _buildJourneysPage(ThemeData theme) {
     final journeysAsync = ref.watch(myJourneysProvider);
@@ -799,161 +986,169 @@ class _CreateSnapshotWizardScreenState extends ConsumerState<CreateSnapshotWizar
     );
   }
 
-
   Widget _buildReportsPage(ThemeData theme) {
     final recordsAsync = ref.watch(medicalRecordsProvider);
 
     return recordsAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (err, _) => Center(child: Text('Error: $err')),
-      data: (records) {
+      data: (allRecords) {
+        final records = allRecords;
+
         final grouped = <DateTime, List<MedicalRecord>>{};
         for (final record in records) {
-          final date = DateTime(
-            record.encounterDate.year,
-            record.encounterDate.month,
-            record.encounterDate.day,
-          );
+          final utcEnc = record.encounterDate.toUtc();
+          final date = DateTime(utcEnc.year, utcEnc.month, utcEnc.day);
           grouped.putIfAbsent(date, () => []).add(record);
         }
 
-        final sortedDates = grouped.keys.toList()..sort((a, b) => b.compareTo(a));
+        final sortedDates = grouped.keys.toList()
+          ..sort((a, b) => b.compareTo(a));
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Sleek Horizontal Filter Row
-            SizedBox(
-              height: 52,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                children: [
-                  // Date Filter
-                  ActionChip(
-                    backgroundColor: _filterDate != null ? theme.colorScheme.primary.withValues(alpha: 0.15) : theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                    side: BorderSide.none,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    avatar: Icon(Icons.calendar_month_rounded, size: 16, color: _filterDate != null ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant),
-                    label: Text(
-                      _filterDate == null ? 'Date' : DateFormat('MMM d').format(_filterDate!), 
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _filterDate != null ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant),
-                    ),
-                    onPressed: () async {
-                      if (_filterDate != null) {
-                        setState(() => _filterDate = null);
-                        _applyFilters();
-                        return;
-                      }
-                      final date = await showDatePicker(
-                        context: context,
-                        initialDate: DateTime.now(),
-                        firstDate: DateTime(2000),
-                        lastDate: DateTime.now(),
-                      );
-                      if (date != null) {
-                        setState(() => _filterDate = date);
-                        _applyFilters();
-                      }
-                    },
-                  ),
-                  const SizedBox(width: 8),
-
-                  // Tags Filter
-                  ActionChip(
-                    backgroundColor: _filterTags.isNotEmpty ? theme.colorScheme.primary.withValues(alpha: 0.15) : theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                    side: BorderSide.none,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    avatar: Icon(Icons.label_rounded, size: 16, color: _filterTags.isNotEmpty ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant),
-                    label: Text(
-                      _filterTags.isEmpty ? 'Tags' : '${_filterTags.length} Tags',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _filterTags.isNotEmpty ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant),
-                    ),
-                    onPressed: () {
-                      _showFilterBottomSheet(context, theme);
-                    },
-                  ),
-                  const SizedBox(width: 8),
-
-                  // Select All
-                  ActionChip(
-                    backgroundColor: _isAllSelected ? theme.colorScheme.primary.withValues(alpha: 0.15) : theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                    side: BorderSide.none,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    avatar: Icon(_isAllSelected ? Icons.deselect_rounded : Icons.checklist_rounded, size: 16, color: _isAllSelected ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant),
-                    label: Text(
-                      _isAllSelected ? 'Deselect All' : 'Select All',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _isAllSelected ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant),
-                    ),
-                    onPressed: () async {
-                      if (_isAllSelected) {
-                        setState(() {
-                          _selectedReportIds.clear();
-                          _isAllSelected = false;
-                        });
-                      } else {
-                        try {
-                          final repo = ref.read(medicalVaultRepositoryProvider);
-                          final ids = await repo.getMedicalRecordIds();
-                          setState(() {
-                            _selectedReportIds.addAll(ids);
-                            _isAllSelected = true;
-                          });
-                        } catch (e) {
-                          // ignore
-                        }
-                      }
-                    },
-                  ),
-                  
-                  if (_filterDate != null || _filterTags.isNotEmpty) ...[
-                    const SizedBox(width: 8),
-                    ActionChip(
-                      backgroundColor: theme.colorScheme.error.withValues(alpha: 0.1),
-                      side: BorderSide.none,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      label: Text(
-                        'Clear',
-                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: theme.colorScheme.error),
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _filterDate = null;
-                          _filterTags.clear();
-                        });
-                        _applyFilters();
-                      },
-                    ),
-                  ],
-                ],
-              ),
-            ),
-
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 8, 24, 12),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Timeline Records',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
+                    '${_selectedReportIds.length} selected',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: theme.colorScheme.primary,
                     ),
                   ),
-                  Text(
-                    '${_selectedReportIds.length} Selected',
-                    style: theme.textTheme.labelMedium?.copyWith(
-                      color: theme.colorScheme.primary,
-                      fontWeight: FontWeight.w800,
-                    ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Material(
+                        color: _isAllSelected 
+                            ? theme.colorScheme.primary.withValues(alpha: 0.1)
+                            : Colors.transparent,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          side: BorderSide(
+                            color: _isAllSelected 
+                                ? theme.colorScheme.primary
+                                : theme.dividerColor,
+                          ),
+                        ),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(20),
+                          onTap: () {
+                            final newVal = !_isAllSelected;
+                            if (newVal) {
+                              setState(() {
+                                _selectedReportIds.addAll(records.map((r) => r.id));
+                                _isAllSelected = true;
+                              });
+                            } else {
+                              setState(() {
+                                _selectedReportIds.removeAll(records.map((r) => r.id));
+                                _isAllSelected = false;
+                              });
+                            }
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.only(left: 0, right: 10, top: 0, bottom: 0),
+                            child: Row(
+                              children: [
+                                Transform.scale(
+                                  scale: 0.8,
+                                  child: Checkbox(
+                                    value: _isAllSelected,
+                                    activeColor: theme.colorScheme.primary,
+                                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                    visualDensity: VisualDensity.compact,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    onChanged: (val) {
+                                      if (val == true) {
+                                        setState(() {
+                                          _selectedReportIds.addAll(records.map((r) => r.id));
+                                          _isAllSelected = true;
+                                        });
+                                      } else {
+                                        setState(() {
+                                          _selectedReportIds.removeAll(records.map((r) => r.id));
+                                          _isAllSelected = false;
+                                        });
+                                      }
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(width: 2),
+                                Text(
+                                  'All',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                    color: _isAllSelected 
+                                        ? theme.colorScheme.primary 
+                                        : theme.colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          IconButton(
+                            iconSize: 18,
+                            padding: const EdgeInsets.all(4),
+                            constraints: const BoxConstraints(),
+                            icon: Icon(
+                              Icons.filter_list_rounded,
+                              color: (_filterDate != null || _filterTags.isNotEmpty) 
+                                ? theme.colorScheme.primary 
+                                : theme.colorScheme.onSurfaceVariant,
+                            ),
+                            style: IconButton.styleFrom(
+                              backgroundColor: (_filterDate != null || _filterTags.isNotEmpty)
+                                ? theme.colorScheme.primary.withValues(alpha: 0.1)
+                                : Colors.transparent,
+                            ),
+                            onPressed: () => _showFilterBottomSheet(context, theme),
+                          ),
+                          if (_filterDate != null || _filterTags.isNotEmpty)
+                            Positioned(
+                              right: -2,
+                              top: -2,
+                              child: Container(
+                                padding: const EdgeInsets.all(3),
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.primary,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: theme.colorScheme.surface, width: 2),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
-            
             Expanded(
               child: records.isEmpty
-                  ? const Center(child: Text('No medical reports found.'))
+                  ? Center(
+                      child: Text(
+                        allRecords.isEmpty
+                            ? 'No medical reports found.'
+                            : 'No reports match your filters.',
+                        style: TextStyle(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    )
                   : ListView.builder(
                       padding: const EdgeInsets.all(0),
                       itemCount: sortedDates.length,
@@ -979,7 +1174,9 @@ class _CreateSnapshotWizardScreenState extends ConsumerState<CreateSnapshotWizar
                             ),
                             ...List.generate(dateRecords.length, (i) {
                               final r = dateRecords[i];
-                              final isSelected = _selectedReportIds.contains(r.id);
+                              final isSelected = _selectedReportIds.contains(
+                                r.id,
+                              );
 
                               return Padding(
                                 padding: const EdgeInsets.only(bottom: 16.0),
@@ -996,13 +1193,13 @@ class _CreateSnapshotWizardScreenState extends ConsumerState<CreateSnapshotWizar
                                   },
                                   child: ReportTimelineNode(
                                     report: r,
-                                    position: dateRecords.length == 1 
-                                        ? TimelinePosition.standalone 
-                                        : (i == 0 
-                                            ? TimelinePosition.start 
-                                            : (i == dateRecords.length - 1 
-                                                ? TimelinePosition.end 
-                                                : TimelinePosition.middle)),
+                                    position: dateRecords.length == 1
+                                        ? TimelinePosition.standalone
+                                        : (i == 0
+                                              ? TimelinePosition.start
+                                              : (i == dateRecords.length - 1
+                                                    ? TimelinePosition.end
+                                                    : TimelinePosition.middle)),
                                     isSelected: isSelected,
                                     showEditMenu: false,
                                   ),
