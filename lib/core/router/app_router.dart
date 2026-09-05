@@ -5,6 +5,8 @@ import '../../features/medical_vault/presentation/screens/mix_view_builder_scree
 import '../../features/medical_vault/presentation/screens/mix_view_share_screen.dart';
 
 import 'package:go_router/go_router.dart';
+import '../../features/health_snapshot/presentation/screens/create_snapshot_wizard_screen.dart';
+import '../../features/health_snapshot/presentation/screens/health_snapshot_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/journey/presentation/screens/time_capsule_list_screen.dart';
 
@@ -195,12 +197,23 @@ final routerProvider = Provider<GoRouter>((ref) {
         routes: [
 
       GoRoute(
+        path: '/health-snapshot/create',
+        builder: (context, state) => const CreateSnapshotWizardScreen(),
+      ),
+      GoRoute(
+        path: '/health-snapshot/view/:id',
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return HealthSnapshotScreen(snapshotId: id);
+        },
+      ),
+      GoRoute(
         path: '/medical-vault',
         builder: (context, state) => const MedicalVaultScreen(),
       ),
       GoRoute(
         path: '/medical-vault/create-mix/:journeyId',
-        builder: (context, state) => MixViewBuilderScreen(journeyId: state.pathParameters['journeyId']!),
+        builder: (context, state) => MixViewBuilderScreen(journeyIds: [state.pathParameters['journeyId']!]),
       ),
       GoRoute(
         path: '/medical-vault/share/:viewId',

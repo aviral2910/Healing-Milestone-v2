@@ -1,10 +1,17 @@
 import 'package:file_picker/file_picker.dart';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../data/models/medical_vault_models.dart';
 import '../../data/repositories/medical_vault_repository.dart';
 
 part 'medical_vault_providers.g.dart';
+
+
+@riverpod
+Future<List<String>> uniqueMedicalTags(Ref ref) async {
+  return await ref.watch(medicalVaultRepositoryProvider).getUniqueTags();
+}
 
 @riverpod
 class MedicalRecordsNotifier extends _$MedicalRecordsNotifier {
@@ -116,13 +123,13 @@ class MixViewsNotifier extends _$MixViewsNotifier {
 
   Future<MixView> createMixView({
     required String name,
-    required String journeyId,
+    required List<String> journeyIds,
     required List<String> selectedReportIds,
     required int durationHours,
   }) async {
     final newView = await ref.read(medicalVaultRepositoryProvider).createMixView(
       name: name,
-      journeyId: journeyId,
+      journeyIds: journeyIds,
       selectedReportIds: selectedReportIds,
       durationHours: durationHours,
     );

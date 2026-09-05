@@ -15,6 +15,40 @@ class MedicalVaultRepository {
 
   MedicalVaultRepository(this._apiClient);
 
+  
+  
+      Future<List<String>> getUniqueTags() async {
+    try {
+      final response = await _apiClient.dio.get('/api/reports/tags/unique');
+      final List<dynamic> data = response.data;
+      return data.cast<String>();
+    } catch (e) {
+      throw Exception('Error fetching unique tags: $e');
+    }
+  }
+
+  Future<List<String>> getMedicalRecordIds({DateTime? afterDate, List<String>? tags}) async {
+    try {
+      final queryParams = <String, dynamic>{};
+      if (afterDate != null) {
+        queryParams['after_date'] = afterDate.toIso8601String();
+      }
+      if (tags != null && tags.isNotEmpty) {
+        queryParams['tags'] = tags;
+      }
+
+      final response = await _apiClient.dio.get(
+        '/api/reports/ids',
+        queryParameters: queryParams.isNotEmpty ? queryParams : null,
+      );
+
+      final List<dynamic> data = response.data;
+      return data.cast<String>();
+    } catch (e) {
+      throw Exception('Error fetching medical record IDs: $e');
+    }
+  }
+
   Future<List<MedicalRecord>> getMedicalRecords({int skip = 0, int limit = 20}) async {
     final response = await _apiClient.dio.get('/api/reports?skip=$skip&limit=$limit');
     return (response.data as List).map((json) => MedicalRecord.fromJson(json)).toList();
@@ -158,7 +192,7 @@ class MedicalVaultRepository {
 
   Future<MixView> createMixView({
     required String name,
-    required String journeyId,
+    required List<String> journeyIds,
     required List<String> selectedReportIds,
     required int durationHours,
   }) async {
@@ -166,7 +200,7 @@ class MedicalVaultRepository {
       '/api/mix-views',
       data: {
         'name': name,
-        'journeyId': journeyId,
+        'journeyIds': journeyIds,
         'selectedReportIds': selectedReportIds,
         'durationHours': durationHours,
       },

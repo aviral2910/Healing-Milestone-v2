@@ -13,11 +13,15 @@ enum TimelinePosition { standalone, start, middle, end }
 class ReportTimelineNode extends ConsumerWidget {
   final MedicalRecord report;
   final TimelinePosition position;
+  final bool isSelected;
+  final bool showEditMenu;
 
   const ReportTimelineNode({
     Key? key,
     required this.report,
     required this.position,
+    this.isSelected = false,
+    this.showEditMenu = true,
   }) : super(key: key);
 
   void _showFullScreenGallery(BuildContext context, int initialIndex) {
@@ -141,11 +145,11 @@ class ReportTimelineNode extends ConsumerWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 20),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.surface,
+                  color: isSelected ? theme.colorScheme.primary.withValues(alpha: 0.05) : theme.colorScheme.surface,
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(
-                    color: theme.colorScheme.primary.withValues(alpha: 0.15),
-                    width: 1,
+                    color: isSelected ? theme.colorScheme.primary : theme.colorScheme.primary.withValues(alpha: 0.15),
+                    width: isSelected ? 2 : 1,
                   ),
                   boxShadow: [
                     BoxShadow(
@@ -157,13 +161,31 @@ class ReportTimelineNode extends ConsumerWidget {
                 ),
                 child: Stack(
                   children: [
+                    if (isSelected)
+                      Positioned(
+                        top: 0,
+                        right: 16,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primary,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.check,
+                            size: 16,
+                            color: theme.colorScheme.onPrimary,
+                          ),
+                        ),
+                      ),
+
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Padding(
                           padding: const EdgeInsets.only(left: 20, right: 40),
                           child: Text(
-                            'Added ${DateFormat('MMM d, yyyy').format(report.createdAt)}',
+                            DateFormat('MMM d, yyyy').format(report.encounterDate),
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: theme.colorScheme.onSurfaceVariant,
                             ),
@@ -475,10 +497,11 @@ class ReportTimelineNode extends ConsumerWidget {
                         ),
                       ],
                     ),
-                    Positioned(
-                      top: -16,
-                      right: 16,
-                      child: PopupMenuButton<String>(
+                    if (showEditMenu)
+                      Positioned(
+                        top: -16,
+                        right: 16,
+                        child: PopupMenuButton<String>(
                         icon: Icon(
                           Icons.more_vert_rounded,
                           size: 18,

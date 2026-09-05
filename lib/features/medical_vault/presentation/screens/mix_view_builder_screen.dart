@@ -6,8 +6,8 @@ import 'package:intl/intl.dart';
 import '../providers/medical_vault_providers.dart';
 
 class MixViewBuilderScreen extends ConsumerStatefulWidget {
-  final String journeyId;
-  const MixViewBuilderScreen({super.key, required this.journeyId});
+  final List<String> journeyIds;
+  const MixViewBuilderScreen({super.key, required this.journeyIds});
 
   @override
   ConsumerState<MixViewBuilderScreen> createState() => _MixViewBuilderScreenState();
@@ -39,7 +39,7 @@ class _MixViewBuilderScreenState extends ConsumerState<MixViewBuilderScreen> {
     try {
       final newView = await ref.read(mixViewsProvider.notifier).createMixView(
         name: _nameController.text.trim(),
-        journeyId: widget.journeyId,
+        journeyIds: widget.journeyIds,
         selectedReportIds: _selectedReportIds.toList(),
         durationHours: _selectedDuration,
       );

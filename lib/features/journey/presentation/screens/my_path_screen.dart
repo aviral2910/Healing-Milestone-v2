@@ -16,6 +16,11 @@ import '../widgets/create_journey_overlay.dart';
 import 'journey_detail_screen.dart';
 import 'all_checkins_screen.dart';
 
+import '../../../medical_vault/presentation/providers/medical_vault_providers.dart';
+import '../../../medical_vault/presentation/screens/mix_view_builder_screen.dart';
+import '../../../medical_vault/presentation/screens/mix_view_share_screen.dart';
+import 'package:intl/intl.dart';
+
 class MyPathScreen extends ConsumerWidget {
   const MyPathScreen({super.key});
 
@@ -197,6 +202,7 @@ class MyPathScreen extends ConsumerWidget {
             ),
           ),
 
+          
           // My Journeys (Folders) Title
           SliverToBoxAdapter(
             child: Padding(
@@ -503,6 +509,213 @@ class MyPathScreen extends ConsumerWidget {
               ),
             ),
           ),
+
+          // Active Doctor Shares
+          SliverToBoxAdapter(
+            child: Consumer(
+              builder: (context, ref, _) {
+                final viewsAsync = ref.watch(mixViewsProvider);
+                
+                return viewsAsync.when(
+                  data: (views) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                'Health Snapshots',
+                                style: theme.textTheme.titleLarge?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: -0.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(
+                          height: 170, // Match My Journeys height
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            physics: const BouncingScrollPhysics(),
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            itemCount: views.length + 1,
+                            itemBuilder: (context, index) {
+                              if (index == 0) {
+                                // Start New Health Snapshot Card
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8.0,
+                                    vertical: 4.0,
+                                  ),
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      context.push('/health-snapshot/create');
+                                    },
+                                    child: Container(
+                                      width: 140, // Match visual weight
+                                      decoration: BoxDecoration(
+                                        color: theme.colorScheme.surface.withValues(
+                                          alpha: 0.5,
+                                        ),
+                                        borderRadius: BorderRadius.circular(28),
+                                        border: Border.all(
+                                          color: theme.dividerColor.withValues(
+                                            alpha: 0.3,
+                                          ),
+                                          style: BorderStyle.solid,
+                                        ),
+                                      ),
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.all(16),
+                                            decoration: BoxDecoration(
+                                              color: theme.colorScheme.primary
+                                                  .withValues(alpha: 0.08),
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: Icon(
+                                              Icons.add_rounded,
+                                              color: theme.colorScheme.primary,
+                                              size: 28,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 16),
+                                          Text(
+                                            'Create Snapshot',
+                                            style: theme.textTheme.labelMedium
+                                                ?.copyWith(
+                                                  fontWeight: FontWeight.w600,
+                                                  color: theme.colorScheme.primary,
+                                                  letterSpacing: 0.2,
+                                                ),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }
+                              final view = views[index - 1];
+                              final isExpiringSoon = view.expiresAt.difference(DateTime.now()).inHours < 24;
+                              // Health Snapshot Card (Match My Journeys existing card)
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8.0,
+                                  vertical: 4.0,
+                                ),
+                                child: GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => MixViewShareScreen(viewId: view.id),
+                                      ),
+                                    );
+                                  },
+                                  child: Container(
+                                    width: 150, // Match My Journeys width
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          theme.colorScheme.surface,
+                                          theme.colorScheme.surfaceContainerHigh.withValues(alpha: 0.3),
+                                        ],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                      ),
+                                      borderRadius: BorderRadius.circular(28),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: theme.colorScheme.primary.withValues(alpha: 0.08),
+                                          blurRadius: 20,
+                                          offset: const Offset(0, 6),
+                                        ),
+                                      ],
+                                      border: Border.all(
+                                        color: theme.dividerColor.withValues(alpha: 0.1),
+                                      ),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                          children: [
+                                            Container(
+                                              padding: const EdgeInsets.all(8),
+                                              decoration: BoxDecoration(
+                                                color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                                                shape: BoxShape.circle,
+                                              ),
+                                              child: Icon(
+                                                Icons.health_and_safety_rounded,
+                                                color: theme.colorScheme.primary,
+                                                size: 24,
+                                              ),
+                                            ),
+                                            Icon(
+                                              Icons.qr_code_rounded,
+                                              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                                              size: 20,
+                                            ),
+                                          ],
+                                        ),
+                                        const Spacer(),
+                                        Text(
+                                          view.name,
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: theme.textTheme.titleMedium?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                            height: 1.2,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              Icons.timer_outlined, 
+                                              size: 14, 
+                                              color: isExpiringSoon ? Colors.orange : theme.colorScheme.primary,
+                                            ),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              isExpiringSoon ? 'Expiring soon' : DateFormat('MMM d').format(view.expiresAt),
+                                              style: theme.textTheme.bodySmall?.copyWith(
+                                                color: isExpiringSoon ? Colors.orange : theme.colorScheme.primary,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                  loading: () => const SizedBox.shrink(),
+                  error: (_, __) => const SizedBox.shrink(),
+                );
+              },
+            ),
+          ),
+
 
           // Floating Check-ins Title
           SliverToBoxAdapter(

@@ -34,7 +34,7 @@ abstract class MixView with _$MixView {
     required String id,
     required String userId,
     required String name,
-    required String journeyId,
+    required List<String> journeyIds,
     required List<String> selectedReportIds,
     required DateTime expiresAt,
     required DateTime createdAt,
