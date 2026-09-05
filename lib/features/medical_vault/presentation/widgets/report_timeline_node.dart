@@ -1,5 +1,6 @@
 import 'package:shimmer/shimmer.dart';
 import 'package:flutter/material.dart';
+import 'dart:ui' as ui;
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -587,9 +588,7 @@ class _ReportTimelinePainter extends CustomPainter {
       ..strokeWidth = 1.5
       ..style = PaintingStyle.stroke;
 
-    final dotPaint = Paint()
-      ..color = dotColor
-      ..style = PaintingStyle.fill;
+    
 
     final glowPaint = Paint()
       ..color = dotColor.withValues(alpha: 0.15)
@@ -599,9 +598,25 @@ class _ReportTimelinePainter extends CustomPainter {
     // Dot is placed 24 pixels from the top of this widget
     final dotY = 24.0;
 
-    // Draw the dot and glow
-    canvas.drawCircle(Offset(centerX, dotY), 12, glowPaint);
-    canvas.drawCircle(Offset(centerX, dotY), 5, dotPaint);
+    // Draw the glow circle for the icon
+    canvas.drawCircle(Offset(centerX, dotY), 16, glowPaint);
+    
+    // Draw the report icon
+    final textPainter = TextPainter(textDirection: ui.TextDirection.ltr);
+    textPainter.text = TextSpan(
+      text: String.fromCharCode(Icons.description_rounded.codePoint),
+      style: TextStyle(
+        fontSize: 16.0,
+        fontFamily: Icons.description_rounded.fontFamily,
+        package: Icons.description_rounded.fontPackage,
+        color: dotColor,
+      ),
+    );
+    textPainter.layout();
+    textPainter.paint(
+      canvas, 
+      Offset(centerX - (textPainter.width / 2), dotY - (textPainter.height / 2)),
+    );
 
     // Draw lines based on position
     bool drawTop = false;
