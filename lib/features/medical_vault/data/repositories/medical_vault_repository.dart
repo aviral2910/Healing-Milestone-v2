@@ -17,7 +17,25 @@ class MedicalVaultRepository {
 
   
   
-      Future<List<String>> getUniqueTags() async {
+    
+  Future<List<SnapshotTimelineItem>> getMixViewTimeline(String viewId, {int skip = 0, int limit = 20}) async {
+    try {
+      final response = await _apiClient.dio.get(
+        '/api/mix-views/$viewId/timeline',
+        queryParameters: {
+          'skip': skip,
+          'limit': limit,
+        },
+      );
+      return (response.data as List)
+          .map((json) => SnapshotTimelineItem.fromJson(json))
+          .toList();
+    } catch (e) {
+      throw Exception('Failed to fetch snapshot timeline: $e');
+    }
+  }
+
+  Future<List<String>> getUniqueTags() async {
     try {
       final response = await _apiClient.dio.get('/api/reports/tags/unique');
       final List<dynamic> data = response.data;

@@ -147,3 +147,42 @@ class MixViewsNotifier extends _$MixViewsNotifier {
     }
   }
 }
+
+@riverpod
+class SnapshotTimelineNotifier extends _$SnapshotTimelineNotifier {
+  bool _hasMore = true;
+  bool get hasMore => _hasMore;
+  bool _isLoadingMore = false;
+  bool get isLoadingMore => _isLoadingMore;
+
+  @override
+  FutureOr<List<SnapshotTimelineItem>> build(String viewId) async {
+    _hasMore = true;
+    _isLoadingMore = false;
+    final items = await ref.watch(medicalVaultRepositoryProvider).getMixViewTimeline(viewId, skip: 0, limit: 20);
+    if (items.length < 20) {
+      _hasMore = false;
+    }
+    return items;
+  }
+
+  Future<void> fetchNextPage() async {
+    if (!_hasMore || _isLoadingMore || state.isLoading) return;
+    
+    _isLoadingMore = true;
+    try {
+      final currentItems = state.value ?? [];
+      final newItems = await ref.read(medicalVaultRepositoryProvider).getMixViewTimeline(viewId, skip: currentItems.length, limit: 20);
+      
+      if (newItems.length < 20) {
+        _hasMore = false;
+      }
+      
+      state = AsyncData([...currentItems, ...newItems]);
+    } catch (e, st) {
+      // Could handle error state specifically for pagination, but let's just log or ignore
+    } finally {
+      _isLoadingMore = false;
+    }
+  }
+}

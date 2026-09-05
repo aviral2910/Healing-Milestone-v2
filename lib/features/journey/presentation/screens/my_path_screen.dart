@@ -613,12 +613,7 @@ class MyPathScreen extends ConsumerWidget {
                                 ),
                                 child: GestureDetector(
                                   onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) => MixViewShareScreen(viewId: view.id),
-                                      ),
-                                    );
+                                    context.push('/health-snapshot/view/${view.id}');
                                   },
                                   child: Container(
                                     width: 150, // Match My Journeys width

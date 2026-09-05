@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import '../../../journey/data/models/journey_models.dart';
 
 part 'medical_vault_models.freezed.dart';
 part 'medical_vault_models.g.dart';
@@ -41,4 +42,34 @@ abstract class MixView with _$MixView {
   }) = _MixView;
 
   factory MixView.fromJson(Map<String, dynamic> json) => _$MixViewFromJson(json);
+}
+
+@freezed
+abstract class SnapshotTimelineItem with _$SnapshotTimelineItem {
+  const factory SnapshotTimelineItem.milestone({
+    required JourneyMilestoneModel data,
+    required DateTime date,
+  }) = _MilestoneItem;
+
+  const factory SnapshotTimelineItem.record({
+    required MedicalRecord data,
+    required DateTime date,
+  }) = _RecordItem;
+
+  factory SnapshotTimelineItem.fromJson(Map<String, dynamic> json) {
+    final type = json['item_type'] as String;
+    final date = DateTime.parse(json['date'] as String);
+    if (type == 'milestone') {
+      return SnapshotTimelineItem.milestone(
+        data: JourneyMilestoneModel.fromJson(json['data'] as Map<String, dynamic>),
+        date: date,
+      );
+    } else if (type == 'record') {
+      return SnapshotTimelineItem.record(
+        data: MedicalRecord.fromJson(json['data'] as Map<String, dynamic>),
+        date: date,
+      );
+    }
+    throw Exception('Unknown item_type: $type');
+  }
 }
