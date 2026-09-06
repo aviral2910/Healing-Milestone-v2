@@ -319,7 +319,7 @@ class _SnapshotOptionsSheet extends ConsumerWidget {
                 Navigator.pop(context);
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (context) => QRScanScreen(viewId: view.id),
+                    builder: (context) => QRScanScreen(targetId: view.id, targetType: 'snapshot'),
                   ),
                 );
               },

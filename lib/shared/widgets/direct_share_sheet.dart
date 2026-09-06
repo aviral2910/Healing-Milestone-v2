@@ -1,3 +1,4 @@
+import 'package:healing_milestones/features/health_snapshot/presentation/screens/qr_scan_screen.dart';
 import 'dart:ui';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -662,6 +663,35 @@ class _DirectShareSheetState extends ConsumerState<DirectShareSheet> {
                                 '${widget.shareText}\n\n${widget.shareUrl}',
                                 subject: 'Healing Milestones',
                               );
+                            },
+                          ),
+                          _buildOptionBtn(
+                            context: context,
+                            icon: Icons.monitor,
+                            label: 'Share to Web',
+                            onTap: () {
+                              Navigator.pop(context);
+                              String? targetId;
+                              String targetType = 'snapshot';
+                              
+                              if (widget.journeyId != null) {
+                                targetId = widget.journeyId;
+                                targetType = 'journey';
+                              } else if (widget.storyId != null) {
+                                targetId = widget.storyId;
+                                targetType = 'story';
+                              } else if (widget.profileId != null) {
+                                targetId = widget.profileId;
+                                targetType = 'user';
+                              }
+                              
+                              if (targetId != null) {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) => QRScanScreen(targetId: targetId!, targetType: targetType),
+                                  ),
+                                );
+                              }
                             },
                           ),
                           _buildOptionBtn(

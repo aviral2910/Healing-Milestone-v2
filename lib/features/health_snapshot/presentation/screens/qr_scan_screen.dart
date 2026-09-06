@@ -4,8 +4,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:go_router/go_router.dart';
 
 class QRScanScreen extends StatefulWidget {
-  final String viewId;
-  const QRScanScreen({super.key, required this.viewId});
+  final String targetId;
+  final String targetType;
+  const QRScanScreen({super.key, required this.targetId, required this.targetType});
 
   @override
   State<QRScanScreen> createState() => _QRScanScreenState();
@@ -32,7 +33,8 @@ class _QRScanScreenState extends State<QRScanScreen> {
               .collection('qr_sessions')
               .doc(sessionId)
               .set({
-            'view_id': widget.viewId,
+            'target_id': widget.targetId,
+            'target_type': widget.targetType,
             'status': 'linked',
           }, SetOptions(merge: true));
 
