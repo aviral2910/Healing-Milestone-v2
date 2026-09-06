@@ -58,7 +58,8 @@ abstract class SnapshotTimelineItem with _$SnapshotTimelineItem {
 
   factory SnapshotTimelineItem.fromJson(Map<String, dynamic> json) {
     final type = json['item_type'] as String;
-    final date = DateTime.parse(json['date'] as String);
+    final dateStr = json['date'] as String;
+    final date = DateTime.parse((dateStr.endsWith('Z') || dateStr.contains(RegExp(r'[+-]\d{2}:\d{2}$'))) ? dateStr : '${dateStr}Z').toLocal();
     if (type == 'milestone') {
       return SnapshotTimelineItem.milestone(
         data: JourneyMilestoneModel.fromJson(json['data'] as Map<String, dynamic>),

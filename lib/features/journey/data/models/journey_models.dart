@@ -236,7 +236,7 @@ class JourneyModel {
       type: JourneyType.fromString(json['type'] as String? ?? 'personal'),
       isActive: json['is_active'] as bool? ?? true,
       status: JourneyStatus.fromString(json['status'] as String? ?? 'active'),
-      createdAt: DateTime.parse(json['created_at'] as String).toLocal(),
+      createdAt: DateTime.parse(((json['created_at'] as String).endsWith('Z') || (json['created_at'] as String).contains(RegExp(r'[+-]\d{2}:\d{2}$'))) ? (json['created_at'] as String) : '${json['created_at']}Z').toLocal(),
       isFollowing: json['is_following'] as bool? ?? false,
       areCommentsEnabled: json['are_comments_enabled'] as bool? ?? false,
       commentCount: json['comment_count'] as int? ?? 0,
@@ -344,7 +344,7 @@ class JourneyMilestoneModel {
       mediaUrl: json['media_url'] as String?,
       audioUrl: json['audio_url'] as String?,
       visibility: MilestoneVisibility.fromString(json['visibility'] as String? ?? 'private'),
-      createdAt: DateTime.parse(json['created_at'] as String).toLocal(),
+      createdAt: DateTime.parse(((json['created_at'] as String).endsWith('Z') || (json['created_at'] as String).contains(RegExp(r'[+-]\d{2}:\d{2}$'))) ? (json['created_at'] as String) : '${json['created_at']}Z').toLocal(),
       authorName: json['author_name'] as String?,
       authorAvatar: json['author_avatar'] as String?,
       authorUsername: json['author_username'] as String?,
@@ -465,7 +465,7 @@ class MilestoneReactionModel {
       milestoneId: json['milestone_id'] as String,
       senderUserId: json['sender_user_id'] as String,
       reactionType: json['reaction_type'] as String,
-      createdAt: DateTime.parse(json['created_at'] as String).toLocal(),
+      createdAt: DateTime.parse(((json['created_at'] as String).endsWith('Z') || (json['created_at'] as String).contains(RegExp(r'[+-]\d{2}:\d{2}$'))) ? (json['created_at'] as String) : '${json['created_at']}Z').toLocal(),
     );
   }
 

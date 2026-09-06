@@ -15,12 +15,14 @@ class TimelineNode extends ConsumerWidget {
   final JourneyMilestoneModel milestone;
   final bool isReversed;
   final bool isHistoricalClosure;
+  final TimelinePosition? overridePosition;
 
   const TimelineNode({
     super.key,
     required this.milestone,
     this.isReversed = false,
     this.isHistoricalClosure = false,
+    this.overridePosition,
   });
 
   void _showReactionOverlay(
@@ -777,7 +779,7 @@ class TimelineNode extends ConsumerWidget {
             width: 40,
             child: CustomPaint(
               painter: _TimelinePainter(
-                position: milestone.timelinePosition,
+                position: overridePosition ?? milestone.timelinePosition,
                 color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
                 dotColor: emotionColor,
                 isReversed: isReversed,

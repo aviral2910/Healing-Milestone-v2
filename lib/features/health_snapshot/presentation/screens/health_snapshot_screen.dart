@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../features/medical_vault/presentation/providers/medical_vault_providers.dart';
 import '../../../../features/medical_vault/data/models/medical_vault_models.dart';
 import '../../../../features/journey/presentation/widgets/timeline_node.dart';
-import '../../../../features/medical_vault/presentation/widgets/report_timeline_node.dart';
+import '../../../../features/medical_vault/presentation/widgets/report_timeline_node.dart'
+    as rm;
+import '../../../../features/journey/data/models/journey_models.dart' as jm;
 
 class HealthSnapshotScreen extends ConsumerStatefulWidget {
   final String snapshotId;
@@ -71,23 +76,34 @@ class _HealthSnapshotScreenState extends ConsumerState<HealthSnapshotScreen> {
           SliverAppBar.large(
             pinned: true,
             title: Text(
-              view?.name ?? 'Health Snapshot',
+              view?.name ?? '',
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             leading: IconButton(
               icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-              onPressed: () => context.go('/medical-vault'),
+              onPressed: () {
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  context.go('/journey');
+                }
+              },
             ),
             actions: [
               Padding(
                 padding: const EdgeInsets.only(right: 8.0),
                 child: IconButton(
-                  icon: const Icon(Icons.share_rounded),
+                  icon: const Icon(Icons.more_horiz_rounded),
                   onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Public link sharing coming soon!'),
+                    if (view == null) return;
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: theme.colorScheme.surface,
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
                       ),
+                      builder: (context) => _SnapshotOptionsSheet(view: view),
                     );
                   },
                 ),
@@ -110,7 +126,7 @@ class _HealthSnapshotScreenState extends ConsumerState<HealthSnapshotScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
-                          Icons.hourglass_empty_rounded,
+                          Icons.calendar_today_rounded,
                           size: 64,
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
@@ -129,7 +145,7 @@ class _HealthSnapshotScreenState extends ConsumerState<HealthSnapshotScreen> {
 
               return SliverPadding(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
+                  horizontal: 8,
                   vertical: 24,
                 ),
                 sliver: SliverList(
@@ -160,47 +176,63 @@ class _HealthSnapshotScreenState extends ConsumerState<HealthSnapshotScreen> {
 
                       final item = items[index];
 
-                      // Check if month/year changed to show date header
-                      bool showHeader = false;
-                      if (index == 0) {
-                        showHeader = true;
-                      } else {
+                      final currentDate = DateTime(
+                        item.date.year,
+                        item.date.month,
+                        item.date.day,
+                      );
+
+                      bool isFirstOfDay = true;
+                      if (index > 0) {
                         final prevItem = items[index - 1];
-                        final prevDate = prevItem.date;
-                        if (item.date.year != prevDate.year ||
-                            item.date.month != prevDate.month) {
-                          showHeader = true;
-                        }
+                        final prevDate = DateTime(
+                          prevItem.date.year,
+                          prevItem.date.month,
+                          prevItem.date.day,
+                        );
+                        if (prevDate == currentDate) isFirstOfDay = false;
+                      }
+
+                      bool isLastOfDay = true;
+                      if (index < items.length - 1) {
+                        final nextItem = items[index + 1];
+                        final nextDate = DateTime(
+                          nextItem.date.year,
+                          nextItem.date.month,
+                          nextItem.date.day,
+                        );
+                        if (nextDate == currentDate) isLastOfDay = false;
+                      }
+
+                      jm.TimelinePosition jmPosition =
+                          jm.TimelinePosition.middle;
+                      rm.TimelinePosition rmPosition =
+                          rm.TimelinePosition.middle;
+                      if (isFirstOfDay && isLastOfDay) {
+                        jmPosition = jm.TimelinePosition.standalone;
+                        rmPosition = rm.TimelinePosition.standalone;
+                      } else if (isFirstOfDay) {
+                        jmPosition = jm.TimelinePosition.start;
+                        rmPosition = rm.TimelinePosition.start;
+                      } else if (isLastOfDay) {
+                        jmPosition = jm.TimelinePosition.end;
+                        rmPosition = rm.TimelinePosition.end;
                       }
 
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          if (showHeader)
+                          if (isFirstOfDay)
                             Padding(
                               padding: const EdgeInsets.only(
-                                top: 24,
+                                top: 8,
                                 bottom: 24,
-                                left: 40,
+                                left: 16,
                               ),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 8,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: theme
-                                      .colorScheme
-                                      .surfaceContainerHighest
-                                      .withValues(alpha: 0.5),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Text(
-                                  DateFormat('MMMM yyyy').format(item.date),
-                                  style: theme.textTheme.titleSmall?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: theme.colorScheme.primary,
-                                  ),
+                              child: Text(
+                                DateFormat('MMMM d, yyyy').format(currentDate),
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
@@ -209,27 +241,13 @@ class _HealthSnapshotScreenState extends ConsumerState<HealthSnapshotScreen> {
                             milestone: (m) => TimelineNode(
                               milestone: m.data,
                               isHistoricalClosure: false,
+                              overridePosition: jmPosition,
                             ),
-                            record: (r) => IntrinsicHeight(
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Padding(
-                                      padding: const EdgeInsets.only(
-                                        bottom: 24.0,
-                                      ),
-                                      child: ReportTimelineNode(
-                                        report: r.data,
-                                        position: TimelinePosition.standalone,
-                                        isSelected: false,
-                                        showEditMenu: false,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
+                            record: (r) => rm.ReportTimelineNode(
+                              report: r.data,
+                              position: rmPosition,
+                              isSelected: false,
+                              showEditMenu: false,
                             ),
                           ),
                         ],
@@ -242,6 +260,143 @@ class _HealthSnapshotScreenState extends ConsumerState<HealthSnapshotScreen> {
             },
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _SnapshotOptionsSheet extends ConsumerWidget {
+  final MixView view;
+  const _SnapshotOptionsSheet({required this.view});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final shareUrl = 'https://healingmilestones.in/view/${view.id}';
+    final isExpired = view.expiresAt.isBefore(DateTime.now());
+
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              width: 48,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 24),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Text(
+              'Share Snapshot',
+              style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              isExpired 
+                ? 'Expired on ${DateFormat("MMM d, yyyy 'at' h:mm a").format(view.expiresAt)}'
+                : 'Expires on ${DateFormat("MMM d, yyyy 'at' h:mm a").format(view.expiresAt)}',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: isExpired ? Colors.red : theme.colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 32),
+            
+            // QR Code
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.onPrimary,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: QrImageView(
+                data: shareUrl,
+                version: QrVersions.auto,
+                size: 200.0,
+                dataModuleStyle: QrDataModuleStyle(
+                  dataModuleShape: QrDataModuleShape.square, 
+                  color: isExpired ? Colors.grey : theme.colorScheme.onSurface,
+                ),
+                eyeStyle: QrEyeStyle(
+                  eyeShape: QrEyeShape.square, 
+                  color: isExpired ? Colors.grey : theme.colorScheme.onSurface,
+                ),
+              ),
+            ),
+            const SizedBox(height: 32),
+
+            // Actions
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: theme.colorScheme.primary,
+                foregroundColor: theme.colorScheme.onPrimary,
+                minimumSize: const Size(double.infinity, 56),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              ),
+              onPressed: isExpired ? null : () {
+                Clipboard.setData(ClipboardData(text: shareUrl));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Link copied to clipboard')),
+                );
+                Navigator.pop(context);
+              },
+              icon: const Icon(Icons.copy_rounded),
+              label: const Text('Copy Link', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            ),
+            const SizedBox(height: 16),
+            
+            OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.red,
+                side: BorderSide(color: Colors.red.withValues(alpha: 0.5)),
+                minimumSize: const Size(double.infinity, 56),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              ),
+              onPressed: () async {
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (c) => AlertDialog(
+                    title: const Text('Delete Snapshot?'),
+                    content: const Text('This will instantly break the link. Anyone with the link will no longer see your timeline.'),
+                    actions: [
+                      TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Cancel')),
+                      TextButton(
+                        onPressed: () => Navigator.pop(c, true),
+                        child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                      ),
+                    ],
+                  ),
+                );
+                
+                if (confirm == true) {
+                  ref.read(mixViewsProvider.notifier).revokeMixView(view.id);
+                  if (context.mounted) {
+                    Navigator.pop(context); // Close sheet
+                    if (context.canPop()) {
+                      context.pop(); // Gracefully slide back to previous screen
+                    } else {
+                      context.go('/journey'); // Fallback if no history
+                    }
+                  }
+                }
+              },
+              icon: const Icon(Icons.delete_outline_rounded),
+              label: const Text('Delete Snapshot', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
       ),
     );
   }

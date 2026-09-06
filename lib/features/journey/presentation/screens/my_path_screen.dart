@@ -604,7 +604,6 @@ class MyPathScreen extends ConsumerWidget {
                                 );
                               }
                               final view = views[index - 1];
-                              final isExpiringSoon = view.expiresAt.difference(DateTime.now()).inHours < 24;
                               // Health Snapshot Card (Match My Journeys existing card)
                               return Padding(
                                 padding: const EdgeInsets.symmetric(
@@ -675,24 +674,7 @@ class MyPathScreen extends ConsumerWidget {
                                             height: 1.2,
                                           ),
                                         ),
-                                        const SizedBox(height: 8),
-                                        Row(
-                                          children: [
-                                            Icon(
-                                              Icons.timer_outlined, 
-                                              size: 14, 
-                                              color: isExpiringSoon ? Colors.orange : theme.colorScheme.primary,
-                                            ),
-                                            const SizedBox(width: 4),
-                                            Text(
-                                              isExpiringSoon ? 'Expiring soon' : DateFormat('MMM d').format(view.expiresAt),
-                                              style: theme.textTheme.bodySmall?.copyWith(
-                                                color: isExpiringSoon ? Colors.orange : theme.colorScheme.primary,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
+
                                       ],
                                     ),
                                   ),

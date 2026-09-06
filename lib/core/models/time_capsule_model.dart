@@ -29,8 +29,8 @@ class TimeCapsuleModel {
       content: json['content'] as String?,
       mediaUrl: json['mediaUrl'] as String?,
       audioUrl: json['audioUrl'] as String?,
-      unlockDate: DateTime.parse((json['unlockDate'] as String).endsWith('Z') ? json['unlockDate'] as String : '${json['unlockDate']}Z').toLocal(),
-      createdAt: DateTime.parse((json['createdAt'] as String).endsWith('Z') ? json['createdAt'] as String : '${json['createdAt']}Z').toLocal(),
+      unlockDate: DateTime.parse(((json['unlockDate'] as String).endsWith('Z') || (json['unlockDate'] as String).contains(RegExp(r'[+-]\d{2}:\d{2}$'))) ? (json['unlockDate'] as String) : '${json['unlockDate']}Z').toLocal(),
+      createdAt: DateTime.parse(((json['createdAt'] as String).endsWith('Z') || (json['createdAt'] as String).contains(RegExp(r'[+-]\d{2}:\d{2}$'))) ? (json['createdAt'] as String) : '${json['createdAt']}Z').toLocal(),
       isOpened: json['isOpened'] as bool? ?? false,
     );
   }
