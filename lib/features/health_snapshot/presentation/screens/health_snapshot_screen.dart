@@ -1,3 +1,4 @@
+import 'qr_scan_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -272,7 +273,7 @@ class _SnapshotOptionsSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final shareUrl = 'https://healingmilestones.in/view/${view.id}';
+    final shareUrl = 'https://healingmilestones.in/snapshot/${view.id}';
     final isExpired = view.expiresAt.isBefore(DateTime.now());
 
     return SafeArea(
@@ -306,6 +307,27 @@ class _SnapshotOptionsSheet extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 32),
+            // Sync to Desktop Button
+            FilledButton.icon(
+              style: FilledButton.styleFrom(
+                minimumSize: const Size(double.infinity, 56),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                backgroundColor: theme.colorScheme.primary,
+                foregroundColor: theme.colorScheme.onPrimary,
+              ),
+              onPressed: () {
+                Navigator.pop(context);
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => QRScanScreen(viewId: view.id),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.monitor),
+              label: const Text('Sync to Doctor\'s Desktop', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            ),
+            const SizedBox(height: 16),
+
             
             // QR Code
             Container(

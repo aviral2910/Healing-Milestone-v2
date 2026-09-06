@@ -8,7 +8,7 @@ void showJourneyShareOptions(BuildContext context, String journeyId, String titl
     backgroundColor: Colors.transparent,
     builder: (ctx) => DirectShareSheet(
       journeyId: journeyId,
-      shareUrl: 'https://healingmilestones.com/journey/$journeyId',
+      shareUrl: 'https://healingmilestones.in/journey/$journeyId',
       shareText: authorName.isNotEmpty ? 'Check out this journey by $authorName: $title' : 'Check out this journey: $title',
       qrBottomText: 'Scan to view journey',
     ),
@@ -22,7 +22,7 @@ void showStoryShareOptions(BuildContext context, String storyId, String content)
     backgroundColor: Colors.transparent,
     builder: (ctx) => DirectShareSheet(
       storyId: storyId,
-      shareUrl: 'https://healingmilestones.com/story/$storyId',
+      shareUrl: 'https://healingmilestones.in/story/$storyId',
       shareText: 'Check out this story: $content',
       qrBottomText: 'Scan to view story',
     ),
@@ -36,7 +36,7 @@ void showProfileShareOptions(BuildContext context, String profileId) {
     backgroundColor: Colors.transparent,
     builder: (ctx) => DirectShareSheet(
       profileId: profileId,
-      shareUrl: 'https://healingmilestones.com/profile/$profileId',
+      shareUrl: 'https://healingmilestones.in/profile/$profileId',
       shareText: 'Check out this profile!',
       qrBottomText: 'Scan to view profile',
     ),
@@ -50,7 +50,7 @@ void showShareOptions(BuildContext context, String storyId) {
     backgroundColor: Colors.transparent,
     builder: (ctx) => DirectShareSheet(
       storyId: storyId,
-      shareUrl: 'https://healingmilestones.com/story/$storyId',
+      shareUrl: 'https://healingmilestones.in/story/$storyId',
       shareText: 'Check out this post!',
       qrBottomText: 'Scan to view post',
     ),

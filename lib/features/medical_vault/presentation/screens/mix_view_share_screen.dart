@@ -32,7 +32,7 @@ class MixViewShareScreen extends ConsumerWidget {
             orElse: () => throw Exception('View not found'),
           );
 
-          final shareUrl = 'https://healingmilestones.in/view/${view.id}';
+          final shareUrl = 'https://healingmilestones.in/snapshot/${view.id}';
           final isExpired = view.expiresAt.isBefore(DateTime.now());
 
           return SingleChildScrollView(
