@@ -324,7 +324,7 @@ class _SnapshotOptionsSheet extends ConsumerWidget {
                 );
               },
               icon: const Icon(Icons.monitor),
-              label: const Text('Share to Desktop', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              label: const Text('Share to Web', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             ),
             const SizedBox(height: 16),
 

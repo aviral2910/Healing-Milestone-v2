@@ -39,7 +39,7 @@ class _QRScanScreenState extends State<QRScanScreen> {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('Synced to Desktop Successfully!'),
+                content: Text('Synced to Web Successfully!'),
                 backgroundColor: Colors.green,
               ),
             );
@@ -64,7 +64,7 @@ class _QRScanScreenState extends State<QRScanScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Scan Desktop QR'),
+        title: const Text('Scan Web QR'),
         backgroundColor: Colors.transparent,
       ),
       body: Stack(
@@ -115,7 +115,7 @@ class _QRScanScreenState extends State<QRScanScreen> {
                   children: [
                     CircularProgressIndicator(color: Colors.yellow),
                     SizedBox(height: 16),
-                    Text('Syncing to Desktop...', style: TextStyle(color: Colors.white, fontSize: 18)),
+                    Text('Syncing to Web...', style: TextStyle(color: Colors.white, fontSize: 18)),
                   ],
                 ),
               ),
