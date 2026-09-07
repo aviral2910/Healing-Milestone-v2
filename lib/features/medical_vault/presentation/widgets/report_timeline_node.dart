@@ -190,20 +190,20 @@ class ReportTimelineNode extends ConsumerWidget {
                               ? Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                   decoration: BoxDecoration(
-                                    color: Colors.blueAccent.withValues(alpha: 0.15),
+                                    color: theme.colorScheme.primary.withValues(alpha: 0.15),
                                     borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(color: Colors.blueAccent.withValues(alpha: 0.3)),
+                                    border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.3)),
                                   ),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      const Icon(Icons.medication_rounded, size: 14, color: Colors.blueAccent),
+                                      Icon(Icons.medication_rounded, size: 14, color: theme.colorScheme.primary),
                                       const SizedBox(width: 4),
                                       Text(
                                         'Prescription',
                                         style: theme.textTheme.labelSmall?.copyWith(
                                           fontWeight: FontWeight.bold,
-                                          color: Colors.blueAccent,
+                                          color: theme.colorScheme.primary,
                                         ),
                                       ),
                                     ],
@@ -562,13 +562,13 @@ class ReportTimelineNode extends ConsumerWidget {
                                 children: [
                                   Row(
                                     children: [
-                                      Icon(Icons.notes_rounded, size: 14, color: theme.colorScheme.onSurfaceVariant),
+                                      Icon(Icons.notes_rounded, size: 14, color: theme.colorScheme.primary),
                                       const SizedBox(width: 6),
                                       Text(
                                         'Notes',
                                         style: theme.textTheme.labelMedium?.copyWith(
                                           fontWeight: FontWeight.w600,
-                                          color: theme.colorScheme.onSurfaceVariant,
+                                          color: theme.colorScheme.primary,
                                         ),
                                       ),
                                     ],
@@ -577,7 +577,7 @@ class ReportTimelineNode extends ConsumerWidget {
                                   Text(
                                     report.notes!,
                                     style: theme.textTheme.bodyMedium?.copyWith(
-                                      color: theme.colorScheme.onSurface,
+                                      color: theme.colorScheme.primary,
                                       height: 1.4,
                                     ),
                                   ),
