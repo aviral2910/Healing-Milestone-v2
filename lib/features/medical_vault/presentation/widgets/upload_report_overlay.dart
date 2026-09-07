@@ -415,7 +415,7 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
 
                         // Report Types Input
                         Text(
-                          'Report Types',
+                          _category == 'prescription' ? 'Prescription For' : 'Report Types',
                           style: theme.textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.w500,
                           ),
@@ -460,7 +460,7 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
                             height: 1.5,
                           ),
                           decoration: InputDecoration(
-                            hintText: 'Search tags (e.g. CBC, MRI, Prescription)...',
+                            hintText: _category == 'prescription' ? 'Search tags (e.g. Daily Meds, Antibiotics)...' : 'Search tags (e.g. CBC, MRI)...',
                             hintStyle: TextStyle(
                               color: theme.hintColor.withValues(alpha: 0.5),
                             ),
@@ -550,7 +550,7 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
 
                         // Report Date
                         Text(
-                          'Report Date',
+                          _category == 'prescription' ? 'Prescription Date' : 'Report Date',
                           style: theme.textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.w600,
                           ),
@@ -776,7 +776,7 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
                           maxLines: 3,
                           style: TextStyle(color: theme.colorScheme.onSurface),
                           decoration: InputDecoration(
-                            hintText: _category == 'prescription' ? 'e.g., Take one pill in the morning after breakfast...' : 'e.g., Doctor said everything looks normal...',
+                            hintText: 'Add any additional details or instructions...',
                             hintStyle: TextStyle(color: theme.hintColor),
                             filled: true,
                             fillColor: theme.colorScheme.surface,
