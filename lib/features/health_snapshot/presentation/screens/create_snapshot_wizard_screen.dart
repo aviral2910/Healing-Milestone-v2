@@ -760,7 +760,7 @@ class _CreateSnapshotWizardScreenState
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
               child: Text(
-                'Choose which journeys to include in this snapshot.',
+                'Choose which journeys to include in this snapshot. You can skip this step if you only want to share medical records.',
                 style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
               ),
             ),
