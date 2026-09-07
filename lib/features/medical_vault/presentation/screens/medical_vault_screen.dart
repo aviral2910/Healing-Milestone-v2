@@ -60,7 +60,7 @@ class _MedicalVaultScreenState extends ConsumerState<MedicalVaultScreen> {
           IconButton(
             icon: Icon(Icons.share_rounded, color: theme.colorScheme.primary),
             onPressed: () {
-              context.push('/health-snapshot/create?fromVault=true');
+              context.push('/health-snapshot/create');
             },
           ),
         ],

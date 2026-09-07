@@ -222,10 +222,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/health-snapshot/create',
-        builder: (context, state) {
-          final fromVault = state.uri.queryParameters['fromVault'] == 'true';
-          return CreateSnapshotWizardScreen(isFromVault: fromVault);
-        },
+        builder: (context, state) => const CreateSnapshotWizardScreen(),
       ),
       GoRoute(
         path: '/health-snapshot/view/:id',
