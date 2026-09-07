@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../providers/medical_vault_providers.dart';
+import '../widgets/report_timeline_node.dart';
+import '../../../../features/journey/presentation/widgets/timeline_node.dart';
 
 class MixViewBuilderScreen extends ConsumerStatefulWidget {
   final List<String> journeyIds;
@@ -148,21 +150,25 @@ class _MixViewBuilderScreenState extends ConsumerState<MixViewBuilderScreen> {
                     final r = records[index];
                     final isSelected = _selectedReportIds.contains(r.id);
                     
-                    return CheckboxListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(r.reportTypes.join(', '), style: const TextStyle(fontWeight: FontWeight.w600)),
-                      subtitle: Text(DateFormat('MMM d, yyyy').format(r.encounterDate)),
-                      value: isSelected,
-                      activeColor: theme.colorScheme.primary,
-                      onChanged: (val) {
-                        setState(() {
-                          if (val == true) {
-                            _selectedReportIds.add(r.id);
-                          } else {
-                            _selectedReportIds.remove(r.id);
-                          }
-                        });
-                      },
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 16.0),
+                      child: InkWell(
+                        onTap: () {
+                          setState(() {
+                            if (isSelected) {
+                              _selectedReportIds.remove(r.id);
+                            } else {
+                              _selectedReportIds.add(r.id);
+                            }
+                          });
+                        },
+                        child: ReportTimelineNode(
+                          report: r,
+                          position: TimelinePosition.standalone,
+                          isSelected: isSelected,
+                          showEditMenu: false,
+                        ),
+                      ),
                     );
                   },
                 );
