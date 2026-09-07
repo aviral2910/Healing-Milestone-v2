@@ -21,6 +21,8 @@ abstract class MedicalRecord with _$MedicalRecord {
     required String id,
     required String userId,
     required DateTime encounterDate,
+    @Default('report') String category,
+    String? notes,
     required List<String> reportTypes,
     required List<MedicalRecordFile> files,
     required DateTime createdAt,
