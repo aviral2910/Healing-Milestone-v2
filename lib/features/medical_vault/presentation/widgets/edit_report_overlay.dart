@@ -9,6 +9,7 @@ import 'dart:async';
 import 'package:intl/intl.dart';
 import '../providers/medical_vault_providers.dart';
 import '../../data/repositories/medical_vault_repository.dart';
+import '../../../posts/data/api_hashtag_repository.dart';
 import 'package:healing_milestones/shared/widgets/app_loader.dart';
 
 
@@ -91,8 +92,14 @@ class _EditReportOverlayState extends ConsumerState<EditReportOverlay> {
     
     setState(() => _isLoadingTags = true);
     try {
-      final repo = ref.read(medicalVaultRepositoryProvider);
-      final tags = await repo.searchReportTags(query);
+      List<String> tags;
+      if (_category == 'prescription') {
+        final repo = ref.read(apiHashtagRepositoryProvider);
+        tags = await repo.searchHashtags(query);
+      } else {
+        final repo = ref.read(medicalVaultRepositoryProvider);
+        tags = await repo.searchReportTags(query);
+      }
       if (mounted) {
         setState(() {
           _backendTags = tags;
@@ -383,7 +390,16 @@ class _EditReportOverlayState extends ConsumerState<EditReportOverlay> {
                           children: [
                             Expanded(
                               child: GestureDetector(
-                                onTap: () => setState(() => _category = 'report'),
+                                onTap: () {
+                                  if (_category != 'report') {
+                                    setState(() {
+                                      _category = 'report';
+                                      _reportTypes.clear();
+                                      _suggestedTypes.clear();
+                                      _customTypeController.clear();
+                                    });
+                                  }
+                                },
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(vertical: 14),
                                   decoration: BoxDecoration(
@@ -413,7 +429,16 @@ class _EditReportOverlayState extends ConsumerState<EditReportOverlay> {
                             const SizedBox(width: 12),
                             Expanded(
                               child: GestureDetector(
-                                onTap: () => setState(() => _category = 'prescription'),
+                                onTap: () {
+                                  if (_category != 'prescription') {
+                                    setState(() {
+                                      _category = 'prescription';
+                                      _reportTypes.clear();
+                                      _suggestedTypes.clear();
+                                      _customTypeController.clear();
+                                    });
+                                  }
+                                },
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(vertical: 14),
                                   decoration: BoxDecoration(
