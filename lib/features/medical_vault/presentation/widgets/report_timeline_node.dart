@@ -577,7 +577,7 @@ class ReportTimelineNode extends ConsumerWidget {
                                   Text(
                                     report.notes!,
                                     style: theme.textTheme.bodyMedium?.copyWith(
-                                      color: theme.colorScheme.primary,
+                                      color: theme.colorScheme.onSurface,
                                       height: 1.4,
                                     ),
                                   ),
