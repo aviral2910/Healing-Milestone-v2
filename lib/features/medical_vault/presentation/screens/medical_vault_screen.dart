@@ -1,3 +1,4 @@
+import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -55,6 +56,14 @@ class _MedicalVaultScreenState extends ConsumerState<MedicalVaultScreen> {
         backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
         iconTheme: IconThemeData(color: theme.colorScheme.onSurface),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.share_rounded, color: theme.colorScheme.primary),
+            onPressed: () {
+              context.push('/health-snapshot/create');
+            },
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => UploadReportOverlay.show(context),
