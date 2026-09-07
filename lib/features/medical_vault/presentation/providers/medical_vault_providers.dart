@@ -65,6 +65,8 @@ class MedicalRecordsNotifier extends _$MedicalRecordsNotifier {
     required List<PlatformFile> files,
     required List<String> reportTypes,
     required DateTime encounterDate,
+    required String category,
+    String? notes,
   }) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
@@ -72,6 +74,8 @@ class MedicalRecordsNotifier extends _$MedicalRecordsNotifier {
         files: files,
         reportTypes: reportTypes,
         encounterDate: encounterDate,
+        category: category,
+        notes: notes,
       );
       final currentList = state.value ?? [];
       return [newRecord, ...currentList];
@@ -84,6 +88,8 @@ class MedicalRecordsNotifier extends _$MedicalRecordsNotifier {
     required DateTime encounterDate,
     required List<MedicalRecordFile> existingFiles,
     required List<PlatformFile> newFiles,
+    required String category,
+    String? notes,
   }) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
@@ -100,6 +106,8 @@ class MedicalRecordsNotifier extends _$MedicalRecordsNotifier {
         reportTypes: reportTypes,
         encounterDate: encounterDate,
         files: combinedFiles,
+        category: category,
+        notes: notes,
       );
       final currentList = state.value ?? [];
       return currentList.map((r) => r.id == id ? updatedRecord : r).toList();

@@ -50,6 +50,9 @@ class EditReportOverlay extends ConsumerStatefulWidget {
 }
 
 class _EditReportOverlayState extends ConsumerState<EditReportOverlay> {
+  late String _category;
+  late TextEditingController _notesController;
+
   final _customTypeController = TextEditingController();
   List<String> _reportTypes = [];
   List<String> _suggestedTypes = [];
@@ -270,8 +273,12 @@ class _EditReportOverlayState extends ConsumerState<EditReportOverlay> {
     try {
       await ref.read(medicalRecordsProvider.notifier).updateReport(
         id: widget.report.id,
+        
         existingFiles: _existingFiles,
         newFiles: _selectedFiles,
+        category: _category,
+        notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
+
         reportTypes: _reportTypes,
         encounterDate: _encounterDate,
       );
@@ -718,6 +725,43 @@ class _EditReportOverlayState extends ConsumerState<EditReportOverlay> {
                               },
                             ),
                           ),
+
+                        
+                        // Notes Field
+                        const SizedBox(height: 32),
+                        Text(
+                          'Notes (Optional)',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: theme.colorScheme.onSurface,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        TextField(
+                          controller: _notesController,
+                          maxLines: 3,
+                          style: TextStyle(color: theme.colorScheme.onSurface),
+                          decoration: InputDecoration(
+                            hintText: _category == 'prescription' ? 'e.g., Take one pill in the morning after breakfast...' : 'e.g., Doctor said everything looks normal...',
+                            hintStyle: TextStyle(color: theme.hintColor),
+                            filled: true,
+                            fillColor: theme.colorScheme.surface,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: BorderSide.none,
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: BorderSide(color: theme.dividerColor.withValues(alpha: 0.2)),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: BorderSide(color: primaryGlow),
+                            ),
+                          ),
+                        ),
 
                         const SizedBox(height: 48),
 

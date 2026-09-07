@@ -164,6 +164,8 @@ class MedicalVaultRepository {
     required List<PlatformFile> files,
     required List<String> reportTypes,
     required DateTime encounterDate,
+    required String category,
+    String? notes,
   }) async {
     final uploadedFiles = await uploadFiles(files);
     
@@ -174,6 +176,8 @@ class MedicalVaultRepository {
         'encounterDate': encounterDate.toIso8601String().split('T').first,
         'reportTypes': reportTypes,
         'files': uploadedFiles.map((f) => f.toJson()).toList(),
+        'category': category,
+        'notes': notes,
       },
     );
     
@@ -185,6 +189,8 @@ class MedicalVaultRepository {
     required List<String> reportTypes,
     required DateTime encounterDate,
     required List<MedicalRecordFile> files,
+    required String category,
+    String? notes,
   }) async {
     final response = await _apiClient.dio.put(
       '/api/reports/$id',
@@ -192,6 +198,8 @@ class MedicalVaultRepository {
         'encounterDate': encounterDate.toIso8601String().split('T').first,
         'reportTypes': reportTypes,
         'files': files.map((f) => f.toJson()).toList(),
+        'category': category,
+        'notes': notes,
       },
     );
     return MedicalRecord.fromJson(response.data);
