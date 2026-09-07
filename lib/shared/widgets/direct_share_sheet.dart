@@ -633,100 +633,107 @@ class _DirectShareSheetState extends ConsumerState<DirectShareSheet> {
                         ),
                         const SizedBox(height: 0),
                       ],
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          _buildOptionBtn(
-                            context: context,
-                            icon: Icons.link_rounded,
-                            label: 'Copy Link',
-                            onTap: () {
-                              Clipboard.setData(
-                                ClipboardData(text: widget.shareUrl),
-                              );
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Link copied to clipboard'),
-                                ),
-                              );
-                              Navigator.pop(context);
-                            },
-                          ),
-                          _buildOptionBtn(
-                            context: context,
-                            icon: Icons.ios_share,
-                            label: 'Share via',
-                            onTap: () {
-                              Navigator.pop(context);
-                              // ignore: deprecated_member_use
-                              Share.share(
-                                '${widget.shareText}\n\n${widget.shareUrl}',
-                                subject: 'Healing Milestones',
-                              );
-                            },
-                          ),
-                          _buildOptionBtn(
-                            context: context,
-                            icon: Icons.monitor,
-                            label: 'Share to Web',
-                            onTap: () {
-                              Navigator.pop(context);
-                              String? targetId;
-                              String targetType = 'snapshot';
-                              
-                              if (widget.journeyId != null) {
-                                targetId = widget.journeyId;
-                                targetType = 'journey';
-                              } else if (widget.storyId != null) {
-                                targetId = widget.storyId;
-                                targetType = 'story';
-                              } else if (widget.profileId != null) {
-                                targetId = widget.profileId;
-                                targetType = 'user';
-                              }
-                              
-                              if (targetId != null) {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (context) => QRScanScreen(targetId: targetId!, targetType: targetType),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        physics: const BouncingScrollPhysics(),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            _buildOptionBtn(
+                              context: context,
+                              icon: Icons.link_rounded,
+                              label: 'Copy Link',
+                              onTap: () {
+                                Clipboard.setData(
+                                  ClipboardData(text: widget.shareUrl),
+                                );
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Link copied to clipboard'),
                                   ),
                                 );
-                              }
-                            },
-                          ),
-                          _buildOptionBtn(
-                            context: context,
-                            icon: Icons.qr_code_2_rounded,
-                            label: 'QR Code',
-                            onTap: () {
-                              Navigator.pop(context);
-                              showGeneralDialog(
-                                context: context,
-                                barrierDismissible: true,
-                                barrierLabel: 'Dismiss',
-                                barrierColor: Colors.black.withValues(
-                                  alpha: 0.9,
-                                ),
-                                transitionDuration: const Duration(
-                                  milliseconds: 300,
-                                ),
-                                pageBuilder:
-                                    (context, animation, secondaryAnimation) {
-                                      return QrSharePreview(
-                                        id:
-                                            widget.storyId ??
-                                            widget.journeyId ??
-                                            widget.profileId ??
-                                            'unknown',
-                                        shareUrl: widget.shareUrl,
-                                        shareText: widget.shareText,
-                                        qrBottomText: widget.qrBottomText,
-                                      );
-                                    },
-                              );
-                            },
-                          ),
-                        ],
+                                Navigator.pop(context);
+                              },
+                            ),
+                            _buildOptionBtn(
+                              context: context,
+                              icon: Icons.ios_share,
+                              label: 'Share via',
+                              onTap: () {
+                                Navigator.pop(context);
+                                // ignore: deprecated_member_use
+                                Share.share(
+                                  '${widget.shareText}\n\n${widget.shareUrl}',
+                                  subject: 'Healing Milestones',
+                                );
+                              },
+                            ),
+                            _buildOptionBtn(
+                              context: context,
+                              icon: Icons.monitor,
+                              label: 'Share to Web',
+                              onTap: () {
+                                Navigator.pop(context);
+                                String? targetId;
+                                String targetType = 'snapshot';
+
+                                if (widget.journeyId != null) {
+                                  targetId = widget.journeyId;
+                                  targetType = 'journey';
+                                } else if (widget.storyId != null) {
+                                  targetId = widget.storyId;
+                                  targetType = 'story';
+                                } else if (widget.profileId != null) {
+                                  targetId = widget.profileId;
+                                  targetType = 'user';
+                                }
+
+                                if (targetId != null) {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (context) => QRScanScreen(
+                                        targetId: targetId!,
+                                        targetType: targetType,
+                                      ),
+                                    ),
+                                  );
+                                }
+                              },
+                            ),
+                            _buildOptionBtn(
+                              context: context,
+                              icon: Icons.qr_code_2_rounded,
+                              label: 'QR Code',
+                              onTap: () {
+                                Navigator.pop(context);
+                                showGeneralDialog(
+                                  context: context,
+                                  barrierDismissible: true,
+                                  barrierLabel: 'Dismiss',
+                                  barrierColor: Colors.black.withValues(
+                                    alpha: 0.9,
+                                  ),
+                                  transitionDuration: const Duration(
+                                    milliseconds: 300,
+                                  ),
+                                  pageBuilder:
+                                      (context, animation, secondaryAnimation) {
+                                        return QrSharePreview(
+                                          id:
+                                              widget.storyId ??
+                                              widget.journeyId ??
+                                              widget.profileId ??
+                                              'unknown',
+                                          shareUrl: widget.shareUrl,
+                                          shareText: widget.shareText,
+                                          qrBottomText: widget.qrBottomText,
+                                        );
+                                      },
+                                );
+                              },
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),

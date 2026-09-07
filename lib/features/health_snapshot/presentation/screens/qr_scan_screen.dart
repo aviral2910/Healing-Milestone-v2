@@ -96,7 +96,7 @@ class _QRScanScreenState extends State<QRScanScreen> {
             right: 0,
             child: Center(
               child: Text(
-                'Point camera at healingmilestones.in/qrshare',
+                'Point camera at healingmilestones.in/web',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 16,
