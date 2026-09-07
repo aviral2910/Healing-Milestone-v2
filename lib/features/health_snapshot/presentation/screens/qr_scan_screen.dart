@@ -20,14 +20,21 @@ class _QRScanScreenState extends State<QRScanScreen> {
 
     final List<Barcode> barcodes = capture.barcodes;
     for (final barcode in barcodes) {
-      if (barcode.rawValue != null && barcode.rawValue!.length == 8) {
-        // Assume it's the session ID if it's 8 characters
-        setState(() {
-          _isProcessing = true;
-        });
-        
-        try {
-          final sessionId = barcode.rawValue!;
+      if (barcode.rawValue != null) {
+        String? sessionId;
+        if (barcode.rawValue!.length == 8) {
+          sessionId = barcode.rawValue;
+        } else if (barcode.rawValue!.contains('session=')) {
+          final uri = Uri.tryParse(barcode.rawValue!);
+          sessionId = uri?.queryParameters['session'];
+        }
+
+        if (sessionId != null && sessionId.length == 8) {
+          setState(() {
+            _isProcessing = true;
+          });
+          
+          try {
           
           await FirebaseFirestore.instance
               .collection('qr_sessions')
@@ -58,6 +65,7 @@ class _QRScanScreenState extends State<QRScanScreen> {
           }
         }
         break; // Only process one barcode
+        }
       }
     }
   }
@@ -74,19 +82,39 @@ class _QRScanScreenState extends State<QRScanScreen> {
           MobileScanner(
             onDetect: _onDetect,
           ),
-          // A nice scanning overlay
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.5),
+          // A nice scanning overlay with a clear cutout
+          ColorFiltered(
+            colorFilter: ColorFilter.mode(
+              Colors.black.withValues(alpha: 0.7),
+              BlendMode.srcOut,
             ),
-            child: Center(
-              child: Container(
-                width: 250,
-                height: 250,
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.yellowAccent, width: 3),
-                  borderRadius: BorderRadius.circular(16),
+            child: Stack(
+              children: [
+                Container(
+                  decoration: const BoxDecoration(
+                    color: Colors.transparent,
+                  ),
                 ),
+                Center(
+                  child: Container(
+                    width: 250,
+                    height: 250,
+                    decoration: BoxDecoration(
+                      color: Colors.black, // This part becomes transparent due to srcOut
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Center(
+            child: Container(
+              width: 250,
+              height: 250,
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.yellowAccent, width: 3),
+                borderRadius: BorderRadius.circular(16),
               ),
             ),
           ),
