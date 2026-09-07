@@ -165,7 +165,7 @@ class MixViewsNotifier extends _$MixViewsNotifier {
     
     if (state.hasValue) {
       state = AsyncData(
-        state.value!.map((v) => v.id == id ? updatedView : v).toList(),
+        state.value!.map<MixView>((v) => v.id == id ? updatedView : v).toList(),
       );
     }
     return updatedView;

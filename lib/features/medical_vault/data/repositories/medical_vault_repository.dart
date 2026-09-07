@@ -234,6 +234,25 @@ class MedicalVaultRepository {
     return MixView.fromJson(response.data);
   }
 
+  Future<MixView> updateMixView({
+    required String id,
+    required String name,
+    required List<String> journeyIds,
+    required List<String> selectedReportIds,
+    required int durationHours,
+  }) async {
+    final response = await _apiClient.dio.put(
+      '/api/mix-views/$id',
+      data: {
+        'name': name,
+        'journeyIds': journeyIds,
+        'selectedReportIds': selectedReportIds,
+        'durationHours': durationHours,
+      },
+    );
+    return MixView.fromJson(response.data);
+  }
+
   Future<void> revokeMixView(String id) async {
     await _apiClient.dio.delete('/api/mix-views/$id');
   }

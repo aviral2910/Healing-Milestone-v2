@@ -10,7 +10,8 @@ import '../../../journey/data/providers/journey_providers.dart';
 import '../../../medical_vault/presentation/providers/medical_vault_providers.dart';
 
 class CreateSnapshotWizardScreen extends ConsumerStatefulWidget {
-  const CreateSnapshotWizardScreen({super.key});
+  final bool isFromVault;
+  const CreateSnapshotWizardScreen({super.key, this.isFromVault = false});
 
   @override
   ConsumerState<CreateSnapshotWizardScreen> createState() =>
@@ -52,10 +53,19 @@ class _CreateSnapshotWizardScreenState
       return;
     }
 
-    if (_currentPage == 1 && _selectedJourneyIds.isEmpty) {
+    if (_currentPage == 1 && _selectedJourneyIds.isEmpty && !widget.isFromVault) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please select at least one journey to continue'),
+        ),
+      );
+      return;
+    }
+    
+    if (_currentPage == 2 && _selectedJourneyIds.isEmpty && _selectedReportIds.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select at least one journey or medical record to create a snapshot.'),
         ),
       );
       return;
