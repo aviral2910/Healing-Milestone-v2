@@ -338,6 +338,81 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
                         ),
                         const SizedBox(height: 32),
                         
+                        
+                        // Category Selector
+                        const SizedBox(height: 32),
+                        Text(
+                          'Category',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () => setState(() => _category = 'report'),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                  decoration: BoxDecoration(
+                                    color: _category == 'report' ? primaryGlow.withValues(alpha: 0.15) : theme.colorScheme.surface,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: _category == 'report' ? primaryGlow : theme.dividerColor.withValues(alpha: 0.3),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.description_rounded, color: _category == 'report' ? primaryGlow : theme.hintColor, size: 20),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'Report',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          color: _category == 'report' ? primaryGlow : theme.hintColor,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () => setState(() => _category = 'prescription'),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                  decoration: BoxDecoration(
+                                    color: _category == 'prescription' ? primaryGlow.withValues(alpha: 0.15) : theme.colorScheme.surface,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: _category == 'prescription' ? primaryGlow : theme.dividerColor.withValues(alpha: 0.3),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.medication_rounded, color: _category == 'prescription' ? primaryGlow : theme.hintColor, size: 20),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'Prescription',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          color: _category == 'prescription' ? primaryGlow : theme.hintColor,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+
                         // Report Types Input
                         Text(
                           'Report Types',
