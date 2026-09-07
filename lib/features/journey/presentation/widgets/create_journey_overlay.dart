@@ -56,6 +56,15 @@ class CreateJourneyOverlay extends ConsumerStatefulWidget {
 }
 
 class _CreateJourneyOverlayState extends ConsumerState<CreateJourneyOverlay> {
+
+String _toTitleCase(String text) {
+  if (text.trim().isEmpty) return '';
+  return text.trim().split(RegExp(r'\s+')).map((word) {
+    if (word.isEmpty) return '';
+    return word[0].toUpperCase() + word.substring(1).toLowerCase();
+  }).join(' ');
+}
+
   final _titleController = TextEditingController();
   final _categoryController = TextEditingController();
   List<String> _selectedCategories = [];
@@ -363,9 +372,10 @@ class _CreateJourneyOverlayState extends ConsumerState<CreateJourneyOverlay> {
                         if (_selectedCategories.length < 3)
                           TextField(
                             controller: _categoryController,
+                            textCapitalization: TextCapitalization.words,
                             style: theme.textTheme.bodyLarge,
                             inputFormatters: [
-                              FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9]')),
+                              FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9\s]')),
                             ],
                             decoration: InputDecoration(
                               hintText: _selectedCategories.isEmpty ? 'Search or add category' : 'Add another category',

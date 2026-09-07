@@ -32,6 +32,15 @@ class PostSettingsScreen extends StatefulHookConsumerWidget {
 }
 
 class _PostSettingsScreenState extends ConsumerState<PostSettingsScreen> {
+
+String _toTitleCase(String text) {
+  if (text.trim().isEmpty) return '';
+  return text.trim().split(RegExp(r'\s+')).map((word) {
+    if (word.isEmpty) return '';
+    return word[0].toUpperCase() + word.substring(1).toLowerCase();
+  }).join(' ');
+}
+
   bool _isAnonymous = false;
   String _selectedTemplate = 'minimalist';
   StoryType _selectedType = StoryType.story;
@@ -337,10 +346,7 @@ class _PostSettingsScreenState extends ConsumerState<PostSettingsScreen> {
   }
 
   void _addTag(String tag) {
-    final cleanTag = tag.toLowerCase().trim().replaceAll(
-      RegExp(r'[^a-z0-9]'),
-      '',
-    );
+    final cleanTag = _toTitleCase(tag);
     if (cleanTag.isNotEmpty && !_selectedTags.contains(cleanTag)) {
       setState(() {
         _selectedTags.add(cleanTag);

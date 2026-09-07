@@ -64,14 +64,15 @@ extension PostSettingsHashtags on _PostSettingsScreenState {
                     ),
                     child: TextField(
                       controller: _tagController,
+                      textCapitalization: TextCapitalization.words,
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.onSurface,
                       ),
                       inputFormatters: [
                         FilteringTextInputFormatter.allow(
-                          RegExp(r'[a-zA-Z0-9]'),
+                          RegExp(r'[a-zA-Z0-9\s]'),
                         ),
-                        _LowerCaseTextFormatter(),
+                        
                       ],
                       decoration: InputDecoration(
                         hintText: 'Add a tag (e.g. cancerfree)',

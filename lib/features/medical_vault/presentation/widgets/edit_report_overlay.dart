@@ -51,6 +51,15 @@ class EditReportOverlay extends ConsumerStatefulWidget {
 }
 
 class _EditReportOverlayState extends ConsumerState<EditReportOverlay> {
+
+String _toTitleCase(String text) {
+  if (text.trim().isEmpty) return '';
+  return text.trim().split(RegExp(r'\s+')).map((word) {
+    if (word.isEmpty) return '';
+    return word[0].toUpperCase() + word.substring(1).toLowerCase();
+  }).join(' ');
+}
+
   late String _category;
   late TextEditingController _notesController;
 
@@ -129,7 +138,7 @@ class _EditReportOverlayState extends ConsumerState<EditReportOverlay> {
   }
 
   void _addCustomType(String value) {
-    final custom = value.trim();
+    final custom = _toTitleCase(value);
     if (custom.isEmpty) return;
 
     // Check if it matches a suggested type case-insensitively
@@ -511,6 +520,7 @@ class _EditReportOverlayState extends ConsumerState<EditReportOverlay> {
                         // Type Input Field
                         TextField(
                           controller: _customTypeController,
+                          textCapitalization: TextCapitalization.words,
                           onChanged: _onSearchChanged,
                           style: theme.textTheme.bodyLarge?.copyWith(
                             height: 1.5,

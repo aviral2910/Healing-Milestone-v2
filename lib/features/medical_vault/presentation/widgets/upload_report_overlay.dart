@@ -45,6 +45,15 @@ class UploadReportOverlay extends ConsumerStatefulWidget {
 }
 
 class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
+
+String _toTitleCase(String text) {
+  if (text.trim().isEmpty) return '';
+  return text.trim().split(RegExp(r'\s+')).map((word) {
+    if (word.isEmpty) return '';
+    return word[0].toUpperCase() + word.substring(1).toLowerCase();
+  }).join(' ');
+}
+
   String _category = 'report';
   final TextEditingController _notesController = TextEditingController();
 
@@ -117,7 +126,7 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
   bool _isUploading = false;
 
   void _addCustomType(String value) {
-    final custom = value.trim();
+    final custom = _toTitleCase(value);
     if (custom.isEmpty) return;
 
     // Check if it matches a suggested type case-insensitively
@@ -480,6 +489,7 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
                         // Type Input Field
                         TextField(
                           controller: _customTypeController,
+                          textCapitalization: TextCapitalization.words,
                           onChanged: _onSearchChanged,
                           style: theme.textTheme.bodyLarge?.copyWith(
                             height: 1.5,
