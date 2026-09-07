@@ -776,6 +776,7 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
                           maxLines: 3,
                           style: TextStyle(color: theme.colorScheme.onSurface),
                           decoration: InputDecoration(
+                            contentPadding: const EdgeInsets.all(16),
                             hintText: 'Add any additional details or instructions...',
                             hintStyle: TextStyle(color: theme.hintColor),
                             filled: true,
