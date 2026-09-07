@@ -47,6 +47,78 @@ class _HealthSnapshotScreenState extends ConsumerState<HealthSnapshotScreen> {
     }
   }
 
+  void _showRemoveRecordDialog(BuildContext context, MixView view, MedicalRecord record) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.warning_amber_rounded, size: 48, color: Colors.redAccent),
+                const SizedBox(height: 16),
+                const Text(
+                  'Remove from Snapshot?',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'This will remove the ${record.category == 'prescription' ? 'prescription' : 'report'} from this snapshot. It will NOT be deleted from your Medical Vault.',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.grey),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        child: const Text('Cancel'),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: FilledButton(
+                        style: FilledButton.styleFrom(backgroundColor: Colors.redAccent),
+                        onPressed: () async {
+                          Navigator.pop(ctx);
+                          final scaffoldMsg = ScaffoldMessenger.of(context);
+                          
+                          try {
+                            final newIds = view.selectedReportIds.where((id) => id != record.id).toList();
+                            await ref.read(mixViewsProvider.notifier).updateMixView(
+                              id: view.id,
+                              name: view.name,
+                              journeyIds: view.journeyIds,
+                              selectedReportIds: newIds,
+                              durationHours: view.expiresAt.difference(DateTime.now()).inHours > 0 
+                                  ? view.expiresAt.difference(DateTime.now()).inHours 
+                                  : 1,
+                            );
+                            ref.read(snapshotTimelineProvider(widget.snapshotId).notifier).removeRecordLocally(record.id);
+                            scaffoldMsg.showSnackBar(const SnackBar(content: Text('Removed successfully')));
+                          } catch (e) {
+                            scaffoldMsg.showSnackBar(SnackBar(content: Text('Failed to remove: $e')));
+                          }
+                        },
+                        child: const Text('Remove'),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -244,11 +316,18 @@ class _HealthSnapshotScreenState extends ConsumerState<HealthSnapshotScreen> {
                               isHistoricalClosure: false,
                               overridePosition: jmPosition,
                             ),
-                            record: (r) => rm.ReportTimelineNode(
-                              report: r.data,
-                              position: rmPosition,
-                              isSelected: false,
-                              showEditMenu: false,
+                            record: (r) => GestureDetector(
+                              onLongPress: () {
+                                if (view != null) {
+                                  _showRemoveRecordDialog(context, view, r.data);
+                                }
+                              },
+                              child: rm.ReportTimelineNode(
+                                report: r.data,
+                                position: rmPosition,
+                                isSelected: false,
+                                showEditMenu: false,
+                              ),
                             ),
                           ),
                         ],

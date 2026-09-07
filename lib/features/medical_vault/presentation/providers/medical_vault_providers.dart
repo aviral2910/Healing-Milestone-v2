@@ -148,6 +148,29 @@ class MixViewsNotifier extends _$MixViewsNotifier {
     return newView;
   }
 
+  Future<MixView> updateMixView({
+    required String id,
+    required String name,
+    required List<String> journeyIds,
+    required List<String> selectedReportIds,
+    required int durationHours,
+  }) async {
+    final updatedView = await ref.read(medicalVaultRepositoryProvider).updateMixView(
+      id: id,
+      name: name,
+      journeyIds: journeyIds,
+      selectedReportIds: selectedReportIds,
+      durationHours: durationHours,
+    );
+    
+    if (state.hasValue) {
+      state = AsyncData(
+        state.value!.map((v) => v.id == id ? updatedView : v).toList(),
+      );
+    }
+    return updatedView;
+  }
+
   Future<void> revokeMixView(String id) async {
     await ref.read(medicalVaultRepositoryProvider).revokeMixView(id);
     if (state.hasValue) {
@@ -172,6 +195,19 @@ class SnapshotTimelineNotifier extends _$SnapshotTimelineNotifier {
       _hasMore = false;
     }
     return items;
+  }
+
+  void removeRecordLocally(String recordId) {
+    if (state.hasValue) {
+      final currentList = state.value!;
+      final updatedList = currentList.where((item) {
+        return item.map(
+          milestone: (_) => true,
+          record: (r) => r.data.id != recordId,
+        );
+      }).toList();
+      state = AsyncData(updatedList);
+    }
   }
 
   Future<void> fetchNextPage() async {
