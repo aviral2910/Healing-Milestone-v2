@@ -44,6 +44,8 @@ import '../../features/splash/presentation/screens/splash_screen.dart';
 import '../../logo/healing_milestone_logo.dart';
 import '../../core/models/user_model.dart';
 import 'app_routes.dart';
+import '../../features/journey/presentation/screens/journey_detail_screen.dart';
+
 import '../../features/milestone/presentation/widgets/mini_player_overlay.dart';
 import 'package:flutter/material.dart';
 
@@ -196,6 +198,28 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
         routes: [
 
+
+      GoRoute(
+        path: '/journey/:id',
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return JourneyDetailScreen(journeyId: id, title: 'Journey', isMine: false);
+        },
+      ),
+      GoRoute(
+        path: '/snapshot/:id',
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return HealthSnapshotScreen(snapshotId: id);
+        },
+      ),
+      GoRoute(
+        path: '/sync',
+        builder: (context, state) {
+          // They scanned the web QR from the native camera. Open home screen with a toast or just home.
+          return const HomeScreen();
+        },
+      ),
       GoRoute(
         path: '/health-snapshot/create',
         builder: (context, state) => const CreateSnapshotWizardScreen(),
