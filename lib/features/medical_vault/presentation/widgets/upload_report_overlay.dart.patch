@@ -1,0 +1,36 @@
+--- lib/features/medical_vault/presentation/widgets/upload_report_overlay.dart
++++ lib/features/medical_vault/presentation/widgets/upload_report_overlay.dart
+@@ -279,7 +279,9 @@
+ 
+         // Process AI extraction
++        print('Starting AI extraction for ${fileUrls.length} files...');
+         final extractedBiomarkers = await repo.extractBiomarkers(fileUrls);
++        print('Extracted ${extractedBiomarkers.length} biomarkers');
+         
+         if (extractedBiomarkers.isNotEmpty && mounted) {
+           final saved = await showModalBottomSheet<bool>(
+@@ -296,8 +298,27 @@
+             ref.invalidate(biomarkerTrendsProvider);
+           }
++        } else if (mounted) {
++          print('No biomarkers extracted!');
++          ScaffoldMessenger.of(context).showSnackBar(
++            const SnackBar(
++              content: Text('Could not extract any data from the report.'),
++              backgroundColor: Colors.orange,
++            ),
++          );
+         }
+       } catch (e) {
++        print('AI Extraction completely failed: $e');
++        if (mounted) {
++          ScaffoldMessenger.of(context).showSnackBar(
++            SnackBar(
++              content: Text('Upload succeeded, but AI extraction failed: $e'),
++              backgroundColor: Colors.orange,
++              duration: const Duration(seconds: 4),
++            ),
++          );
++        }
+         // AI extraction failed, but upload succeeded, so it's fine
+       } finally {

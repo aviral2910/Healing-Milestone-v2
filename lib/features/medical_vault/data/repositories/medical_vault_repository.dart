@@ -12,21 +12,20 @@ part 'medical_vault_repository.g.dart';
 
 class MedicalVaultRepository {
   final ApiClient _apiClient;
-  final Dio _dio = Dio(); // For direct Cloudflare upload without API interceptors
+  final Dio _dio =
+      Dio(); // For direct Cloudflare upload without API interceptors
 
   MedicalVaultRepository(this._apiClient);
 
-  
-  
-    
-  Future<List<SnapshotTimelineItem>> getMixViewTimeline(String viewId, {int skip = 0, int limit = 20}) async {
+  Future<List<SnapshotTimelineItem>> getMixViewTimeline(
+    String viewId, {
+    int skip = 0,
+    int limit = 20,
+  }) async {
     try {
       final response = await _apiClient.dio.get(
         '/api/mix-views/$viewId/timeline',
-        queryParameters: {
-          'skip': skip,
-          'limit': limit,
-        },
+        queryParameters: {'skip': skip, 'limit': limit},
       );
       return (response.data as List)
           .map((json) => SnapshotTimelineItem.fromJson(json))
@@ -46,7 +45,10 @@ class MedicalVaultRepository {
     }
   }
 
-  Future<List<String>> getMedicalRecordIds({DateTime? afterDate, List<String>? tags}) async {
+  Future<List<String>> getMedicalRecordIds({
+    DateTime? afterDate,
+    List<String>? tags,
+  }) async {
     try {
       final queryParams = <String, dynamic>{};
       if (afterDate != null) {
@@ -68,25 +70,33 @@ class MedicalVaultRepository {
     }
   }
 
-  Future<List<MedicalRecord>> getMedicalRecords({int skip = 0, int limit = 20}) async {
-    final response = await _apiClient.dio.get('/api/reports?skip=$skip&limit=$limit');
-    return (response.data as List).map((json) => MedicalRecord.fromJson(json)).toList();
+  Future<List<MedicalRecord>> getMedicalRecords({
+    int skip = 0,
+    int limit = 20,
+  }) async {
+    final response = await _apiClient.dio.get(
+      '/api/reports?skip=$skip&limit=$limit',
+    );
+    return (response.data as List)
+        .map((json) => MedicalRecord.fromJson(json))
+        .toList();
   }
 
   Future<List<MedicalRecordFile>> uploadFiles(List<PlatformFile> files) async {
     final processedFiles = <File>[];
     final requestFiles = <Map<String, dynamic>>[];
-    
+
     // 1. Process files (compress images)
     final tempDir = await getTemporaryDirectory();
-    
+
     for (int i = 0; i < files.length; i++) {
       final pf = files[i];
       final originalFile = File(pf.path!);
       final ext = pf.name.split('.').last.toLowerCase();
-      
+
       if (['jpg', 'jpeg', 'png'].contains(ext)) {
-        final targetPath = '${tempDir.path}/compressed_${DateTime.now().millisecondsSinceEpoch}_$i.jpg';
+        final targetPath =
+            '${tempDir.path}/compressed_${DateTime.now().millisecondsSinceEpoch}_$i.jpg';
         final compressedFile = await FlutterImageCompress.compressAndGetFile(
           originalFile.absolute.path,
           targetPath,
@@ -95,12 +105,15 @@ class MedicalVaultRepository {
           quality: 85,
           format: CompressFormat.jpeg,
         );
-        
+
         if (compressedFile != null) {
           final fileObj = File(compressedFile.path);
           processedFiles.add(fileObj);
-          
-          final originalNameWithoutExt = pf.name.substring(0, pf.name.lastIndexOf('.'));
+
+          final originalNameWithoutExt = pf.name.substring(
+            0,
+            pf.name.lastIndexOf('.'),
+          );
           requestFiles.add({
             'fileName': '${originalNameWithoutExt}.jpg',
             'fileType': 'image/jpeg',
@@ -120,45 +133,51 @@ class MedicalVaultRepository {
         });
       }
     }
-    
+
     // 2. Get Presigned URLs for all files
     final presignedResponse = await _apiClient.dio.post(
       '/api/reports/upload-urls',
       data: {'files': requestFiles},
     );
-    
+
     final urlsList = presignedResponse.data['urls'] as List;
     final uploadedFiles = <Map<String, dynamic>>[];
 
     // 3. Upload directly to Cloudflare R2 concurrently
-    await Future.wait(urlsList.asMap().entries.map((entry) async {
-      final index = entry.key;
-      final urlData = entry.value;
-      final file = processedFiles[index];
-      
-      await _dio.put(
-        urlData['uploadUrl'],
-        data: file.openRead(),
-        options: Options(
-          headers: {
-            Headers.contentLengthHeader: await file.length(),
-            Headers.contentTypeHeader: urlData['fileType'],
-          },
-        ),
-      );
-      
-      uploadedFiles.add({
-        'url': urlData['fileUrl'],
-        'fileType': urlData['fileType'],
-        'fileName': requestFiles[index]['fileName'],
-      });
-    }));
+    await Future.wait(
+      urlsList.asMap().entries.map((entry) async {
+        final index = entry.key;
+        final urlData = entry.value;
+        final file = processedFiles[index];
 
-    return uploadedFiles.map((f) => MedicalRecordFile(
-      url: f['url'],
-      fileName: f['fileName'],
-      fileType: f['fileType']
-    )).toList();
+        await _dio.put(
+          urlData['uploadUrl'],
+          data: file.openRead(),
+          options: Options(
+            headers: {
+              Headers.contentLengthHeader: await file.length(),
+              Headers.contentTypeHeader: urlData['fileType'],
+            },
+          ),
+        );
+
+        uploadedFiles.add({
+          'url': urlData['fileUrl'],
+          'fileType': urlData['fileType'],
+          'fileName': requestFiles[index]['fileName'],
+        });
+      }),
+    );
+
+    return uploadedFiles
+        .map(
+          (f) => MedicalRecordFile(
+            url: f['url'],
+            fileName: f['fileName'],
+            fileType: f['fileType'],
+          ),
+        )
+        .toList();
   }
 
   Future<MedicalRecord> uploadReport({
@@ -169,7 +188,7 @@ class MedicalVaultRepository {
     String? notes,
   }) async {
     final uploadedFiles = await uploadFiles(files);
-    
+
     // 4. Create record in DB
     final response = await _apiClient.dio.post(
       '/api/reports',
@@ -181,7 +200,7 @@ class MedicalVaultRepository {
         'notes': notes,
       },
     );
-    
+
     return MedicalRecord.fromJson(response.data);
   }
 
@@ -214,7 +233,9 @@ class MedicalVaultRepository {
 
   Future<List<MixView>> getMixViews() async {
     final response = await _apiClient.dio.get('/api/mix-views');
-    return (response.data as List).map((json) => MixView.fromJson(json)).toList();
+    return (response.data as List)
+        .map((json) => MixView.fromJson(json))
+        .toList();
   }
 
   Future<MixView> createMixView({
@@ -261,7 +282,9 @@ class MedicalVaultRepository {
   String _getFileType(String fileName) {
     if (fileName.toLowerCase().endsWith('.pdf')) return 'application/pdf';
     if (fileName.toLowerCase().endsWith('.png')) return 'image/png';
-    if (fileName.toLowerCase().endsWith('.jpg') || fileName.toLowerCase().endsWith('.jpeg')) return 'image/jpeg';
+    if (fileName.toLowerCase().endsWith('.jpg') ||
+        fileName.toLowerCase().endsWith('.jpeg'))
+      return 'image/jpeg';
     return 'application/octet-stream';
   }
 
@@ -272,6 +295,7 @@ class MedicalVaultRepository {
     );
     return (response.data as List).map((e) => e.toString()).toList();
   }
+
   Future<List<BiomarkerModel>> extractBiomarkers(List<String> fileUrls) async {
     try {
       final response = await _apiClient.dio.post(
@@ -288,7 +312,10 @@ class MedicalVaultRepository {
     }
   }
 
-  Future<List<BiomarkerModel>> saveBiomarkers(String recordId, List<BiomarkerModel> biomarkers) async {
+  Future<List<BiomarkerModel>> saveBiomarkers(
+    String recordId,
+    List<BiomarkerModel> biomarkers,
+  ) async {
     try {
       final response = await _apiClient.dio.post(
         '/api/reports/$recordId/biomarkers',
@@ -304,9 +331,38 @@ class MedicalVaultRepository {
     }
   }
 
+  Future<BiomarkerModel> updateBiomarker(
+    String biomarkerId,
+    Map<String, dynamic> updates,
+  ) async {
+    try {
+      final response = await _apiClient.dio.patch(
+        '/api/reports/biomarkers/$biomarkerId',
+        data: updates,
+      );
+      if (response.statusCode == 200) {
+        return BiomarkerModel.fromJson(response.data);
+      }
+      throw Exception('Failed to update biomarker');
+    } catch (e) {
+      throw Exception('Update error: $e');
+    }
+  }
+
+  Future<List<BiomarkerModel>> extractAndSaveBiomarkers(
+    String recordId,
+    List<String> fileUrls,
+  ) async {
+    final extracted = await extractBiomarkers(fileUrls);
+    if (extracted.isEmpty) return [];
+    return await saveBiomarkers(recordId, extracted);
+  }
+
   Future<List<BiomarkerTrendModel>> getBiomarkerTrends() async {
     try {
-      final response = await _apiClient.dio.get('/api/reports/biomarkers/trends');
+      final response = await _apiClient.dio.get(
+        '/api/reports/biomarkers/trends',
+      );
       if (response.statusCode == 200) {
         final List<dynamic> data = response.data;
         return data.map((json) => BiomarkerTrendModel.fromJson(json)).toList();
@@ -321,6 +377,4 @@ class MedicalVaultRepository {
 @riverpod
 MedicalVaultRepository medicalVaultRepository(Ref ref) {
   return MedicalVaultRepository(ref.watch(apiClientProvider));
-
-
 }

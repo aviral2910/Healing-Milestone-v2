@@ -6,7 +6,7 @@ import 'dart:ui' as ui;
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:healing_milestones/features/medical_vault/presentation/screens/biomarker_verification_screen.dart';
+import '../screens/report_detail_screen.dart';
 import '../providers/medical_vault_providers.dart';
 import 'package:intl/intl.dart';
 import '../../data/models/medical_vault_models.dart';
@@ -24,7 +24,6 @@ class ReportTimelineNode extends ConsumerWidget {
     final fileUrls = report.files.map((f) => f.url).toList();
     if (fileUrls.isEmpty) return;
 
-    // Capture navigator and scaffold BEFORE the async gap to prevent context.mounted bugs if user scrolls
     final navigator = Navigator.of(context, rootNavigator: true);
     final scaffold = ScaffoldMessenger.of(context);
     final mainContext = context;
@@ -49,25 +48,26 @@ class ReportTimelineNode extends ConsumerWidget {
 
     try {
       final repo = ref.read(medicalVaultRepositoryProvider);
-      final extracted = await repo.extractBiomarkers(fileUrls);
+      final extracted = await repo.extractAndSaveBiomarkers(
+        report.id,
+        fileUrls,
+      );
 
-      navigator.pop(); // Close the dialog using the captured root navigator
+      navigator.pop(); // Close the dialog
 
       if (extracted.isNotEmpty) {
         if (!mainContext.mounted) return;
-        final saved = await Navigator.of(mainContext).push<bool>(
+        ref.invalidate(medicalRecordsProvider);
+        ref.invalidate(biomarkerTrendsProvider);
+
+        // Push directly to ReportDetailScreen
+        Navigator.of(mainContext).push(
           MaterialPageRoute(
-            builder: (ctx) => BiomarkerVerificationScreen(
-              initialBiomarkers: extracted,
-              recordId: report.id,
-              repository: repo,
+            builder: (ctx) => ReportDetailScreen(
+              report: report.copyWith(biomarkers: extracted),
             ),
           ),
         );
-        if (saved == true && mainContext.mounted) {
-          ref.invalidate(medicalRecordsProvider);
-          ref.invalidate(biomarkerTrendsProvider);
-        }
       } else {
         scaffold.showSnackBar(
           const SnackBar(
@@ -690,7 +690,9 @@ class ReportTimelineNode extends ConsumerWidget {
                                         Wrap(
                                           spacing: 8,
                                           runSpacing: 8,
-                                          children: report.biomarkers.map((b) {
+                                          children: report.biomarkers.take(4).map((
+                                            b,
+                                          ) {
                                             final isAbnormal =
                                                 b.isAbnormal == true;
                                             return Container(
@@ -759,68 +761,105 @@ class ReportTimelineNode extends ConsumerWidget {
                                             );
                                           }).toList(),
                                         ),
+                                        if (report.biomarkers.length > 4) ...[
+                                          const SizedBox(height: 12),
+                                          TextButton(
+                                            onPressed: () {
+                                              Navigator.of(context).push(
+                                                MaterialPageRoute(
+                                                  builder: (ctx) =>
+                                                      ReportDetailScreen(
+                                                        report: report,
+                                                      ),
+                                                ),
+                                              );
+                                            },
+                                            child: Text(
+                                              'View Full Report (${report.biomarkers.length} Metrics) →',
+                                            ),
+                                          ),
+                                        ] else ...[
+                                          const SizedBox(height: 12),
+                                          TextButton(
+                                            onPressed: () {
+                                              Navigator.of(context).push(
+                                                MaterialPageRoute(
+                                                  builder: (ctx) =>
+                                                      ReportDetailScreen(
+                                                        report: report,
+                                                      ),
+                                                ),
+                                              );
+                                            },
+                                            child: const Text('Edit Metrics →'),
+                                          ),
+                                        ],
                                       ],
                                     ),
                                   ),
                                 ],
-                                const SizedBox(height: 20),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 20,
-                                  ),
-                                  child: InkWell(
-                                    onTap: () =>
-                                        _extractAI(context, ref, report),
-                                    borderRadius: BorderRadius.circular(12),
-                                    child: Container(
-                                      width: double.infinity,
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 12,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        gradient: const LinearGradient(
-                                          begin: Alignment.topLeft,
-                                          end: Alignment.bottomRight,
-                                          colors: [
-                                            Color(0xFF8A2BE2), // BlueViolet
-                                            Color(0xFF4169E1), // RoyalBlue
+                                if (report.biomarkers.isEmpty) ...[
+                                  const SizedBox(height: 20),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 20,
+                                    ),
+                                    child: InkWell(
+                                      onTap: () =>
+                                          _extractAI(context, ref, report),
+                                      borderRadius: BorderRadius.circular(12),
+                                      child: Container(
+                                        width: double.infinity,
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 12,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          gradient: const LinearGradient(
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                            colors: [
+                                              Color(0xFF8A2BE2), // BlueViolet
+                                              Color(0xFF4169E1), // RoyalBlue
+                                            ],
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: const Color(
+                                                0xFF4169E1,
+                                              ).withValues(alpha: 0.3),
+                                              blurRadius: 8,
+                                              offset: const Offset(0, 3),
+                                            ),
                                           ],
                                         ),
-                                        borderRadius: BorderRadius.circular(12),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: const Color(
-                                              0xFF4169E1,
-                                            ).withValues(alpha: 0.3),
-                                            blurRadius: 8,
-                                            offset: const Offset(0, 3),
-                                          ),
-                                        ],
-                                      ),
-                                      child: const Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Icon(
-                                            Icons.auto_awesome,
-                                            color: Colors.white,
-                                            size: 18,
-                                          ),
-                                          SizedBox(width: 8),
-                                          Text(
-                                            'Extract Data with AI',
-                                            style: TextStyle(
+                                        child: const Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Icon(
+                                              Icons.auto_awesome,
                                               color: Colors.white,
-                                              fontWeight: FontWeight.w700,
-                                              fontSize: 14,
-                                              letterSpacing: 0.3,
+                                              size: 18,
                                             ),
-                                          ),
-                                        ],
+                                            SizedBox(width: 8),
+                                            Text(
+                                              'Extract Data with AI',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.w700,
+                                                fontSize: 14,
+                                                letterSpacing: 0.3,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
+                                ],
                               ],
                             );
                           },
