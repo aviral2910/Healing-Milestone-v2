@@ -277,7 +277,9 @@ String _toTitleCase(String text) {
       try {
         final repo = ref.read(medicalVaultRepositoryProvider);
         final fileUrls = newRecord.files.map((f) => f.url).toList();
+        print('Starting AI extraction for ${fileUrls.length} files...');
         final extractedBiomarkers = await repo.extractBiomarkers(fileUrls);
+        print('Extracted ${extractedBiomarkers.length} biomarkers');
         
         if (extractedBiomarkers.isNotEmpty && mounted) {
           final saved = await showModalBottomSheet<bool>(
