@@ -28,7 +28,10 @@ class _BiomarkerCardState extends State<BiomarkerCard> {
   @override
   void initState() {
     super.initState();
-    final displayValue = widget.biomarker.valueNumeric?.toString() ?? widget.biomarker.valueText ?? '';
+    final displayValue =
+        widget.biomarker.valueNumeric?.toString() ??
+        widget.biomarker.valueText ??
+        '';
     _editController = TextEditingController(text: displayValue);
   }
 
@@ -36,7 +39,10 @@ class _BiomarkerCardState extends State<BiomarkerCard> {
   void didUpdateWidget(covariant BiomarkerCard oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.isEditing && !oldWidget.isEditing) {
-      final displayValue = widget.biomarker.valueNumeric?.toString() ?? widget.biomarker.valueText ?? '';
+      final displayValue =
+          widget.biomarker.valueNumeric?.toString() ??
+          widget.biomarker.valueText ??
+          '';
       _editController.text = displayValue;
       Future.delayed(const Duration(milliseconds: 50), () {
         _editFocusNode.requestFocus();
@@ -66,7 +72,9 @@ class _BiomarkerCardState extends State<BiomarkerCard> {
     final displayValue = b.valueNumeric?.toString() ?? b.valueText ?? '-';
     final unit = b.rawUnit ?? '';
 
-    final padding = widget.compact ? const EdgeInsets.all(12) : const EdgeInsets.all(16);
+    final padding = widget.compact
+        ? const EdgeInsets.all(12)
+        : const EdgeInsets.all(16);
     final iconSize = widget.compact ? 18.0 : 22.0;
     final titleFontSize = widget.compact ? 14.0 : 15.0;
     final valueFontSize = widget.compact ? 16.0 : 18.0;
@@ -101,7 +109,8 @@ class _BiomarkerCardState extends State<BiomarkerCard> {
               color: theme.colorScheme.onSurface,
             ),
           ),
-          if (b.aiPredictedStandardName != null && b.aiPredictedStandardName != b.rawName)
+          if (b.aiPredictedStandardName != null &&
+              b.aiPredictedStandardName != b.rawName)
             Padding(
               padding: const EdgeInsets.only(top: 2),
               child: Text(
@@ -119,7 +128,9 @@ class _BiomarkerCardState extends State<BiomarkerCard> {
     Widget buildValueOrEdit() {
       if (widget.isEditing) {
         return Row(
-          mainAxisAlignment: isTextResult ? MainAxisAlignment.start : MainAxisAlignment.end,
+          mainAxisAlignment: isTextResult
+              ? MainAxisAlignment.start
+              : MainAxisAlignment.end,
           children: [
             Expanded(
               flex: isTextResult ? 1 : 0,
@@ -128,17 +139,25 @@ class _BiomarkerCardState extends State<BiomarkerCard> {
                 child: TextField(
                   controller: _editController,
                   focusNode: _editFocusNode,
-                  keyboardType: isTextResult ? TextInputType.multiline : const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: isTextResult
+                      ? TextInputType.multiline
+                      : const TextInputType.numberWithOptions(decimal: true),
                   maxLines: isTextResult ? null : 1,
                   textAlign: isTextResult ? TextAlign.left : TextAlign.right,
                   style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: isTextResult ? FontWeight.normal : FontWeight.bold,
+                    fontWeight: isTextResult
+                        ? FontWeight.normal
+                        : FontWeight.bold,
                   ),
                   decoration: InputDecoration(
                     isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                    contentPadding: const EdgeInsets.symmetric(
+                      vertical: 8,
+                      horizontal: 8,
+                    ),
                     filled: true,
-                    fillColor: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                    fillColor: theme.colorScheme.surfaceContainerHighest
+                        .withValues(alpha: 0.5),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                       borderSide: BorderSide.none,
@@ -165,13 +184,16 @@ class _BiomarkerCardState extends State<BiomarkerCard> {
       }
 
       if (isTextResult) {
-        // If the text has list numbers (e.g., "1. ... 2. ..."), let's format it slightly better if possible, 
+        // If the text has list numbers (e.g., "1. ... 2. ..."), let's format it slightly better if possible,
         // or just rely on a slightly larger line height for readability.
         return Text(
           displayValue,
           style: theme.textTheme.bodyMedium?.copyWith(
             height: 1.5,
-            color: isAbnormal ? Colors.red.shade700 : theme.colorScheme.onSurface,
+            fontWeight: FontWeight.w300,
+            color: isAbnormal
+                ? Colors.red.shade400
+                : theme.colorScheme.onSurface.withValues(alpha: 0.75),
           ),
         );
       }
@@ -206,7 +228,9 @@ class _BiomarkerCardState extends State<BiomarkerCard> {
       onTap: widget.isEditing ? null : widget.onEditTap,
       borderRadius: BorderRadius.circular(widget.compact ? 16 : 20),
       child: Container(
-        margin: widget.compact ? const EdgeInsets.only(bottom: 10) : EdgeInsets.zero,
+        margin: widget.compact
+            ? const EdgeInsets.only(bottom: 10)
+            : EdgeInsets.zero,
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(widget.compact ? 16 : 20),
@@ -249,7 +273,13 @@ class _BiomarkerCardState extends State<BiomarkerCard> {
                   const SizedBox(width: 12),
                   Expanded(flex: 3, child: buildName()),
                   const SizedBox(width: 8),
-                  Expanded(flex: 2, child: Align(alignment: Alignment.centerRight, child: buildValueOrEdit())),
+                  Expanded(
+                    flex: 2,
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: buildValueOrEdit(),
+                    ),
+                  ),
                 ],
               ),
       ),
