@@ -296,163 +296,309 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
                         ],
                       ),
                       padding: const EdgeInsets.all(16),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          // Left: Soft icon background
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: isAbnormal
-                                  ? Colors.red.withValues(alpha: 0.1)
-                                  : theme.colorScheme.primaryContainer
-                                        .withValues(alpha: 0.4),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Icon(
-                              isAbnormal
-                                  ? Icons.warning_amber_rounded
-                                  : Icons.science_rounded,
-                              color: isAbnormal
-                                  ? Colors.red
-                                  : theme.colorScheme.primary,
-                              size: 22,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-
-                          // Middle: Name
-                          Expanded(
-                            flex: 3,
-                            child: Column(
+                      child: isTextResult
+                          ? Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  b.aiPredictedStandardName ?? b.rawName,
-                                  style: theme.textTheme.titleSmall?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 15,
-                                    color: theme.colorScheme.onSurface,
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                        color: isAbnormal
+                                            ? Colors.red.withValues(alpha: 0.1)
+                                            : theme.colorScheme.primaryContainer
+                                                  .withValues(alpha: 0.4),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Icon(
+                                        isAbnormal
+                                            ? Icons.warning_amber_rounded
+                                            : Icons.science_rounded,
+                                        color: isAbnormal
+                                            ? Colors.red
+                                            : theme.colorScheme.primary,
+                                        size: 22,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            b.aiPredictedStandardName ??
+                                                b.rawName,
+                                            style: theme.textTheme.titleSmall
+                                                ?.copyWith(
+                                                  fontWeight: FontWeight.w600,
+                                                  fontSize: 15,
+                                                  color: theme
+                                                      .colorScheme
+                                                      .onSurface,
+                                                ),
+                                          ),
+                                          if (b.aiPredictedStandardName !=
+                                                  null &&
+                                              b.aiPredictedStandardName !=
+                                                  b.rawName)
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                top: 2,
+                                              ),
+                                              child: Text(
+                                                b.rawName,
+                                                style: theme.textTheme.bodySmall
+                                                    ?.copyWith(
+                                                      color: theme
+                                                          .colorScheme
+                                                          .onSurfaceVariant,
+                                                      fontSize: 12,
+                                                    ),
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+                                isEditing
+                                    ? Row(
+                                        children: [
+                                          Expanded(
+                                            child: TextField(
+                                              controller: _editController,
+                                              focusNode: _editFocusNode,
+                                              keyboardType:
+                                                  TextInputType.multiline,
+                                              maxLines: null,
+                                              style: theme.textTheme.bodyMedium,
+                                              decoration: InputDecoration(
+                                                isDense: true,
+                                                contentPadding:
+                                                    const EdgeInsets.symmetric(
+                                                      vertical: 12,
+                                                      horizontal: 12,
+                                                    ),
+                                                filled: true,
+                                                fillColor: theme
+                                                    .colorScheme
+                                                    .surfaceContainerHighest
+                                                    .withValues(alpha: 0.5),
+                                                border: OutlineInputBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                  borderSide: BorderSide.none,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          GestureDetector(
+                                            onTap: () => _saveEdit(b, index),
+                                            child: Container(
+                                              padding: const EdgeInsets.all(8),
+                                              decoration: BoxDecoration(
+                                                color: Colors.green.withValues(
+                                                  alpha: 0.1,
+                                                ),
+                                                shape: BoxShape.circle,
+                                              ),
+                                              child: const Icon(
+                                                Icons.check,
+                                                color: Colors.green,
+                                                size: 24,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      )
+                                    : Text(
+                                        displayValue,
+                                        style: theme.textTheme.bodyMedium
+                                            ?.copyWith(
+                                              height: 1.5,
+                                              color: isAbnormal
+                                                  ? Colors.red.shade700
+                                                  : theme.colorScheme.onSurface,
+                                            ),
+                                      ),
+                              ],
+                            )
+                          : Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: isAbnormal
+                                        ? Colors.red.withValues(alpha: 0.1)
+                                        : theme.colorScheme.primaryContainer
+                                              .withValues(alpha: 0.4),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Icon(
+                                    isAbnormal
+                                        ? Icons.warning_amber_rounded
+                                        : Icons.science_rounded,
+                                    color: isAbnormal
+                                        ? Colors.red
+                                        : theme.colorScheme.primary,
+                                    size: 22,
                                   ),
                                 ),
-                                if (b.aiPredictedStandardName != null &&
-                                    b.aiPredictedStandardName != b.rawName)
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 2),
-                                    child: Text(
-                                      b.rawName,
-                                      style: theme.textTheme.bodySmall
-                                          ?.copyWith(
-                                            color: theme
-                                                .colorScheme
-                                                .onSurfaceVariant,
-                                            fontSize: 12,
-                                          ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-
-                          // Right: Value/Editing
-                          Expanded(
-                            flex: 2,
-                            child: isEditing
-                                ? Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  flex: 3,
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      Expanded(
-                                        child: TextField(
-                                          controller: _editController,
-                                          focusNode: _editFocusNode,
-                                          // Use regular keyboard if result is text, otherwise number keyboard
-                                          keyboardType: isTextResult
-                                              ? TextInputType.text
-                                              : const TextInputType.numberWithOptions(
-                                                  decimal: true,
-                                                ),
-                                          textAlign: TextAlign.right,
-                                          style: theme.textTheme.titleMedium
-                                              ?.copyWith(
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                          decoration: InputDecoration(
-                                            isDense: true,
-                                            contentPadding:
-                                                const EdgeInsets.symmetric(
-                                                  vertical: 8,
-                                                  horizontal: 8,
-                                                ),
-                                            filled: true,
-                                            fillColor: theme
-                                                .colorScheme
-                                                .surfaceContainerHighest
-                                                .withValues(alpha: 0.5),
-                                            border: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                              borderSide: BorderSide.none,
+                                      Text(
+                                        b.aiPredictedStandardName ?? b.rawName,
+                                        style: theme.textTheme.titleSmall
+                                            ?.copyWith(
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 15,
+                                              color:
+                                                  theme.colorScheme.onSurface,
                                             ),
-                                          ),
-                                          onSubmitted: (_) =>
-                                              _saveEdit(b, index),
-                                        ),
                                       ),
-                                      const SizedBox(width: 4),
-                                      GestureDetector(
-                                        onTap: () => _saveEdit(b, index),
-                                        child: Container(
-                                          padding: const EdgeInsets.all(4),
-                                          decoration: BoxDecoration(
-                                            color: Colors.green.withValues(
-                                              alpha: 0.1,
-                                            ),
-                                            shape: BoxShape.circle,
+                                      if (b.aiPredictedStandardName != null &&
+                                          b.aiPredictedStandardName !=
+                                              b.rawName)
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                            top: 2,
                                           ),
-                                          child: const Icon(
-                                            Icons.check,
-                                            color: Colors.green,
-                                            size: 20,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  )
-                                : Align(
-                                    alignment: Alignment.centerRight,
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.end,
-                                      children: [
-                                        Text(
-                                          displayValue,
-                                          textAlign: TextAlign.right,
-                                          style: theme.textTheme.titleLarge
-                                              ?.copyWith(
-                                                fontWeight: FontWeight.w800,
-                                                color: isAbnormal
-                                                    ? Colors.red
-                                                    : theme.colorScheme.primary,
-                                              ),
-                                        ),
-                                        if (unit.isNotEmpty)
-                                          Text(
-                                            unit,
-                                            style: theme.textTheme.labelMedium
+                                          child: Text(
+                                            b.rawName,
+                                            style: theme.textTheme.bodySmall
                                                 ?.copyWith(
                                                   color: theme
                                                       .colorScheme
                                                       .onSurfaceVariant,
-                                                  fontWeight: FontWeight.w600,
+                                                  fontSize: 12,
                                                 ),
                                           ),
-                                      ],
-                                    ),
+                                        ),
+                                    ],
                                   ),
-                          ),
-                        ],
-                      ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  flex: 2,
+                                  child: isEditing
+                                      ? Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
+                                          children: [
+                                            Expanded(
+                                              child: TextField(
+                                                controller: _editController,
+                                                focusNode: _editFocusNode,
+                                                keyboardType:
+                                                    const TextInputType.numberWithOptions(
+                                                      decimal: true,
+                                                    ),
+                                                textAlign: TextAlign.right,
+                                                style: theme
+                                                    .textTheme
+                                                    .titleMedium
+                                                    ?.copyWith(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                decoration: InputDecoration(
+                                                  isDense: true,
+                                                  contentPadding:
+                                                      const EdgeInsets.symmetric(
+                                                        vertical: 8,
+                                                        horizontal: 8,
+                                                      ),
+                                                  filled: true,
+                                                  fillColor: theme
+                                                      .colorScheme
+                                                      .surfaceContainerHighest
+                                                      .withValues(alpha: 0.5),
+                                                  border: OutlineInputBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          8,
+                                                        ),
+                                                    borderSide: BorderSide.none,
+                                                  ),
+                                                ),
+                                                onSubmitted: (_) =>
+                                                    _saveEdit(b, index),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 4),
+                                            GestureDetector(
+                                              onTap: () => _saveEdit(b, index),
+                                              child: Container(
+                                                padding: const EdgeInsets.all(
+                                                  4,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.green
+                                                      .withValues(alpha: 0.1),
+                                                  shape: BoxShape.circle,
+                                                ),
+                                                child: const Icon(
+                                                  Icons.check,
+                                                  color: Colors.green,
+                                                  size: 20,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        )
+                                      : Align(
+                                          alignment: Alignment.centerRight,
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.end,
+                                            children: [
+                                              Text(
+                                                displayValue,
+                                                textAlign: TextAlign.right,
+                                                style: theme
+                                                    .textTheme
+                                                    .titleMedium
+                                                    ?.copyWith(
+                                                      fontWeight:
+                                                          FontWeight.w700,
+                                                      fontSize: 18,
+                                                      color: isAbnormal
+                                                          ? Colors.red
+                                                          : theme
+                                                                .colorScheme
+                                                                .primary,
+                                                    ),
+                                              ),
+                                              if (unit.isNotEmpty)
+                                                Text(
+                                                  unit,
+                                                  style: theme
+                                                      .textTheme
+                                                      .bodySmall
+                                                      ?.copyWith(
+                                                        color: theme
+                                                            .colorScheme
+                                                            .onSurfaceVariant,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                      ),
+                                                ),
+                                            ],
+                                          ),
+                                        ),
+                                ),
+                              ],
+                            ),
                     ),
                   );
                 },
