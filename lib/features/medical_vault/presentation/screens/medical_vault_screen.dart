@@ -10,7 +10,6 @@ import '../widgets/report_timeline_node.dart';
 import '../../data/models/medical_vault_models.dart';
 import 'trends_tab.dart';
 
-
 class MedicalVaultScreen extends ConsumerStatefulWidget {
   const MedicalVaultScreen({super.key});
 
@@ -45,7 +44,7 @@ class _MedicalVaultScreenState extends ConsumerState<MedicalVaultScreen> {
     final theme = Theme.of(context);
     final recordsAsync = ref.watch(medicalRecordsProvider);
 
-    return DefaultTabController(length: 2, child: Scaffold(
+    return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
@@ -66,15 +65,6 @@ class _MedicalVaultScreenState extends ConsumerState<MedicalVaultScreen> {
             },
           ),
         ],
-        bottom: TabBar(
-          labelColor: theme.colorScheme.primary,
-          unselectedLabelColor: theme.colorScheme.onSurfaceVariant,
-          indicatorColor: theme.colorScheme.primary,
-          tabs: const [
-            Tab(text: 'Documents'),
-            Tab(text: 'Trends'),
-          ],
-        ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => UploadReportOverlay.show(context),
@@ -85,9 +75,7 @@ class _MedicalVaultScreenState extends ConsumerState<MedicalVaultScreen> {
           style: TextStyle(color: theme.colorScheme.onPrimary),
         ),
       ),
-      body: TabBarView(
-        children: [
-          recordsAsync.when(
+      body: recordsAsync.when(
         loading: () => Center(
           child: CircularProgressIndicator(color: theme.colorScheme.onSurface),
         ),
@@ -186,10 +174,6 @@ class _MedicalVaultScreenState extends ConsumerState<MedicalVaultScreen> {
             },
           );
         },
-      ),
-          const TrendsTab(),
-        ],
-      ),
       ),
     );
   }
