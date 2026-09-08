@@ -4,6 +4,8 @@ import 'dart:ui' as ui;
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'biomarker_verification_sheet.dart';
+import '../providers/medical_vault_providers.dart';
 import 'package:intl/intl.dart';
 import '../../data/models/medical_vault_models.dart';
 import '../providers/medical_vault_providers.dart';
@@ -12,6 +14,67 @@ import 'edit_report_overlay.dart';
 enum TimelinePosition { standalone, start, middle, end }
 
 class ReportTimelineNode extends ConsumerWidget {
+  Future<void> _extractAI(BuildContext context, WidgetRef ref, MedicalRecord report) async {
+    final fileUrls = report.files.map((f) => f.url).toList();
+    if (fileUrls.isEmpty) return;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        content: Row(
+          children: [
+            const CircularProgressIndicator(),
+            const SizedBox(width: 20),
+            const Expanded(child: Text("AI is reading your report. This usually takes 15-20 seconds...")),
+          ],
+        ),
+      ),
+    );
+
+    try {
+      final repo = ref.read(medicalVaultRepositoryProvider);
+      final extracted = await repo.extractBiomarkers(fileUrls);
+      
+      if (context.mounted) Navigator.pop(context); // close dialog
+
+      if (extracted.isNotEmpty && context.mounted) {
+        final saved = await showModalBottomSheet<bool>(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (ctx) => BiomarkerVerificationSheet(
+            initialBiomarkers: extracted,
+            recordId: report.id,
+            repository: repo,
+          ),
+        );
+        if (saved == true && context.mounted) {
+          ref.invalidate(medicalRecordsProvider);
+          ref.invalidate(biomarkerTrendsProvider);
+        }
+      } else if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No health metrics were found in this document.'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.pop(context); // close dialog
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('AI extraction failed: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    }
+  }
+
   final MedicalRecord report;
   final TimelinePosition position;
   final bool isSelected;
@@ -600,7 +663,9 @@ class ReportTimelineNode extends ConsumerWidget {
                         ),
                         padding: EdgeInsets.zero,
                         onSelected: (value) async {
-                          if (value == 'edit') {
+                          if (value == 'extract') {
+                            _extractAI(context, ref, report);
+                          } else if (value == 'edit') {
                             EditReportOverlay.show(context, report);
                           } else if (value == 'delete') {
                             final confirm = await showDialog<bool>(
@@ -635,6 +700,16 @@ class ReportTimelineNode extends ConsumerWidget {
                           }
                         },
                         itemBuilder: (context) => [
+                          const PopupMenuItem(
+                            value: 'extract',
+                            child: Row(
+                              children: [
+                                Icon(Icons.auto_awesome, color: Colors.purple, size: 20),
+                                SizedBox(width: 8),
+                                Text('Extract Data with AI', style: TextStyle(color: Colors.purple, fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                          ),
                           const PopupMenuItem(
                             value: 'edit',
                             child: Text('Edit Tags & Date'),
