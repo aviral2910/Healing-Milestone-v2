@@ -193,8 +193,9 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
                                   padding: const EdgeInsets.only(top: 2),
                                   child: Text(
                                     b.rawName,
-                                    style: theme.textTheme.labelSmall?.copyWith(
+                                    style: theme.textTheme.bodySmall?.copyWith(
                                       color: theme.colorScheme.onSurfaceVariant,
+                                      fontSize: 12,
                                     ),
                                   ),
                                 ),
