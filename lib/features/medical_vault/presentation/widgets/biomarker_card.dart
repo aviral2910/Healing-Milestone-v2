@@ -189,11 +189,12 @@ class _BiomarkerCardState extends State<BiomarkerCard> {
         return Text(
           displayValue,
           style: theme.textTheme.bodyMedium?.copyWith(
-            height: 1.5,
-            fontWeight: FontWeight.w300,
+            height: 1.6,
+            fontSize: 13,
+            fontWeight: FontWeight.w400,
             color: isAbnormal
-                ? Colors.red.shade400
-                : theme.colorScheme.onSurface.withValues(alpha: 0.75),
+                ? Colors.red.shade300
+                : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
           ),
         );
       }
