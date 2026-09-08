@@ -184,8 +184,62 @@ class _BiomarkerCardState extends State<BiomarkerCard> {
       }
 
       if (isTextResult) {
-        // If the text has list numbers (e.g., "1. ... 2. ..."), let's format it slightly better if possible,
-        // or just rely on a slightly larger line height for readability.
+        final lines = displayValue
+            .split('\n')
+            .where((l) => l.trim().isNotEmpty)
+            .toList();
+        final hasBullets =
+            lines.length > 1 ||
+            displayValue.trim().startsWith('-') ||
+            RegExp(r'^\d+\.\s').hasMatch(displayValue.trim());
+
+        if (hasBullets) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: lines.map((line) {
+              var cleanLine = line.trim();
+              if (cleanLine.startsWith('- ') || cleanLine.startsWith('* ')) {
+                cleanLine = cleanLine.substring(2).trim();
+              } else if (RegExp(r'^\d+\.\s').hasMatch(cleanLine)) {
+                cleanLine = cleanLine
+                    .replaceFirst(RegExp(r'^\d+\.\s'), '')
+                    .trim();
+              }
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(top: 6.0, right: 10.0),
+                      child: Icon(
+                        Icons.circle,
+                        size: 6,
+                        color: theme.colorScheme.onSurfaceVariant.withValues(
+                          alpha: 0.5,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Text(
+                        cleanLine,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          height: 1.5,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.85,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          );
+        }
+
         return Text(
           displayValue,
           style: theme.textTheme.bodyMedium?.copyWith(
