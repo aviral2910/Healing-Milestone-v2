@@ -14,9 +14,18 @@ import 'edit_report_overlay.dart';
 enum TimelinePosition { standalone, start, middle, end }
 
 class ReportTimelineNode extends ConsumerWidget {
-  Future<void> _extractAI(BuildContext context, WidgetRef ref, MedicalRecord report) async {
+  Future<void> _extractAI(
+    BuildContext context,
+    WidgetRef ref,
+    MedicalRecord report,
+  ) async {
     final fileUrls = report.files.map((f) => f.url).toList();
     if (fileUrls.isEmpty) return;
+
+    // Capture navigator and scaffold BEFORE the async gap to prevent context.mounted bugs if user scrolls
+    final navigator = Navigator.of(context, rootNavigator: true);
+    final scaffold = ScaffoldMessenger.of(context);
+    final mainContext = context;
 
     showDialog(
       context: context,
@@ -26,7 +35,11 @@ class ReportTimelineNode extends ConsumerWidget {
           children: [
             const CircularProgressIndicator(),
             const SizedBox(width: 20),
-            const Expanded(child: Text("AI is reading your report. This usually takes 15-20 seconds...")),
+            const Expanded(
+              child: Text(
+                "AI is reading your report. This usually takes 15-20 seconds...",
+              ),
+            ),
           ],
         ),
       ),
@@ -36,11 +49,12 @@ class ReportTimelineNode extends ConsumerWidget {
       final repo = ref.read(medicalVaultRepositoryProvider);
       final extracted = await repo.extractBiomarkers(fileUrls);
       
-      if (context.mounted) Navigator.pop(context); // close dialog
+      navigator.pop(); // Close the dialog using the captured root navigator
 
-      if (extracted.isNotEmpty && context.mounted) {
+      if (extracted.isNotEmpty) {
+        if (!mainContext.mounted) return;
         final saved = await showModalBottomSheet<bool>(
-          context: context,
+          context: mainContext,
           isScrollControlled: true,
           backgroundColor: Colors.transparent,
           builder: (ctx) => BiomarkerVerificationSheet(
@@ -49,12 +63,12 @@ class ReportTimelineNode extends ConsumerWidget {
             repository: repo,
           ),
         );
-        if (saved == true && context.mounted) {
+        if (saved == true && mainContext.mounted) {
           ref.invalidate(medicalRecordsProvider);
           ref.invalidate(biomarkerTrendsProvider);
         }
-      } else if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+      } else {
+        scaffold.showSnackBar(
           const SnackBar(
             content: Text('No health metrics were found in this document.'),
             backgroundColor: Colors.orange,
@@ -62,16 +76,14 @@ class ReportTimelineNode extends ConsumerWidget {
         );
       }
     } catch (e) {
-      if (context.mounted) {
-        Navigator.pop(context); // close dialog
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('AI extraction failed: $e'),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 4),
-          ),
-        );
-      }
+      navigator.pop(); // Close the dialog
+      scaffold.showSnackBar(
+        SnackBar(
+          content: Text('AI extraction failed: $e'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 4),
+        ),
+      );
     }
   }
 
@@ -209,10 +221,14 @@ class ReportTimelineNode extends ConsumerWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 20),
                 decoration: BoxDecoration(
-                  color: isSelected ? theme.colorScheme.primary.withValues(alpha: 0.05) : theme.colorScheme.surface,
+                  color: isSelected
+                      ? theme.colorScheme.primary.withValues(alpha: 0.05)
+                      : theme.colorScheme.surface,
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(
-                    color: isSelected ? theme.colorScheme.primary : theme.colorScheme.primary.withValues(alpha: 0.15),
+                    color: isSelected
+                        ? theme.colorScheme.primary
+                        : theme.colorScheme.primary.withValues(alpha: 0.15),
                     width: isSelected ? 2 : 1,
                   ),
                   boxShadow: [
@@ -246,50 +262,79 @@ class ReportTimelineNode extends ConsumerWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-
                         Padding(
-                          padding: const EdgeInsets.only(left: 20, right: 40, bottom: 8),
+                          padding: const EdgeInsets.only(
+                            left: 20,
+                            right: 40,
+                            bottom: 8,
+                          ),
                           child: report.category == 'prescription'
                               ? Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
                                   decoration: BoxDecoration(
-                                    color: theme.colorScheme.primary.withValues(alpha: 0.15),
+                                    color: theme.colorScheme.primary.withValues(
+                                      alpha: 0.15,
+                                    ),
                                     borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.3)),
+                                    border: Border.all(
+                                      color: theme.colorScheme.primary
+                                          .withValues(alpha: 0.3),
+                                    ),
                                   ),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Icon(Icons.medication_rounded, size: 14, color: theme.colorScheme.primary),
+                                      Icon(
+                                        Icons.medication_rounded,
+                                        size: 14,
+                                        color: theme.colorScheme.primary,
+                                      ),
                                       const SizedBox(width: 4),
                                       Text(
                                         'Prescription',
-                                        style: theme.textTheme.labelSmall?.copyWith(
-                                          fontWeight: FontWeight.bold,
-                                          color: theme.colorScheme.primary,
-                                        ),
+                                        style: theme.textTheme.labelSmall
+                                            ?.copyWith(
+                                              fontWeight: FontWeight.bold,
+                                              color: theme.colorScheme.primary,
+                                            ),
                                       ),
                                     ],
                                   ),
                                 )
                               : Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
                                   decoration: BoxDecoration(
-                                    color: theme.colorScheme.primary.withValues(alpha: 0.15),
+                                    color: theme.colorScheme.primary.withValues(
+                                      alpha: 0.15,
+                                    ),
                                     borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.3)),
+                                    border: Border.all(
+                                      color: theme.colorScheme.primary
+                                          .withValues(alpha: 0.3),
+                                    ),
                                   ),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Icon(Icons.description_rounded, size: 14, color: theme.colorScheme.primary),
+                                      Icon(
+                                        Icons.description_rounded,
+                                        size: 14,
+                                        color: theme.colorScheme.primary,
+                                      ),
                                       const SizedBox(width: 4),
                                       Text(
                                         'Report',
-                                        style: theme.textTheme.labelSmall?.copyWith(
-                                          fontWeight: FontWeight.bold,
-                                          color: theme.colorScheme.primary,
-                                        ),
+                                        style: theme.textTheme.labelSmall
+                                            ?.copyWith(
+                                              fontWeight: FontWeight.bold,
+                                              color: theme.colorScheme.primary,
+                                            ),
                                       ),
                                     ],
                                   ),
@@ -298,7 +343,9 @@ class ReportTimelineNode extends ConsumerWidget {
                         Padding(
                           padding: const EdgeInsets.only(left: 20, right: 40),
                           child: Text(
-                            DateFormat('MMM d, yyyy').format(report.encounterDate),
+                            DateFormat(
+                              'MMM d, yyyy',
+                            ).format(report.encounterDate),
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: theme.colorScheme.onSurfaceVariant,
                             ),
@@ -607,32 +654,45 @@ class ReportTimelineNode extends ConsumerWidget {
                               ],
                             );
                           },
-
                         ),
                         if (report.notes != null && report.notes!.isNotEmpty)
                           Padding(
-                            padding: const EdgeInsets.only(left: 20, right: 20, top: 16),
+                            padding: const EdgeInsets.only(
+                              left: 20,
+                              right: 20,
+                              top: 16,
+                            ),
                             child: Container(
                               width: double.infinity,
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                                color: theme.colorScheme.surfaceContainerHighest
+                                    .withValues(alpha: 0.5),
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: theme.dividerColor.withValues(alpha: 0.3)),
+                                border: Border.all(
+                                  color: theme.dividerColor.withValues(
+                                    alpha: 0.3,
+                                  ),
+                                ),
                               ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Row(
                                     children: [
-                                      Icon(Icons.notes_rounded, size: 14, color: theme.colorScheme.primary),
+                                      Icon(
+                                        Icons.notes_rounded,
+                                        size: 14,
+                                        color: theme.colorScheme.primary,
+                                      ),
                                       const SizedBox(width: 6),
                                       Text(
                                         'Notes',
-                                        style: theme.textTheme.labelMedium?.copyWith(
-                                          fontWeight: FontWeight.w600,
-                                          color: theme.colorScheme.primary,
-                                        ),
+                                        style: theme.textTheme.labelMedium
+                                            ?.copyWith(
+                                              fontWeight: FontWeight.w600,
+                                              color: theme.colorScheme.primary,
+                                            ),
                                       ),
                                     ],
                                   ),
@@ -651,79 +711,88 @@ class ReportTimelineNode extends ConsumerWidget {
                       ],
                     ),
                     if (showEditMenu)
-
                       Positioned(
                         top: -16,
                         right: 16,
                         child: PopupMenuButton<String>(
-                        icon: Icon(
-                          Icons.more_vert_rounded,
-                          size: 18,
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                        padding: EdgeInsets.zero,
-                        onSelected: (value) async {
-                          if (value == 'extract') {
-                            _extractAI(context, ref, report);
-                          } else if (value == 'edit') {
-                            EditReportOverlay.show(context, report);
-                          } else if (value == 'delete') {
-                            final confirm = await showDialog<bool>(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                title: const Text('Delete Report'),
-                                content: const Text(
-                                  'Are you sure you want to permanently delete this report and its files?',
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () =>
-                                        Navigator.pop(context, false),
-                                    child: const Text('Cancel'),
+                          icon: Icon(
+                            Icons.more_vert_rounded,
+                            size: 18,
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                          padding: EdgeInsets.zero,
+                          onSelected: (value) async {
+                            if (value == 'extract') {
+                              _extractAI(context, ref, report);
+                            } else if (value == 'edit') {
+                              EditReportOverlay.show(context, report);
+                            } else if (value == 'delete') {
+                              final confirm = await showDialog<bool>(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  title: const Text('Delete Report'),
+                                  content: const Text(
+                                    'Are you sure you want to permanently delete this report and its files?',
                                   ),
-                                  TextButton(
-                                    onPressed: () =>
-                                        Navigator.pop(context, true),
-                                    child: const Text(
-                                      'Delete',
-                                      style: TextStyle(color: Colors.red),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(context, false),
+                                      child: const Text('Cancel'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(context, true),
+                                      child: const Text(
+                                        'Delete',
+                                        style: TextStyle(color: Colors.red),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                              if (confirm == true) {
+                                ref
+                                    .read(medicalRecordsProvider.notifier)
+                                    .deleteReport(report.id);
+                              }
+                            }
+                          },
+                          itemBuilder: (context) => [
+                            const PopupMenuItem(
+                              value: 'extract',
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.auto_awesome,
+                                    color: Colors.purple,
+                                    size: 20,
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Extract Data with AI',
+                                    style: TextStyle(
+                                      color: Colors.purple,
+                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                 ],
                               ),
-                            );
-                            if (confirm == true) {
-                              ref
-                                  .read(medicalRecordsProvider.notifier)
-                                  .deleteReport(report.id);
-                            }
-                          }
-                        },
-                        itemBuilder: (context) => [
-                          const PopupMenuItem(
-                            value: 'extract',
-                            child: Row(
-                              children: [
-                                Icon(Icons.auto_awesome, color: Colors.purple, size: 20),
-                                SizedBox(width: 8),
-                                Text('Extract Data with AI', style: TextStyle(color: Colors.purple, fontWeight: FontWeight.bold)),
-                              ],
                             ),
-                          ),
-                          const PopupMenuItem(
-                            value: 'edit',
-                            child: Text('Edit Tags & Date'),
-                          ),
-                          const PopupMenuItem(
-                            value: 'delete',
-                            child: Text(
-                              'Delete',
-                              style: TextStyle(color: Colors.red),
+                            const PopupMenuItem(
+                              value: 'edit',
+                              child: Text('Edit Tags & Date'),
                             ),
-                          ),
-                        ],
+                            const PopupMenuItem(
+                              value: 'delete',
+                              child: Text(
+                                'Delete',
+                                style: TextStyle(color: Colors.red),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ),
@@ -753,8 +822,6 @@ class _ReportTimelinePainter extends CustomPainter {
       ..strokeWidth = 1.5
       ..style = PaintingStyle.stroke;
 
-    
-
     final glowPaint = Paint()
       ..color = dotColor.withValues(alpha: 0.15)
       ..style = PaintingStyle.fill;
@@ -765,7 +832,7 @@ class _ReportTimelinePainter extends CustomPainter {
 
     // Draw the glow circle for the icon
     canvas.drawCircle(Offset(centerX, dotY), 16, glowPaint);
-    
+
     // Draw the report icon
     final textPainter = TextPainter(textDirection: ui.TextDirection.ltr);
     textPainter.text = TextSpan(
@@ -779,8 +846,11 @@ class _ReportTimelinePainter extends CustomPainter {
     );
     textPainter.layout();
     textPainter.paint(
-      canvas, 
-      Offset(centerX - (textPainter.width / 2), dotY - (textPainter.height / 2)),
+      canvas,
+      Offset(
+        centerX - (textPainter.width / 2),
+        dotY - (textPainter.height / 2),
+      ),
     );
 
     // Draw lines based on position
