@@ -1,6 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../data/models/biomarker_model.dart';
 import 'medical_vault_providers.dart';
+import '../../data/repositories/medical_vault_repository.dart';
 
 part 'trends_provider.g.dart';
 

@@ -12,7 +12,7 @@ class TrendsTab extends ConsumerWidget {
     final trendsAsync = ref.watch(biomarkerTrendsProvider);
 
     return RefreshIndicator(
-      onRefresh: () => ref.read(biomarkerTrendsProvider.notifier).refresh(),
+      onRefresh: () async => ref.invalidate(biomarkerTrendsProvider),
       child: trendsAsync.when(
         data: (trends) {
           if (trends.isEmpty) {

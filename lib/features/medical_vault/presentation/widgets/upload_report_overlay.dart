@@ -9,6 +9,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:async';
 import 'package:intl/intl.dart';
 import '../providers/medical_vault_providers.dart';
+import '../providers/trends_provider.dart';
+
 import '../../data/repositories/medical_vault_repository.dart';
 import '../../../posts/data/api_hashtag_repository.dart';
 import 'package:healing_milestones/shared/widgets/app_loader.dart';
@@ -290,8 +292,8 @@ String _toTitleCase(String text) {
           );
           
           if (saved == true && mounted) {
-            ref.read(medicalRecordsProvider.notifier).refresh();
-            ref.read(biomarkerTrendsProvider.notifier).refresh();
+            ref.invalidate(medicalRecordsProvider);
+            ref.invalidate(biomarkerTrendsProvider);
           }
         }
       } catch (e) {

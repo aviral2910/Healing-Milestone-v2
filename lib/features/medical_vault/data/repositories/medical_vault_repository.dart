@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:healing_milestones/core/network/api_client.dart';
 import '../models/medical_vault_models.dart';
+import '../models/biomarker_model.dart';
 
 part 'medical_vault_repository.g.dart';
 
@@ -271,15 +272,9 @@ class MedicalVaultRepository {
     );
     return (response.data as List).map((e) => e.toString()).toList();
   }
-}
-
-@riverpod
-MedicalVaultRepository medicalVaultRepository(Ref ref) {
-  return MedicalVaultRepository(ref.watch(apiClientProvider));
-
   Future<List<BiomarkerModel>> extractBiomarkers(List<String> fileUrls) async {
     try {
-      final response = await _dio.post(
+      final response = await _apiClient.dio.post(
         '/api/reports/extract',
         data: {'fileUrls': fileUrls},
       );
@@ -295,7 +290,7 @@ MedicalVaultRepository medicalVaultRepository(Ref ref) {
 
   Future<List<BiomarkerModel>> saveBiomarkers(String recordId, List<BiomarkerModel> biomarkers) async {
     try {
-      final response = await _dio.post(
+      final response = await _apiClient.dio.post(
         '/api/reports/$recordId/biomarkers',
         data: biomarkers.map((b) => b.toJson()).toList(),
       );
@@ -311,7 +306,7 @@ MedicalVaultRepository medicalVaultRepository(Ref ref) {
 
   Future<List<BiomarkerTrendModel>> getBiomarkerTrends() async {
     try {
-      final response = await _dio.get('/api/reports/biomarkers/trends');
+      final response = await _apiClient.dio.get('/api/reports/biomarkers/trends');
       if (response.statusCode == 200) {
         final List<dynamic> data = response.data;
         return data.map((json) => BiomarkerTrendModel.fromJson(json)).toList();
@@ -321,4 +316,11 @@ MedicalVaultRepository medicalVaultRepository(Ref ref) {
       throw Exception('Load trends error: $e');
     }
   }
+}
+
+@riverpod
+MedicalVaultRepository medicalVaultRepository(Ref ref) {
+  return MedicalVaultRepository(ref.watch(apiClientProvider));
+
+
 }

@@ -4,7 +4,7 @@ part 'biomarker_model.freezed.dart';
 part 'biomarker_model.g.dart';
 
 @freezed
-class BiomarkerModel with _$BiomarkerModel {
+abstract class BiomarkerModel with _$BiomarkerModel {
   const factory BiomarkerModel({
     String? id,
     String? recordId,
@@ -24,7 +24,7 @@ class BiomarkerModel with _$BiomarkerModel {
 }
 
 @freezed
-class TrendDataPoint with _$TrendDataPoint {
+abstract class TrendDataPoint with _$TrendDataPoint {
   const factory TrendDataPoint({
     required DateTime date,
     required double value,
@@ -37,7 +37,7 @@ class TrendDataPoint with _$TrendDataPoint {
 }
 
 @freezed
-class BiomarkerTrendModel with _$BiomarkerTrendModel {
+abstract class BiomarkerTrendModel with _$BiomarkerTrendModel {
   const factory BiomarkerTrendModel({
     required String name,
     String? unit,
