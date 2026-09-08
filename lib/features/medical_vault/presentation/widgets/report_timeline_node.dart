@@ -687,33 +687,28 @@ class ReportTimelineNode extends ConsumerWidget {
                                           ],
                                         ),
                                         const SizedBox(height: 8),
-                                        Wrap(
-                                          spacing: 8,
-                                          runSpacing: 8,
+                                        Column(
                                           children: report.biomarkers.take(4).map((
                                             b,
                                           ) {
                                             final isAbnormal =
                                                 b.isAbnormal == true;
+                                            final displayValue =
+                                                b.valueNumeric?.toString() ??
+                                                b.valueText ??
+                                                '-';
+                                            final unit = b.rawUnit ?? '';
+
                                             return Container(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    horizontal: 10,
-                                                    vertical: 6,
-                                                  ),
+                                              margin: const EdgeInsets.only(
+                                                bottom: 10,
+                                              ),
                                               decoration: BoxDecoration(
-                                                color: isAbnormal
-                                                    ? Colors.red.withValues(
-                                                        alpha: 0.1,
-                                                      )
-                                                    : Theme.of(context)
-                                                          .colorScheme
-                                                          .surfaceContainerHighest
-                                                          .withValues(
-                                                            alpha: 0.5,
-                                                          ),
+                                                color: Theme.of(
+                                                  context,
+                                                ).colorScheme.surface,
                                                 borderRadius:
-                                                    BorderRadius.circular(8),
+                                                    BorderRadius.circular(16),
                                                 border: Border.all(
                                                   color: isAbnormal
                                                       ? Colors.red.withValues(
@@ -721,40 +716,135 @@ class ReportTimelineNode extends ConsumerWidget {
                                                         )
                                                       : Theme.of(context)
                                                             .colorScheme
-                                                            .outlineVariant,
+                                                            .primary
+                                                            .withValues(
+                                                              alpha: 0.3,
+                                                            ),
+                                                  width: 1,
                                                 ),
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: isAbnormal
+                                                        ? Colors.red.withValues(
+                                                            alpha: 0.05,
+                                                          )
+                                                        : Colors.black
+                                                              .withValues(
+                                                                alpha: 0.02,
+                                                              ),
+                                                    blurRadius: 6,
+                                                    offset: const Offset(0, 2),
+                                                  ),
+                                                ],
                                               ),
+                                              padding: const EdgeInsets.all(12),
                                               child: Row(
-                                                mainAxisSize: MainAxisSize.min,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.center,
                                                 children: [
-                                                  Text(
-                                                    b.aiPredictedStandardName ??
-                                                        b.rawName,
-                                                    style: TextStyle(
-                                                      fontSize: 12,
-                                                      fontWeight:
-                                                          FontWeight.w600,
+                                                  Container(
+                                                    padding:
+                                                        const EdgeInsets.all(8),
+                                                    decoration: BoxDecoration(
                                                       color: isAbnormal
-                                                          ? Colors.red.shade700
+                                                          ? Colors.red
+                                                                .withValues(
+                                                                  alpha: 0.1,
+                                                                )
                                                           : Theme.of(context)
                                                                 .colorScheme
-                                                                .onSurface,
+                                                                .primaryContainer
+                                                                .withValues(
+                                                                  alpha: 0.4,
+                                                                ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            10,
+                                                          ),
                                                     ),
-                                                  ),
-                                                  const SizedBox(width: 4),
-                                                  Text(
-                                                    '${b.valueNumeric != null ? b.valueNumeric : b.valueText ?? ''} ${b.rawUnit ?? ''}'
-                                                        .trim(),
-                                                    style: TextStyle(
-                                                      fontSize: 12,
-                                                      fontWeight:
-                                                          FontWeight.bold,
+                                                    child: Icon(
+                                                      isAbnormal
+                                                          ? Icons
+                                                                .warning_amber_rounded
+                                                          : Icons
+                                                                .science_rounded,
                                                       color: isAbnormal
-                                                          ? Colors.red.shade700
+                                                          ? Colors.red
                                                           : Theme.of(context)
                                                                 .colorScheme
                                                                 .primary,
+                                                      size: 18,
                                                     ),
+                                                  ),
+                                                  const SizedBox(width: 12),
+                                                  Expanded(
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Text(
+                                                          b.aiPredictedStandardName ??
+                                                              b.rawName,
+                                                          style: Theme.of(context)
+                                                              .textTheme
+                                                              .titleSmall
+                                                              ?.copyWith(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w600,
+                                                                fontSize: 14,
+                                                                color: Theme.of(
+                                                                  context,
+                                                                ).colorScheme.onSurface,
+                                                              ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 8),
+                                                  Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment.end,
+                                                    children: [
+                                                      Text(
+                                                        displayValue,
+                                                        textAlign:
+                                                            TextAlign.right,
+                                                        style: Theme.of(context)
+                                                            .textTheme
+                                                            .titleSmall
+                                                            ?.copyWith(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w700,
+                                                              fontSize: 16,
+                                                              color: isAbnormal
+                                                                  ? Colors.red
+                                                                  : Theme.of(
+                                                                          context,
+                                                                        )
+                                                                        .colorScheme
+                                                                        .primary,
+                                                            ),
+                                                      ),
+                                                      if (unit.isNotEmpty)
+                                                        Text(
+                                                          unit,
+                                                          style: Theme.of(context)
+                                                              .textTheme
+                                                              .bodySmall
+                                                              ?.copyWith(
+                                                                color: Theme.of(context)
+                                                                    .colorScheme
+                                                                    .onSurfaceVariant,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w500,
+                                                                fontSize: 11,
+                                                              ),
+                                                        ),
+                                                    ],
                                                   ),
                                                 ],
                                               ),
@@ -762,36 +852,72 @@ class ReportTimelineNode extends ConsumerWidget {
                                           }).toList(),
                                         ),
                                         if (report.biomarkers.length > 4) ...[
-                                          const SizedBox(height: 12),
-                                          TextButton(
-                                            onPressed: () {
-                                              Navigator.of(context).push(
-                                                MaterialPageRoute(
-                                                  builder: (ctx) =>
-                                                      ReportDetailScreen(
-                                                        report: report,
-                                                      ),
+                                          const SizedBox(height: 4),
+                                          SizedBox(
+                                            width: double.infinity,
+                                            child: FilledButton.tonal(
+                                              onPressed: () {
+                                                Navigator.of(context).push(
+                                                  MaterialPageRoute(
+                                                    builder: (ctx) =>
+                                                        ReportDetailScreen(
+                                                          report: report,
+                                                        ),
+                                                  ),
+                                                );
+                                              },
+                                              style: FilledButton.styleFrom(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      vertical: 12,
+                                                    ),
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
                                                 ),
-                                              );
-                                            },
-                                            child: Text(
-                                              'View Full Report (${report.biomarkers.length} Metrics) →',
+                                              ),
+                                              child: Text(
+                                                'View Full Report (${report.biomarkers.length} Metrics) →',
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  letterSpacing: 0.3,
+                                                ),
+                                              ),
                                             ),
                                           ),
                                         ] else ...[
-                                          const SizedBox(height: 12),
-                                          TextButton(
-                                            onPressed: () {
-                                              Navigator.of(context).push(
-                                                MaterialPageRoute(
-                                                  builder: (ctx) =>
-                                                      ReportDetailScreen(
-                                                        report: report,
-                                                      ),
+                                          const SizedBox(height: 4),
+                                          SizedBox(
+                                            width: double.infinity,
+                                            child: FilledButton.tonal(
+                                              onPressed: () {
+                                                Navigator.of(context).push(
+                                                  MaterialPageRoute(
+                                                    builder: (ctx) =>
+                                                        ReportDetailScreen(
+                                                          report: report,
+                                                        ),
+                                                  ),
+                                                );
+                                              },
+                                              style: FilledButton.styleFrom(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      vertical: 12,
+                                                    ),
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
                                                 ),
-                                              );
-                                            },
-                                            child: const Text('Edit Metrics →'),
+                                              ),
+                                              child: const Text(
+                                                'Edit Metrics →',
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  letterSpacing: 0.3,
+                                                ),
+                                              ),
+                                            ),
                                           ),
                                         ],
                                       ],
