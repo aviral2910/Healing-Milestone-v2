@@ -6,6 +6,7 @@ import 'dart:ui' as ui;
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'biomarker_card.dart';
 import '../screens/report_detail_screen.dart';
 import '../providers/medical_vault_providers.dart';
 import 'package:intl/intl.dart';
@@ -624,168 +625,15 @@ class ReportTimelineNode extends ConsumerWidget {
                                         ),
                                         const SizedBox(height: 8),
                                         Column(
-                                          children: report.biomarkers.take(4).map((
-                                            b,
-                                          ) {
-                                            final isAbnormal =
-                                                b.isAbnormal == true;
-                                            final displayValue =
-                                                b.valueNumeric?.toString() ??
-                                                b.valueText ??
-                                                '-';
-                                            final unit = b.rawUnit ?? '';
-
-                                            return Container(
-                                              margin: const EdgeInsets.only(
-                                                bottom: 10,
-                                              ),
-                                              decoration: BoxDecoration(
-                                                color: Theme.of(
-                                                  context,
-                                                ).colorScheme.surface,
-                                                borderRadius:
-                                                    BorderRadius.circular(16),
-                                                border: Border.all(
-                                                  color: isAbnormal
-                                                      ? Colors.red.withValues(
-                                                          alpha: 0.3,
-                                                        )
-                                                      : Theme.of(context)
-                                                            .colorScheme
-                                                            .primary
-                                                            .withValues(
-                                                              alpha: 0.3,
-                                                            ),
-                                                  width: 1,
-                                                ),
-                                                boxShadow: [
-                                                  BoxShadow(
-                                                    color: isAbnormal
-                                                        ? Colors.red.withValues(
-                                                            alpha: 0.05,
-                                                          )
-                                                        : Colors.black
-                                                              .withValues(
-                                                                alpha: 0.02,
-                                                              ),
-                                                    blurRadius: 6,
-                                                    offset: const Offset(0, 2),
-                                                  ),
-                                                ],
-                                              ),
-                                              padding: const EdgeInsets.all(12),
-                                              child: Row(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.center,
-                                                children: [
-                                                  Container(
-                                                    padding:
-                                                        const EdgeInsets.all(8),
-                                                    decoration: BoxDecoration(
-                                                      color: isAbnormal
-                                                          ? Colors.red
-                                                                .withValues(
-                                                                  alpha: 0.1,
-                                                                )
-                                                          : Theme.of(context)
-                                                                .colorScheme
-                                                                .primaryContainer
-                                                                .withValues(
-                                                                  alpha: 0.4,
-                                                                ),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            10,
-                                                          ),
-                                                    ),
-                                                    child: Icon(
-                                                      isAbnormal
-                                                          ? Icons
-                                                                .warning_amber_rounded
-                                                          : Icons
-                                                                .science_rounded,
-                                                      color: isAbnormal
-                                                          ? Colors.red
-                                                          : Theme.of(context)
-                                                                .colorScheme
-                                                                .primary,
-                                                      size: 18,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(width: 12),
-                                                  Expanded(
-                                                    child: Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                        Text(
-                                                          b.aiPredictedStandardName ??
-                                                              b.rawName,
-                                                          style: Theme.of(context)
-                                                              .textTheme
-                                                              .titleSmall
-                                                              ?.copyWith(
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w600,
-                                                                fontSize: 14,
-                                                                color: Theme.of(
-                                                                  context,
-                                                                ).colorScheme.onSurface,
-                                                              ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  const SizedBox(width: 8),
-                                                  Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment.end,
-                                                    children: [
-                                                      Text(
-                                                        displayValue,
-                                                        textAlign:
-                                                            TextAlign.right,
-                                                        style: Theme.of(context)
-                                                            .textTheme
-                                                            .titleSmall
-                                                            ?.copyWith(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w700,
-                                                              fontSize: 16,
-                                                              color: isAbnormal
-                                                                  ? Colors.red
-                                                                  : Theme.of(
-                                                                          context,
-                                                                        )
-                                                                        .colorScheme
-                                                                        .primary,
-                                                            ),
-                                                      ),
-                                                      if (unit.isNotEmpty)
-                                                        Text(
-                                                          unit,
-                                                          style: Theme.of(context)
-                                                              .textTheme
-                                                              .bodySmall
-                                                              ?.copyWith(
-                                                                color: Theme.of(context)
-                                                                    .colorScheme
-                                                                    .onSurfaceVariant,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w500,
-                                                                fontSize: 11,
-                                                              ),
-                                                        ),
-                                                    ],
-                                                  ),
-                                                ],
-                                              ),
-                                            );
-                                          }).toList(),
+                                          children: report.biomarkers
+                                              .take(4)
+                                              .map((b) {
+                                                return BiomarkerCard(
+                                                  biomarker: b,
+                                                  compact: true,
+                                                );
+                                              })
+                                              .toList(),
                                         ),
                                         if (report.biomarkers.length > 4) ...[
                                           const SizedBox(height: 4),
@@ -890,8 +738,7 @@ class ReportTimelineNode extends ConsumerWidget {
                                       horizontal: 20,
                                     ),
                                     child: InkWell(
-                                      onTap: () =>
-                                          _extractAI(context, report),
+                                      onTap: () => _extractAI(context, report),
                                       borderRadius: BorderRadius.circular(12),
                                       child: Container(
                                         width: double.infinity,
