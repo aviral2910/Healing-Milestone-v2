@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:healing_milestones/features/medical_vault/data/repositories/medical_vault_repository.dart';
+import 'package:healing_milestones/features/medical_vault/presentation/providers/trends_provider.dart';
 import '../../data/models/medical_vault_models.dart';
 import '../../data/models/biomarker_model.dart';
 import '../providers/medical_vault_providers.dart';
@@ -130,9 +132,7 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
                       border: Border.all(
                         color: isAbnormal
                             ? Colors.red.withValues(alpha: 0.3)
-                            : theme.colorScheme.outlineVariant.withValues(
-                                alpha: 0.5,
-                              ),
+                            : theme.colorScheme.primary.withValues(alpha: 0.5),
                         width: 1,
                       ),
                       boxShadow: [
