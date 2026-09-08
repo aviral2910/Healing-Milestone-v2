@@ -855,7 +855,7 @@ class ReportTimelineNode extends ConsumerWidget {
                                           const SizedBox(height: 4),
                                           SizedBox(
                                             width: double.infinity,
-                                            child: FilledButton.tonal(
+                                            child: OutlinedButton(
                                               onPressed: () {
                                                 Navigator.of(context).push(
                                                   MaterialPageRoute(
@@ -866,7 +866,17 @@ class ReportTimelineNode extends ConsumerWidget {
                                                   ),
                                                 );
                                               },
-                                              style: FilledButton.styleFrom(
+                                              style: OutlinedButton.styleFrom(
+                                                side: BorderSide(
+                                                  color: Theme.of(context)
+                                                      .colorScheme
+                                                      .primary
+                                                      .withValues(alpha: 0.5),
+                                                  width: 1.5,
+                                                ),
+                                                backgroundColor: Theme.of(
+                                                  context,
+                                                ).colorScheme.surface,
                                                 padding:
                                                     const EdgeInsets.symmetric(
                                                       vertical: 12,
@@ -878,9 +888,12 @@ class ReportTimelineNode extends ConsumerWidget {
                                               ),
                                               child: Text(
                                                 'View Full Report (${report.biomarkers.length} Metrics) →',
-                                                style: const TextStyle(
+                                                style: TextStyle(
                                                   fontWeight: FontWeight.bold,
                                                   letterSpacing: 0.3,
+                                                  color: Theme.of(
+                                                    context,
+                                                  ).colorScheme.primary,
                                                 ),
                                               ),
                                             ),
@@ -889,7 +902,7 @@ class ReportTimelineNode extends ConsumerWidget {
                                           const SizedBox(height: 4),
                                           SizedBox(
                                             width: double.infinity,
-                                            child: FilledButton.tonal(
+                                            child: OutlinedButton(
                                               onPressed: () {
                                                 Navigator.of(context).push(
                                                   MaterialPageRoute(
@@ -900,7 +913,17 @@ class ReportTimelineNode extends ConsumerWidget {
                                                   ),
                                                 );
                                               },
-                                              style: FilledButton.styleFrom(
+                                              style: OutlinedButton.styleFrom(
+                                                side: BorderSide(
+                                                  color: Theme.of(context)
+                                                      .colorScheme
+                                                      .primary
+                                                      .withValues(alpha: 0.5),
+                                                  width: 1.5,
+                                                ),
+                                                backgroundColor: Theme.of(
+                                                  context,
+                                                ).colorScheme.surface,
                                                 padding:
                                                     const EdgeInsets.symmetric(
                                                       vertical: 12,
