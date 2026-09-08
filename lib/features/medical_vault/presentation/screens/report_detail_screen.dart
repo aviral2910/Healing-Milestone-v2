@@ -73,295 +73,236 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor:
-          theme.colorScheme.surfaceContainer, // Slightly off-background color
+      backgroundColor: theme.colorScheme.surfaceContainer, // Soft background
       appBar: AppBar(
-        title: Text(
-          'Report Metrics',
-          style: theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+        title: Column(
+          children: [
+            const Text('Extracted Metrics'),
+            Text(
+              '${_biomarkers.length} results found',
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
         ),
+        centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
       ),
       body: _biomarkers.isEmpty
           ? const Center(child: Text("No data extracted yet."))
-          : SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: theme
-                      .colorScheme
-                      .surface, // Pure surface color for the card
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.03),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Header Row (Like the Beaufort scale or Teal table)
-                    Container(
-                      padding: const EdgeInsets.only(
-                        left: 20,
-                        right: 20,
-                        top: 20,
-                        bottom: 12,
+          : ListView.separated(
+              padding: const EdgeInsets.only(
+                left: 16,
+                right: 16,
+                top: 12,
+                bottom: 40,
+              ),
+              itemCount: _biomarkers.length,
+              separatorBuilder: (context, index) => const SizedBox(height: 12),
+              itemBuilder: (context, index) {
+                final b = _biomarkers[index];
+                final isEditing = _editingId == b.id;
+                final isAbnormal = b.isAbnormal == true;
+                final displayValue =
+                    b.valueNumeric?.toString() ?? b.valueText ?? '-';
+                final unit = b.rawUnit ?? '';
+                final isTextResult = b.resultType != 'numeric';
+
+                return InkWell(
+                  onTap: () {
+                    if (isEditing) return;
+                    setState(() {
+                      _editingId = b.id;
+                      _editController.text = displayValue;
+                    });
+                    Future.delayed(const Duration(milliseconds: 50), () {
+                      _editFocusNode.requestFocus();
+                    });
+                  },
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surface,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: isAbnormal
+                            ? Colors.red.withValues(alpha: 0.3)
+                            : theme.colorScheme.outlineVariant.withValues(
+                                alpha: 0.5,
+                              ),
+                        width: 1,
                       ),
-                      decoration: BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(
-                            color: theme.dividerColor.withValues(alpha: 0.1),
+                      boxShadow: [
+                        BoxShadow(
+                          color: isAbnormal
+                              ? Colors.red.withValues(alpha: 0.05)
+                              : Colors.black.withValues(alpha: 0.02),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // Left: Soft icon background
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: isAbnormal
+                                ? Colors.red.withValues(alpha: 0.1)
+                                : theme.colorScheme.primaryContainer.withValues(
+                                    alpha: 0.4,
+                                  ),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(
+                            isAbnormal
+                                ? Icons.warning_amber_rounded
+                                : Icons.science_rounded,
+                            color: isAbnormal
+                                ? Colors.red
+                                : theme.colorScheme.primary,
+                            size: 22,
                           ),
                         ),
-                      ),
-                      child: Row(
-                        children: [
-                          const SizedBox(width: 24), // space for the dot
-                          Expanded(
-                            flex: 2,
-                            child: Text(
-                              'Test Name',
-                              style: theme.textTheme.labelMedium?.copyWith(
-                                color: theme.colorScheme.onSurfaceVariant,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            flex: 1,
-                            child: Text(
-                              'Value',
-                              textAlign: TextAlign.right,
-                              style: theme.textTheme.labelMedium?.copyWith(
-                                color: theme.colorScheme.onSurfaceVariant,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Rows
-                    ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: _biomarkers.length,
-                      separatorBuilder: (context, index) => Divider(
-                        height: 1,
-                        thickness: 1,
-                        color: theme.dividerColor.withValues(alpha: 0.05),
-                        indent: 20,
-                        endIndent: 20,
-                      ),
-                      itemBuilder: (context, index) {
-                        final b = _biomarkers[index];
-                        final isEditing = _editingId == b.id;
-                        final isAbnormal = b.isAbnormal == true;
-                        final displayValue =
-                            b.valueNumeric?.toString() ?? b.valueText ?? '-';
-                        final unit = b.rawUnit ?? '';
+                        const SizedBox(width: 16),
 
-                        return InkWell(
-                          onTap: () {
-                            if (isEditing) return;
-                            setState(() {
-                              _editingId = b.id;
-                              _editController.text = displayValue;
-                            });
-                            Future.delayed(
-                              const Duration(milliseconds: 50),
-                              () {
-                                _editFocusNode.requestFocus();
-                              },
-                            );
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 16,
-                            ),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                // Left: Colored Dot (like Beaufort scale)
-                                Container(
-                                  width: 10,
-                                  height: 10,
-                                  margin: const EdgeInsets.only(right: 14),
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: isAbnormal
-                                        ? Colors.red
-                                        : theme.colorScheme.primary,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color:
-                                            (isAbnormal
-                                                    ? Colors.red
-                                                    : theme.colorScheme.primary)
-                                                .withValues(alpha: 0.3),
-                                        blurRadius: 4,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ],
+                        // Middle: Name
+                        Expanded(
+                          flex: 3,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                b.aiPredictedStandardName ?? b.rawName,
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: isAbnormal
+                                      ? Colors.red.shade700
+                                      : theme.colorScheme.onSurface,
+                                ),
+                              ),
+                              if (b.aiPredictedStandardName != null &&
+                                  b.aiPredictedStandardName != b.rawName)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 2),
+                                  child: Text(
+                                    b.rawName,
+                                    style: theme.textTheme.labelSmall?.copyWith(
+                                      color: theme.colorScheme.onSurfaceVariant,
+                                    ),
                                   ),
                                 ),
-                                // Middle: Names
-                                Expanded(
-                                  flex: 2,
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+
+                        // Right: Value/Editing
+                        Expanded(
+                          flex: 2,
+                          child: isEditing
+                              ? Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    Expanded(
+                                      child: TextField(
+                                        controller: _editController,
+                                        focusNode: _editFocusNode,
+                                        // Use regular keyboard if result is text, otherwise number keyboard
+                                        keyboardType: isTextResult
+                                            ? TextInputType.text
+                                            : const TextInputType.numberWithOptions(
+                                                decimal: true,
+                                              ),
+                                        textAlign: TextAlign.right,
+                                        style: theme.textTheme.titleMedium
+                                            ?.copyWith(
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                        decoration: InputDecoration(
+                                          isDense: true,
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
+                                                vertical: 8,
+                                                horizontal: 8,
+                                              ),
+                                          filled: true,
+                                          fillColor: theme
+                                              .colorScheme
+                                              .surfaceContainerHighest
+                                              .withValues(alpha: 0.5),
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
+                                            borderSide: BorderSide.none,
+                                          ),
+                                        ),
+                                        onSubmitted: (_) => _saveEdit(b, index),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    GestureDetector(
+                                      onTap: () => _saveEdit(b, index),
+                                      child: Container(
+                                        padding: const EdgeInsets.all(4),
+                                        decoration: BoxDecoration(
+                                          color: Colors.green.withValues(
+                                            alpha: 0.1,
+                                          ),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(
+                                          Icons.check,
+                                          color: Colors.green,
+                                          size: 20,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              : Align(
+                                  alignment: Alignment.centerRight,
                                   child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                    crossAxisAlignment: CrossAxisAlignment.end,
                                     children: [
                                       Text(
-                                        b.aiPredictedStandardName ?? b.rawName,
-                                        style: theme.textTheme.bodyLarge
+                                        displayValue,
+                                        textAlign: TextAlign.right,
+                                        style: theme.textTheme.titleLarge
                                             ?.copyWith(
-                                              fontWeight: FontWeight.w600,
-                                              fontSize: 15,
-                                              color:
-                                                  theme.colorScheme.onSurface,
+                                              fontWeight: FontWeight.w800,
+                                              color: isAbnormal
+                                                  ? Colors.red
+                                                  : theme.colorScheme.primary,
                                             ),
                                       ),
-                                      if (b.aiPredictedStandardName != null &&
-                                          b.aiPredictedStandardName !=
-                                              b.rawName)
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                            top: 2,
-                                          ),
-                                          child: Text(
-                                            b.rawName,
-                                            style: theme.textTheme.bodySmall
-                                                ?.copyWith(
-                                                  color: theme
-                                                      .colorScheme
-                                                      .onSurfaceVariant,
-                                                  fontSize: 12,
-                                                ),
-                                          ),
+                                      if (unit.isNotEmpty)
+                                        Text(
+                                          unit,
+                                          style: theme.textTheme.labelMedium
+                                              ?.copyWith(
+                                                color: theme
+                                                    .colorScheme
+                                                    .onSurfaceVariant,
+                                                fontWeight: FontWeight.w600,
+                                              ),
                                         ),
                                     ],
                                   ),
                                 ),
-                                // Right: Value
-                                Expanded(
-                                  flex: 1,
-                                  child: isEditing
-                                      ? Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.end,
-                                          children: [
-                                            Expanded(
-                                              child: TextField(
-                                                controller: _editController,
-                                                focusNode: _editFocusNode,
-                                                keyboardType:
-                                                    const TextInputType.numberWithOptions(
-                                                      decimal: true,
-                                                    ),
-                                                textAlign: TextAlign.right,
-                                                style: theme.textTheme.bodyLarge
-                                                    ?.copyWith(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
-                                                decoration: InputDecoration(
-                                                  isDense: true,
-                                                  contentPadding:
-                                                      const EdgeInsets.symmetric(
-                                                        vertical: 6,
-                                                        horizontal: 8,
-                                                      ),
-                                                  filled: true,
-                                                  fillColor: theme
-                                                      .colorScheme
-                                                      .surfaceContainerHighest
-                                                      .withValues(alpha: 0.3),
-                                                  border: OutlineInputBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          6,
-                                                        ),
-                                                    borderSide: BorderSide.none,
-                                                  ),
-                                                ),
-                                                onSubmitted: (_) =>
-                                                    _saveEdit(b, index),
-                                              ),
-                                            ),
-                                            const SizedBox(width: 4),
-                                            GestureDetector(
-                                              onTap: () => _saveEdit(b, index),
-                                              child: const Icon(
-                                                Icons.check_circle,
-                                                color: Colors.green,
-                                                size: 20,
-                                              ),
-                                            ),
-                                          ],
-                                        )
-                                      : Align(
-                                          alignment: Alignment.centerRight,
-                                          child: RichText(
-                                            textAlign: TextAlign.right,
-                                            text: TextSpan(
-                                              children: [
-                                                TextSpan(
-                                                  text: displayValue,
-                                                  style: theme
-                                                      .textTheme
-                                                      .titleMedium
-                                                      ?.copyWith(
-                                                        fontWeight:
-                                                            FontWeight.w700,
-                                                        fontSize: 16,
-                                                        color: isAbnormal
-                                                            ? Colors.red
-                                                            : theme
-                                                                  .colorScheme
-                                                                  .onSurface,
-                                                      ),
-                                                ),
-                                                if (unit.isNotEmpty)
-                                                  TextSpan(
-                                                    text: ' $unit',
-                                                    style: theme
-                                                        .textTheme
-                                                        .bodySmall
-                                                        ?.copyWith(
-                                                          color: theme
-                                                              .colorScheme
-                                                              .onSurfaceVariant,
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                        ),
-                                                  ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 8),
-                  ],
-                ),
-              ),
+                  ),
+                );
+              },
             ),
     );
   }
