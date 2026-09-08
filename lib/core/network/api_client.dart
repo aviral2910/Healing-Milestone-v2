@@ -16,8 +16,8 @@ class ApiClient {
     : _dio = Dio(
         BaseOptions(
           baseUrl: baseUrl,
-          connectTimeout: const Duration(seconds: 15),
-          receiveTimeout: const Duration(seconds: 15),
+          connectTimeout: const Duration(seconds: 60), // Increased for AI extraction
+          receiveTimeout: const Duration(seconds: 60), // Increased from 15 to 60 for AI extraction
           sendTimeout: const Duration(seconds: 15),
         ),
       ) {
