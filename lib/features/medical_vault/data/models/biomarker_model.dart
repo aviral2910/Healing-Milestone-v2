@@ -28,8 +28,8 @@ abstract class TrendDataPoint with _$TrendDataPoint {
   const factory TrendDataPoint({
     required DateTime date,
     required double value,
-    bool? isAbnormal,
-    required String recordId,
+    @JsonKey(name: 'is_abnormal', readValue: _readIsAbnormal) bool? isAbnormal,
+    @JsonKey(name: 'record_id', readValue: _readRecordId) required String recordId,
   }) = _TrendDataPoint;
 
   factory TrendDataPoint.fromJson(Map<String, dynamic> json) =>
@@ -41,9 +41,14 @@ abstract class BiomarkerTrendModel with _$BiomarkerTrendModel {
   const factory BiomarkerTrendModel({
     required String name,
     String? unit,
-    @Default([]) List<TrendDataPoint> dataPoints,
+    @JsonKey(name: 'data_points', readValue: _readDataPoints) @Default([]) List<TrendDataPoint> dataPoints,
   }) = _BiomarkerTrendModel;
 
   factory BiomarkerTrendModel.fromJson(Map<String, dynamic> json) =>
       _$BiomarkerTrendModelFromJson(json);
 }
+
+// Helper to read both camelCase and snake_case safely
+bool? _readIsAbnormal(Map p1, String p2) => p1['isAbnormal'] ?? p1['is_abnormal'];
+String _readRecordId(Map p1, String p2) => p1['recordId'] ?? p1['record_id'];
+List _readDataPoints(Map p1, String p2) => p1['dataPoints'] ?? p1['data_points'] ?? [];
