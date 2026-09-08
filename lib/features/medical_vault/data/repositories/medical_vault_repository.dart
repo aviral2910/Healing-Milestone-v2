@@ -276,4 +276,49 @@ class MedicalVaultRepository {
 @riverpod
 MedicalVaultRepository medicalVaultRepository(Ref ref) {
   return MedicalVaultRepository(ref.watch(apiClientProvider));
+
+  Future<List<BiomarkerModel>> extractBiomarkers(List<String> fileUrls) async {
+    try {
+      final response = await _dio.post(
+        '/api/reports/extract',
+        data: {'fileUrls': fileUrls},
+      );
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data;
+        return data.map((json) => BiomarkerModel.fromJson(json)).toList();
+      }
+      throw Exception('Failed to extract biomarkers: ${response.statusCode}');
+    } catch (e) {
+      throw Exception('Extraction error: $e');
+    }
+  }
+
+  Future<List<BiomarkerModel>> saveBiomarkers(String recordId, List<BiomarkerModel> biomarkers) async {
+    try {
+      final response = await _dio.post(
+        '/api/reports/$recordId/biomarkers',
+        data: biomarkers.map((b) => b.toJson()).toList(),
+      );
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data;
+        return data.map((json) => BiomarkerModel.fromJson(json)).toList();
+      }
+      throw Exception('Failed to save biomarkers: ${response.statusCode}');
+    } catch (e) {
+      throw Exception('Save error: $e');
+    }
+  }
+
+  Future<List<BiomarkerTrendModel>> getBiomarkerTrends() async {
+    try {
+      final response = await _dio.get('/api/reports/biomarkers/trends');
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data;
+        return data.map((json) => BiomarkerTrendModel.fromJson(json)).toList();
+      }
+      throw Exception('Failed to load trends: ${response.statusCode}');
+    } catch (e) {
+      throw Exception('Load trends error: $e');
+    }
+  }
 }

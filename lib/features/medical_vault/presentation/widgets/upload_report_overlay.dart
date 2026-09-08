@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'biomarker_verification_sheet.dart';
+
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -258,18 +260,46 @@ String _toTitleCase(String text) {
     setState(() => _isUploading = true);
 
     try {
-      await ref.read(medicalRecordsProvider.notifier).uploadReport(
-        
+      final newRecord = await ref.read(medicalRecordsProvider.notifier).uploadReport(
         files: _selectedFiles,
         reportTypes: _reportTypes,
         encounterDate: _encounterDate,
         category: _category,
         notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
-
       );
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Report uploaded securely! Analyzing with AI...')));
+      }
+      
+      try {
+        final repo = ref.read(medicalVaultRepositoryProvider);
+        final fileUrls = newRecord.files.map((f) => f.url).toList();
+        final extractedBiomarkers = await repo.extractBiomarkers(fileUrls);
+        
+        if (extractedBiomarkers.isNotEmpty && mounted) {
+          final saved = await showModalBottomSheet<bool>(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder: (ctx) => BiomarkerVerificationSheet(
+              initialBiomarkers: extractedBiomarkers,
+              recordId: newRecord.id,
+              repository: repo,
+            ),
+          );
+          
+          if (saved == true && mounted) {
+            ref.read(medicalRecordsProvider.notifier).refresh();
+            ref.read(biomarkerTrendsProvider.notifier).refresh();
+          }
+        }
+      } catch (e) {
+        // AI extraction failed, but upload succeeded, so it's fine
+      }
+      
       if (mounted) {
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Report uploaded securely!')));
       }
     } catch (e) {
       if (mounted) {

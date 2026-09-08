@@ -61,7 +61,7 @@ class MedicalRecordsNotifier extends _$MedicalRecordsNotifier {
     }
   }
 
-  Future<void> uploadReport({
+  Future<MedicalRecord> uploadReport({
     required List<PlatformFile> files,
     required List<String> reportTypes,
     required DateTime encounterDate,
@@ -80,6 +80,7 @@ class MedicalRecordsNotifier extends _$MedicalRecordsNotifier {
       final currentList = state.value ?? [];
       return [newRecord, ...currentList];
     });
+    return state.value!.first;
   }
 
   Future<void> updateReport({

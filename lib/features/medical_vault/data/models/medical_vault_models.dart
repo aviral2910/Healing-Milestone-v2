@@ -1,5 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../../journey/data/models/journey_models.dart';
+import 'biomarker_model.dart';
+
 
 part 'medical_vault_models.freezed.dart';
 part 'medical_vault_models.g.dart';
@@ -26,6 +28,7 @@ abstract class MedicalRecord with _$MedicalRecord {
     required List<String> reportTypes,
     required List<MedicalRecordFile> files,
     required DateTime createdAt,
+    @Default([]) List<BiomarkerModel> biomarkers,
   }) = _MedicalRecord;
 
   factory MedicalRecord.fromJson(Map<String, dynamic> json) => _$MedicalRecordFromJson(json);

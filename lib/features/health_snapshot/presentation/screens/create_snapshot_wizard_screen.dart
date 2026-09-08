@@ -52,10 +52,14 @@ class _CreateSnapshotWizardScreenState
       return;
     }
 
-    if (_currentPage == 2 && _selectedJourneyIds.isEmpty && _selectedReportIds.isEmpty) {
+    if (_currentPage == 2 &&
+        _selectedJourneyIds.isEmpty &&
+        _selectedReportIds.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please select at least one journey or medical record to create a snapshot.'),
+          content: Text(
+            'Please select at least one journey or medical record to create a snapshot.',
+          ),
         ),
       );
       return;
@@ -282,7 +286,8 @@ class _CreateSnapshotWizardScreenState
                                     border: Border.all(
                                       color: tempFilterDate != null
                                           ? theme.colorScheme.primary
-                                          : theme.colorScheme.primary.withValues(alpha: 0.2),
+                                          : theme.colorScheme.primary
+                                                .withValues(alpha: 0.2),
                                       width: 1.5,
                                     ),
                                   ),
@@ -392,7 +397,8 @@ class _CreateSnapshotWizardScreenState
                                           border: Border.all(
                                             color: isSelected
                                                 ? theme.colorScheme.primary
-                                                : theme.colorScheme.primary.withValues(alpha: 0.2),
+                                                : theme.colorScheme.primary
+                                                      .withValues(alpha: 0.2),
                                             width: 1.5,
                                           ),
                                         ),
@@ -612,8 +618,9 @@ class _CreateSnapshotWizardScreenState
                         'Merge your journey and medical records into one timeline.',
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant.withValues(
-                            alpha: 0.8,
+                            alpha: 0.6,
                           ),
+                          fontSize: 12,
                           height: 1.4,
                           fontWeight: FontWeight.w500,
                         ),
@@ -761,7 +768,12 @@ class _CreateSnapshotWizardScreenState
               padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
               child: Text(
                 'Choose which journeys to include in this snapshot. You can skip this step if you only want to share medical records.',
-                style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+                style: TextStyle(
+                  color: theme.colorScheme.onSurfaceVariant.withValues(
+                    alpha: 0.6,
+                  ),
+                  fontSize: 12,
+                ),
               ),
             ),
             Expanded(
@@ -1024,13 +1036,13 @@ class _CreateSnapshotWizardScreenState
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Material(
-                        color: _isAllSelected 
+                        color: _isAllSelected
                             ? theme.colorScheme.primary.withValues(alpha: 0.1)
                             : Colors.transparent,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
                           side: BorderSide(
-                            color: _isAllSelected 
+                            color: _isAllSelected
                                 ? theme.colorScheme.primary
                                 : theme.dividerColor,
                           ),
@@ -1041,18 +1053,27 @@ class _CreateSnapshotWizardScreenState
                             final newVal = !_isAllSelected;
                             if (newVal) {
                               setState(() {
-                                _selectedReportIds.addAll(records.map((r) => r.id));
+                                _selectedReportIds.addAll(
+                                  records.map((r) => r.id),
+                                );
                                 _isAllSelected = true;
                               });
                             } else {
                               setState(() {
-                                _selectedReportIds.removeAll(records.map((r) => r.id));
+                                _selectedReportIds.removeAll(
+                                  records.map((r) => r.id),
+                                );
                                 _isAllSelected = false;
                               });
                             }
                           },
                           child: Padding(
-                            padding: const EdgeInsets.only(left: 0, right: 10, top: 0, bottom: 0),
+                            padding: const EdgeInsets.only(
+                              left: 0,
+                              right: 10,
+                              top: 0,
+                              bottom: 0,
+                            ),
                             child: Row(
                               children: [
                                 Transform.scale(
@@ -1060,7 +1081,8 @@ class _CreateSnapshotWizardScreenState
                                   child: Checkbox(
                                     value: _isAllSelected,
                                     activeColor: theme.colorScheme.primary,
-                                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                    materialTapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
                                     visualDensity: VisualDensity.compact,
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(4),
@@ -1068,12 +1090,16 @@ class _CreateSnapshotWizardScreenState
                                     onChanged: (val) {
                                       if (val == true) {
                                         setState(() {
-                                          _selectedReportIds.addAll(records.map((r) => r.id));
+                                          _selectedReportIds.addAll(
+                                            records.map((r) => r.id),
+                                          );
                                           _isAllSelected = true;
                                         });
                                       } else {
                                         setState(() {
-                                          _selectedReportIds.removeAll(records.map((r) => r.id));
+                                          _selectedReportIds.removeAll(
+                                            records.map((r) => r.id),
+                                          );
                                           _isAllSelected = false;
                                         });
                                       }
@@ -1086,8 +1112,8 @@ class _CreateSnapshotWizardScreenState
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 12,
-                                    color: _isAllSelected 
-                                        ? theme.colorScheme.primary 
+                                    color: _isAllSelected
+                                        ? theme.colorScheme.primary
                                         : theme.colorScheme.onSurfaceVariant,
                                   ),
                                 ),
@@ -1106,16 +1132,23 @@ class _CreateSnapshotWizardScreenState
                             constraints: const BoxConstraints(),
                             icon: Icon(
                               Icons.filter_list_rounded,
-                              color: (_filterDate != null || _filterTags.isNotEmpty) 
-                                ? theme.colorScheme.primary 
-                                : theme.colorScheme.onSurfaceVariant,
+                              color:
+                                  (_filterDate != null ||
+                                      _filterTags.isNotEmpty)
+                                  ? theme.colorScheme.primary
+                                  : theme.colorScheme.onSurfaceVariant,
                             ),
                             style: IconButton.styleFrom(
-                              backgroundColor: (_filterDate != null || _filterTags.isNotEmpty)
-                                ? theme.colorScheme.primary.withValues(alpha: 0.1)
-                                : Colors.transparent,
+                              backgroundColor:
+                                  (_filterDate != null ||
+                                      _filterTags.isNotEmpty)
+                                  ? theme.colorScheme.primary.withValues(
+                                      alpha: 0.1,
+                                    )
+                                  : Colors.transparent,
                             ),
-                            onPressed: () => _showFilterBottomSheet(context, theme),
+                            onPressed: () =>
+                                _showFilterBottomSheet(context, theme),
                           ),
                           if (_filterDate != null || _filterTags.isNotEmpty)
                             Positioned(
@@ -1126,7 +1159,10 @@ class _CreateSnapshotWizardScreenState
                                 decoration: BoxDecoration(
                                   color: theme.colorScheme.primary,
                                   shape: BoxShape.circle,
-                                  border: Border.all(color: theme.colorScheme.surface, width: 2),
+                                  border: Border.all(
+                                    color: theme.colorScheme.surface,
+                                    width: 2,
+                                  ),
                                 ),
                               ),
                             ),
