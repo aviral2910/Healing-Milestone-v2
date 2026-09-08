@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'biomarker_verification_sheet.dart';
 
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:file_picker/file_picker.dart';
@@ -31,12 +30,21 @@ class UploadReportOverlay extends ConsumerStatefulWidget {
       },
       transitionBuilder: (context, animation, secondaryAnimation, child) {
         return FadeTransition(
-          opacity: CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+          opacity: CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOutCubic,
+          ),
           child: SlideTransition(
-            position: Tween<Offset>(
-              begin: const Offset(0, 0.05),
-              end: Offset.zero,
-            ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
+            position:
+                Tween<Offset>(
+                  begin: const Offset(0, 0.05),
+                  end: Offset.zero,
+                ).animate(
+                  CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.easeOutCubic,
+                  ),
+                ),
             child: child,
           ),
         );
@@ -45,18 +53,22 @@ class UploadReportOverlay extends ConsumerStatefulWidget {
   }
 
   @override
-  ConsumerState<UploadReportOverlay> createState() => _UploadReportOverlayState();
+  ConsumerState<UploadReportOverlay> createState() =>
+      _UploadReportOverlayState();
 }
 
 class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
-
-String _toTitleCase(String text) {
-  if (text.trim().isEmpty) return '';
-  return text.trim().split(RegExp(r'\s+')).map((word) {
-    if (word.isEmpty) return '';
-    return word[0].toUpperCase() + word.substring(1).toLowerCase();
-  }).join(' ');
-}
+  String _toTitleCase(String text) {
+    if (text.trim().isEmpty) return '';
+    return text
+        .trim()
+        .split(RegExp(r'\s+'))
+        .map((word) {
+          if (word.isEmpty) return '';
+          return word[0].toUpperCase() + word.substring(1).toLowerCase();
+        })
+        .join(' ');
+  }
 
   String _category = 'report';
   final TextEditingController _notesController = TextEditingController();
@@ -87,7 +99,6 @@ String _toTitleCase(String text) {
     });
   }
 
-
   Future<void> _fetchTags(String query) async {
     if (query.trim().isEmpty) {
       if (mounted) {
@@ -99,7 +110,7 @@ String _toTitleCase(String text) {
       }
       return;
     }
-    
+
     setState(() => _isLoadingTags = true);
     try {
       List<String> tags;
@@ -134,11 +145,15 @@ String _toTitleCase(String text) {
     if (custom.isEmpty) return;
 
     // Check if it matches a suggested type case-insensitively
-    final suggestedMatch = _suggestedTypes.where((s) => s.toLowerCase() == custom.toLowerCase()).toList();
+    final suggestedMatch = _suggestedTypes
+        .where((s) => s.toLowerCase() == custom.toLowerCase())
+        .toList();
     final typeToAdd = suggestedMatch.isNotEmpty ? suggestedMatch.first : custom;
 
     // Check if we already have it in the selected list
-    final alreadyAdded = _reportTypes.any((t) => t.toLowerCase() == typeToAdd.toLowerCase());
+    final alreadyAdded = _reportTypes.any(
+      (t) => t.toLowerCase() == typeToAdd.toLowerCase(),
+    );
 
     setState(() {
       if (!alreadyAdded) {
@@ -168,62 +183,83 @@ String _toTitleCase(String text) {
         barrierColor: Colors.black.withValues(alpha: 0.9),
         barrierDismissible: true,
         pageBuilder: (context, _, __) {
-        return Scaffold(
-          backgroundColor: Colors.transparent,
-          body: Stack(
-            children: [
-              Positioned.fill(
-                child: Builder(
-                  builder: (context) {
-                    final file = _selectedFiles[initialIndex];
-                    final isImage = file.name.toLowerCase().endsWith('.jpg') || 
-                                    file.name.toLowerCase().endsWith('.jpeg') || 
-                                    file.name.toLowerCase().endsWith('.png');
-                    if (isImage && file.path != null) {
-                      return InteractiveViewer(
-                        minScale: 1.0,
-                        maxScale: 5.0,
-                        panEnabled: true,
-                        scaleEnabled: true,
-                        child: Center(
-                          child: Image.file(File(file.path!), fit: BoxFit.contain),
+          return Scaffold(
+            backgroundColor: Colors.transparent,
+            body: Stack(
+              children: [
+                Positioned.fill(
+                  child: Builder(
+                    builder: (context) {
+                      final file = _selectedFiles[initialIndex];
+                      final isImage =
+                          file.name.toLowerCase().endsWith('.jpg') ||
+                          file.name.toLowerCase().endsWith('.jpeg') ||
+                          file.name.toLowerCase().endsWith('.png');
+                      if (isImage && file.path != null) {
+                        return InteractiveViewer(
+                          minScale: 1.0,
+                          maxScale: 5.0,
+                          panEnabled: true,
+                          scaleEnabled: true,
+                          child: Center(
+                            child: Image.file(
+                              File(file.path!),
+                              fit: BoxFit.contain,
+                            ),
+                          ),
+                        );
+                      }
+                      if (file.path != null &&
+                          file.name.toLowerCase().endsWith('.pdf')) {
+                        return SfPdfViewer.file(
+                          File(file.path!),
+                          canShowScrollHead: false,
+                          canShowScrollStatus: false,
+                          pageSpacing: 2,
+                        );
+                      }
+
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.insert_drive_file_rounded,
+                              size: 80,
+                              color: Colors.white.withValues(alpha: 0.5),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              file.name,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
                         ),
                       );
-                    }
-                    if (file.path != null && file.name.toLowerCase().endsWith('.pdf')) {
-                      return SfPdfViewer.file(
-                        File(file.path!),
-                        canShowScrollHead: false,
-                        canShowScrollStatus: false,
-                        pageSpacing: 2,
-                      );
-                    }
-                    
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.insert_drive_file_rounded, size: 80, color: Colors.white.withValues(alpha: 0.5)),
-                          const SizedBox(height: 16),
-                          Text(file.name, style: const TextStyle(color: Colors.white, fontSize: 16)),
-                        ],
-                      ),
-                    );
-                  }
+                    },
+                  ),
                 ),
-              ),
-              Positioned(
-                top: MediaQuery.of(context).padding.top + 16,
-                right: 16,
-                child: IconButton(
-                  icon: const Icon(Icons.close_rounded, color: Colors.white, size: 30),
-                  onPressed: () => Navigator.pop(context),
+                Positioned(
+                  top: MediaQuery.of(context).padding.top + 16,
+                  right: 16,
+                  child: IconButton(
+                    icon: const Icon(
+                      Icons.close_rounded,
+                      color: Colors.white,
+                      size: 30,
+                    ),
+                    onPressed: () => Navigator.pop(context),
+                  ),
                 ),
-              ),            ],
-          ),
-        );
-      },
-    ));
+              ],
+            ),
+          );
+        },
+      ),
+    );
   }
 
   void _removeFile(int index) {
@@ -251,34 +287,46 @@ String _toTitleCase(String text) {
       _addCustomType(_customTypeController.text);
     }
     if (_reportTypes.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select at least one report type')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select at least one report type')),
+      );
       return;
     }
     if (_selectedFiles.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select at least one file')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select at least one file')),
+      );
       return;
     }
 
     setState(() => _isUploading = true);
 
     try {
-      final newRecord = await ref.read(medicalRecordsProvider.notifier).uploadReport(
-        files: _selectedFiles,
-        reportTypes: _reportTypes,
-        encounterDate: _encounterDate,
-        category: _category,
-        notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
-      );
-      
+      final newRecord = await ref
+          .read(medicalRecordsProvider.notifier)
+          .uploadReport(
+            files: _selectedFiles,
+            reportTypes: _reportTypes,
+            encounterDate: _encounterDate,
+            category: _category,
+            notes: _notesController.text.trim().isEmpty
+                ? null
+                : _notesController.text.trim(),
+          );
+
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Uploading report...')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Uploading report...')));
       }
-      
+
       // Extraction is now manual via the timeline node menu
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Report uploaded successfully! Use the menu on the report to extract data.'),
+            content: Text(
+              'Report uploaded successfully! Use the menu on the report to extract data.',
+            ),
             backgroundColor: Colors.green,
           ),
         );
@@ -287,7 +335,9 @@ String _toTitleCase(String text) {
     } catch (e) {
       if (mounted) {
         setState(() => _isUploading = false);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Upload failed: $e')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Upload failed: $e')));
       }
     }
   }
@@ -315,7 +365,10 @@ String _toTitleCase(String text) {
               slivers: [
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24.0,
+                      vertical: 20.0,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -328,7 +381,9 @@ String _toTitleCase(String text) {
                                 shape: BoxShape.circle,
                                 color: theme.colorScheme.surface,
                                 border: Border.all(
-                                  color: theme.dividerColor.withValues(alpha: 0.2),
+                                  color: theme.dividerColor.withValues(
+                                    alpha: 0.2,
+                                  ),
                                 ),
                               ),
                               child: IconButton(
@@ -340,18 +395,27 @@ String _toTitleCase(String text) {
                               ),
                             ),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
                                   colors: [
-                                    theme.colorScheme.primary.withValues(alpha: 0.15),
-                                    theme.colorScheme.secondary.withValues(alpha: 0.05),
+                                    theme.colorScheme.primary.withValues(
+                                      alpha: 0.15,
+                                    ),
+                                    theme.colorScheme.secondary.withValues(
+                                      alpha: 0.05,
+                                    ),
                                   ],
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                 ),
                                 border: Border.all(
-                                  color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                                  color: theme.colorScheme.primary.withValues(
+                                    alpha: 0.2,
+                                  ),
                                 ),
                                 borderRadius: BorderRadius.circular(20),
                               ),
@@ -366,8 +430,7 @@ String _toTitleCase(String text) {
                           ],
                         ),
                         const SizedBox(height: 32),
-                        
-                        
+
                         // Category Selector
                         const SizedBox(height: 32),
                         Text(
@@ -392,24 +455,40 @@ String _toTitleCase(String text) {
                                   }
                                 },
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
                                   decoration: BoxDecoration(
-                                    color: _category == 'report' ? primaryGlow.withValues(alpha: 0.15) : theme.colorScheme.surface,
+                                    color: _category == 'report'
+                                        ? primaryGlow.withValues(alpha: 0.15)
+                                        : theme.colorScheme.surface,
                                     borderRadius: BorderRadius.circular(16),
                                     border: Border.all(
-                                      color: _category == 'report' ? primaryGlow : theme.dividerColor.withValues(alpha: 0.3),
+                                      color: _category == 'report'
+                                          ? primaryGlow
+                                          : theme.dividerColor.withValues(
+                                              alpha: 0.3,
+                                            ),
                                     ),
                                   ),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Icon(Icons.description_rounded, color: _category == 'report' ? primaryGlow : theme.hintColor, size: 20),
+                                      Icon(
+                                        Icons.description_rounded,
+                                        color: _category == 'report'
+                                            ? primaryGlow
+                                            : theme.hintColor,
+                                        size: 20,
+                                      ),
                                       const SizedBox(width: 8),
                                       Text(
                                         'Report',
                                         style: TextStyle(
                                           fontWeight: FontWeight.w600,
-                                          color: _category == 'report' ? primaryGlow : theme.hintColor,
+                                          color: _category == 'report'
+                                              ? primaryGlow
+                                              : theme.hintColor,
                                         ),
                                       ),
                                     ],
@@ -431,24 +510,40 @@ String _toTitleCase(String text) {
                                   }
                                 },
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
                                   decoration: BoxDecoration(
-                                    color: _category == 'prescription' ? primaryGlow.withValues(alpha: 0.15) : theme.colorScheme.surface,
+                                    color: _category == 'prescription'
+                                        ? primaryGlow.withValues(alpha: 0.15)
+                                        : theme.colorScheme.surface,
                                     borderRadius: BorderRadius.circular(16),
                                     border: Border.all(
-                                      color: _category == 'prescription' ? primaryGlow : theme.dividerColor.withValues(alpha: 0.3),
+                                      color: _category == 'prescription'
+                                          ? primaryGlow
+                                          : theme.dividerColor.withValues(
+                                              alpha: 0.3,
+                                            ),
                                     ),
                                   ),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Icon(Icons.medication_rounded, color: _category == 'prescription' ? primaryGlow : theme.hintColor, size: 20),
+                                      Icon(
+                                        Icons.medication_rounded,
+                                        color: _category == 'prescription'
+                                            ? primaryGlow
+                                            : theme.hintColor,
+                                        size: 20,
+                                      ),
                                       const SizedBox(width: 8),
                                       Text(
                                         'Prescription',
                                         style: TextStyle(
                                           fontWeight: FontWeight.w600,
-                                          color: _category == 'prescription' ? primaryGlow : theme.hintColor,
+                                          color: _category == 'prescription'
+                                              ? primaryGlow
+                                              : theme.hintColor,
                                         ),
                                       ),
                                     ],
@@ -462,7 +557,9 @@ String _toTitleCase(String text) {
 
                         // Report Types Input
                         Text(
-                          _category == 'prescription' ? 'Prescription For' : 'Report Types',
+                          _category == 'prescription'
+                              ? 'Prescription For'
+                              : 'Report Types',
                           style: theme.textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.w500,
                           ),
@@ -474,11 +571,17 @@ String _toTitleCase(String text) {
                             scrollDirection: Axis.horizontal,
                             physics: const BouncingScrollPhysics(),
                             child: Row(
-                              children: _reportTypes.asMap().entries.map((entry) {
+                              children: _reportTypes.asMap().entries.map((
+                                entry,
+                              ) {
                                 final index = entry.key;
                                 final type = entry.value;
                                 return Padding(
-                                  padding: EdgeInsets.only(right: index == _reportTypes.length - 1 ? 0 : 8.0),
+                                  padding: EdgeInsets.only(
+                                    right: index == _reportTypes.length - 1
+                                        ? 0
+                                        : 8.0,
+                                  ),
                                   child: Chip(
                                     label: Text(type),
                                     onDeleted: () {
@@ -486,11 +589,15 @@ String _toTitleCase(String text) {
                                         _reportTypes.remove(type);
                                       });
                                     },
-                                    backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.2),
+                                    backgroundColor: theme.colorScheme.primary
+                                        .withValues(alpha: 0.2),
                                     deleteIconColor: theme.colorScheme.primary,
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(12),
-                                      side: BorderSide(color: theme.colorScheme.primary.withValues(alpha: 0.5)),
+                                      side: BorderSide(
+                                        color: theme.colorScheme.primary
+                                            .withValues(alpha: 0.5),
+                                      ),
                                     ),
                                   ),
                                 );
@@ -508,7 +615,9 @@ String _toTitleCase(String text) {
                             height: 1.5,
                           ),
                           decoration: InputDecoration(
-                            hintText: _category == 'prescription' ? 'Search tags (e.g. Daily Meds, Antibiotics)...' : 'Search tags (e.g. CBC, MRI)...',
+                            hintText: _category == 'prescription'
+                                ? 'Search tags (e.g. Daily Meds, Antibiotics)...'
+                                : 'Search tags (e.g. CBC, MRI)...',
                             hintStyle: TextStyle(
                               color: theme.hintColor.withValues(alpha: 0.5),
                             ),
@@ -519,21 +628,32 @@ String _toTitleCase(String text) {
                             filled: true,
                             fillColor: theme.colorScheme.surface,
                             contentPadding: const EdgeInsets.all(20),
-                            suffixIcon: _isLoadingTags 
-                              ? const Padding(
-                                  padding: EdgeInsets.all(12.0),
-                                  child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
-                                )
-                              : IconButton(
-                                  icon: Icon(Icons.add_circle, color: theme.colorScheme.primary),
-                                  onPressed: () {
-                                    _addCustomType(_customTypeController.text);
-                                    setState(() {
-                                      _suggestedTypes = [];
-                                      _backendTags = [];
-                                    });
-                                  },
-                                ),
+                            suffixIcon: _isLoadingTags
+                                ? const Padding(
+                                    padding: EdgeInsets.all(12.0),
+                                    child: SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    ),
+                                  )
+                                : IconButton(
+                                    icon: Icon(
+                                      Icons.add_circle,
+                                      color: theme.colorScheme.primary,
+                                    ),
+                                    onPressed: () {
+                                      _addCustomType(
+                                        _customTypeController.text,
+                                      );
+                                      setState(() {
+                                        _suggestedTypes = [];
+                                        _backendTags = [];
+                                      });
+                                    },
+                                  ),
                           ),
                           onSubmitted: (val) {
                             _addCustomType(val);
@@ -545,60 +665,93 @@ String _toTitleCase(String text) {
                         ),
                         const SizedBox(height: 12),
                         // Suggestions horizontally scrollable
-                        if (_suggestedTypes.where((t) => !_reportTypes.contains(t)).isNotEmpty)
+                        if (_suggestedTypes
+                            .where((t) => !_reportTypes.contains(t))
+                            .isNotEmpty)
                           SingleChildScrollView(
                             scrollDirection: Axis.horizontal,
                             physics: const BouncingScrollPhysics(),
                             clipBehavior: Clip.none,
                             child: Row(
-                              children: _suggestedTypes.where((t) => !_reportTypes.contains(t)).map((type) {
-                                return Padding(
-                                  padding: const EdgeInsets.only(right: 8.0),
-                                  child: Builder(
-                                    builder: (context) {
-                                      final isSystem = _backendTags.contains(type);
-                                      return ActionChip(
-                                        avatar: isSystem 
-                                            ? Icon(Icons.check_circle_outline, size: 16, color: theme.colorScheme.primary) 
-                                            : const Icon(Icons.add, size: 16, color: Colors.white),
-                                        label: Text(
-                                          type,
-                                          style: TextStyle(
-                                            color: isSystem ? theme.colorScheme.primary : Colors.white,
-                                            fontWeight: isSystem ? FontWeight.w600 : FontWeight.w500,
-                                          ),
-                                        ),
-                                        onPressed: () {
-                                          setState(() {
-                                            _reportTypes.add(type);
-                                            _customTypeController.clear();
-                                            _suggestedTypes = [];
-                                            _backendTags = [];
-                                          });
+                              children: _suggestedTypes
+                                  .where((t) => !_reportTypes.contains(t))
+                                  .map((type) {
+                                    return Padding(
+                                      padding: const EdgeInsets.only(
+                                        right: 8.0,
+                                      ),
+                                      child: Builder(
+                                        builder: (context) {
+                                          final isSystem = _backendTags
+                                              .contains(type);
+                                          return ActionChip(
+                                            avatar: isSystem
+                                                ? Icon(
+                                                    Icons.check_circle_outline,
+                                                    size: 16,
+                                                    color: theme
+                                                        .colorScheme
+                                                        .primary,
+                                                  )
+                                                : const Icon(
+                                                    Icons.add,
+                                                    size: 16,
+                                                    color: Colors.white,
+                                                  ),
+                                            label: Text(
+                                              type,
+                                              style: TextStyle(
+                                                color: isSystem
+                                                    ? theme.colorScheme.primary
+                                                    : Colors.white,
+                                                fontWeight: isSystem
+                                                    ? FontWeight.w600
+                                                    : FontWeight.w500,
+                                              ),
+                                            ),
+                                            onPressed: () {
+                                              setState(() {
+                                                _reportTypes.add(type);
+                                                _customTypeController.clear();
+                                                _suggestedTypes = [];
+                                                _backendTags = [];
+                                              });
+                                            },
+                                            backgroundColor: isSystem
+                                                ? theme.colorScheme.primary
+                                                      .withValues(alpha: 0.1)
+                                                : Colors.white.withValues(
+                                                    alpha: 0.05,
+                                                  ),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                              side: BorderSide(
+                                                color: isSystem
+                                                    ? theme.colorScheme.primary
+                                                          .withValues(
+                                                            alpha: 0.3,
+                                                          )
+                                                    : Colors.white.withValues(
+                                                        alpha: 0.5,
+                                                      ),
+                                              ),
+                                            ),
+                                          );
                                         },
-                                        backgroundColor: isSystem 
-                                            ? theme.colorScheme.primary.withValues(alpha: 0.1) 
-                                            : Colors.white.withValues(alpha: 0.05),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          side: BorderSide(
-                                            color: isSystem 
-                                                ? theme.colorScheme.primary.withValues(alpha: 0.3) 
-                                                : Colors.white.withValues(alpha: 0.5),
-                                          ),
-                                        ),
-                                      );
-                                    }
-                                  ),
-                                );
-                              }).toList(),
+                                      ),
+                                    );
+                                  })
+                                  .toList(),
                             ),
                           ),
                         const SizedBox(height: 24),
 
                         // Report Date
                         Text(
-                          _category == 'prescription' ? 'Prescription Date' : 'Report Date',
+                          _category == 'prescription'
+                              ? 'Prescription Date'
+                              : 'Report Date',
                           style: theme.textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.w600,
                           ),
@@ -608,12 +761,17 @@ String _toTitleCase(String text) {
                           onTap: _selectDate,
                           borderRadius: BorderRadius.circular(20),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 16,
+                            ),
                             decoration: BoxDecoration(
                               color: theme.colorScheme.surface,
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
-                                color: theme.dividerColor.withValues(alpha: 0.15),
+                                color: theme.dividerColor.withValues(
+                                  alpha: 0.15,
+                                ),
                               ),
                             ),
                             child: Row(
@@ -621,31 +779,44 @@ String _toTitleCase(String text) {
                                 Container(
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
-                                    color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                                    color: theme.colorScheme.primary.withValues(
+                                      alpha: 0.1,
+                                    ),
                                     borderRadius: BorderRadius.circular(16),
                                   ),
-                                  child: Icon(Icons.calendar_month_rounded, color: theme.colorScheme.primary, size: 24),
+                                  child: Icon(
+                                    Icons.calendar_month_rounded,
+                                    color: theme.colorScheme.primary,
+                                    size: 24,
+                                  ),
                                 ),
                                 const SizedBox(width: 16),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         'Date of Test / Scan',
-                                        style: theme.textTheme.labelMedium?.copyWith(
-                                          color: theme.hintColor.withValues(alpha: 0.7),
-                                          fontWeight: FontWeight.w500,
-                                          letterSpacing: 0.3,
-                                        ),
+                                        style: theme.textTheme.labelMedium
+                                            ?.copyWith(
+                                              color: theme.hintColor.withValues(
+                                                alpha: 0.7,
+                                              ),
+                                              fontWeight: FontWeight.w500,
+                                              letterSpacing: 0.3,
+                                            ),
                                       ),
                                       const SizedBox(height: 4),
                                       Text(
-                                        DateFormat('MMMM d, yyyy').format(_encounterDate),
-                                        style: theme.textTheme.titleMedium?.copyWith(
-                                          fontWeight: FontWeight.w700,
-                                          letterSpacing: 0.2,
-                                        ),
+                                        DateFormat(
+                                          'MMMM d, yyyy',
+                                        ).format(_encounterDate),
+                                        style: theme.textTheme.titleMedium
+                                            ?.copyWith(
+                                              fontWeight: FontWeight.w700,
+                                              letterSpacing: 0.2,
+                                            ),
                                       ),
                                     ],
                                   ),
@@ -653,10 +824,15 @@ String _toTitleCase(String text) {
                                 Container(
                                   padding: const EdgeInsets.all(8),
                                   decoration: BoxDecoration(
-                                    color: theme.colorScheme.onSurface.withValues(alpha: 0.05),
+                                    color: theme.colorScheme.onSurface
+                                        .withValues(alpha: 0.05),
                                     shape: BoxShape.circle,
                                   ),
-                                  child: Icon(Icons.edit_calendar_rounded, color: theme.colorScheme.onSurface, size: 20),
+                                  child: Icon(
+                                    Icons.edit_calendar_rounded,
+                                    color: theme.colorScheme.onSurface,
+                                    size: 20,
+                                  ),
                                 ),
                               ],
                             ),
@@ -677,7 +853,10 @@ String _toTitleCase(String text) {
                             TextButton.icon(
                               onPressed: _pickFiles,
                               icon: const Icon(Icons.add_circle_outline),
-                              label: const Text('Add Files', style: TextStyle(fontWeight: FontWeight.w600)),
+                              label: const Text(
+                                'Add Files',
+                                style: TextStyle(fontWeight: FontWeight.w600),
+                              ),
                               style: TextButton.styleFrom(
                                 foregroundColor: theme.colorScheme.primary,
                               ),
@@ -685,7 +864,7 @@ String _toTitleCase(String text) {
                           ],
                         ),
                         const SizedBox(height: 16),
-                        
+
                         // File Previews
                         if (_selectedFiles.isEmpty)
                           InkWell(
@@ -698,7 +877,9 @@ String _toTitleCase(String text) {
                                 color: theme.colorScheme.surface,
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
-                                  color: theme.dividerColor.withValues(alpha: 0.3),
+                                  color: theme.dividerColor.withValues(
+                                    alpha: 0.3,
+                                  ),
                                   style: BorderStyle.solid,
                                 ),
                               ),
@@ -707,13 +888,17 @@ String _toTitleCase(String text) {
                                   Icon(
                                     Icons.upload_file_rounded,
                                     size: 48,
-                                    color: theme.colorScheme.primary.withValues(alpha: 0.5),
+                                    color: theme.colorScheme.primary.withValues(
+                                      alpha: 0.5,
+                                    ),
                                   ),
                                   const SizedBox(height: 16),
                                   Text(
                                     'Tap to select files',
                                     style: TextStyle(
-                                      color: theme.hintColor.withValues(alpha: 0.7),
+                                      color: theme.hintColor.withValues(
+                                        alpha: 0.7,
+                                      ),
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),
@@ -731,44 +916,65 @@ String _toTitleCase(String text) {
                               itemCount: _selectedFiles.length,
                               itemBuilder: (context, index) {
                                 final file = _selectedFiles[index];
-                                final isImage = file.name.toLowerCase().endsWith('.jpg') || 
-                                                file.name.toLowerCase().endsWith('.jpeg') || 
-                                                file.name.toLowerCase().endsWith('.png');
+                                final isImage =
+                                    file.name.toLowerCase().endsWith('.jpg') ||
+                                    file.name.toLowerCase().endsWith('.jpeg') ||
+                                    file.name.toLowerCase().endsWith('.png');
                                 return Stack(
                                   clipBehavior: Clip.none,
                                   children: [
                                     Container(
                                       width: 110,
-                                      margin: const EdgeInsets.only(right: 16, top: 8),
+                                      margin: const EdgeInsets.only(
+                                        right: 16,
+                                        top: 8,
+                                      ),
                                       decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(20),
-                                        border: Border.all(color: theme.dividerColor.withValues(alpha: 0.2)),
+                                        border: Border.all(
+                                          color: theme.dividerColor.withValues(
+                                            alpha: 0.2,
+                                          ),
+                                        ),
                                         color: theme.colorScheme.surface,
                                         boxShadow: [
                                           BoxShadow(
-                                            color: Colors.black.withValues(alpha: 0.05),
+                                            color: Colors.black.withValues(
+                                              alpha: 0.05,
+                                            ),
                                             blurRadius: 10,
                                             offset: const Offset(0, 4),
-                                          )
+                                          ),
                                         ],
                                       ),
                                       child: ClipRRect(
                                         borderRadius: BorderRadius.circular(20),
                                         child: isImage && file.path != null
                                             ? InkWell(
-                                                onTap: () => _showFullScreenGallery(index),
-                                                child: Image.file(File(file.path!), fit: BoxFit.cover),
-                                              )
-                                            : InkWell(
-                                                onTap: () => _showFullScreenGallery(index),
-                                                child: Center(
-                                                  child: Icon(
-                                                    Icons.picture_as_pdf_rounded,
-                                                    size: 48,
-                                                    color: Colors.redAccent.withValues(alpha: 0.8),
-                                                  ),
+                                                onTap: () =>
+                                                    _showFullScreenGallery(
+                                                      index,
+                                                    ),
+                                                child: Image.file(
+                                                  File(file.path!),
+                                                  fit: BoxFit.cover,
                                                 ),
                                               )
+                                            : InkWell(
+                                                onTap: () =>
+                                                    _showFullScreenGallery(
+                                                      index,
+                                                    ),
+                                                child: Center(
+                                                  child: Icon(
+                                                    Icons
+                                                        .picture_as_pdf_rounded,
+                                                    size: 48,
+                                                    color: Colors.redAccent
+                                                        .withValues(alpha: 0.8),
+                                                  ),
+                                                ),
+                                              ),
                                       ),
                                     ),
                                     Positioned(
@@ -786,15 +992,17 @@ String _toTitleCase(String text) {
                                               shape: BoxShape.circle,
                                               boxShadow: [
                                                 BoxShadow(
-                                                  color: Colors.black.withValues(alpha: 0.1),
+                                                  color: Colors.black
+                                                      .withValues(alpha: 0.1),
                                                   blurRadius: 4,
-                                                )
+                                                ),
                                               ],
                                             ),
                                             child: Icon(
                                               Icons.close_rounded,
                                               size: 16,
-                                              color: theme.colorScheme.onSurface,
+                                              color:
+                                                  theme.colorScheme.onSurface,
                                             ),
                                           ),
                                         ),
@@ -806,7 +1014,6 @@ String _toTitleCase(String text) {
                             ),
                           ),
 
-                        
                         // Notes Field
                         const SizedBox(height: 32),
                         Text(
@@ -825,7 +1032,8 @@ String _toTitleCase(String text) {
                           style: TextStyle(color: theme.colorScheme.onSurface),
                           decoration: InputDecoration(
                             contentPadding: const EdgeInsets.all(16),
-                            hintText: 'Add any additional details or instructions...',
+                            hintText:
+                                'Add any additional details or instructions...',
                             hintStyle: TextStyle(color: theme.hintColor),
                             filled: true,
                             fillColor: theme.colorScheme.surface,
@@ -835,7 +1043,11 @@ String _toTitleCase(String text) {
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
-                              borderSide: BorderSide(color: theme.dividerColor.withValues(alpha: 0.2)),
+                              borderSide: BorderSide(
+                                color: theme.dividerColor.withValues(
+                                  alpha: 0.2,
+                                ),
+                              ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
@@ -861,7 +1073,7 @@ String _toTitleCase(String text) {
                               shadowColor: primaryGlow.withValues(alpha: 0.4),
                             ),
                             onPressed: _isUploading ? null : _submit,
-                            child: _isUploading 
+                            child: _isUploading
                                 ? const SizedBox(
                                     height: 24,
                                     width: 24,
@@ -885,7 +1097,6 @@ String _toTitleCase(String text) {
               ],
             ),
           ),
-
         ],
       ),
     );
