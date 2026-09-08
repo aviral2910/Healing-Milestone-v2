@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:healing_milestones/features/medical_vault/data/repositories/medical_vault_repository.dart';
 import 'package:healing_milestones/features/medical_vault/presentation/providers/trends_provider.dart';
@@ -9,7 +10,12 @@ import '../providers/medical_vault_providers.dart';
 class ReportDetailScreen extends ConsumerStatefulWidget {
   final MedicalRecord report;
 
-  const ReportDetailScreen({super.key, required this.report});
+  const ReportDetailScreen({
+    super.key,
+    required this.report,
+    this.autoExtract = false,
+  });
+  final bool autoExtract;
 
   @override
   ConsumerState<ReportDetailScreen> createState() => _ReportDetailScreenState();
@@ -21,10 +27,55 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
   final _editController = TextEditingController();
   final FocusNode _editFocusNode = FocusNode();
 
+  bool _isExtracting = false;
+
   @override
   void initState() {
     super.initState();
     _biomarkers = List.from(widget.report.biomarkers);
+    if (widget.autoExtract && _biomarkers.isEmpty) {
+      _isExtracting = true;
+      _runExtraction();
+    }
+  }
+
+  Future<void> _runExtraction() async {
+    try {
+      final fileUrls = widget.report.files.map((f) => f.url).toList();
+      final repo = ref.read(medicalVaultRepositoryProvider);
+      final extracted = await repo.extractAndSaveBiomarkers(
+        widget.report.id,
+        fileUrls,
+      );
+
+      if (mounted) {
+        setState(() {
+          _biomarkers = extracted;
+          _isExtracting = false;
+        });
+        ref.invalidate(medicalRecordsProvider);
+        ref.invalidate(biomarkerTrendsProvider);
+
+        if (extracted.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('No health metrics were found in this document.'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isExtracting = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('AI extraction failed: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -93,7 +144,40 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
         elevation: 0,
         scrolledUnderElevation: 0,
       ),
-      body: _biomarkers.isEmpty
+      body: _isExtracting
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Shimmer.fromColors(
+                    baseColor: theme.colorScheme.primary,
+                    highlightColor: theme.colorScheme.primaryContainer,
+                    child: const Icon(Icons.auto_awesome_rounded, size: 80),
+                  ),
+                  const SizedBox(height: 24),
+                  Shimmer.fromColors(
+                    baseColor: theme.colorScheme.onSurface,
+                    highlightColor: theme.colorScheme.onSurfaceVariant
+                        .withValues(alpha: 0.5),
+                    child: Text(
+                      'AI is analyzing your report...',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'This usually takes 15-20 seconds',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : _biomarkers.isEmpty
           ? const Center(child: Text("No data extracted yet."))
           : ListView.separated(
               padding: const EdgeInsets.only(

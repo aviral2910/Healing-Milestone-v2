@@ -16,59 +16,16 @@ import 'edit_report_overlay.dart';
 enum TimelinePosition { standalone, start, middle, end }
 
 class ReportTimelineNode extends ConsumerWidget {
-  Future<void> _extractAI(
-    BuildContext context,
-    WidgetRef ref,
-    MedicalRecord report,
-  ) async {
-    final fileUrls = report.files.map((f) => f.url).toList();
-    if (fileUrls.isEmpty) return;
-
-    final navigator = Navigator.of(context, rootNavigator: true);
-    final scaffold = ScaffoldMessenger.of(context);
-    final mainContext = context;
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        content: Row(
-          children: [
-            const CircularProgressIndicator(),
-            const SizedBox(width: 20),
-            const Expanded(
-              child: Text(
-                "AI is reading your report. This usually takes 15-20 seconds...",
-              ),
-            ),
-          ],
+  void _extractAI(BuildContext context, MedicalRecord report) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (ctx) => ReportDetailScreen(
+          report: report,
+          autoExtract: true,
         ),
       ),
     );
-
-    try {
-      final repo = ref.read(medicalVaultRepositoryProvider);
-      final extracted = await repo.extractAndSaveBiomarkers(
-        report.id,
-        fileUrls,
-      );
-
-      navigator.pop(); // Close the dialog
-
-      if (extracted.isNotEmpty) {
-        if (!mainContext.mounted) return;
-        ref.invalidate(medicalRecordsProvider);
-        ref.invalidate(biomarkerTrendsProvider);
-
-        // Push directly to ReportDetailScreen
-        Navigator.of(mainContext).push(
-          MaterialPageRoute(
-            builder: (ctx) => ReportDetailScreen(
-              report: report.copyWith(biomarkers: extracted),
-            ),
-          ),
-        );
-      } else {
+  } else {
         scaffold.showSnackBar(
           const SnackBar(
             content: Text('No health metrics were found in this document.'),
