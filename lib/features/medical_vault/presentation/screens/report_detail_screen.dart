@@ -28,6 +28,7 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
   final FocusNode _editFocusNode = FocusNode();
 
   bool _isExtracting = false;
+  String? _extractionError;
 
   @override
   void initState() {
@@ -40,14 +41,16 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
   }
 
   Future<void> _runExtraction() async {
+    setState(() {
+      _isExtracting = true;
+      _extractionError = null;
+    });
+    
     try {
       final fileUrls = widget.report.files.map((f) => f.url).toList();
       final repo = ref.read(medicalVaultRepositoryProvider);
-      final extracted = await repo.extractAndSaveBiomarkers(
-        widget.report.id,
-        fileUrls,
-      );
-
+      final extracted = await repo.extractAndSaveBiomarkers(widget.report.id, fileUrls);
+      
       if (mounted) {
         setState(() {
           _biomarkers = extracted;
@@ -55,16 +58,22 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
         });
         ref.invalidate(medicalRecordsProvider);
         ref.invalidate(biomarkerTrendsProvider);
-
+        
         if (extracted.isEmpty) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('No health metrics were found in this document.'),
-              backgroundColor: Colors.orange,
-            ),
-          );
+          setState(() {
+            _extractionError = "No health metrics were found in this document.";
+          });
         }
       }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isExtracting = false;
+          _extractionError = "AI extraction failed. The server might be busy or the document is unreadable.";
+        });
+      }
+    }
+  }
     } catch (e) {
       if (mounted) {
         setState(() => _isExtracting = false);
@@ -125,9 +134,22 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Scaffold(
+    return PopScope(
+      canPop: !_isExtracting,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop && _isExtracting) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Please wait, AI is analyzing your report.'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+      },
+      child: Scaffold(
       backgroundColor: theme.colorScheme.surfaceContainer, // Soft background
       appBar: AppBar(
+        automaticallyImplyLeading: !_isExtracting,
         title: Column(
           children: [
             const Text('Extracted Metrics'),
@@ -152,13 +174,15 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
                   Shimmer.fromColors(
                     baseColor: theme.colorScheme.primary,
                     highlightColor: theme.colorScheme.primaryContainer,
-                    child: const Icon(Icons.auto_awesome_rounded, size: 80),
+                    child: const Icon(
+                      Icons.auto_awesome_rounded,
+                      size: 80,
+                    ),
                   ),
                   const SizedBox(height: 24),
                   Shimmer.fromColors(
                     baseColor: theme.colorScheme.onSurface,
-                    highlightColor: theme.colorScheme.onSurfaceVariant
-                        .withValues(alpha: 0.5),
+                    highlightColor: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
                     child: Text(
                       'AI is analyzing your report...',
                       style: theme.textTheme.titleMedium?.copyWith(
@@ -177,9 +201,50 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
                 ],
               ),
             )
-          : _biomarkers.isEmpty
-          ? const Center(child: Text("No data extracted yet."))
-          : ListView.separated(
+          : _extractionError != null
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.error_outline_rounded,
+                          size: 64,
+                          color: Colors.red.withValues(alpha: 0.8),
+                        ),
+                        const SizedBox(height: 24),
+                        Text(
+                          'Analysis Failed',
+                          style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          _extractionError!,
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                        ),
+                        const SizedBox(height: 32),
+                        FilledButton.icon(
+                          onPressed: _runExtraction,
+                          icon: const Icon(Icons.refresh_rounded),
+                          label: const Text('Try Again'),
+                          style: FilledButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text('Go Back'),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              : _biomarkers.isEmpty
+                  ? const Center(child: Text("No data extracted yet."))
+                  : ListView.separated(
               padding: const EdgeInsets.only(
                 left: 16,
                 right: 16,
@@ -388,6 +453,7 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
                 );
               },
             ),
+    ),
     );
   }
 }
