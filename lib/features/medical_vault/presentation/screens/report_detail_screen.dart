@@ -26,7 +26,6 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
   late List<BiomarkerModel> _biomarkers;
   String? _editingId;
   final _editController = TextEditingController();
-  final FocusNode _editFocusNode = FocusNode();
 
   bool _isExtracting = false;
   String? _extractionError;
@@ -85,8 +84,12 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
     super.dispose();
   }
 
-  Future<void> _saveEdit(BiomarkerModel biomarker, int index) async {
-    final newVal = _editController.text.trim();
+  Future<void> _saveEdit(
+    BiomarkerModel biomarker,
+    int index,
+    String newVal,
+  ) async {
+    newVal = newVal.trim();
     if (newVal.isEmpty) {
       setState(() => _editingId = null);
       return;
