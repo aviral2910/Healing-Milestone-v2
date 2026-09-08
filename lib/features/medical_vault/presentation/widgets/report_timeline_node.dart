@@ -667,20 +667,24 @@ class ReportTimelineNode extends ConsumerWidget {
                                         vertical: 12,
                                       ),
                                       decoration: BoxDecoration(
-                                        gradient: LinearGradient(
+                                        gradient: const LinearGradient(
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
                                           colors: [
-                                            Colors.purple.withValues(
-                                              alpha: 0.1,
-                                            ),
-                                            Colors.blue.withValues(alpha: 0.1),
+                                            Color(0xFF8A2BE2), // BlueViolet
+                                            Color(0xFF4169E1), // RoyalBlue
                                           ],
                                         ),
                                         borderRadius: BorderRadius.circular(12),
-                                        border: Border.all(
-                                          color: Colors.purple.withValues(
-                                            alpha: 0.2,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: const Color(
+                                              0xFF4169E1,
+                                            ).withValues(alpha: 0.3),
+                                            blurRadius: 8,
+                                            offset: const Offset(0, 3),
                                           ),
-                                        ),
+                                        ],
                                       ),
                                       child: const Row(
                                         mainAxisAlignment:
@@ -688,16 +692,17 @@ class ReportTimelineNode extends ConsumerWidget {
                                         children: [
                                           Icon(
                                             Icons.auto_awesome,
-                                            color: Colors.purple,
-                                            size: 20,
+                                            color: Colors.white,
+                                            size: 18,
                                           ),
                                           SizedBox(width: 8),
                                           Text(
                                             'Extract Data with AI',
                                             style: TextStyle(
-                                              color: Colors.purple,
-                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w700,
                                               fontSize: 14,
+                                              letterSpacing: 0.3,
                                             ),
                                           ),
                                         ],
