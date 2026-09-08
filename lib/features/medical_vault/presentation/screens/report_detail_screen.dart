@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 import '../widgets/biomarker_card.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:healing_milestones/features/medical_vault/data/repositories/medical_vault_repository.dart';
 import 'package:healing_milestones/features/medical_vault/presentation/providers/trends_provider.dart';
 import '../../data/models/medical_vault_models.dart';
@@ -213,7 +214,7 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 8),
                       Text(
                         _extractionError!,
                         textAlign: TextAlign.center,
@@ -242,72 +243,210 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
                   ),
                 ),
               )
-            : _biomarkers.isEmpty
-            ? const Center(child: Text("No data extracted yet."))
-            : ListView.separated(
-                padding: const EdgeInsets.only(
-                  left: 16,
-                  right: 16,
-                  top: 12,
-                  bottom: 40,
-                ),
-                itemCount: _biomarkers.length + 1,
-                separatorBuilder: (context, index) =>
-                    const SizedBox(height: 12),
-                itemBuilder: (context, index) {
-                  if (index == 0) {
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 4),
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                        border: Border.all(
-                          color: theme.colorScheme.primary.withValues(
-                            alpha: 0.3,
+            : CustomScrollView(
+                slivers: [
+                  // Images or PDF preview
+                  if (widget.report.files.isNotEmpty)
+                    SliverToBoxAdapter(
+                      child: SizedBox(
+                        height: 250,
+                        child: PageView.builder(
+                          itemCount: widget.report.files.length,
+                          itemBuilder: (context, index) {
+                            final file = widget.report.files[index];
+                            final isPdf =
+                                file.fileType.toLowerCase().contains('pdf') ||
+                                file.url.toLowerCase().endsWith('.pdf');
+                            return Container(
+                              margin: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.surfaceContainerHighest
+                                    .withValues(alpha: 0.3),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: theme.colorScheme.outlineVariant
+                                      .withValues(alpha: 0.5),
+                                ),
+                              ),
+                              clipBehavior: Clip.antiAlias,
+                              child: isPdf
+                                  ? Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.picture_as_pdf_rounded,
+                                          size: 64,
+                                          color: theme.colorScheme.error,
+                                        ),
+                                        const SizedBox(height: 16),
+                                        Text(
+                                          file.fileName,
+                                          style: theme.textTheme.titleSmall,
+                                          textAlign: TextAlign.center,
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
+                                    )
+                                  : CachedNetworkImage(
+                                      imageUrl: file.url,
+                                      fit: BoxFit.cover,
+                                      placeholder: (context, url) =>
+                                          const Center(
+                                            child: CircularProgressIndicator(),
+                                          ),
+                                      errorWidget: (context, url, error) =>
+                                          const Icon(
+                                            Icons.broken_image,
+                                            size: 64,
+                                          ),
+                                    ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+
+                  // Notes Section
+                  if (widget.report.notes != null &&
+                      widget.report.notes!.isNotEmpty)
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.only(
+                          left: 16,
+                          right: 16,
+                          bottom: 16,
+                        ),
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.surfaceContainerHighest
+                                .withValues(alpha: 0.5),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.edit_note_rounded,
+                                    size: 20,
+                                    color: theme.colorScheme.primary,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Notes',
+                                    style: theme.textTheme.titleSmall?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: theme.colorScheme.primary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                widget.report.notes!,
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  height: 1.5,
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Icon(
-                            Icons.info_outline_rounded,
-                            color: theme.colorScheme.primary,
-                            size: 20,
+                    ),
+
+                  // Disclaimer Note
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.only(
+                        left: 16,
+                        right: 16,
+                        bottom: 12,
+                      ),
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.primary.withValues(
+                            alpha: 0.1,
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              "AI extraction can make mistakes. Please refer to the original document before making any clinical conclusions.",
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: theme.colorScheme.onSurfaceVariant,
-                                height: 1.4,
-                              ),
+                          border: Border.all(
+                            color: theme.colorScheme.primary.withValues(
+                              alpha: 0.3,
                             ),
                           ),
-                        ],
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(
+                              Icons.info_outline_rounded,
+                              color: theme.colorScheme.primary,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                "AI extraction can make mistakes. Please refer to the original document before making any clinical conclusions.",
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                  height: 1.4,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    );
-                  }
+                    ),
+                  ),
 
-                  final actualIndex = index - 1;
-                  final b = _biomarkers[actualIndex];
+                  // Empty state for biomarkers
+                  if (_biomarkers.isEmpty)
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: const Center(
+                        child: Text("No data extracted yet."),
+                      ),
+                    ),
 
-                  return BiomarkerCard(
-                    biomarker: b,
-                    compact: false,
-                    isEditing: _editingId == b.id,
-                    onEditTap: () {
-                      setState(() {
-                        _editingId = b.id;
-                      });
-                    },
-                    onSave: (val) {
-                      _saveEdit(b, actualIndex, val);
-                    },
-                  );
-                },
+                  // Biomarker Cards
+                  if (_biomarkers.isNotEmpty)
+                    SliverPadding(
+                      padding: const EdgeInsets.only(
+                        left: 16,
+                        right: 16,
+                        bottom: 40,
+                      ),
+                      sliver: SliverList(
+                        delegate: SliverChildBuilderDelegate((context, index) {
+                          final b = _biomarkers[index];
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: BiomarkerCard(
+                              biomarker: b,
+                              compact: false,
+                              isEditing: _editingId == b.id,
+                              onEditTap: () {
+                                setState(() {
+                                  _editingId = b.id;
+                                });
+                              },
+                              onSave: (val) {
+                                _saveEdit(b, index, val);
+                              },
+                            ),
+                          );
+                        }, childCount: _biomarkers.length),
+                      ),
+                    ),
+                ],
               ),
       ),
     );
