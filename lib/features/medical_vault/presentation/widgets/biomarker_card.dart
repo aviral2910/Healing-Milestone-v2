@@ -192,9 +192,7 @@ class _BiomarkerCardState extends State<BiomarkerCard> {
             height: 1.6,
             fontSize: 13,
             fontWeight: FontWeight.w400,
-            color: isAbnormal
-                ? Colors.red.shade300
-                : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.85),
           ),
         );
       }
