@@ -1,10 +1,12 @@
+import 'package:healing_milestones/features/medical_vault/data/repositories/medical_vault_repository.dart';
+import 'package:healing_milestones/features/medical_vault/presentation/providers/trends_provider.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:flutter/material.dart';
 import 'dart:ui' as ui;
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'biomarker_verification_sheet.dart';
+import 'package:healing_milestones/features/medical_vault/presentation/screens/biomarker_verification_screen.dart';
 import '../providers/medical_vault_providers.dart';
 import 'package:intl/intl.dart';
 import '../../data/models/medical_vault_models.dart';
@@ -48,19 +50,18 @@ class ReportTimelineNode extends ConsumerWidget {
     try {
       final repo = ref.read(medicalVaultRepositoryProvider);
       final extracted = await repo.extractBiomarkers(fileUrls);
-      
+
       navigator.pop(); // Close the dialog using the captured root navigator
 
       if (extracted.isNotEmpty) {
         if (!mainContext.mounted) return;
-        final saved = await showModalBottomSheet<bool>(
-          context: mainContext,
-          isScrollControlled: true,
-          backgroundColor: Colors.transparent,
-          builder: (ctx) => BiomarkerVerificationSheet(
-            initialBiomarkers: extracted,
-            recordId: report.id,
-            repository: repo,
+        final saved = await Navigator.of(mainContext).push<bool>(
+          MaterialPageRoute(
+            builder: (ctx) => BiomarkerVerificationScreen(
+              initialBiomarkers: extracted,
+              recordId: report.id,
+              repository: repo,
+            ),
           ),
         );
         if (saved == true && mainContext.mounted) {
@@ -651,6 +652,59 @@ class ReportTimelineNode extends ConsumerWidget {
                                     ),
                                   ),
                                 ],
+                                const SizedBox(height: 20),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 20,
+                                  ),
+                                  child: InkWell(
+                                    onTap: () =>
+                                        _extractAI(context, ref, report),
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Container(
+                                      width: double.infinity,
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 12,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            Colors.purple.withValues(
+                                              alpha: 0.1,
+                                            ),
+                                            Colors.blue.withValues(alpha: 0.1),
+                                          ],
+                                        ),
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                          color: Colors.purple.withValues(
+                                            alpha: 0.2,
+                                          ),
+                                        ),
+                                      ),
+                                      child: const Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.auto_awesome,
+                                            color: Colors.purple,
+                                            size: 20,
+                                          ),
+                                          SizedBox(width: 8),
+                                          Text(
+                                            'Extract Data with AI',
+                                            style: TextStyle(
+                                              color: Colors.purple,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
                               ],
                             );
                           },
