@@ -271,38 +271,17 @@ String _toTitleCase(String text) {
       );
       
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Report uploaded securely! Analyzing with AI...')));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Uploading report...')));
       }
       
-      try {
-        final repo = ref.read(medicalVaultRepositoryProvider);
-        final fileUrls = newRecord.files.map((f) => f.url).toList();
-        print('Starting AI extraction for ${fileUrls.length} files...');
-        final extractedBiomarkers = await repo.extractBiomarkers(fileUrls);
-        print('Extracted ${extractedBiomarkers.length} biomarkers');
-        
-        if (extractedBiomarkers.isNotEmpty && mounted) {
-          final saved = await showModalBottomSheet<bool>(
-            context: context,
-            isScrollControlled: true,
-            backgroundColor: Colors.transparent,
-            builder: (ctx) => BiomarkerVerificationSheet(
-              initialBiomarkers: extractedBiomarkers,
-              recordId: newRecord.id,
-              repository: repo,
-            ),
-          );
-          
-          if (saved == true && mounted) {
-            ref.invalidate(medicalRecordsProvider);
-            ref.invalidate(biomarkerTrendsProvider);
-          }
-        }
-      } catch (e) {
-        // AI extraction failed, but upload succeeded, so it's fine
-      }
-      
+      // Extraction is now manual via the timeline node menu
       if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Report uploaded successfully! Use the menu on the report to extract data.'),
+            backgroundColor: Colors.green,
+          ),
+        );
         Navigator.pop(context);
       }
     } catch (e) {
