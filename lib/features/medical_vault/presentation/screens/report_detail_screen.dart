@@ -180,11 +180,10 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
                             children: [
                               Text(
                                 b.aiPredictedStandardName ?? b.rawName,
-                                style: theme.textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: isAbnormal
-                                      ? Colors.red.shade700
-                                      : theme.colorScheme.onSurface,
+                                style: theme.textTheme.titleSmall?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 15,
+                                  color: theme.colorScheme.onSurface,
                                 ),
                               ),
                               if (b.aiPredictedStandardName != null &&
