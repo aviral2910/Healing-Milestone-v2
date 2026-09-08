@@ -251,11 +251,49 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
                   top: 12,
                   bottom: 40,
                 ),
-                itemCount: _biomarkers.length,
+                itemCount: _biomarkers.length + 1,
                 separatorBuilder: (context, index) =>
                     const SizedBox(height: 12),
                 itemBuilder: (context, index) {
-                  final b = _biomarkers[index];
+                  if (index == 0) {
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 4),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                        border: Border.all(
+                          color: theme.colorScheme.primary.withValues(
+                            alpha: 0.3,
+                          ),
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            Icons.info_outline_rounded,
+                            color: theme.colorScheme.primary,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              "AI extraction can make mistakes. Please refer to the original document before making any clinical conclusions.",
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant,
+                                height: 1.4,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  final actualIndex = index - 1;
+                  final b = _biomarkers[actualIndex];
+
                   return BiomarkerCard(
                     biomarker: b,
                     compact: false,
@@ -266,7 +304,7 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
                       });
                     },
                     onSave: (val) {
-                      _saveEdit(b, index, val);
+                      _saveEdit(b, actualIndex, val);
                     },
                   );
                 },
