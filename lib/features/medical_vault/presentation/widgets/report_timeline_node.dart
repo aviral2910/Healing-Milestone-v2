@@ -19,30 +19,9 @@ class ReportTimelineNode extends ConsumerWidget {
   void _extractAI(BuildContext context, MedicalRecord report) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (ctx) => ReportDetailScreen(
-          report: report,
-          autoExtract: true,
-        ),
+        builder: (ctx) => ReportDetailScreen(report: report, autoExtract: true),
       ),
     );
-  } else {
-        scaffold.showSnackBar(
-          const SnackBar(
-            content: Text('No health metrics were found in this document.'),
-            backgroundColor: Colors.orange,
-          ),
-        );
-      }
-    } catch (e) {
-      navigator.pop(); // Close the dialog
-      scaffold.showSnackBar(
-        SnackBar(
-          content: Text('AI extraction failed: $e'),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 4),
-        ),
-      );
-    }
   }
 
   final MedicalRecord report;
@@ -912,7 +891,7 @@ class ReportTimelineNode extends ConsumerWidget {
                                     ),
                                     child: InkWell(
                                       onTap: () =>
-                                          _extractAI(context, ref, report),
+                                          _extractAI(context, report),
                                       borderRadius: BorderRadius.circular(12),
                                       child: Container(
                                         width: double.infinity,
@@ -1038,7 +1017,7 @@ class ReportTimelineNode extends ConsumerWidget {
                           padding: EdgeInsets.zero,
                           onSelected: (value) async {
                             if (value == 'extract') {
-                              _extractAI(context, ref, report);
+                              _extractAI(context, report);
                             } else if (value == 'edit') {
                               EditReportOverlay.show(context, report);
                             } else if (value == 'delete') {
