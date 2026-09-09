@@ -292,12 +292,7 @@ class _UploadReportOverlayState extends ConsumerState<UploadReportOverlay> {
       );
       return;
     }
-    if (_selectedFiles.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select at least one file')),
-      );
-      return;
-    }
+
 
     setState(() => _isUploading = true);
 

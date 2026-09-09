@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 import '../widgets/biomarker_card.dart';
+import '../widgets/add_biomarker_bottom_sheet.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:healing_milestones/features/medical_vault/data/repositories/medical_vault_repository.dart';
@@ -126,6 +127,30 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
   }
 
   @override
+  Future<void> _addMetricManually(BiomarkerModel newMetric) async {
+    try {
+      final repo = ref.read(medicalVaultRepositoryProvider);
+      final created = await repo.saveBiomarkers(widget.report.id, [newMetric]);
+
+      if (mounted && created.isNotEmpty) {
+        setState(() {
+          _biomarkers.add(created.first);
+        });
+        ref.invalidate(medicalRecordsProvider);
+        ref.invalidate(biomarkerTrendsProvider);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Metric added successfully')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to add metric: $e')));
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -162,6 +187,14 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
           elevation: 0,
           scrolledUnderElevation: 0,
         ),
+        floatingActionButton: _isExtracting
+            ? null
+            : FloatingActionButton.extended(
+                onPressed: () =>
+                    AddBiomarkerBottomSheet.show(context, _addMetricManually),
+                icon: const Icon(Icons.add),
+                label: const Text('Add Metric'),
+              ),
         body: _isExtracting
             ? Center(
                 child: Column(
