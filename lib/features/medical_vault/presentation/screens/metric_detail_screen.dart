@@ -386,6 +386,40 @@ class _MetricDetailScreenState extends ConsumerState<MetricDetailScreen> {
           color: color.withValues(alpha: 0.1),
         ) : null,
       ));
+      
+      // If this is the primary trend, let's extract the Range High/Low spots
+      if (i == 0) {
+        final highSpots = <FlSpot>[];
+        final lowSpots = <FlSpot>[];
+        for (var p in pts) {
+          if (p.rangeHigh != null && p.rangeLow != null) {
+            final x = p.date.millisecondsSinceEpoch.toDouble();
+            highSpots.add(FlSpot(x, p.rangeHigh!));
+            lowSpots.add(FlSpot(x, p.rangeLow!));
+            if (p.rangeHigh! > tMax) tMax = p.rangeHigh!;
+            if (p.rangeLow! < tMin) tMin = p.rangeLow!;
+          }
+        }
+        
+        if (highSpots.isNotEmpty && lowSpots.isNotEmpty) {
+          // Add High Line
+          barDataList.add(LineChartBarData(
+            spots: highSpots,
+            isCurved: true,
+            color: Colors.transparent,
+            barWidth: 0,
+            dotData: const FlDotData(show: false),
+          ));
+          // Add Low Line
+          barDataList.add(LineChartBarData(
+            spots: lowSpots,
+            isCurved: true,
+            color: Colors.transparent,
+            barWidth: 0,
+            dotData: const FlDotData(show: false),
+          ));
+        }
+      }
     }
 
     if (tMin == double.infinity) return const SizedBox.shrink();
@@ -409,6 +443,15 @@ class _MetricDetailScreenState extends ConsumerState<MetricDetailScreen> {
           height: 180,
           child: LineChart(
             LineChartData(
+              betweenBarsData: barDataList.length >= 3 
+                  ? [
+                      BetweenBarsData(
+                        fromIndex: barDataList.length - 2, // High Line
+                        toIndex: barDataList.length - 1,   // Low Line
+                        color: Colors.green.withValues(alpha: 0.15),
+                      )
+                    ]
+                  : [],
               minY: tMin,
               maxY: tMax,
               minX: minX,
