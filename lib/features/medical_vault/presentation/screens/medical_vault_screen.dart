@@ -133,7 +133,12 @@ class _MedicalVaultScreenState extends ConsumerState<MedicalVaultScreen> {
               }
 
               final date = sortedDates[index];
-              final dateRecords = grouped[date]!;
+              final dateRecords = List.of(grouped[date]!)
+                ..sort((a, b) {
+                  final cmp = b.encounterDate.compareTo(a.encounterDate);
+                  if (cmp != 0) return cmp;
+                  return b.createdAt.compareTo(a.createdAt);
+                });
 
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
