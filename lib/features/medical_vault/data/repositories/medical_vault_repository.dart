@@ -6,20 +6,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:healing_milestones/core/network/api_client.dart';
 
-class BiomarkerTemplate {
-  final String name;
-  final String? unit;
-  
-  BiomarkerTemplate({required this.name, this.unit});
-  
-  factory BiomarkerTemplate.fromJson(Map<String, dynamic> json) {
-    return BiomarkerTemplate(
-      name: json['name'] as String,
-      unit: json['unit'] as String?,
-    );
-  }
-}
-
 import '../models/medical_vault_models.dart';
 import '../models/biomarker_model.dart';
 
@@ -409,4 +395,18 @@ class MedicalVaultRepository {
 MedicalVaultRepository medicalVaultRepository(Ref ref) {
   return MedicalVaultRepository(ref.watch(apiClientProvider));
 
+}
+
+class BiomarkerTemplate {
+  final String name;
+  final String? unit;
+  
+  BiomarkerTemplate({required this.name, this.unit});
+  
+  factory BiomarkerTemplate.fromJson(Map<String, dynamic> json) {
+    return BiomarkerTemplate(
+      name: json['name'] as String,
+      unit: json['unit'] as String?,
+    );
+  }
 }
