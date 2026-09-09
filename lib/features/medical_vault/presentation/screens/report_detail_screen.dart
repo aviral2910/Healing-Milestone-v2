@@ -42,7 +42,10 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
     }
   }
 
+  bool _guard = false;
   Future<void> _runExtraction() async {
+    if (_guard) return;
+    _guard = true;
     setState(() {
       _isExtracting = true;
       _extractionError = null;
@@ -78,6 +81,8 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
               "AI extraction failed. The server might be busy or the document is unreadable.";
         });
       }
+    } finally {
+      _guard = false;
     }
   }
 
