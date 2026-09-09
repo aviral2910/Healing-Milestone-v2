@@ -832,7 +832,7 @@ class ReportTimelineNode extends ConsumerWidget {
                                             side: BorderSide(
                                               color: theme
                                                   .colorScheme
-                                                  .outlineVariant,
+                                                  .primary,
                                             ),
                                             shape: RoundedRectangleBorder(
                                               borderRadius:

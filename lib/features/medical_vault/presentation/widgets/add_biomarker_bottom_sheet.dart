@@ -48,7 +48,7 @@ class _AddBiomarkerBottomSheetState extends State<AddBiomarkerBottomSheet> {
 
     if (_isNumeric) {
       numVal = double.tryParse(valText);
-      if (numVal == null) return; // Invalid number
+      if (numVal == null) return;
     } else {
       textVal = valText;
       if (textVal.isEmpty) return;
@@ -71,13 +71,13 @@ class _AddBiomarkerBottomSheetState extends State<AddBiomarkerBottomSheet> {
     Navigator.of(context).pop();
   }
 
-  Widget _buildTextField({
+  Widget _buildMinimalTextField({
     required TextEditingController controller,
-    required String label,
     required String hint,
     TextInputType? keyboardType,
     int maxLines = 1,
     int? minLines,
+    TextStyle? textStyle,
   }) {
     final theme = Theme.of(context);
     return TextField(
@@ -85,28 +85,26 @@ class _AddBiomarkerBottomSheetState extends State<AddBiomarkerBottomSheet> {
       keyboardType: keyboardType,
       maxLines: maxLines,
       minLines: minLines,
+      style: textStyle ?? theme.textTheme.bodyLarge,
       decoration: InputDecoration(
-        labelText: label,
         hintText: hint,
-        filled: true,
-        fillColor: theme.colorScheme.surfaceContainerHighest.withValues(
-          alpha: 0.3,
+        hintStyle: theme.textTheme.bodyLarge?.copyWith(
+          color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
         ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+        contentPadding: const EdgeInsets.symmetric(vertical: 16),
+        border: UnderlineInputBorder(
           borderSide: BorderSide(
             color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
           ),
         ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: theme.colorScheme.primary),
+        enabledBorder: UnderlineInputBorder(
+          borderSide: BorderSide(
+            color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+          ),
         ),
-        floatingLabelBehavior: FloatingLabelBehavior.always,
+        focusedBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
+        ),
       ),
     );
   }
@@ -127,132 +125,120 @@ class _AddBiomarkerBottomSheetState extends State<AddBiomarkerBottomSheet> {
           ),
         ],
       ),
-      padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+      padding: const EdgeInsets.fromLTRB(32, 12, 32, 32),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Drag handle
           Center(
             child: Container(
-              width: 40,
+              width: 36,
               height: 4,
-              margin: const EdgeInsets.only(bottom: 24),
+              margin: const EdgeInsets.only(bottom: 32),
               decoration: BoxDecoration(
-                color: theme.colorScheme.outlineVariant,
+                color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
           ),
 
-          Text(
-            'Add Metric Manually',
-            style: theme.textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          // Custom Toggle
-          Container(
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surfaceContainerHighest.withValues(
-                alpha: 0.5,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Add Metric',
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: -0.5,
+                ),
               ),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => setState(() {
-                      _isNumeric = true;
-                      _valueController.clear();
-                    }),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      decoration: BoxDecoration(
-                        color: _isNumeric
-                            ? theme.colorScheme.surface
-                            : Colors.transparent,
-                        borderRadius: BorderRadius.circular(10),
-                        boxShadow: _isNumeric
-                            ? [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.05),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ]
-                            : null,
-                      ),
-                      child: Center(
+
+              // Minimal Toggle
+              Container(
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surfaceContainerHighest.withValues(
+                    alpha: 0.5,
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    GestureDetector(
+                      onTap: () => setState(() {
+                        _isNumeric = true;
+                        _valueController.clear();
+                      }),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: _isNumeric
+                              ? theme.colorScheme.primary
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
                         child: Text(
-                          'Numeric Data',
+                          'Number',
                           style: TextStyle(
+                            color: _isNumeric
+                                ? theme.colorScheme.onPrimary
+                                : theme.colorScheme.onSurfaceVariant,
                             fontWeight: _isNumeric
                                 ? FontWeight.bold
-                                : FontWeight.normal,
-                            color: _isNumeric
-                                ? theme.colorScheme.primary
-                                : theme.colorScheme.onSurfaceVariant,
+                                : FontWeight.w500,
+                            fontSize: 13,
                           ),
                         ),
                       ),
                     ),
-                  ),
-                ),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => setState(() {
-                      _isNumeric = false;
-                      _valueController.clear();
-                    }),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      decoration: BoxDecoration(
-                        color: !_isNumeric
-                            ? theme.colorScheme.surface
-                            : Colors.transparent,
-                        borderRadius: BorderRadius.circular(10),
-                        boxShadow: !_isNumeric
-                            ? [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.05),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ]
-                            : null,
-                      ),
-                      child: Center(
+                    GestureDetector(
+                      onTap: () => setState(() {
+                        _isNumeric = false;
+                        _valueController.clear();
+                      }),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: !_isNumeric
+                              ? theme.colorScheme.primary
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
                         child: Text(
-                          'Text / Findings',
+                          'Text',
                           style: TextStyle(
+                            color: !_isNumeric
+                                ? theme.colorScheme.onPrimary
+                                : theme.colorScheme.onSurfaceVariant,
                             fontWeight: !_isNumeric
                                 ? FontWeight.bold
-                                : FontWeight.normal,
-                            color: !_isNumeric
-                                ? theme.colorScheme.primary
-                                : theme.colorScheme.onSurfaceVariant,
+                                : FontWeight.w500,
+                            fontSize: 13,
                           ),
                         ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          _buildTextField(
-            controller: _nameController,
-            label: 'Metric Name',
-            hint: 'e.g. Hemoglobin, Ultrasound Findings',
+              ),
+            ],
           ),
           const SizedBox(height: 16),
+
+          _buildMinimalTextField(
+            controller: _nameController,
+            hint: 'Metric name (e.g., Hemoglobin)',
+            textStyle: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 8),
 
           if (_isNumeric)
             Row(
@@ -260,73 +246,49 @@ class _AddBiomarkerBottomSheetState extends State<AddBiomarkerBottomSheet> {
               children: [
                 Expanded(
                   flex: 3,
-                  child: _buildTextField(
+                  child: _buildMinimalTextField(
                     controller: _valueController,
-                    label: 'Result Value',
-                    hint: 'e.g. 14.5',
+                    hint: 'Value (e.g., 14.5)',
                     keyboardType: const TextInputType.numberWithOptions(
                       decimal: true,
                     ),
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 24),
                 Expanded(
                   flex: 2,
-                  child: _buildTextField(
+                  child: _buildMinimalTextField(
                     controller: _unitController,
-                    label: 'Unit (Optional)',
-                    hint: 'g/dL',
+                    hint: 'Unit (g/dL)',
                   ),
                 ),
               ],
             )
           else
-            _buildTextField(
+            _buildMinimalTextField(
               controller: _valueController,
-              label: 'Text Findings',
-              hint: 'Type or paste the result findings here...',
-              maxLines: 6,
-              minLines: 3,
+              hint: 'Enter finding or note...',
+              maxLines: 5,
+              minLines: 2,
             ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: 32),
 
-          Container(
-            decoration: BoxDecoration(
-              color: _isAbnormal
-                  ? theme.colorScheme.errorContainer.withValues(alpha: 0.3)
-                  : theme.colorScheme.surfaceContainerHighest.withValues(
-                      alpha: 0.2,
-                    ),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: _isAbnormal
-                    ? theme.colorScheme.error.withValues(alpha: 0.5)
-                    : theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
-              ),
-            ),
-            child: SwitchListTile(
-              title: Text(
-                'Flag as Abnormal',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: _isAbnormal ? theme.colorScheme.error : null,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Mark as Abnormal',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w500,
                 ),
               ),
-              subtitle: Text(
-                'Highlights this metric in red',
-                style: TextStyle(
-                  color: theme.colorScheme.onSurfaceVariant,
-                  fontSize: 12,
-                ),
+              Switch.adaptive(
+                value: _isAbnormal,
+                activeColor: theme.colorScheme.error,
+                onChanged: (val) => setState(() => _isAbnormal = val),
               ),
-              value: _isAbnormal,
-              activeColor: theme.colorScheme.error,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              onChanged: (val) => setState(() => _isAbnormal = val),
-            ),
+            ],
           ),
 
           const SizedBox(height: 32),
@@ -336,8 +298,8 @@ class _AddBiomarkerBottomSheetState extends State<AddBiomarkerBottomSheet> {
             style: FilledButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
+                borderRadius: BorderRadius.circular(100),
+              ), // fully rounded
             ),
             child: const Text(
               'Save Metric',
