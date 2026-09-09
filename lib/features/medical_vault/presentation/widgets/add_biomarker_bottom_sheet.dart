@@ -160,31 +160,47 @@ class _AddBiomarkerBottomSheetState
     'ECG/EKG Notes': null,
   };
 
-  Future<Iterable<String>> _searchBiomarkers(String query) async {
-    if (query.isEmpty) return const Iterable<String>.empty();
-
+  Future<Iterable<BiomarkerTemplate>> _searchBiomarkers(String query) async {
+    if (query.isEmpty) return const Iterable<BiomarkerTemplate>.empty();
+    
     final queryLower = query.toLowerCase();
-
-    // 1. Instant local search (searching keys of the map)
-    final localResults = _localCommonBiomarkers.keys
+    
+    // 1. Instant local search
+    final localMatches = _localCommonBiomarkers.keys
         .where((b) => b.toLowerCase().contains(queryLower))
         .toList();
-
-    // If it's a very short query and we have local hits, just return them to be fast
-    if (query.length < 3 && localResults.isNotEmpty) {
-      return localResults;
+        
+    final localTemplates = localMatches.map((name) => BiomarkerTemplate(name: name, unit: _localCommonBiomarkers[name])).toList();
+        
+    if (query.length < 3 && localTemplates.isNotEmpty) {
+      return localTemplates;
     }
-
+    
     // 2. Deep search via backend
     try {
       final repo = ref.read(medicalVaultRepositoryProvider);
       final remoteResults = await repo.searchBiomarkerDictionary(query);
-
-      // Combine and deduplicate, keeping local hits on top
-      final combined = <String>{...localResults, ...remoteResults};
+      
+      // Combine and deduplicate
+      final seen = <String>{};
+      final combined = <BiomarkerTemplate>[];
+      
+      for (final t in localTemplates) {
+        if (!seen.contains(t.name)) {
+          seen.add(t.name);
+          combined.add(t);
+        }
+      }
+      for (final t in remoteResults) {
+        if (!seen.contains(t.name)) {
+          seen.add(t.name);
+          combined.add(t);
+        }
+      }
+      
       return combined.take(15);
     } catch (_) {
-      return localResults;
+      return localTemplates;
     }
   }
 
@@ -384,14 +400,15 @@ class _AddBiomarkerBottomSheetState
           ),
           const SizedBox(height: 16),
 
-          RawAutocomplete<String>(
+          RawAutocomplete<BiomarkerTemplate>(
             textEditingController: _nameController,
+            displayStringForOption: (option) => option.name,
             optionsBuilder: (TextEditingValue textEditingValue) {
               return _searchBiomarkers(textEditingValue.text);
             },
-            onSelected: (String selection) {
-              _nameController.text = selection;
-              final unit = _localCommonBiomarkers[selection];
+            onSelected: (BiomarkerTemplate selection) {
+              _nameController.text = selection.name;
+              final unit = selection.unit;
               if (unit != null) {
                 _unitController.text = unit;
               }
@@ -436,7 +453,7 @@ class _AddBiomarkerBottomSheetState
                               vertical: 12,
                             ),
                             child: Text(
-                              option,
+                              option.name,
                               style: theme.textTheme.bodyMedium?.copyWith(
                                 fontWeight: FontWeight.w500,
                               ),

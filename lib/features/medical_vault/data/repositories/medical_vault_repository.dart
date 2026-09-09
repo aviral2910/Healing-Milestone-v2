@@ -5,6 +5,21 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:healing_milestones/core/network/api_client.dart';
+
+class BiomarkerTemplate {
+  final String name;
+  final String? unit;
+  
+  BiomarkerTemplate({required this.name, this.unit});
+  
+  factory BiomarkerTemplate.fromJson(Map<String, dynamic> json) {
+    return BiomarkerTemplate(
+      name: json['name'] as String,
+      unit: json['unit'] as String?,
+    );
+  }
+}
+
 import '../models/medical_vault_models.dart';
 import '../models/biomarker_model.dart';
 
@@ -373,14 +388,15 @@ class MedicalVaultRepository {
     }
   }
 
-  Future<List<String>> searchBiomarkerDictionary(String query) async {
+  Future<List<BiomarkerTemplate>> searchBiomarkerDictionary(String query) async {
     try {
       final response = await _apiClient.dio.get(
         '/api/biomarker-dictionary/search',
         queryParameters: {'q': query, 'limit': 20},
       );
       if (response.statusCode == 200) {
-        return List<String>.from(response.data);
+        final List<dynamic> data = response.data;
+        return data.map((json) => BiomarkerTemplate.fromJson(json)).toList();
       }
       return [];
     } catch (e) {
