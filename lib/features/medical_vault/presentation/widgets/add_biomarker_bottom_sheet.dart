@@ -47,142 +47,133 @@ class _AddBiomarkerBottomSheetState
     'Blood Pressure (BP)': 'mmHg',
     'BP (Systolic)': 'mmHg',
     'BP (Diastolic)': 'mmHg',
-    'Blood Pressure (Systolic)': 'mmHg', 
-    'Blood Pressure (Diastolic)': 'mmHg', 
-    'Weight': 'kg', 
-    'Height': 'cm', 
-    'BMI': 'kg/m²', 
-    'Temperature': '°F', 
-    'Oxygen Saturation (SpO2)': '%', 
+    'Blood Pressure (Systolic)': 'mmHg',
+    'Blood Pressure (Diastolic)': 'mmHg',
+    'Weight': 'kg',
+    'Height': 'cm',
+    'BMI': 'kg/m²',
+    'Temperature': '°F',
+    'Oxygen Saturation (SpO2)': '%',
     'Respiratory Rate': 'breaths/min',
-    
+
     // Complete Blood Count (CBC)
-    'Hemoglobin': 'g/dL', 
-    'Hematocrit': '%', 
-    'Red Blood Cell Count (RBC)': 'millions/µL', 
-    'White Blood Cell Count (WBC)': 'cells/mcL', 
-    'Platelet Count': 'thousands/µL', 
-    'Mean Corpuscular Volume (MCV)': 'fL', 
+    'Hemoglobin': 'g/dL',
+    'Hematocrit': '%',
+    'Red Blood Cell Count (RBC)': 'millions/µL',
+    'White Blood Cell Count (WBC)': 'cells/mcL',
+    'Platelet Count': 'thousands/µL',
+    'Mean Corpuscular Volume (MCV)': 'fL',
     'Mean Corpuscular Hemoglobin (MCH)': 'pg',
-    'Mean Corpuscular Hemoglobin Concentration (MCHC)': 'g/dL', 
+    'Mean Corpuscular Hemoglobin Concentration (MCHC)': 'g/dL',
     'Red Cell Distribution Width (RDW)': '%',
-    'Neutrophils': '%', 'Lymphocytes': '%', 'Monocytes': '%', 'Eosinophils': '%', 'Basophils': '%',
-    
+    'Neutrophils': '%',
+    'Lymphocytes': '%',
+    'Monocytes': '%',
+    'Eosinophils': '%',
+    'Basophils': '%',
+
     // Comprehensive Metabolic Panel (CMP)
-    'Glucose': 'mg/dL', 
-    'Glucose (Fasting)': 'mg/dL', 
+    'Glucose': 'mg/dL',
+    'Glucose (Fasting)': 'mg/dL',
     'Glucose (Postprandial)': 'mg/dL',
-    'Calcium': 'mg/dL', 
-    'Sodium': 'mEq/L', 
-    'Potassium': 'mEq/L', 
-    'Chloride': 'mEq/L', 
+    'Calcium': 'mg/dL',
+    'Sodium': 'mEq/L',
+    'Potassium': 'mEq/L',
+    'Chloride': 'mEq/L',
     'Carbon Dioxide (CO2)': 'mEq/L',
-    'Blood Urea Nitrogen (BUN)': 'mg/dL', 
-    'Creatinine': 'mg/dL', 
+    'Blood Urea Nitrogen (BUN)': 'mg/dL',
+    'Creatinine': 'mg/dL',
     'BUN/Creatinine Ratio': null,
     'Estimated Glomerular Filtration Rate (eGFR)': 'mL/min/1.73m²',
-    
+
     // Liver Function Test (LFT)
-    'Alkaline Phosphatase (ALP)': 'U/L', 
-    'Alanine Aminotransferase (ALT/SGPT)': 'U/L', 
-    'Aspartate Aminotransferase (AST/SGOT)': 'U/L', 
-    'Total Bilirubin': 'mg/dL', 
-    'Direct Bilirubin': 'mg/dL', 
-    'Indirect Bilirubin': 'mg/dL', 
-    'Total Protein': 'g/dL', 
-    'Albumin': 'g/dL', 
-    'Globulin': 'g/dL', 
+    'Alkaline Phosphatase (ALP)': 'U/L',
+    'Alanine Aminotransferase (ALT/SGPT)': 'U/L',
+    'Aspartate Aminotransferase (AST/SGOT)': 'U/L',
+    'Total Bilirubin': 'mg/dL',
+    'Direct Bilirubin': 'mg/dL',
+    'Indirect Bilirubin': 'mg/dL',
+    'Total Protein': 'g/dL',
+    'Albumin': 'g/dL',
+    'Globulin': 'g/dL',
     'Albumin/Globulin (A/G) Ratio': null,
     'Gamma-Glutamyl Transferase (GGT)': 'U/L',
-    
+
     // Lipid Profile
-    'Total Cholesterol': 'mg/dL', 
-    'High-Density Lipoprotein (HDL)': 'mg/dL', 
+    'Total Cholesterol': 'mg/dL',
+    'High-Density Lipoprotein (HDL)': 'mg/dL',
     'Low-Density Lipoprotein (LDL)': 'mg/dL',
-    'Triglycerides': 'mg/dL', 
-    'Very Low-Density Lipoprotein (VLDL)': 'mg/dL', 
+    'Triglycerides': 'mg/dL',
+    'Very Low-Density Lipoprotein (VLDL)': 'mg/dL',
     'Cholesterol/HDL Ratio': null,
-    
+
     // Thyroid Profile
-    'Thyroid Stimulating Hormone (TSH)': 'mIU/L', 
-    'Free T4': 'ng/dL', 
-    'Free T3': 'pg/mL', 
-    'Total T4': 'µg/dL', 
+    'Thyroid Stimulating Hormone (TSH)': 'mIU/L',
+    'Free T4': 'ng/dL',
+    'Free T3': 'pg/mL',
+    'Total T4': 'µg/dL',
     'Total T3': 'ng/dL',
-    
+
     // Diabetic Screen
-    'Hemoglobin A1C (HbA1c)': '%', 
-    'Average Blood Glucose (eAG)': 'mg/dL', 
+    'Hemoglobin A1C (HbA1c)': '%',
+    'Average Blood Glucose (eAG)': 'mg/dL',
     'Fasting Insulin': 'µIU/mL',
-    
+
     // Iron Studies & Anemia
-    'Iron': 'µg/dL', 
-    'Total Iron Binding Capacity (TIBC)': 'µg/dL', 
-    'Ferritin': 'ng/mL', 
-    'Transferrin': 'mg/dL', 
+    'Iron': 'µg/dL',
+    'Total Iron Binding Capacity (TIBC)': 'µg/dL',
+    'Ferritin': 'ng/mL',
+    'Transferrin': 'mg/dL',
     'Transferrin Saturation': '%',
-    
+
     // Vitamins & Minerals
-    'Vitamin B12': 'pg/mL', 
-    'Vitamin D, 25-Hydroxy': 'ng/mL', 
-    'Folate (Folic Acid)': 'ng/mL', 
-    'Magnesium': 'mg/dL', 
+    'Vitamin B12': 'pg/mL',
+    'Vitamin D, 25-Hydroxy': 'ng/mL',
+    'Folate (Folic Acid)': 'ng/mL',
+    'Magnesium': 'mg/dL',
     'Phosphorus': 'mg/dL',
-    
+
     // Inflammatory & Cardiac Markers
-    'C-Reactive Protein (hs-CRP)': 'mg/L', 
-    'Erythrocyte Sedimentation Rate (ESR)': 'mm/hr', 
+    'C-Reactive Protein (hs-CRP)': 'mg/L',
+    'Erythrocyte Sedimentation Rate (ESR)': 'mm/hr',
     'Homocysteine': 'µmol/L',
-    'Uric Acid': 'mg/dL', 
+    'Uric Acid': 'mg/dL',
     'Creatine Kinase (CK)': 'U/L',
-    
+
     // Urinalysis
-    'Urine Specific Gravity': null, 
-    'Urine pH': null, 
-    'Urine Protein': 'mg/dL', 
-    'Urine Glucose': 'mg/dL', 
+    'Urine Specific Gravity': null,
+    'Urine pH': null,
+    'Urine Protein': 'mg/dL',
+    'Urine Glucose': 'mg/dL',
     'Urine Ketones': 'mg/dL',
-    'Urine Bilirubin': null, 
-    'Urine Urobilinogen': 'mg/dL', 
-    'Urine Leukocytes': 'cells/HPF', 
-    'Urine Nitrite': null, 
+    'Urine Bilirubin': null,
+    'Urine Urobilinogen': 'mg/dL',
+    'Urine Leukocytes': 'cells/HPF',
+    'Urine Nitrite': null,
     'Urine RBC': 'cells/HPF',
-    
+
     // Common Text/Imaging Findings
-    'Ultrasound Findings': null, 
-    'X-Ray Findings': null, 
-    'MRI Impressions': null, 
-    'CT Scan Impressions': null, 
-    'ECG/EKG Notes': null
+    'Ultrasound Findings': null,
+    'X-Ray Findings': null,
+    'MRI Impressions': null,
+    'CT Scan Impressions': null,
+    'ECG/EKG Notes': null,
   };
 
   Future<Iterable<String>> _searchBiomarkers(String query) async {
     if (query.isEmpty) return const Iterable<String>.empty();
-    
+
     final queryLower = query.toLowerCase();
-    
+
     // 1. Instant local search (searching keys of the map)
     final localResults = _localCommonBiomarkers.keys
         .where((b) => b.toLowerCase().contains(queryLower))
         .toList();
-        
+
     // If it's a very short query and we have local hits, just return them to be fast
     if (query.length < 3 && localResults.isNotEmpty) {
       return localResults;
     }
-    
-    // 2. Deep search via backend
-    try {
-      final repo = ref.read(medicalVaultRepositoryProvider);
-      final remoteResults = await repo.searchBiomarkerDictionary(query);
-      
-      // Combine and deduplicate, keeping local hits on top
-      final combined = <String>{...localResults, ...remoteResults};
-      return combined.take(15);
-    } catch (_) {
-      return localResults;
-    }
-  }
 
     // 2. Deep search via backend
     try {
