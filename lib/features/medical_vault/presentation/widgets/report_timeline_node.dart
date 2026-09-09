@@ -801,42 +801,45 @@ class ReportTimelineNode extends ConsumerWidget {
                                           ),
                                           const SizedBox(height: 12),
                                         ],
-                                        OutlinedButton.icon(
-                                          onPressed: () {
-                                            Navigator.of(context).push(
-                                              MaterialPageRoute(
-                                                builder: (ctx) =>
-                                                    ReportDetailScreen(
-                                                      report: report,
-                                                      autoExtract: false,
-                                                    ),
+                                        SizedBox(
+                                          width: double.infinity,
+                                          child: OutlinedButton(
+                                            onPressed: () {
+                                              Navigator.of(context).push(
+                                                MaterialPageRoute(
+                                                  builder: (ctx) =>
+                                                      ReportDetailScreen(
+                                                        report: report,
+                                                        autoExtract: false,
+                                                      ),
+                                                ),
+                                              );
+                                            },
+                                            style: OutlinedButton.styleFrom(
+                                              side: BorderSide(
+                                                color: theme.colorScheme.primary
+                                                    .withValues(alpha: 0.5),
+                                                width: 1.5,
                                               ),
-                                            );
-                                          },
-                                          icon: Icon(
-                                            Icons.edit_note_rounded,
-                                            size: 18,
-                                            color: theme.colorScheme.primary,
-                                          ),
-                                          label: Text(
-                                            'Add Metrics Manually',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.w600,
-                                              color: theme.colorScheme.primary,
+                                              backgroundColor:
+                                                  theme.colorScheme.surface,
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    vertical: 12,
+                                                  ),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                              ),
                                             ),
-                                          ),
-                                          style: OutlinedButton.styleFrom(
-                                            padding: const EdgeInsets.symmetric(
-                                              vertical: 12,
-                                            ),
-                                            side: BorderSide(
-                                              color: theme
-                                                  .colorScheme
-                                                  .primary,
-                                            ),
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(12),
+                                            child: Text(
+                                              'Add Metrics Manually →',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                letterSpacing: 0.3,
+                                                color:
+                                                    theme.colorScheme.primary,
+                                              ),
                                             ),
                                           ),
                                         ),
