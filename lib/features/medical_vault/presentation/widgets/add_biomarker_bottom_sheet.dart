@@ -39,6 +39,7 @@ class _AddBiomarkerBottomSheetState
   final _nameController = TextEditingController();
   final _valueController = TextEditingController();
   final _unitController = TextEditingController();
+  final _nameFocusNode = FocusNode();
 
   final Map<String, String?> _localCommonBiomarkers = {
     // Vitals
@@ -202,6 +203,16 @@ class _AddBiomarkerBottomSheetState
     } catch (_) {
       return localTemplates;
     }
+  }
+
+  
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _valueController.dispose();
+    _unitController.dispose();
+    _nameFocusNode.dispose();
+    super.dispose();
   }
 
   void _submit() {
@@ -402,6 +413,7 @@ class _AddBiomarkerBottomSheetState
 
           RawAutocomplete<BiomarkerTemplate>(
             textEditingController: _nameController,
+            focusNode: _nameFocusNode,
             displayStringForOption: (option) => option.name,
             optionsBuilder: (TextEditingValue textEditingValue) {
               return _searchBiomarkers(textEditingValue.text);
