@@ -124,6 +124,87 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
     return merged;
   }
 
+
+  Future<void> _showBPEditDialog(BiomarkerModel sysB, BiomarkerModel diaB) async {
+    final sysController = TextEditingController(text: sysB.valueNumeric?.toInt().toString() ?? '');
+    final diaController = TextEditingController(text: diaB.valueNumeric?.toInt().toString() ?? '');
+    final theme = Theme.of(context);
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Edit Blood Pressure'),
+          content: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: sysController,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  decoration: const InputDecoration(
+                    labelText: 'Systolic',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: Text('/', style: TextStyle(fontSize: 24)),
+              ),
+              Expanded(
+                child: TextField(
+                  controller: diaController,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  decoration: const InputDecoration(
+                    labelText: 'Diastolic',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (result == true) {
+      final newSys = double.tryParse(sysController.text.trim());
+      final newDia = double.tryParse(diaController.text.trim());
+      
+      if (newSys != null && newDia != null) {
+        final repo = ref.read(medicalVaultRepositoryProvider);
+        try {
+          final updatedSys = await repo.updateBiomarker(sysB.id!, {'valueNumeric': newSys});
+          final updatedDia = await repo.updateBiomarker(diaB.id!, {'valueNumeric': newDia});
+          
+          setState(() {
+            final sIdx = _biomarkers.indexWhere((b) => b.id == sysB.id);
+            final dIdx = _biomarkers.indexWhere((b) => b.id == diaB.id);
+            if (sIdx != -1) _biomarkers[sIdx] = updatedSys;
+            if (dIdx != -1) _biomarkers[dIdx] = updatedDia;
+          });
+          
+          ref.invalidate(medicalRecordsProvider);
+          ref.invalidate(biomarkerTrendsProvider);
+        } catch (e) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to update BP')));
+          }
+        }
+      }
+    }
+  }
+
   Future<void> _saveEdit(
     BiomarkerModel biomarker,
     String newVal,
@@ -417,6 +498,14 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
                                   compact: false,
                                   isEditing: _editingId == b.id,
                                   onEditTap: () {
+                                    if (b.rawName == 'Blood Pressure') {
+                                      final sysIdx = _biomarkers.indexWhere((orig) => orig.rawName.toLowerCase().contains('systolic'));
+                                      final diaIdx = _biomarkers.indexWhere((orig) => orig.rawName.toLowerCase().contains('diastolic'));
+                                      if (sysIdx != -1 && diaIdx != -1) {
+                                        _showBPEditDialog(_biomarkers[sysIdx], _biomarkers[diaIdx]);
+                                      }
+                                      return;
+                                    }
                                     setState(() {
                                       _editingId = b.id;
                                     });
