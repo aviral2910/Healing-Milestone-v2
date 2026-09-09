@@ -27,7 +27,7 @@ class ReportDetailScreen extends ConsumerStatefulWidget {
 class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
   late List<BiomarkerModel> _biomarkers;
   String? _editingId;
-  final _editController = TextEditingController();
+  
 
   bool _isExtracting = false;
   String? _extractionError;
@@ -86,15 +86,83 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
     super.dispose();
   }
 
+  List<BiomarkerModel> _getDisplayBiomarkers() {
+    final List<BiomarkerModel> merged = [];
+    final List<BiomarkerModel> sysList = [];
+    final List<BiomarkerModel> diaList = [];
+
+    for (final b in _biomarkers) {
+      final lowerName = b.rawName.toLowerCase();
+      if (lowerName.contains('systolic')) {
+        sysList.add(b);
+      } else if (lowerName.contains('diastolic')) {
+        diaList.add(b);
+      } else {
+        merged.add(b);
+      }
+    }
+
+    final int pairs = sysList.length < diaList.length ? sysList.length : diaList.length;
+    for (int i = 0; i < pairs; i++) {
+      final sys = sysList[i];
+      final dia = diaList[i];
+      merged.insert(0, BiomarkerModel(
+        id: sys.id,
+        rawName: 'Blood Pressure',
+        rawUnit: sys.rawUnit ?? 'mmHg',
+        resultType: 'numeric', 
+        valueNumeric: null, 
+        valueText: '${sys.valueNumeric?.toInt() ?? '-'}/${dia.valueNumeric?.toInt() ?? '-'}',
+        isAbnormal: (sys.isAbnormal ?? false) || (dia.isAbnormal ?? false),
+        aiPredictedStandardName: 'Blood Pressure',
+      ));
+    }
+    
+    if (sysList.length > pairs) merged.addAll(sysList.sublist(pairs));
+    if (diaList.length > pairs) merged.addAll(diaList.sublist(pairs));
+
+    return merged;
+  }
+
   Future<void> _saveEdit(
     BiomarkerModel biomarker,
-    int index,
     String newVal,
   ) async {
     newVal = newVal.trim();
     if (newVal.isEmpty) {
       setState(() => _editingId = null);
       return;
+    }
+    
+    final repo = ref.read(medicalVaultRepositoryProvider);
+    
+    if (biomarker.rawName == 'Blood Pressure' && newVal.contains('/')) {
+      final parts = newVal.split('/');
+      if (parts.length == 2) {
+        final sysVal = double.tryParse(parts[0].trim());
+        final diaVal = double.tryParse(parts[1].trim());
+        
+        if (sysVal != null && diaVal != null) {
+          try {
+            final sysIndex = _biomarkers.indexWhere((b) => b.rawName.toLowerCase().contains('systolic'));
+            final diaIndex = _biomarkers.indexWhere((b) => b.rawName.toLowerCase().contains('diastolic'));
+            
+            if (sysIndex != -1 && diaIndex != -1) {
+              final updatedSys = await repo.updateBiomarker(_biomarkers[sysIndex].id!, {'valueNumeric': sysVal, 'resultType': 'numeric', 'valueText': null});
+              final updatedDia = await repo.updateBiomarker(_biomarkers[diaIndex].id!, {'valueNumeric': diaVal, 'resultType': 'numeric', 'valueText': null});
+              
+              setState(() {
+                _biomarkers[sysIndex] = updatedSys;
+                _biomarkers[diaIndex] = updatedDia;
+                _editingId = null;
+              });
+              ref.invalidate(medicalRecordsProvider);
+              ref.invalidate(biomarkerTrendsProvider);
+              return;
+            }
+          } catch (e) {}
+        }
+      }
     }
 
     final parsed = double.tryParse(newVal);
@@ -107,23 +175,19 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
     }
 
     try {
-      final repo = ref.read(medicalVaultRepositoryProvider);
       final updated = await repo.updateBiomarker(biomarker.id!, updates);
 
       setState(() {
-        _biomarkers[index] = updated;
+        final realIndex = _biomarkers.indexWhere((b) => b.id == updated.id);
+        if (realIndex != -1) {
+          _biomarkers[realIndex] = updated;
+        }
         _editingId = null;
       });
 
       ref.invalidate(medicalRecordsProvider);
       ref.invalidate(biomarkerTrendsProvider);
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Failed to update: $e')));
-      }
-    }
+    } catch (e) {}
   }
 
   @override
@@ -340,26 +404,31 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
                         right: 16,
                         bottom: 40,
                       ),
-                      sliver: SliverList(
-                        delegate: SliverChildBuilderDelegate((context, index) {
-                          final b = _biomarkers[index];
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: BiomarkerCard(
-                              biomarker: b,
-                              compact: false,
-                              isEditing: _editingId == b.id,
-                              onEditTap: () {
-                                setState(() {
-                                  _editingId = b.id;
-                                });
-                              },
-                              onSave: (val) {
-                                _saveEdit(b, index, val);
-                              },
-                            ),
+                      sliver: Builder(
+                        builder: (context) {
+                          final displayBiomarkers = _getDisplayBiomarkers();
+                          return SliverList(
+                            delegate: SliverChildBuilderDelegate((context, index) {
+                              final b = displayBiomarkers[index];
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: BiomarkerCard(
+                                  biomarker: b,
+                                  compact: false,
+                                  isEditing: _editingId == b.id,
+                                  onEditTap: () {
+                                    setState(() {
+                                      _editingId = b.id;
+                                    });
+                                  },
+                                  onSave: (val) {
+                                    _saveEdit(b, val);
+                                  },
+                                ),
+                              );
+                            }, childCount: displayBiomarkers.length),
                           );
-                        }, childCount: _biomarkers.length),
+                        },
                       ),
                     ),
                 ],
