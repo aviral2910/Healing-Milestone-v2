@@ -398,13 +398,15 @@ MedicalVaultRepository medicalVaultRepository(Ref ref) {
 }
 
 class BiomarkerTemplate {
+  final String? id;
   final String name;
   final String? unit;
   
-  BiomarkerTemplate({required this.name, this.unit});
+  BiomarkerTemplate({this.id, required this.name, this.unit});
   
   factory BiomarkerTemplate.fromJson(Map<String, dynamic> json) {
     return BiomarkerTemplate(
+      id: json['id'] as String?,
       name: json['name'] as String,
       unit: json['unit'] as String?,
     );

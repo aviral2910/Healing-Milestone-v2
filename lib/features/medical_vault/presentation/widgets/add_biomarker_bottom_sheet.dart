@@ -35,6 +35,7 @@ class _AddBiomarkerBottomSheetState
     extends ConsumerState<AddBiomarkerBottomSheet> {
   bool _isNumeric = true;
   bool _isAbnormal = false;
+  String? _selectedDictId;
 
   final _nameController = TextEditingController();
   final _valueController = TextEditingController();
@@ -291,6 +292,7 @@ class _AddBiomarkerBottomSheetState
           : null,
       isAbnormal: _isAbnormal,
       aiPredictedStandardName: name,
+      dictionaryId: _selectedDictId,
     );
 
     widget.onSave([newMetric]);
