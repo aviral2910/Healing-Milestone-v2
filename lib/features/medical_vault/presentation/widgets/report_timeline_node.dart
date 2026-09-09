@@ -11,12 +11,50 @@ import '../screens/report_detail_screen.dart';
 import '../providers/medical_vault_providers.dart';
 import 'package:intl/intl.dart';
 import '../../data/models/medical_vault_models.dart';
+import '../../data/models/biomarker_model.dart';
 import '../providers/medical_vault_providers.dart';
 import 'edit_report_overlay.dart';
 
 enum TimelinePosition { standalone, start, middle, end }
 
 class ReportTimelineNode extends ConsumerWidget {
+  List<BiomarkerModel> _mergeBPForDisplay(List<BiomarkerModel> original) {
+    final List<BiomarkerModel> merged = [];
+    final List<BiomarkerModel> sysList = [];
+    final List<BiomarkerModel> diaList = [];
+
+    for (final b in original) {
+      final lowerName = b.rawName.toLowerCase();
+      if (lowerName.contains('systolic')) {
+        sysList.add(b);
+      } else if (lowerName.contains('diastolic')) {
+        diaList.add(b);
+      } else {
+        merged.add(b);
+      }
+    }
+
+    final int pairs = sysList.length < diaList.length ? sysList.length : diaList.length;
+    for (int i = 0; i < pairs; i++) {
+      final sys = sysList[i];
+      final dia = diaList[i];
+      merged.insert(0, BiomarkerModel(
+        id: sys.id,
+        rawName: 'Blood Pressure',
+        rawUnit: sys.rawUnit ?? 'mmHg',
+        resultType: 'numeric', 
+        valueNumeric: null, 
+        valueText: '${sys.valueNumeric?.toInt() ?? '-'}/${dia.valueNumeric?.toInt() ?? '-'}',
+        isAbnormal: (sys.isAbnormal ?? false) || (dia.isAbnormal ?? false),
+        aiPredictedStandardName: 'Blood Pressure',
+      ));
+    }
+    
+    if (sysList.length > pairs) merged.addAll(sysList.sublist(pairs));
+    if (diaList.length > pairs) merged.addAll(diaList.sublist(pairs));
+
+    return merged;
+  }
   void _extractAI(BuildContext context, MedicalRecord report) {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -625,7 +663,7 @@ class ReportTimelineNode extends ConsumerWidget {
                                         ),
                                         const SizedBox(height: 8),
                                         Column(
-                                          children: report.biomarkers
+                                          children: _mergeBPForDisplay(report.biomarkers)
                                               .take(4)
                                               .map((b) {
                                                 return BiomarkerCard(
@@ -635,7 +673,7 @@ class ReportTimelineNode extends ConsumerWidget {
                                               })
                                               .toList(),
                                         ),
-                                        if (report.biomarkers.length > 4) ...[
+                                        if (_mergeBPForDisplay(report.biomarkers).length > 4) ...[
                                           const SizedBox(height: 4),
                                           SizedBox(
                                             width: double.infinity,
