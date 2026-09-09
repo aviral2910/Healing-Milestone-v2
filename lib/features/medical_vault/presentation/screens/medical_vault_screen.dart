@@ -44,7 +44,9 @@ class _MedicalVaultScreenState extends ConsumerState<MedicalVaultScreen> {
     final theme = Theme.of(context);
     final recordsAsync = ref.watch(medicalRecordsProvider);
 
-    return Scaffold(
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
@@ -65,6 +67,15 @@ class _MedicalVaultScreenState extends ConsumerState<MedicalVaultScreen> {
             },
           ),
         ],
+        bottom: TabBar(
+          labelColor: theme.colorScheme.primary,
+          unselectedLabelColor: theme.colorScheme.onSurfaceVariant,
+          indicatorColor: theme.colorScheme.primary,
+          tabs: const [
+            Tab(text: 'Timeline'),
+            Tab(text: 'Trends'),
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => UploadReportOverlay.show(context),
@@ -75,7 +86,8 @@ class _MedicalVaultScreenState extends ConsumerState<MedicalVaultScreen> {
           style: TextStyle(color: theme.colorScheme.onPrimary),
         ),
       ),
-      body: recordsAsync.when(
+      body: TabBarView(children: [
+        recordsAsync.when(
         loading: () => Center(
           child: CircularProgressIndicator(color: theme.colorScheme.onSurface),
         ),
@@ -180,6 +192,8 @@ class _MedicalVaultScreenState extends ConsumerState<MedicalVaultScreen> {
           );
         },
       ),
-    );
+      const TrendsTab(),
+      ]),
+    ));
   }
 }

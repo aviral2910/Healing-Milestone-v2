@@ -473,6 +473,7 @@ class _AddBiomarkerBottomSheetState
             },
             onSelected: (BiomarkerTemplate selection) {
               _nameController.text = selection.name;
+              _selectedDictId = selection.id;
               final unit = selection.unit;
               if (unit != null) {
                 _unitController.text = unit;
