@@ -395,7 +395,9 @@ class _AddBiomarkerBottomSheetState
               ),
               Switch.adaptive(
                 value: _isAbnormal,
-                activeTrackColor: theme.colorScheme.error.withValues(alpha: 0.5),
+                activeTrackColor: theme.colorScheme.error.withValues(
+                  alpha: 0.5,
+                ),
                 activeThumbColor: theme.colorScheme.error,
                 onChanged: (val) => setState(() => _isAbnormal = val),
               ),
