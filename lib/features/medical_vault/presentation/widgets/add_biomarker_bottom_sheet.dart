@@ -41,25 +41,101 @@ class _AddBiomarkerBottomSheetState
   final _unitController = TextEditingController();
 
   final List<String> _localCommonBiomarkers = [
-    'Hemoglobin',
-    'Hematocrit',
-    'Glucose',
-    'Calcium',
-    'Sodium',
-    'Potassium',
-    'Total Cholesterol',
-    'LDL',
-    'HDL',
-    'Triglycerides',
-    'Heart Rate',
-    'Blood Pressure (Systolic)',
-    'Blood Pressure (Diastolic)',
+    // Vitals
+    'Heart Rate', 'Blood Pressure (Systolic)', 'Blood Pressure (Diastolic)',
     'Weight',
     'Height',
     'BMI',
     'Temperature',
     'Oxygen Saturation (SpO2)',
     'Respiratory Rate',
+
+    // Complete Blood Count (CBC)
+    'Hemoglobin',
+    'Hematocrit',
+    'Red Blood Cell Count (RBC)',
+    'White Blood Cell Count (WBC)',
+    'Platelet Count',
+    'Mean Corpuscular Volume (MCV)',
+    'Mean Corpuscular Hemoglobin (MCH)',
+    'Mean Corpuscular Hemoglobin Concentration (MCHC)',
+    'Red Cell Distribution Width (RDW)',
+    'Neutrophils', 'Lymphocytes', 'Monocytes', 'Eosinophils', 'Basophils',
+
+    // Comprehensive Metabolic Panel (CMP)
+    'Glucose', 'Glucose (Fasting)', 'Glucose (Postprandial)',
+    'Calcium', 'Sodium', 'Potassium', 'Chloride', 'Carbon Dioxide (CO2)',
+    'Blood Urea Nitrogen (BUN)', 'Creatinine', 'BUN/Creatinine Ratio',
+    'Estimated Glomerular Filtration Rate (eGFR)',
+
+    // Liver Function Test (LFT)
+    'Alkaline Phosphatase (ALP)', 'Alanine Aminotransferase (ALT/SGPT)',
+    'Aspartate Aminotransferase (AST/SGOT)',
+    'Total Bilirubin',
+    'Direct Bilirubin',
+    'Indirect Bilirubin',
+    'Total Protein',
+    'Albumin',
+    'Globulin',
+    'Albumin/Globulin (A/G) Ratio',
+    'Gamma-Glutamyl Transferase (GGT)',
+
+    // Lipid Profile
+    'Total Cholesterol',
+    'High-Density Lipoprotein (HDL)',
+    'Low-Density Lipoprotein (LDL)',
+    'Triglycerides',
+    'Very Low-Density Lipoprotein (VLDL)',
+    'Cholesterol/HDL Ratio',
+
+    // Thyroid Profile
+    'Thyroid Stimulating Hormone (TSH)',
+    'Free T4',
+    'Free T3',
+    'Total T4',
+    'Total T3',
+
+    // Diabetic Screen
+    'Hemoglobin A1C (HbA1c)', 'Average Blood Glucose (eAG)', 'Fasting Insulin',
+
+    // Iron Studies & Anemia
+    'Iron',
+    'Total Iron Binding Capacity (TIBC)',
+    'Ferritin',
+    'Transferrin',
+    'Transferrin Saturation',
+
+    // Vitamins & Minerals
+    'Vitamin B12',
+    'Vitamin D, 25-Hydroxy',
+    'Folate (Folic Acid)',
+    'Magnesium',
+    'Phosphorus',
+
+    // Inflammatory & Cardiac Markers
+    'C-Reactive Protein (hs-CRP)',
+    'Erythrocyte Sedimentation Rate (ESR)',
+    'Homocysteine',
+    'Uric Acid', 'Creatine Kinase (CK)',
+
+    // Urinalysis
+    'Urine Specific Gravity',
+    'Urine pH',
+    'Urine Protein',
+    'Urine Glucose',
+    'Urine Ketones',
+    'Urine Bilirubin',
+    'Urine Urobilinogen',
+    'Urine Leukocytes',
+    'Urine Nitrite',
+    'Urine RBC',
+
+    // Common Text/Imaging Findings
+    'Ultrasound Findings',
+    'X-Ray Findings',
+    'MRI Impressions',
+    'CT Scan Impressions',
+    'ECG/EKG Notes',
   ];
 
   Future<Iterable<String>> _searchBiomarkers(String query) async {
