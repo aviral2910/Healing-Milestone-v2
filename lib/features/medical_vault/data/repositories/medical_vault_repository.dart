@@ -372,9 +372,25 @@ class MedicalVaultRepository {
       throw Exception('Load trends error: $e');
     }
   }
+
+  Future<List<String>> searchBiomarkerDictionary(String query) async {
+    try {
+      final response = await _apiClient.dio.get(
+        '/api/biomarker-dictionary/search',
+        queryParameters: {'q': query, 'limit': 20},
+      );
+      if (response.statusCode == 200) {
+        return List<String>.from(response.data);
+      }
+      return [];
+    } catch (e) {
+      return []; // Fail silently for autocomplete
+    }
+  }
 }
 
 @riverpod
 MedicalVaultRepository medicalVaultRepository(Ref ref) {
   return MedicalVaultRepository(ref.watch(apiClientProvider));
+
 }

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../data/models/biomarker_model.dart';
 import 'package:uuid/uuid.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../data/repositories/medical_vault_repository.dart';
 
-class AddBiomarkerBottomSheet extends StatefulWidget {
+class AddBiomarkerBottomSheet extends ConsumerStatefulWidget {
   final Function(BiomarkerModel) onSave;
 
   const AddBiomarkerBottomSheet({super.key, required this.onSave});
@@ -25,17 +27,68 @@ class AddBiomarkerBottomSheet extends StatefulWidget {
   }
 
   @override
-  State<AddBiomarkerBottomSheet> createState() =>
+  ConsumerState<AddBiomarkerBottomSheet> createState() =>
       _AddBiomarkerBottomSheetState();
 }
 
-class _AddBiomarkerBottomSheetState extends State<AddBiomarkerBottomSheet> {
+class _AddBiomarkerBottomSheetState
+    extends ConsumerState<AddBiomarkerBottomSheet> {
   bool _isNumeric = true;
   bool _isAbnormal = false;
 
   final _nameController = TextEditingController();
   final _valueController = TextEditingController();
   final _unitController = TextEditingController();
+
+  final List<String> _localCommonBiomarkers = [
+    'Hemoglobin',
+    'Hematocrit',
+    'Glucose',
+    'Calcium',
+    'Sodium',
+    'Potassium',
+    'Total Cholesterol',
+    'LDL',
+    'HDL',
+    'Triglycerides',
+    'Heart Rate',
+    'Blood Pressure (Systolic)',
+    'Blood Pressure (Diastolic)',
+    'Weight',
+    'Height',
+    'BMI',
+    'Temperature',
+    'Oxygen Saturation (SpO2)',
+    'Respiratory Rate',
+  ];
+
+  Future<Iterable<String>> _searchBiomarkers(String query) async {
+    if (query.isEmpty) return const Iterable<String>.empty();
+
+    final queryLower = query.toLowerCase();
+
+    // 1. Instant local search
+    final localResults = _localCommonBiomarkers
+        .where((b) => b.toLowerCase().contains(queryLower))
+        .toList();
+
+    // If it's a very short query and we have local hits, just return them to be fast
+    if (query.length < 3 && localResults.isNotEmpty) {
+      return localResults;
+    }
+
+    // 2. Deep search via backend
+    try {
+      final repo = ref.read(medicalVaultRepositoryProvider);
+      final remoteResults = await repo.searchBiomarkerDictionary(query);
+
+      // Combine and deduplicate, keeping local hits on top
+      final combined = <String>{...localResults, ...remoteResults};
+      return combined.take(15);
+    } catch (_) {
+      return localResults;
+    }
+  }
 
   void _submit() {
     final name = _nameController.text.trim();
@@ -78,10 +131,12 @@ class _AddBiomarkerBottomSheetState extends State<AddBiomarkerBottomSheet> {
     int maxLines = 1,
     int? minLines,
     TextStyle? textStyle,
+    FocusNode? focusNode,
   }) {
     final theme = Theme.of(context);
     return TextField(
       controller: controller,
+      focusNode: focusNode,
       keyboardType: keyboardType,
       maxLines: maxLines,
       minLines: minLines,
@@ -231,12 +286,67 @@ class _AddBiomarkerBottomSheetState extends State<AddBiomarkerBottomSheet> {
           ),
           const SizedBox(height: 16),
 
-          _buildMinimalTextField(
-            controller: _nameController,
-            hint: 'Metric name (e.g., Hemoglobin)',
-            textStyle: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+          RawAutocomplete<String>(
+            textEditingController: _nameController,
+            optionsBuilder: (TextEditingValue textEditingValue) {
+              return _searchBiomarkers(textEditingValue.text);
+            },
+            onSelected: (String selection) {
+              _nameController.text = selection;
+            },
+            fieldViewBuilder:
+                (context, controller, focusNode, onFieldSubmitted) {
+                  return _buildMinimalTextField(
+                    controller: controller,
+                    focusNode: focusNode,
+                    hint: 'Metric name (e.g., Hemoglobin)',
+                    textStyle: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  );
+                },
+            optionsViewBuilder: (context, onSelected, options) {
+              return Align(
+                alignment: Alignment.topLeft,
+                child: Material(
+                  elevation: 8,
+                  borderRadius: BorderRadius.circular(12),
+                  color: theme.colorScheme.surfaceContainerHighest,
+                  clipBehavior: Clip.antiAlias,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxHeight: 200,
+                      maxWidth:
+                          MediaQuery.of(context).size.width -
+                          64, // match padding
+                    ),
+                    child: ListView.builder(
+                      padding: EdgeInsets.zero,
+                      shrinkWrap: true,
+                      itemCount: options.length,
+                      itemBuilder: (context, index) {
+                        final option = options.elementAt(index);
+                        return InkWell(
+                          onTap: () => onSelected(option),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                            child: Text(
+                              option,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              );
+            },
           ),
           const SizedBox(height: 8),
 
@@ -285,7 +395,8 @@ class _AddBiomarkerBottomSheetState extends State<AddBiomarkerBottomSheet> {
               ),
               Switch.adaptive(
                 value: _isAbnormal,
-                activeColor: theme.colorScheme.error,
+                activeTrackColor: theme.colorScheme.error.withValues(alpha: 0.5),
+                activeThumbColor: theme.colorScheme.error,
                 onChanged: (val) => setState(() => _isAbnormal = val),
               ),
             ],
