@@ -127,19 +127,19 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
   }
 
   @override
-  Future<void> _addMetricManually(BiomarkerModel newMetric) async {
+  Future<void> _addMetricManually(List<BiomarkerModel> newMetrics) async {
     try {
       final repo = ref.read(medicalVaultRepositoryProvider);
-      final created = await repo.saveBiomarkers(widget.report.id, [newMetric]);
+      final created = await repo.saveBiomarkers(widget.report.id, newMetrics);
 
       if (mounted && created.isNotEmpty) {
         setState(() {
-          _biomarkers.add(created.first);
+          _biomarkers.addAll(created);
         });
         ref.invalidate(medicalRecordsProvider);
         ref.invalidate(biomarkerTrendsProvider);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Metric added successfully')),
+          const SnackBar(content: Text('Metrics added successfully')),
         );
       }
     } catch (e) {
