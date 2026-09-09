@@ -5,13 +5,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/repositories/medical_vault_repository.dart';
 
 class AddBiomarkerBottomSheet extends ConsumerStatefulWidget {
-  final Function(BiomarkerModel) onSave;
+  final Function(List<BiomarkerModel>) onSave;
 
   const AddBiomarkerBottomSheet({super.key, required this.onSave});
 
   static Future<void> show(
     BuildContext context,
-    Function(BiomarkerModel) onSave,
+    Function(List<BiomarkerModel>) onSave,
   ) {
     return showModalBottomSheet(
       context: context,
@@ -38,6 +38,7 @@ class _AddBiomarkerBottomSheetState
 
   final _nameController = TextEditingController();
   final _valueController = TextEditingController();
+  final _diastolicController = TextEditingController();
   final _unitController = TextEditingController();
   final _nameFocusNode = FocusNode();
 
@@ -75,6 +76,9 @@ class _AddBiomarkerBottomSheetState
 
     // Comprehensive Metabolic Panel (CMP)
     'Glucose': 'mg/dL',
+    'Sugar Level': 'mg/dL',
+    'Blood Sugar': 'mg/dL',
+
     'Glucose (Fasting)': 'mg/dL',
     'Glucose (Postprandial)': 'mg/dL',
     'Calcium': 'mg/dL',
@@ -206,10 +210,23 @@ class _AddBiomarkerBottomSheetState
   }
 
   
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController.addListener(_onNameChanged);
+  }
+
+  void _onNameChanged() {
+    setState(() {}); // Rebuild to check for dual BP mode
+  }
+
   @override
   void dispose() {
     _nameController.dispose();
     _valueController.dispose();
+    _diastolicController.dispose();
+    _nameController.removeListener(_onNameChanged);
     _unitController.dispose();
     _nameFocusNode.dispose();
     super.dispose();
@@ -218,6 +235,37 @@ class _AddBiomarkerBottomSheetState
   void _submit() {
     final name = _nameController.text.trim();
     if (name.isEmpty) return;
+    
+    if (_isDualBP) {
+      final sysVal = double.tryParse(_valueController.text.trim());
+      final diaVal = double.tryParse(_diastolicController.text.trim());
+      
+      if (sysVal == null || diaVal == null) return;
+      
+      final unit = _unitController.text.trim().isEmpty ? null : _unitController.text.trim();
+      
+      final sysMetric = BiomarkerModel(
+        id: const Uuid().v4(),
+        rawName: 'Blood Pressure (Systolic)',
+        rawUnit: unit,
+        resultType: 'numeric',
+        valueNumeric: sysVal,
+        isAbnormal: _isAbnormal,
+      );
+      
+      final diaMetric = BiomarkerModel(
+        id: const Uuid().v4(),
+        rawName: 'Blood Pressure (Diastolic)',
+        rawUnit: unit,
+        resultType: 'numeric',
+        valueNumeric: diaVal,
+        isAbnormal: _isAbnormal,
+      );
+      
+      widget.onSave([sysMetric, diaMetric]);
+      Navigator.of(context).pop();
+      return;
+    }
 
     final valText = _valueController.text.trim();
 
@@ -245,7 +293,7 @@ class _AddBiomarkerBottomSheetState
       aiPredictedStandardName: name,
     );
 
-    widget.onSave(newMetric);
+    widget.onSave([newMetric]);
     Navigator.of(context).pop();
   }
 
@@ -287,6 +335,11 @@ class _AddBiomarkerBottomSheetState
         ),
       ),
     );
+  }
+
+  bool get _isDualBP {
+    final name = _nameController.text.trim().toLowerCase();
+    return name == 'blood pressure' || name == 'blood pressure (bp)' || name == 'bp' || name == 'bp (combined)';
   }
 
   @override
@@ -481,7 +534,38 @@ class _AddBiomarkerBottomSheetState
           ),
           const SizedBox(height: 8),
 
-          if (_isNumeric)
+          if (_isDualBP)
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  flex: 3,
+                  child: _buildMinimalTextField(
+                    controller: _valueController,
+                    hint: 'Systolic',
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  child: Text(
+                    '/',
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 3,
+                  child: _buildMinimalTextField(
+                    controller: _diastolicController,
+                    hint: 'Diastolic',
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  ),
+                ),
+              ],
+            )
+          else if (_isNumeric)
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -495,12 +579,13 @@ class _AddBiomarkerBottomSheetState
                     ),
                   ),
                 ),
-                const SizedBox(width: 24),
+                const SizedBox(width: 12),
                 Expanded(
                   flex: 2,
                   child: _buildMinimalTextField(
                     controller: _unitController,
                     hint: 'Unit (g/dL)',
+                    keyboardType: TextInputType.text,
                   ),
                 ),
               ],
