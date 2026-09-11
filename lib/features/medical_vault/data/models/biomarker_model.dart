@@ -17,6 +17,8 @@ abstract class BiomarkerModel with _$BiomarkerModel {
     String? aiPredictedLoinc,
     String? aiPredictedStandardName,
     String? dictionaryId,
+    double? referenceRangeLow,
+    double? referenceRangeHigh,
   }) = _BiomarkerModel;
 
   factory BiomarkerModel.fromJson(Map<String, dynamic> json) =>
