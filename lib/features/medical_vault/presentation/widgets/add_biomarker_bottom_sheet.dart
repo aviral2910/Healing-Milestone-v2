@@ -41,6 +41,8 @@ class _AddBiomarkerBottomSheetState
   final _valueController = TextEditingController();
   final _diastolicController = TextEditingController();
   final _unitController = TextEditingController();
+  final _rangeLowController = TextEditingController();
+  final _rangeHighController = TextEditingController();
   final _nameFocusNode = FocusNode();
 
   final Map<String, String?> _localCommonBiomarkers = {
@@ -168,29 +170,34 @@ class _AddBiomarkerBottomSheetState
 
   Future<Iterable<BiomarkerTemplate>> _searchBiomarkers(String query) async {
     if (query.isEmpty) return const Iterable<BiomarkerTemplate>.empty();
-    
+
     final queryLower = query.toLowerCase();
-    
+
     // 1. Instant local search
     final localMatches = _localCommonBiomarkers.keys
         .where((b) => b.toLowerCase().contains(queryLower))
         .toList();
-        
-    final localTemplates = localMatches.map((name) => BiomarkerTemplate(name: name, unit: _localCommonBiomarkers[name])).toList();
-        
+
+    final localTemplates = localMatches
+        .map(
+          (name) =>
+              BiomarkerTemplate(name: name, unit: _localCommonBiomarkers[name]),
+        )
+        .toList();
+
     if (query.length < 3 && localTemplates.isNotEmpty) {
       return localTemplates;
     }
-    
+
     // 2. Deep search via backend
     try {
       final repo = ref.read(medicalVaultRepositoryProvider);
       final remoteResults = await repo.searchBiomarkerDictionary(query);
-      
+
       // Combine and deduplicate
       final seen = <String>{};
       final combined = <BiomarkerTemplate>[];
-      
+
       for (final t in localTemplates) {
         if (!seen.contains(t.name)) {
           seen.add(t.name);
@@ -203,14 +210,12 @@ class _AddBiomarkerBottomSheetState
           combined.add(t);
         }
       }
-      
+
       return combined.take(15);
     } catch (_) {
       return localTemplates;
     }
   }
-
-  
 
   @override
   void initState() {
@@ -229,6 +234,8 @@ class _AddBiomarkerBottomSheetState
     _diastolicController.dispose();
     _nameController.removeListener(_onNameChanged);
     _unitController.dispose();
+    _rangeLowController.dispose();
+    _rangeHighController.dispose();
     _nameFocusNode.dispose();
     super.dispose();
   }
@@ -236,15 +243,17 @@ class _AddBiomarkerBottomSheetState
   void _submit() {
     final name = _nameController.text.trim();
     if (name.isEmpty) return;
-    
+
     if (_isDualBP) {
       final sysVal = double.tryParse(_valueController.text.trim());
       final diaVal = double.tryParse(_diastolicController.text.trim());
-      
+
       if (sysVal == null || diaVal == null) return;
-      
-      final unit = _unitController.text.trim().isEmpty ? null : _unitController.text.trim();
-      
+
+      final unit = _unitController.text.trim().isEmpty
+          ? null
+          : _unitController.text.trim();
+
       final sysMetric = BiomarkerModel(
         id: const Uuid().v4(),
         rawName: 'Blood Pressure (Systolic)',
@@ -253,7 +262,7 @@ class _AddBiomarkerBottomSheetState
         valueNumeric: sysVal,
         isAbnormal: _isAbnormal,
       );
-      
+
       final diaMetric = BiomarkerModel(
         id: const Uuid().v4(),
         rawName: 'Blood Pressure (Diastolic)',
@@ -262,7 +271,7 @@ class _AddBiomarkerBottomSheetState
         valueNumeric: diaVal,
         isAbnormal: _isAbnormal,
       );
-      
+
       widget.onSave([sysMetric, diaMetric]);
       Navigator.of(context).pop();
       return;
@@ -341,7 +350,10 @@ class _AddBiomarkerBottomSheetState
 
   bool get _isDualBP {
     final name = _nameController.text.trim().toLowerCase();
-    return name == 'blood pressure' || name == 'blood pressure (bp)' || name == 'bp' || name == 'bp (combined)';
+    return name == 'blood pressure' ||
+        name == 'blood pressure (bp)' ||
+        name == 'bp' ||
+        name == 'bp (combined)';
   }
 
   @override
@@ -546,11 +558,16 @@ class _AddBiomarkerBottomSheetState
                   child: _buildMinimalTextField(
                     controller: _valueController,
                     hint: 'Systolic',
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 12,
+                  ),
                   child: Text(
                     '/',
                     style: theme.textTheme.titleLarge?.copyWith(
@@ -563,33 +580,63 @@ class _AddBiomarkerBottomSheetState
                   child: _buildMinimalTextField(
                     controller: _diastolicController,
                     hint: 'Diastolic',
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  ),
-                ),
-              ],
-            )
-          else if (_isNumeric)
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  flex: 3,
-                  child: _buildMinimalTextField(
-                    controller: _valueController,
-                    hint: 'Value (e.g., 14.5)',
                     keyboardType: const TextInputType.numberWithOptions(
                       decimal: true,
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  flex: 2,
-                  child: _buildMinimalTextField(
-                    controller: _unitController,
-                    hint: 'Unit (g/dL)',
-                    keyboardType: TextInputType.text,
-                  ),
+              ],
+            )
+          else if (_isNumeric)
+            Column(
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      flex: 3,
+                      child: _buildMinimalTextField(
+                        controller: _valueController,
+                        hint: 'Value (e.g., 14.5)',
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      flex: 2,
+                      child: _buildMinimalTextField(
+                        controller: _unitController,
+                        hint: 'Unit (g/dL)',
+                        keyboardType: TextInputType.text,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildMinimalTextField(
+                        controller: _rangeLowController,
+                        hint: 'Min Range (0.70)',
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildMinimalTextField(
+                        controller: _rangeHighController,
+                        hint: 'Max Range (1.30)',
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             )
