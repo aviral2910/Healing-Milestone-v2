@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import '../widgets/upload_report_overlay.dart';
 import 'trends_tab.dart';
 import '../providers/medical_vault_providers.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 
 class MedicalVaultScreen extends ConsumerStatefulWidget {
   const MedicalVaultScreen({super.key});
@@ -96,101 +97,110 @@ class _MedicalVaultScreenState extends ConsumerState<MedicalVaultScreen> {
         final sortedDates = grouped.keys.toList()
           ..sort((a, b) => b.compareTo(a));
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(height: 24),
-            Divider(color: theme.primaryColor.withValues(alpha: 0.2)),
-            Padding(
-              padding: const EdgeInsets.only(
-                left: 24,
-                right: 24,
-                top: 16,
-                bottom: 16,
+        return AnimationLimiter(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: AnimationConfiguration.toStaggeredList(
+              duration: const Duration(milliseconds: 400),
+              childAnimationBuilder: (widget) => SlideAnimation(
+                verticalOffset: 50.0,
+                child: FadeInAnimation(child: widget),
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Recent Reports',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+              children: [
+                SizedBox(height: 24),
+                Divider(color: theme.primaryColor.withValues(alpha: 0.2)),
+                Padding(
+                  padding: const EdgeInsets.only(
+                    left: 24,
+                    right: 24,
+                    top: 16,
+                    bottom: 16,
                   ),
-
-                  if (records.length > 3)
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const FullTimelineScreen(),
-                          ),
-                        );
-                      },
-                      style: TextButton.styleFrom(
-                        padding: EdgeInsets.zero,
-                        minimumSize: const Size(50, 30),
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                      child: Text(
-                        'View All',
-                        style: TextStyle(
-                          color: theme.colorScheme.primary,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Recent Reports',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                    ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 8),
 
-            ...sortedDates.map((date) {
-              final dateRecords = grouped[date]!;
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 8,
-                    ),
-                    child: Text(
-                      DateFormat('MMMM d, yyyy').format(date),
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w400,
-                        fontSize: 14,
-                      ),
-                    ),
+                      if (records.length > 3)
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const FullTimelineScreen(),
+                              ),
+                            );
+                          },
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            minimumSize: const Size(50, 30),
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          child: Text(
+                            'View All',
+                            style: TextStyle(
+                              color: theme.colorScheme.primary,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
-                  ...List.generate(dateRecords.length, (i) {
-                    final isFirst = i == 0;
-                    final isLast = i == dateRecords.length - 1;
-                    TimelinePosition position = TimelinePosition.middle;
-                    if (dateRecords.length == 1) {
-                      position = TimelinePosition.standalone;
-                    } else if (isFirst) {
-                      position = TimelinePosition.start;
-                    } else if (isLast) {
-                      position = TimelinePosition.end;
-                    }
+                ),
+                const SizedBox(height: 8),
 
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: ReportTimelineNode(
-                        report: dateRecords[i],
-                        position: position,
+                ...sortedDates.map((date) {
+                  final dateRecords = grouped[date]!;
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 8,
+                        ),
+                        child: Text(
+                          DateFormat('MMMM d, yyyy').format(date),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w400,
+                            fontSize: 14,
+                          ),
+                        ),
                       ),
-                    );
-                  }),
-                  const SizedBox(height: 16), // Gap between dates
-                ],
-              );
-            }).toList(),
+                      ...List.generate(dateRecords.length, (i) {
+                        final isFirst = i == 0;
+                        final isLast = i == dateRecords.length - 1;
+                        TimelinePosition position = TimelinePosition.middle;
+                        if (dateRecords.length == 1) {
+                          position = TimelinePosition.standalone;
+                        } else if (isFirst) {
+                          position = TimelinePosition.start;
+                        } else if (isLast) {
+                          position = TimelinePosition.end;
+                        }
 
-            const SizedBox(height: 100),
-          ],
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: ReportTimelineNode(
+                            report: dateRecords[i],
+                            position: position,
+                          ),
+                        );
+                      }),
+                      const SizedBox(height: 16), // Gap between dates
+                    ],
+                  );
+                }).toList(),
+
+                const SizedBox(height: 100),
+              ],
+            ),
+          ),
         );
       },
     );

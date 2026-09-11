@@ -87,14 +87,19 @@ class CompareBottomSheetState extends State<CompareBottomSheet> {
                 decoration: InputDecoration(
                   icon: Icon(
                     Icons.search,
-                    color: theme.colorScheme.primary,
+                    color: theme.colorScheme.onSurfaceVariant.withValues(
+                      alpha: 0.5,
+                    ),
                     size: 20,
                   ),
                   hintText: 'Search to compare...',
                   border: InputBorder.none,
                   hintStyle: TextStyle(
-                    color: theme.colorScheme.outline,
+                    color: theme.colorScheme.onSurfaceVariant.withValues(
+                      alpha: 0.4,
+                    ),
                     fontSize: 14,
+                    fontWeight: FontWeight.w400,
                   ),
                 ),
               ),

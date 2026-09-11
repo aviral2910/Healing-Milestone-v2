@@ -6,6 +6,7 @@ import '../../data/models/biomarker_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'metric_detail_screen.dart';
 import 'category_detail_screen.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 
 class TrendsTab extends ConsumerStatefulWidget {
   final Widget? bottomWidget;
@@ -174,112 +175,260 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
             physics: const AlwaysScrollableScrollPhysics(),
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Search Bar
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.surface,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: theme.colorScheme.primary.withValues(
-                            alpha: 0.15,
-                          ),
-                          width: 1,
-                        ),
-                      ),
-                      child: TextField(
-                        onChanged: (val) => setState(() => _searchQuery = val),
-                        style: const TextStyle(fontSize: 14),
-                        decoration: InputDecoration(
-                          icon: Icon(
-                            Icons.search,
-                            color: theme.colorScheme.primary,
-                            size: 20,
-                          ),
-                          hintText: 'Search biomarkers...',
-                          border: InputBorder.none,
-                          hintStyle: TextStyle(
-                            color: theme.colorScheme.outline,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ),
+              child: AnimationLimiter(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: AnimationConfiguration.toStaggeredList(
+                    duration: const Duration(milliseconds: 375),
+                    childAnimationBuilder: (widget) => SlideAnimation(
+                      verticalOffset: 50.0,
+                      child: FadeInAnimation(child: widget),
                     ),
-                  ),
-                  const SizedBox(height: 36),
-
-                  // Explore Categories
-                  if (_searchQuery.isEmpty) ...[
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: Text(
-                        'Explore Categories',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      height:
-                          110, // Reduced height since icons/text are smaller
-                      child: ListView.separated(
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
-                        scrollDirection: Axis.horizontal,
-                        itemCount: sortedCategoryKeys
-                            .where((k) => k != 'Other Biomarkers')
-                            .length,
-                        separatorBuilder: (_, __) => const SizedBox(width: 16),
-                        itemBuilder: (context, index) {
-                          final key = sortedCategoryKeys
-                              .where((k) => k != 'Other Biomarkers')
-                              .toList()[index];
-                          final count = categories[key]!.length;
-                          return _buildCategorySquare(
-                            key,
-                            count,
-                            categories[key]!,
-                            theme,
-                          );
-                        },
-                      ),
-                    ),
-
-                    // Long Rectangular Card for Other Biomarkers
-                    if (categories.containsKey('Other Biomarkers')) ...[
-                      const SizedBox(height: 16),
+                    children: [
+                      // Search Bar
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 24),
-                        child: GestureDetector(
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => CategoryDetailScreen(
-                                  category: 'Other Biomarkers',
-                                  bundleList: categories['Other Biomarkers']!,
-                                  color: _getCategoryColor(
-                                    'Other Biomarkers',
-                                    theme,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.surface,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: theme.colorScheme.primary.withValues(
+                                alpha: 0.15,
+                              ),
+                              width: 1,
+                            ),
+                          ),
+                          child: TextField(
+                            onChanged: (val) =>
+                                setState(() => _searchQuery = val),
+                            style: const TextStyle(fontSize: 14),
+                            decoration: InputDecoration(
+                              icon: Icon(
+                                Icons.search,
+                                color: theme.colorScheme.onSurfaceVariant
+                                    .withValues(alpha: 0.5),
+                                size: 20,
+                              ),
+                              hintText: 'Search biomarkers...',
+                              border: InputBorder.none,
+                              hintStyle: TextStyle(
+                                color: theme.colorScheme.onSurfaceVariant
+                                    .withValues(alpha: 0.4),
+                                fontSize: 14,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 36),
+
+                      // Explore Categories
+                      if (_searchQuery.isEmpty) ...[
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: Text(
+                            'Explore Categories',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          height:
+                              110, // Reduced height since icons/text are smaller
+                          child: ListView.separated(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            scrollDirection: Axis.horizontal,
+                            itemCount: sortedCategoryKeys
+                                .where((k) => k != 'Other Biomarkers')
+                                .length,
+                            separatorBuilder: (_, __) =>
+                                const SizedBox(width: 16),
+                            itemBuilder: (context, index) {
+                              final key = sortedCategoryKeys
+                                  .where((k) => k != 'Other Biomarkers')
+                                  .toList()[index];
+                              final count = categories[key]!.length;
+                              return _buildCategorySquare(
+                                key,
+                                count,
+                                categories[key]!,
+                                theme,
+                              );
+                            },
+                          ),
+                        ),
+
+                        // Long Rectangular Card for Other Biomarkers
+                        if (categories.containsKey('Other Biomarkers')) ...[
+                          const SizedBox(height: 16),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => CategoryDetailScreen(
+                                      category: 'Other Biomarkers',
+                                      bundleList:
+                                          categories['Other Biomarkers']!,
+                                      color: _getCategoryColor(
+                                        'Other Biomarkers',
+                                        theme,
+                                      ),
+                                      icon: Icons.biotech_rounded,
+                                      onOpenDetail: _openDetail,
+                                    ),
                                   ),
-                                  icon: Icons.biotech_rounded,
-                                  onOpenDetail: _openDetail,
+                                );
+                              },
+                              child: Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                  vertical: 20,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.surface,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: theme.colorScheme.primary.withValues(
+                                      alpha: 0.15,
+                                    ),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                        color: _getCategoryColor(
+                                          'Other Biomarkers',
+                                          theme,
+                                        ).withValues(alpha: 0.15),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(
+                                        Icons.biotech_rounded,
+                                        color: _getCategoryColor(
+                                          'Other Biomarkers',
+                                          theme,
+                                        ),
+                                        size: 20,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            'Other Biomarkers',
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.w700,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            '${categories['Other Biomarkers']!.length} additional metrics',
+                                            style: TextStyle(
+                                              color: theme
+                                                  .colorScheme
+                                                  .onSurfaceVariant
+                                                  .withValues(alpha: 0.6),
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w400,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Icon(
+                                      Icons.arrow_forward_ios_rounded,
+                                      color: theme.colorScheme.outline,
+                                      size: 14,
+                                    ),
+                                  ],
                                 ),
                               ),
-                            );
-                          },
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 36),
+                      ],
+
+                      // Pinned or Search Results
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              _searchQuery.isNotEmpty
+                                  ? 'Search Results'
+                                  : 'Pinned Favorites',
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      if (_searchQuery.isNotEmpty) ...[
+                        // Just show a flat list of everything if searching
+                        ...categories.values.expand((element) => element).map((
+                          bundle,
+                        ) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 6,
+                            ),
+                            child: _buildMetricCard(
+                              bundle['primary'],
+                              bundle['secondary'],
+                              theme,
+                            ),
+                          );
+                        }),
+                      ] else if (pinned.isNotEmpty) ...[
+                        // Pinned List
+                        ...pinned.map((bundle) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 6,
+                            ),
+                            child: _buildMetricCard(
+                              bundle['primary'],
+                              bundle['secondary'],
+                              theme,
+                            ),
+                          );
+                        }),
+                      ] else ...[
+                        // Pinned Favorites Empty State
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
                           child: Container(
                             width: double.infinity,
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 20,
+                              vertical: 24,
+                              horizontal: 24,
                             ),
                             decoration: BoxDecoration(
                               color: theme.colorScheme.surface,
@@ -291,182 +440,50 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
                                 width: 1,
                               ),
                             ),
-                            child: Row(
+                            child: Column(
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.all(10),
+                                  padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
-                                    color: _getCategoryColor(
-                                      'Other Biomarkers',
-                                      theme,
-                                    ).withValues(alpha: 0.15),
+                                    color: theme.colorScheme.primary.withValues(
+                                      alpha: 0.1,
+                                    ),
                                     shape: BoxShape.circle,
                                   ),
                                   child: Icon(
-                                    Icons.biotech_rounded,
-                                    color: _getCategoryColor(
-                                      'Other Biomarkers',
-                                      theme,
-                                    ),
-                                    size: 20,
+                                    Icons.push_pin_rounded,
+                                    color: theme.colorScheme.primary,
+                                    size: 24,
                                   ),
                                 ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        'Other Biomarkers',
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.w700,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        '${categories['Other Biomarkers']!.length} additional metrics',
-                                        style: TextStyle(
-                                          color: theme
-                                              .colorScheme
-                                              .onSurfaceVariant
-                                              .withValues(alpha: 0.6),
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w400,
-                                        ),
-                                      ),
-                                    ],
+                                const SizedBox(height: 16),
+                                Text(
+                                  'No Pinned Metrics',
+                                  style: theme.textTheme.titleSmall?.copyWith(
+                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                Icon(
-                                  Icons.arrow_forward_ios_rounded,
-                                  color: theme.colorScheme.outline,
-                                  size: 14,
+                                const SizedBox(height: 6),
+                                Text(
+                                  'Tap the star icon on any chart to pin your most important health metrics here.',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: theme.colorScheme.onSurfaceVariant
+                                        .withValues(alpha: 0.6),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w400,
+                                  ),
                                 ),
                               ],
                             ),
                           ),
                         ),
-                      ),
-                    ],
-                    const SizedBox(height: 36),
-                  ],
-
-                  // Pinned or Search Results
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          _searchQuery.isNotEmpty
-                              ? 'Search Results'
-                              : 'Pinned Favorites',
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
                       ],
-                    ),
+
+                      if (widget.bottomWidget != null) widget.bottomWidget!,
+                    ],
                   ),
-                  const SizedBox(height: 16),
-
-                  if (_searchQuery.isNotEmpty) ...[
-                    // Just show a flat list of everything if searching
-                    ...categories.values.expand((element) => element).map((
-                      bundle,
-                    ) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 6,
-                        ),
-                        child: _buildMetricCard(
-                          bundle['primary'],
-                          bundle['secondary'],
-                          theme,
-                        ),
-                      );
-                    }),
-                  ] else if (pinned.isNotEmpty) ...[
-                    // Pinned List
-                    ...pinned.map((bundle) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 6,
-                        ),
-                        child: _buildMetricCard(
-                          bundle['primary'],
-                          bundle['secondary'],
-                          theme,
-                        ),
-                      );
-                    }),
-                  ] else ...[
-                    // Pinned Favorites Empty State
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 24,
-                          horizontal: 24,
-                        ),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.surface,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: theme.colorScheme.primary.withValues(
-                              alpha: 0.15,
-                            ),
-                            width: 1,
-                          ),
-                        ),
-                        child: Column(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: theme.colorScheme.primary.withValues(
-                                  alpha: 0.1,
-                                ),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(
-                                Icons.push_pin_rounded,
-                                color: theme.colorScheme.primary,
-                                size: 24,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'No Pinned Metrics',
-                              style: theme.textTheme.titleSmall?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              'Tap the star icon on any chart to pin your most important health metrics here.',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: theme.colorScheme.onSurfaceVariant
-                                    .withValues(alpha: 0.6),
-                                fontSize: 12,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-
-                  if (widget.bottomWidget != null) widget.bottomWidget!,
-                ],
+                ),
               ),
             ),
           );

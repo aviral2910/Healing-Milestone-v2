@@ -66,14 +66,19 @@ class CategoryDetailScreenState extends State<CategoryDetailScreen> {
                 decoration: InputDecoration(
                   icon: Icon(
                     Icons.search,
-                    color: theme.colorScheme.primary,
+                    color: theme.colorScheme.onSurfaceVariant.withValues(
+                      alpha: 0.5,
+                    ),
                     size: 20,
                   ),
                   hintText: 'Search in ${widget.category}...',
                   border: InputBorder.none,
                   hintStyle: TextStyle(
-                    color: theme.colorScheme.outline,
+                    color: theme.colorScheme.onSurfaceVariant.withValues(
+                      alpha: 0.4,
+                    ),
                     fontSize: 14,
+                    fontWeight: FontWeight.w400,
                   ),
                 ),
               ),
