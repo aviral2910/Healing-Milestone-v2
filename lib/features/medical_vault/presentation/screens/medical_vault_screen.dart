@@ -68,42 +68,23 @@ class _MedicalVaultScreenState extends ConsumerState<MedicalVaultScreen> {
             ),
           ],
           bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(64),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              child: Container(
-                height: 44,
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surfaceContainerHighest.withValues(
-                    alpha: 0.5,
-                  ),
-                  borderRadius: BorderRadius.circular(22),
+            preferredSize: const Size.fromHeight(48),
+            child: Container(
+              color: theme.scaffoldBackgroundColor,
+              child: TabBar(
+                labelColor: theme.colorScheme.primary,
+                unselectedLabelColor: theme.colorScheme.onSurfaceVariant,
+                indicatorColor: theme.colorScheme.primary,
+                indicatorWeight: 3,
+                labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+                unselectedLabelStyle: const TextStyle(
+                  fontWeight: FontWeight.w600,
                 ),
-                child: TabBar(
-                  dividerColor: Colors.transparent,
-                  indicatorSize: TabBarIndicatorSize.tab,
-                  indicator: BoxDecoration(
-                    borderRadius: BorderRadius.circular(22),
-                    color: theme.colorScheme.primary,
-                    boxShadow: [
-                      BoxShadow(
-                        color: theme.colorScheme.primary.withValues(alpha: 0.3),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  labelColor: theme.colorScheme.onPrimary,
-                  unselectedLabelColor: theme.colorScheme.onSurfaceVariant,
-                  labelStyle: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
-                  ),
-                  tabs: const [
-                    Tab(text: 'Timeline'),
-                    Tab(text: 'Dashboard'),
-                  ],
-                ),
+                dividerColor: theme.dividerColor,
+                tabs: const [
+                  Tab(text: 'Timeline'),
+                  Tab(text: 'Dashboard'),
+                ],
               ),
             ),
           ),
