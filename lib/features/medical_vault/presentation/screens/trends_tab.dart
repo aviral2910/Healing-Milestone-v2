@@ -486,7 +486,6 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
                         ),
                         child: Container(
                           decoration: BoxDecoration(
-                            color: theme.colorScheme.surface,
                             borderRadius: BorderRadius.circular(24),
                             boxShadow: [
                               BoxShadow(
@@ -496,48 +495,52 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
                               ),
                             ],
                           ),
-                          clipBehavior: Clip.antiAlias,
-                          child: Theme(
-                            data: theme.copyWith(
-                              dividerColor: Colors.transparent,
-                            ),
-                            child: ExpansionTile(
-                              tilePadding: const EdgeInsets.symmetric(
-                                horizontal: 20,
-                                vertical: 12,
+                          child: Material(
+                            color: theme.colorScheme.surface,
+                            borderRadius: BorderRadius.circular(24),
+                            clipBehavior: Clip.antiAlias,
+                            child: Theme(
+                              data: theme.copyWith(
+                                dividerColor: Colors.transparent,
                               ),
-                              leading: Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: color.withValues(alpha: 0.10),
-                                  shape: BoxShape.circle,
+                              child: ExpansionTile(
+                                tilePadding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                  vertical: 12,
                                 ),
-                                child: Icon(icon, color: color, size: 24),
-                              ),
-                              title: Text(
-                                shortName,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 16,
+                                leading: Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: color.withValues(alpha: 0.10),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(icon, color: color, size: 24),
                                 ),
-                              ),
-                              subtitle: Text(
-                                '${bundleList.length} metrics tracked',
-                                style: TextStyle(
-                                  color: theme.colorScheme.onSurfaceVariant,
-                                  fontSize: 13,
+                                title: Text(
+                                  shortName,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 16,
+                                  ),
                                 ),
+                                subtitle: Text(
+                                  '${bundleList.length} metrics tracked',
+                                  style: TextStyle(
+                                    color: theme.colorScheme.onSurfaceVariant,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                                childrenPadding: const EdgeInsets.only(
+                                  bottom: 16,
+                                ),
+                                children: bundleList.map((bundle) {
+                                  return _buildMetricRow(
+                                    bundle['primary'],
+                                    bundle['secondary'],
+                                    theme,
+                                  );
+                                }).toList(),
                               ),
-                              childrenPadding: const EdgeInsets.only(
-                                bottom: 16,
-                              ),
-                              children: bundleList.map((bundle) {
-                                return _buildMetricRow(
-                                  bundle['primary'],
-                                  bundle['secondary'],
-                                  theme,
-                                );
-                              }).toList(),
                             ),
                           ),
                         ),
