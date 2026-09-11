@@ -99,8 +99,15 @@ class _MedicalVaultScreenState extends ConsumerState<MedicalVaultScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            SizedBox(height: 24),
+            Divider(color: theme.primaryColor.withValues(alpha: 0.2)),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              padding: const EdgeInsets.only(
+                left: 24,
+                right: 24,
+                top: 16,
+                bottom: 16,
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -110,6 +117,7 @@ class _MedicalVaultScreenState extends ConsumerState<MedicalVaultScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
+
                   if (records.length > 3)
                     TextButton(
                       onPressed: () {

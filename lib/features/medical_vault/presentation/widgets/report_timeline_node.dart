@@ -1067,6 +1067,8 @@ class _ReportTimelinePainter extends CustomPainter {
       ..color = color
       ..strokeWidth = 1.5
       ..style = PaintingStyle.stroke;
+      
+
 
     final lineGlowPaint = Paint()
       ..color = color.withValues(alpha: color.a * 0.4)
