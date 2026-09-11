@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:intl/intl.dart';
 import '../providers/trends_provider.dart';
 import '../../data/models/biomarker_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -16,6 +15,7 @@ class TrendsTab extends ConsumerStatefulWidget {
 
 class _TrendsTabState extends ConsumerState<TrendsTab> {
   List<String> _pinnedMetrics = [];
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -32,27 +32,80 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
 
   String _getCategory(String name) {
     name = name.toLowerCase();
-    if (name.contains('cholesterol') || name.contains('hdl') || name.contains('ldl') || name.contains('triglyceride')) {
+    if (name.contains('cholesterol') ||
+        name.contains('hdl') ||
+        name.contains('ldl') ||
+        name.contains('triglyceride')) {
       return 'Lipids & Heart Health';
     }
-    if (name.contains('glucose') || name.contains('hba1c') || name.contains('insulin')) {
+    if (name.contains('glucose') ||
+        name.contains('hba1c') ||
+        name.contains('insulin')) {
       return 'Metabolic';
     }
-    if (name.contains('pressure') || name.contains('heart rate') || name.contains('weight') || name.contains('bmi')) {
+    if (name.contains('pressure') ||
+        name.contains('heart rate') ||
+        name.contains('weight') ||
+        name.contains('bmi')) {
       return 'Vitals & Measurements';
     }
-    if (name.contains('alt') || name.contains('ast') || name.contains('alp') || name.contains('bilirubin') || name.contains('protein')) {
+    if (name.contains('alt') ||
+        name.contains('ast') ||
+        name.contains('alp') ||
+        name.contains('bilirubin') ||
+        name.contains('protein')) {
       return 'Liver & Kidneys';
     }
-    if (name.contains('white blood') || name.contains('red blood') || name.contains('hemoglobin') || name.contains('platelet') || name.contains('hematocrit')) {
-      return 'Complete Blood Count (CBC)';
+    if (name.contains('white blood') ||
+        name.contains('red blood') ||
+        name.contains('hemoglobin') ||
+        name.contains('platelet') ||
+        name.contains('hematocrit') ||
+        name.contains('mcv') ||
+        name.contains('mchc')) {
+      return 'CBC';
     }
     return 'Other Biomarkers';
+  }
+
+  IconData _getCategoryIconData(String category) {
+    switch (category) {
+      case 'Lipids & Heart Health':
+        return Icons.favorite_rounded;
+      case 'Metabolic':
+        return Icons.bolt_rounded;
+      case 'Vitals & Measurements':
+        return Icons.monitor_heart_rounded;
+      case 'Liver & Kidneys':
+        return Icons.science_rounded;
+      case 'CBC':
+        return Icons.water_drop_rounded;
+      default:
+        return Icons.biotech_rounded;
+    }
+  }
+
+  Color _getCategoryColor(String category, ThemeData theme) {
+    switch (category) {
+      case 'Lipids & Heart Health':
+        return Colors.pinkAccent;
+      case 'Metabolic':
+        return Colors.orange;
+      case 'Vitals & Measurements':
+        return Colors.blue;
+      case 'Liver & Kidneys':
+        return Colors.teal;
+      case 'CBC':
+        return Colors.redAccent;
+      default:
+        return theme.colorScheme.primary;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final trendsAsync = ref.watch(biomarkerTrendsProvider);
+    final theme = Theme.of(context);
 
     return RefreshIndicator(
       onRefresh: () async {
@@ -71,19 +124,25 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
           BiomarkerTrendModel? diaTrend;
 
           for (final t in trends) {
-            if (t.name.toLowerCase().contains('systolic')) sysTrend = t;
-            else if (t.name.toLowerCase().contains('diastolic')) diaTrend = t;
-            else processedTrends[t.name] = t;
+            if (t.name.toLowerCase().contains('systolic'))
+              sysTrend = t;
+            else if (t.name.toLowerCase().contains('diastolic'))
+              diaTrend = t;
+            else
+              processedTrends[t.name] = t;
           }
 
           // Grouping
           final pinned = <dynamic>[];
           final categories = <String, List<dynamic>>{};
 
-          void addTrend(BiomarkerTrendModel t, [BiomarkerTrendModel? secondary]) {
+          void addTrend(
+            BiomarkerTrendModel t, [
+            BiomarkerTrendModel? secondary,
+          ]) {
             final bundle = {'primary': t, 'secondary': secondary};
             final name = secondary != null ? 'Blood Pressure' : t.name;
-            
+
             if (_pinnedMetrics.contains(name)) {
               pinned.add(bundle);
             }
@@ -92,41 +151,403 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
           }
 
           for (final t in processedTrends.values) {
-            addTrend(t);
+            if (_searchQuery.isEmpty ||
+                t.name.toLowerCase().contains(_searchQuery.toLowerCase())) {
+              addTrend(t);
+            }
           }
           if (sysTrend != null) {
-            addTrend(sysTrend, diaTrend);
+            if (_searchQuery.isEmpty ||
+                'blood pressure'.contains(_searchQuery.toLowerCase())) {
+              addTrend(sysTrend, diaTrend);
+            }
           }
 
-          return ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              if (pinned.isNotEmpty) ...[
-                _buildSectionHeader('📌 Pinned Favorites', context),
-                const SizedBox(height: 12),
-                ...pinned.map((bundle) => _SummaryTile(
-                      trend: bundle['primary'],
-                      secondaryTrend: bundle['secondary'],
-                      onTap: () => _openDetail(bundle['primary'], bundle['secondary']),
-                    )),
-                const SizedBox(height: 24),
-              ],
-              ...categories.entries.map((entry) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildSectionHeader(entry.key, context),
-                    const SizedBox(height: 12),
-                    ...entry.value.map((bundle) => _SummaryTile(
-                          trend: bundle['primary'],
-                          secondaryTrend: bundle['secondary'],
-                          onTap: () => _openDetail(bundle['primary'], bundle['secondary']),
-                        )),
-                    const SizedBox(height: 24),
+          final sortedCategoryKeys = categories.keys.toList()
+            ..sort((a, b) {
+              if (a == 'Other Biomarkers') return 1;
+              if (b == 'Other Biomarkers') return -1;
+              return a.compareTo(b);
+            });
+
+          return SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Search Bar
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.surface,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: theme.colorScheme.primary.withValues(
+                              alpha: 0.08,
+                            ),
+                            blurRadius: 12,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      child: TextField(
+                        onChanged: (val) => setState(() => _searchQuery = val),
+                        decoration: InputDecoration(
+                          icon: Icon(
+                            Icons.search,
+                            color: theme.colorScheme.primary,
+                          ),
+                          hintText: 'Search biomarkers...',
+                          border: InputBorder.none,
+                          hintStyle: TextStyle(
+                            color: theme.colorScheme.outline,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 36),
+
+                  // Explore Categories (Grid of Cards)
+                  if (_searchQuery.isEmpty) ...[
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Text(
+                        'Explore Categories',
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      height:
+                          130, // Increased height to prevent shadow clipping
+                      child: ListView.separated(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 8,
+                        ),
+                        scrollDirection: Axis.horizontal,
+                        itemCount: sortedCategoryKeys
+                            .where((k) => k != 'Other Biomarkers')
+                            .length,
+                        separatorBuilder: (_, __) => const SizedBox(width: 16),
+                        itemBuilder: (context, index) {
+                          final key = sortedCategoryKeys
+                              .where((k) => k != 'Other Biomarkers')
+                              .toList()[index];
+                          final count = categories[key]!.length;
+                          return _buildCategorySquare(
+                            key,
+                            count,
+                            categories[key]!,
+                            theme,
+                          );
+                        },
+                      ),
+                    ),
+
+                    // Long Rectangular Card for Other Biomarkers
+                    if (categories.containsKey('Other Biomarkers')) ...[
+                      const SizedBox(height: 16),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => _CategoryDetailScreen(
+                                  category: 'Other Biomarkers',
+                                  bundleList: categories['Other Biomarkers']!,
+                                  color: theme.colorScheme.primary,
+                                  icon: Icons.biotech_rounded,
+                                  onOpenDetail: _openDetail,
+                                ),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 24,
+                            ),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.surface,
+                              borderRadius: BorderRadius.circular(24),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: theme.colorScheme.primary.withValues(
+                                    alpha: 0.12,
+                                  ),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 6),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(14),
+                                  decoration: BoxDecoration(
+                                    color: theme.colorScheme.primary.withValues(
+                                      alpha: 0.15,
+                                    ),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    Icons.biotech_rounded,
+                                    color: theme.colorScheme.primary,
+                                    size: 28,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Other Biomarkers',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w800,
+                                          fontSize: 18,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        '${categories['Other Biomarkers']!.length} additional metrics',
+                                        style: TextStyle(
+                                          color: theme
+                                              .colorScheme
+                                              .onSurfaceVariant,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Icon(
+                                  Icons.arrow_forward_ios_rounded,
+                                  color: theme.colorScheme.outline,
+                                  size: 18,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 36),
                   ],
-                );
-              }),
-            ],
+
+                  // Pinned or Search Results
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          _searchQuery.isNotEmpty
+                              ? 'Search Results'
+                              : 'Pinned Favorites',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  if (_searchQuery.isNotEmpty) ...[
+                    // Just show a flat list of everything if searching
+                    ...categories.values.expand((element) => element).map((
+                      bundle,
+                    ) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 6,
+                        ),
+                        child: _buildMetricCard(
+                          bundle['primary'],
+                          bundle['secondary'],
+                          theme,
+                        ),
+                      );
+                    }),
+                  ] else if (pinned.isNotEmpty) ...[
+                    // Pinned List in modern cards
+                    ...pinned.map((bundle) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 6,
+                        ),
+                        child: _buildMetricCard(
+                          bundle['primary'],
+                          bundle['secondary'],
+                          theme,
+                        ),
+                      );
+                    }),
+                  ] else ...[
+                    // Pinned Favorites Empty State - Premium Rectangular Card
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 40,
+                          horizontal: 24,
+                        ),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.surface,
+                          borderRadius: BorderRadius.circular(24),
+                          boxShadow: [
+                            BoxShadow(
+                              color: theme.colorScheme.primary.withValues(
+                                alpha: 0.1,
+                              ),
+                              blurRadius: 12,
+                              offset: const Offset(0, 6),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.primary.withValues(
+                                  alpha: 0.1,
+                                ),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.push_pin_rounded,
+                                color: theme.colorScheme.primary,
+                                size: 36,
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            Text(
+                              'No Pinned Metrics',
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Tap the star icon on any chart to pin your most important health metrics here.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: theme.colorScheme.onSurfaceVariant,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+
+                  if (_searchQuery.isEmpty) ...[
+                    const SizedBox(height: 40),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Text(
+                        'All Biomarkers',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    ...sortedCategoryKeys.map((key) {
+                      final bundleList = categories[key]!;
+                      final color = _getCategoryColor(key, theme);
+                      final icon = _getCategoryIconData(key);
+                      final shortName = key.contains('(')
+                          ? key.split('(')[1].replaceAll(')', '')
+                          : key;
+
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 8,
+                        ),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.surface,
+                            borderRadius: BorderRadius.circular(24),
+                            boxShadow: [
+                              BoxShadow(
+                                color: color.withValues(alpha: 0.08),
+                                blurRadius: 12,
+                                offset: const Offset(0, 6),
+                              ),
+                            ],
+                          ),
+                          clipBehavior: Clip.antiAlias,
+                          child: Theme(
+                            data: theme.copyWith(
+                              dividerColor: Colors.transparent,
+                            ),
+                            child: ExpansionTile(
+                              tilePadding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 12,
+                              ),
+                              leading: Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: color.withValues(alpha: 0.10),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(icon, color: color, size: 24),
+                              ),
+                              title: Text(
+                                shortName,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              subtitle: Text(
+                                '${bundleList.length} metrics tracked',
+                                style: TextStyle(
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                  fontSize: 13,
+                                ),
+                              ),
+                              childrenPadding: const EdgeInsets.only(
+                                bottom: 16,
+                              ),
+                              children: bundleList.map((bundle) {
+                                return _buildMetricRow(
+                                  bundle['primary'],
+                                  bundle['secondary'],
+                                  theme,
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+                    const SizedBox(height: 40),
+                  ],
+                ],
+              ),
+            ),
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -135,24 +556,291 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
     );
   }
 
-  void _openDetail(BiomarkerTrendModel trend, BiomarkerTrendModel? secondary) async {
-    await Navigator.of(context).push(MaterialPageRoute(
-      builder: (_) => MetricDetailScreen(trend: trend, secondaryTrend: secondary),
-    ));
-    _loadPinned(); // Refresh in case they unpinned
-  }
+  Widget _buildCategorySquare(
+    String category,
+    int count,
+    List<dynamic> bundleList,
+    ThemeData theme,
+  ) {
+    final color = _getCategoryColor(category, theme);
+    final icon = _getCategoryIconData(category);
 
-  Widget _buildSectionHeader(String title, BuildContext context) {
-    return Text(
-      title,
-      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-        fontWeight: FontWeight.bold,
-        color: Theme.of(context).colorScheme.primary,
+    // Convert 'Complete Blood Count (CBC)' to 'CBC' for the small card
+    final shortName = category.contains('(')
+        ? category.split('(')[1].replaceAll(')', '')
+        : category;
+
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => _CategoryDetailScreen(
+              category: category,
+              bundleList: bundleList,
+              color: color,
+              icon: icon,
+              onOpenDetail: _openDetail,
+            ),
+          ),
+        );
+      },
+      child: Container(
+        width: 104,
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: color.withValues(alpha: 0.10),
+              blurRadius: 12,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.10),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 28),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              shortName,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
+            ),
+          ],
+        ),
       ),
     );
   }
 
+  Widget _buildMetricCard(
+    BiomarkerTrendModel trend,
+    BiomarkerTrendModel? secondaryTrend,
+    ThemeData theme,
+  ) {
+    final dataPoints = List<TrendDataPoint>.from(trend.dataPoints)
+      ..sort((a, b) => a.date.compareTo(b.date));
+    if (dataPoints.isEmpty) return const SizedBox.shrink();
+
+    final latest = dataPoints.last;
+    final isAbnormal = latest.isAbnormal == true;
+    final unitString = trend.unit != null ? ' ${trend.unit}' : '';
+    final name = secondaryTrend != null ? 'Blood Pressure' : trend.name;
+
+    String displayValue = latest.value.toStringAsFixed(1);
+    if (secondaryTrend != null) {
+      final secData = List<TrendDataPoint>.from(secondaryTrend.dataPoints)
+        ..sort((a, b) => a.date.compareTo(b.date));
+      if (secData.isNotEmpty) {
+        displayValue = '${latest.value.toInt()}/${secData.last.value.toInt()}';
+      }
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: isAbnormal
+                ? theme.colorScheme.error.withValues(alpha: 0.1)
+                : theme.colorScheme.primary.withValues(alpha: 0.1),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _openDetail(trend, secondaryTrend),
+          borderRadius: BorderRadius.circular(24),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                // Icon indicator
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: isAbnormal
+                        ? theme.colorScheme.error.withValues(alpha: 0.10)
+                        : theme.colorScheme.primary.withValues(alpha: 0.10),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    isAbnormal
+                        ? Icons.warning_rounded
+                        : Icons.check_circle_rounded,
+                    color: isAbnormal
+                        ? theme.colorScheme.error
+                        : theme.colorScheme.primary,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 16),
+
+                Expanded(
+                  flex: 3,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        name,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Text(
+                            displayValue,
+                            style: theme.textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.w900,
+                              color: isAbnormal
+                                  ? theme.colorScheme.error
+                                  : theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                          if (trend.unit != null)
+                            Text(
+                              unitString,
+                              style: theme.textTheme.labelMedium?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  flex: 2,
+                  child: SizedBox(
+                    height: 45,
+                    child: _buildSparkline(dataPoints, theme, isAbnormal),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMetricRow(
+    BiomarkerTrendModel trend,
+    BiomarkerTrendModel? secondaryTrend,
+    ThemeData theme,
+  ) {
+    final dataPoints = List<TrendDataPoint>.from(trend.dataPoints)
+      ..sort((a, b) => a.date.compareTo(b.date));
+    if (dataPoints.isEmpty) return const SizedBox.shrink();
+
+    final latest = dataPoints.last;
+    final isAbnormal = latest.isAbnormal == true;
+    final unitString = trend.unit != null ? ' ${trend.unit}' : '';
+    final name = secondaryTrend != null ? 'Blood Pressure' : trend.name;
+
+    String displayValue = latest.value.toStringAsFixed(1);
+    if (secondaryTrend != null) {
+      final secData = List<TrendDataPoint>.from(secondaryTrend.dataPoints)
+        ..sort((a, b) => a.date.compareTo(b.date));
+      if (secData.isNotEmpty) {
+        displayValue = '${latest.value.toInt()}/${secData.last.value.toInt()}';
+      }
+    }
+
+    return InkWell(
+      onTap: () => _openDetail(trend, secondaryTrend),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        decoration: BoxDecoration(
+          border: Border(
+            top: BorderSide(
+              color: theme.colorScheme.outlineVariant.withValues(alpha: 0.2),
+            ),
+          ),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              flex: 3,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Text(
+                        displayValue,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: isAbnormal ? theme.colorScheme.error : null,
+                        ),
+                      ),
+                      if (trend.unit != null)
+                        Text(
+                          unitString,
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              flex: 2,
+              child: SizedBox(
+                height: 40,
+                child: _buildSparkline(dataPoints, theme, isAbnormal),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Icon(
+              Icons.chevron_right,
+              color: theme.colorScheme.outline,
+              size: 18,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _openDetail(
+    BiomarkerTrendModel trend,
+    BiomarkerTrendModel? secondary,
+  ) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) =>
+            MetricDetailScreen(trend: trend, secondaryTrend: secondary),
+      ),
+    );
+    _loadPinned(); // Refresh in case they unpinned
+  }
+
   Widget _buildEmptyState(BuildContext context) {
+    final theme = Theme.of(context);
     return SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
       child: Container(
@@ -161,113 +849,42 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.auto_graph_rounded, size: 80, color: Theme.of(context).colorScheme.surfaceContainerHighest),
-            const SizedBox(height: 24),
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.auto_graph_rounded,
+                size: 80,
+                color: theme.colorScheme.primary,
+              ),
+            ),
+            const SizedBox(height: 32),
             Text(
               'No Trends Yet',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w900,
+              ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             Text(
               'Upload a lab report with numeric results and verify the AI extraction to start tracking your health trends automatically.',
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.grey),
+              style: theme.textTheme.bodyLarge?.copyWith(color: Colors.grey),
             ),
           ],
         ),
       ),
     );
   }
-}
 
-class _SummaryTile extends StatelessWidget {
-  final BiomarkerTrendModel trend;
-  final BiomarkerTrendModel? secondaryTrend;
-  final VoidCallback onTap;
-
-  const _SummaryTile({required this.trend, this.secondaryTrend, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final dataPoints = List<TrendDataPoint>.from(trend.dataPoints)..sort((a, b) => a.date.compareTo(b.date));
-    
-    if (dataPoints.isEmpty) return const SizedBox.shrink();
-
-    final latest = dataPoints.last;
-    final isAbnormal = latest.isAbnormal == true;
-    final unitString = trend.unit != null ? ' ${trend.unit}' : '';
-
-    String displayValue = latest.value.toStringAsFixed(1);
-    if (secondaryTrend != null) {
-      final secData = List<TrendDataPoint>.from(secondaryTrend!.dataPoints)..sort((a, b) => a.date.compareTo(b.date));
-      if (secData.isNotEmpty) {
-        displayValue = '${latest.value.toInt()}/${secData.last.value.toInt()}';
-      }
-    }
-
-    final name = secondaryTrend != null ? 'Blood Pressure' : trend.name;
-
-    return Card(
-      elevation: 0,
-      margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5)),
-      ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Expanded(
-                flex: 3,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      name,
-                      style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Text(
-                          displayValue,
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: isAbnormal ? theme.colorScheme.error : null,
-                          ),
-                        ),
-                        if (trend.unit != null)
-                          Text(
-                            unitString,
-                            style: theme.textTheme.labelSmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-                          ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                flex: 2,
-                child: SizedBox(
-                  height: 40,
-                  child: _buildSparkline(dataPoints, theme, isAbnormal),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Icon(Icons.chevron_right, color: theme.colorScheme.outline),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSparkline(List<TrendDataPoint> dataPoints, ThemeData theme, bool isAbnormal) {
+  Widget _buildSparkline(
+    List<TrendDataPoint> dataPoints,
+    ThemeData theme,
+    bool isAbnormal,
+  ) {
     if (dataPoints.length < 2) return const SizedBox.shrink();
 
     double minY = dataPoints.first.value;
@@ -276,7 +893,7 @@ class _SummaryTile extends StatelessWidget {
       if (p.value < minY) minY = p.value;
       if (p.value > maxY) maxY = p.value;
     }
-    
+
     final padding = (maxY - minY) * 0.1;
     minY = minY - padding;
     maxY = maxY + padding;
@@ -293,11 +910,15 @@ class _SummaryTile extends StatelessWidget {
       LineChartData(
         minY: minY,
         maxY: maxY,
-        minX: dataPoints.first.date.millisecondsSinceEpoch.toDouble() == dataPoints.last.date.millisecondsSinceEpoch.toDouble() 
-            ? dataPoints.first.date.millisecondsSinceEpoch.toDouble() - 86400000 
+        minX:
+            dataPoints.first.date.millisecondsSinceEpoch.toDouble() ==
+                dataPoints.last.date.millisecondsSinceEpoch.toDouble()
+            ? dataPoints.first.date.millisecondsSinceEpoch.toDouble() - 86400000
             : dataPoints.first.date.millisecondsSinceEpoch.toDouble(),
-        maxX: dataPoints.first.date.millisecondsSinceEpoch.toDouble() == dataPoints.last.date.millisecondsSinceEpoch.toDouble() 
-            ? dataPoints.last.date.millisecondsSinceEpoch.toDouble() + 86400000 
+        maxX:
+            dataPoints.first.date.millisecondsSinceEpoch.toDouble() ==
+                dataPoints.last.date.millisecondsSinceEpoch.toDouble()
+            ? dataPoints.last.date.millisecondsSinceEpoch.toDouble() + 86400000
             : dataPoints.last.date.millisecondsSinceEpoch.toDouble(),
         gridData: const FlGridData(show: false),
         titlesData: const FlTitlesData(show: false),
@@ -307,12 +928,177 @@ class _SummaryTile extends StatelessWidget {
           LineChartBarData(
             spots: spots,
             isCurved: true,
-            color: isAbnormal ? theme.colorScheme.error : theme.colorScheme.primary.withValues(alpha: 0.5),
-            barWidth: 2,
+            color: isAbnormal
+                ? theme.colorScheme.error
+                : theme.colorScheme.primary.withValues(alpha: 0.5),
+            barWidth: 3, // Thicker sparkline for premium feel
             isStrokeCapRound: true,
             dotData: const FlDotData(show: false),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// Sub-screen for opening a Category
+class _CategoryDetailScreen extends StatelessWidget {
+  final String category;
+  final List<dynamic> bundleList;
+  final Color color;
+  final IconData icon;
+  final Function(BiomarkerTrendModel, BiomarkerTrendModel?) onOpenDetail;
+
+  const _CategoryDetailScreen({
+    required this.category,
+    required this.bundleList,
+    required this.color,
+    required this.icon,
+    required this.onOpenDetail,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
+      appBar: AppBar(
+        title: Text(
+          category,
+          style: const TextStyle(fontWeight: FontWeight.w900),
+        ),
+        backgroundColor: theme.scaffoldBackgroundColor,
+        elevation: 0,
+      ),
+      body: ListView.builder(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        itemCount: bundleList.length,
+        itemBuilder: (context, index) {
+          final bundle = bundleList[index];
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+            child: _buildDetailCard(
+              bundle['primary'],
+              bundle['secondary'],
+              theme,
+              context,
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildDetailCard(
+    BiomarkerTrendModel trend,
+    BiomarkerTrendModel? secondaryTrend,
+    ThemeData theme,
+    BuildContext context,
+  ) {
+    final dataPoints = List<TrendDataPoint>.from(trend.dataPoints)
+      ..sort((a, b) => a.date.compareTo(b.date));
+    if (dataPoints.isEmpty) return const SizedBox.shrink();
+
+    final latest = dataPoints.last;
+    final isAbnormal = latest.isAbnormal == true;
+    final unitString = trend.unit != null ? ' ${trend.unit}' : '';
+    final name = secondaryTrend != null ? 'Blood Pressure' : trend.name;
+
+    String displayValue = latest.value.toStringAsFixed(1);
+    if (secondaryTrend != null) {
+      final secData = List<TrendDataPoint>.from(secondaryTrend.dataPoints)
+        ..sort((a, b) => a.date.compareTo(b.date));
+      if (secData.isNotEmpty) {
+        displayValue = '${latest.value.toInt()}/${secData.last.value.toInt()}';
+      }
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: isAbnormal
+                ? theme.colorScheme.error.withValues(alpha: 0.10)
+                : color.withValues(alpha: 0.10),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            onOpenDetail(trend, secondaryTrend);
+          },
+          borderRadius: BorderRadius.circular(24),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: isAbnormal
+                        ? theme.colorScheme.error.withValues(alpha: 0.10)
+                        : color.withValues(alpha: 0.10),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    isAbnormal ? Icons.warning_rounded : icon,
+                    color: isAbnormal ? theme.colorScheme.error : color,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 16),
+
+                Expanded(
+                  flex: 3,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        name,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Text(
+                            displayValue,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w900,
+                              color: isAbnormal
+                                  ? theme.colorScheme.error
+                                  : theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                          if (trend.unit != null)
+                            Text(
+                              unitString,
+                              style: theme.textTheme.labelMedium?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  color: theme.colorScheme.outline,
+                  size: 18,
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
