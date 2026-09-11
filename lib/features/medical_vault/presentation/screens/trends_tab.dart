@@ -229,14 +229,14 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
                     const SizedBox(height: 16),
                     SizedBox(
                       height:
-                          100, // Reduced height since icons/text are smaller
+                          110, // Reduced height since icons/text are smaller
                       child: ListView.separated(
                         padding: const EdgeInsets.symmetric(horizontal: 24),
                         scrollDirection: Axis.horizontal,
                         itemCount: sortedCategoryKeys
                             .where((k) => k != 'Other Biomarkers')
                             .length,
-                        separatorBuilder: (_, __) => const SizedBox(width: 12),
+                        separatorBuilder: (_, __) => const SizedBox(width: 16),
                         itemBuilder: (context, index) {
                           final key = sortedCategoryKeys
                               .where((k) => k != 'Other Biomarkers')
@@ -254,7 +254,7 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
 
                     // Long Rectangular Card for Other Biomarkers
                     if (categories.containsKey('Other Biomarkers')) ...[
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 16),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 24),
                         child: GestureDetector(
@@ -504,7 +504,7 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
         );
       },
       child: Container(
-        width: 90,
+        width: 100,
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
