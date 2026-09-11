@@ -75,6 +75,7 @@ String _toTitleCase(String text) {
   @override
   void dispose() {
     _debounce?.cancel();
+    _notesController.dispose();
     _customTypeController.dispose();
     super.dispose();
   }

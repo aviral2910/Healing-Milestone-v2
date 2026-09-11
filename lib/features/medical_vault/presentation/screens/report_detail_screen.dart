@@ -312,7 +312,6 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
     } catch (e) {}
   }
 
-  @override
   Future<void> _addMetricManually(List<BiomarkerModel> newMetrics) async {
     try {
       final repo = ref.read(medicalVaultRepositoryProvider);
