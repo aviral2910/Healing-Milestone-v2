@@ -116,8 +116,11 @@ class _BiomarkerCardState extends State<BiomarkerCard> {
               child: Text(
                 b.rawName,
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
+                  color: theme.colorScheme.onSurfaceVariant.withValues(
+                    alpha: 0.6,
+                  ),
                   fontSize: 12,
+                  fontWeight: FontWeight.w400,
                 ),
               ),
             ),
@@ -268,8 +271,10 @@ class _BiomarkerCardState extends State<BiomarkerCard> {
             Text(
               unit,
               style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-                fontWeight: FontWeight.w500,
+                color: theme.colorScheme.onSurfaceVariant.withValues(
+                  alpha: 0.6,
+                ),
+                fontWeight: FontWeight.w400,
                 fontSize: unitFontSize,
               ),
             ),

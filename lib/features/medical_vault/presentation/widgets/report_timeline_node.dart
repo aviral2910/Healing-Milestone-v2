@@ -34,27 +34,34 @@ class ReportTimelineNode extends ConsumerWidget {
       }
     }
 
-    final int pairs = sysList.length < diaList.length ? sysList.length : diaList.length;
+    final int pairs = sysList.length < diaList.length
+        ? sysList.length
+        : diaList.length;
     for (int i = 0; i < pairs; i++) {
       final sys = sysList[i];
       final dia = diaList[i];
-      merged.insert(0, BiomarkerModel(
-        id: sys.id,
-        rawName: 'Blood Pressure',
-        rawUnit: sys.rawUnit ?? 'mmHg',
-        resultType: 'numeric', 
-        valueNumeric: null, 
-        valueText: '${sys.valueNumeric?.toInt() ?? '-'}/${dia.valueNumeric?.toInt() ?? '-'}',
-        isAbnormal: (sys.isAbnormal ?? false) || (dia.isAbnormal ?? false),
-        aiPredictedStandardName: 'Blood Pressure',
-      ));
+      merged.insert(
+        0,
+        BiomarkerModel(
+          id: sys.id,
+          rawName: 'Blood Pressure',
+          rawUnit: sys.rawUnit ?? 'mmHg',
+          resultType: 'numeric',
+          valueNumeric: null,
+          valueText:
+              '${sys.valueNumeric?.toInt() ?? '-'}/${dia.valueNumeric?.toInt() ?? '-'}',
+          isAbnormal: (sys.isAbnormal ?? false) || (dia.isAbnormal ?? false),
+          aiPredictedStandardName: 'Blood Pressure',
+        ),
+      );
     }
-    
+
     if (sysList.length > pairs) merged.addAll(sysList.sublist(pairs));
     if (diaList.length > pairs) merged.addAll(diaList.sublist(pairs));
 
     return merged;
   }
+
   void _extractAI(BuildContext context, MedicalRecord report) {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -185,7 +192,7 @@ class ReportTimelineNode extends ConsumerWidget {
             child: CustomPaint(
               painter: _ReportTimelinePainter(
                 position: position,
-                color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+                color: theme.colorScheme.primary.withValues(alpha: 0.25),
                 dotColor: dotColor,
               ),
             ),
@@ -663,17 +670,20 @@ class ReportTimelineNode extends ConsumerWidget {
                                         ),
                                         const SizedBox(height: 8),
                                         Column(
-                                          children: _mergeBPForDisplay(report.biomarkers)
-                                              .take(4)
-                                              .map((b) {
+                                          children:
+                                              _mergeBPForDisplay(
+                                                report.biomarkers,
+                                              ).take(4).map((b) {
                                                 return BiomarkerCard(
                                                   biomarker: b,
                                                   compact: true,
                                                 );
-                                              })
-                                              .toList(),
+                                              }).toList(),
                                         ),
-                                        if (_mergeBPForDisplay(report.biomarkers).length > 4) ...[
+                                        if (_mergeBPForDisplay(
+                                              report.biomarkers,
+                                            ).length >
+                                            4) ...[
                                           const SizedBox(height: 4),
                                           SizedBox(
                                             width: double.infinity,
@@ -934,7 +944,9 @@ class ReportTimelineNode extends ConsumerWidget {
                                   Text(
                                     report.notes!,
                                     style: theme.textTheme.bodyMedium?.copyWith(
-                                      color: theme.colorScheme.onSurface,
+                                      color: theme.colorScheme.onSurfaceVariant
+                                          .withValues(alpha: 0.7),
+                                      fontWeight: FontWeight.w300,
                                       height: 1.4,
                                     ),
                                   ),
@@ -1056,6 +1068,12 @@ class _ReportTimelinePainter extends CustomPainter {
       ..strokeWidth = 1.5
       ..style = PaintingStyle.stroke;
 
+    final lineGlowPaint = Paint()
+      ..color = color.withValues(alpha: color.a * 0.4)
+      ..strokeWidth = 4.0
+      ..style = PaintingStyle.stroke
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2.0);
+
     final glowPaint = Paint()
       ..color = dotColor.withValues(alpha: 0.15)
       ..style = PaintingStyle.fill;
@@ -1091,8 +1109,11 @@ class _ReportTimelinePainter extends CustomPainter {
     bool drawTop = false;
     bool drawBottom = false;
 
+    // User requested: The line should always go to the end of the card, even for standalone/end nodes
+    // and disconnect between dates (handled by outer padding).
     switch (position) {
       case TimelinePosition.standalone:
+        drawBottom = true;
         break;
       case TimelinePosition.start:
         drawBottom = true;
@@ -1103,13 +1124,24 @@ class _ReportTimelinePainter extends CustomPainter {
         break;
       case TimelinePosition.end:
         drawTop = true;
+        drawBottom = true;
         break;
     }
 
     if (drawTop) {
+      canvas.drawLine(
+        Offset(centerX, 0),
+        Offset(centerX, dotY - 14),
+        lineGlowPaint,
+      );
       canvas.drawLine(Offset(centerX, 0), Offset(centerX, dotY - 14), paint);
     }
     if (drawBottom) {
+      canvas.drawLine(
+        Offset(centerX, dotY + 14),
+        Offset(centerX, size.height),
+        lineGlowPaint,
+      );
       canvas.drawLine(
         Offset(centerX, dotY + 14),
         Offset(centerX, size.height),

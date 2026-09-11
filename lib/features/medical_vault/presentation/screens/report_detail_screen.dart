@@ -27,7 +27,6 @@ class ReportDetailScreen extends ConsumerStatefulWidget {
 class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
   late List<BiomarkerModel> _biomarkers;
   String? _editingId;
-  
 
   bool _isExtracting = false;
   String? _extractionError;
@@ -107,32 +106,44 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
       }
     }
 
-    final int pairs = sysList.length < diaList.length ? sysList.length : diaList.length;
+    final int pairs = sysList.length < diaList.length
+        ? sysList.length
+        : diaList.length;
     for (int i = 0; i < pairs; i++) {
       final sys = sysList[i];
       final dia = diaList[i];
-      merged.insert(0, BiomarkerModel(
-        id: sys.id,
-        rawName: 'Blood Pressure',
-        rawUnit: sys.rawUnit ?? 'mmHg',
-        resultType: 'numeric', 
-        valueNumeric: null, 
-        valueText: '${sys.valueNumeric?.toInt() ?? '-'}/${dia.valueNumeric?.toInt() ?? '-'}',
-        isAbnormal: (sys.isAbnormal ?? false) || (dia.isAbnormal ?? false),
-        aiPredictedStandardName: 'Blood Pressure',
-      ));
+      merged.insert(
+        0,
+        BiomarkerModel(
+          id: sys.id,
+          rawName: 'Blood Pressure',
+          rawUnit: sys.rawUnit ?? 'mmHg',
+          resultType: 'numeric',
+          valueNumeric: null,
+          valueText:
+              '${sys.valueNumeric?.toInt() ?? '-'}/${dia.valueNumeric?.toInt() ?? '-'}',
+          isAbnormal: (sys.isAbnormal ?? false) || (dia.isAbnormal ?? false),
+          aiPredictedStandardName: 'Blood Pressure',
+        ),
+      );
     }
-    
+
     if (sysList.length > pairs) merged.addAll(sysList.sublist(pairs));
     if (diaList.length > pairs) merged.addAll(diaList.sublist(pairs));
 
     return merged;
   }
 
-
-  Future<void> _showBPEditDialog(BiomarkerModel sysB, BiomarkerModel diaB) async {
-    final sysController = TextEditingController(text: sysB.valueNumeric?.toInt().toString() ?? '');
-    final diaController = TextEditingController(text: diaB.valueNumeric?.toInt().toString() ?? '');
+  Future<void> _showBPEditDialog(
+    BiomarkerModel sysB,
+    BiomarkerModel diaB,
+  ) async {
+    final sysController = TextEditingController(
+      text: sysB.valueNumeric?.toInt().toString() ?? '',
+    );
+    final diaController = TextEditingController(
+      text: diaB.valueNumeric?.toInt().toString() ?? '',
+    );
     final theme = Theme.of(context);
 
     final result = await showDialog<bool>(
@@ -145,7 +156,9 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
               Expanded(
                 child: TextField(
                   controller: sysController,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   decoration: const InputDecoration(
                     labelText: 'Systolic',
                     border: OutlineInputBorder(),
@@ -159,7 +172,9 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
               Expanded(
                 child: TextField(
                   controller: diaController,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   decoration: const InputDecoration(
                     labelText: 'Diastolic',
                     border: OutlineInputBorder(),
@@ -185,58 +200,79 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
     if (result == true) {
       final newSys = double.tryParse(sysController.text.trim());
       final newDia = double.tryParse(diaController.text.trim());
-      
+
       if (newSys != null && newDia != null) {
         final repo = ref.read(medicalVaultRepositoryProvider);
         try {
-          final updatedSys = await repo.updateBiomarker(sysB.id!, {'valueNumeric': newSys});
-          final updatedDia = await repo.updateBiomarker(diaB.id!, {'valueNumeric': newDia});
-          
+          final updatedSys = await repo.updateBiomarker(sysB.id!, {
+            'valueNumeric': newSys,
+          });
+          final updatedDia = await repo.updateBiomarker(diaB.id!, {
+            'valueNumeric': newDia,
+          });
+
           setState(() {
             final sIdx = _biomarkers.indexWhere((b) => b.id == sysB.id);
             final dIdx = _biomarkers.indexWhere((b) => b.id == diaB.id);
             if (sIdx != -1) _biomarkers[sIdx] = updatedSys;
             if (dIdx != -1) _biomarkers[dIdx] = updatedDia;
           });
-          
+
           ref.invalidate(medicalRecordsProvider);
           ref.invalidate(biomarkerTrendsProvider);
         } catch (e) {
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to update BP')));
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Failed to update BP')),
+            );
           }
         }
       }
     }
   }
 
-  Future<void> _saveEdit(
-    BiomarkerModel biomarker,
-    String newVal,
-  ) async {
+  Future<void> _saveEdit(BiomarkerModel biomarker, String newVal) async {
     newVal = newVal.trim();
     if (newVal.isEmpty) {
       setState(() => _editingId = null);
       return;
     }
-    
+
     final repo = ref.read(medicalVaultRepositoryProvider);
-    
+
     if (biomarker.rawName == 'Blood Pressure' && newVal.contains('/')) {
       final parts = newVal.split('/');
       if (parts.length == 2) {
         final sysVal = double.tryParse(parts[0].trim());
         final diaVal = double.tryParse(parts[1].trim());
-        
+
         if (sysVal != null && diaVal != null) {
           try {
-            final sysIndex = _biomarkers.indexWhere((b) => b.rawName.toLowerCase().contains('systolic'));
-            final diaIndex = _biomarkers.indexWhere((b) => b.rawName.toLowerCase().contains('diastolic'));
-            
+            final sysIndex = _biomarkers.indexWhere(
+              (b) => b.rawName.toLowerCase().contains('systolic'),
+            );
+            final diaIndex = _biomarkers.indexWhere(
+              (b) => b.rawName.toLowerCase().contains('diastolic'),
+            );
+
             if (sysIndex != -1 && diaIndex != -1) {
-              final updatedSys = await repo.updateBiomarker(_biomarkers[sysIndex].id!, {'valueNumeric': sysVal, 'resultType': 'numeric', 'valueText': null});
-              final updatedDia = await repo.updateBiomarker(_biomarkers[diaIndex].id!, {'valueNumeric': diaVal, 'resultType': 'numeric', 'valueText': null});
-              
+              final updatedSys = await repo.updateBiomarker(
+                _biomarkers[sysIndex].id!,
+                {
+                  'valueNumeric': sysVal,
+                  'resultType': 'numeric',
+                  'valueText': null,
+                },
+              );
+              final updatedDia = await repo.updateBiomarker(
+                _biomarkers[diaIndex].id!,
+                {
+                  'valueNumeric': diaVal,
+                  'resultType': 'numeric',
+                  'valueText': null,
+                },
+              );
+
               setState(() {
                 _biomarkers[sysIndex] = updatedSys;
                 _biomarkers[diaIndex] = updatedDia;
@@ -494,7 +530,10 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
                         builder: (context) {
                           final displayBiomarkers = _getDisplayBiomarkers();
                           return SliverList(
-                            delegate: SliverChildBuilderDelegate((context, index) {
+                            delegate: SliverChildBuilderDelegate((
+                              context,
+                              index,
+                            ) {
                               final b = displayBiomarkers[index];
                               return Padding(
                                 padding: const EdgeInsets.only(bottom: 12),
@@ -504,10 +543,21 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
                                   isEditing: _editingId == b.id,
                                   onEditTap: () {
                                     if (b.rawName == 'Blood Pressure') {
-                                      final sysIdx = _biomarkers.indexWhere((orig) => orig.rawName.toLowerCase().contains('systolic'));
-                                      final diaIdx = _biomarkers.indexWhere((orig) => orig.rawName.toLowerCase().contains('diastolic'));
+                                      final sysIdx = _biomarkers.indexWhere(
+                                        (orig) => orig.rawName
+                                            .toLowerCase()
+                                            .contains('systolic'),
+                                      );
+                                      final diaIdx = _biomarkers.indexWhere(
+                                        (orig) => orig.rawName
+                                            .toLowerCase()
+                                            .contains('diastolic'),
+                                      );
                                       if (sysIdx != -1 && diaIdx != -1) {
-                                        _showBPEditDialog(_biomarkers[sysIdx], _biomarkers[diaIdx]);
+                                        _showBPEditDialog(
+                                          _biomarkers[sysIdx],
+                                          _biomarkers[diaIdx],
+                                        );
                                       }
                                       return;
                                     }

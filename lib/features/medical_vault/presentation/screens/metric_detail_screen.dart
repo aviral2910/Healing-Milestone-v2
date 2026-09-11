@@ -127,9 +127,9 @@ class _MetricDetailScreenState extends ConsumerState<MetricDetailScreen> {
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
       appBar: AppBar(
-        title: Text(
-          titleName,
-          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
+        title: const Text(
+          'Metric Details',
+          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
         ),
         centerTitle: true,
         backgroundColor: theme.colorScheme.surface,
@@ -152,6 +152,14 @@ class _MetricDetailScreenState extends ConsumerState<MetricDetailScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Text(
+                titleName,
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: theme.colorScheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: 24),
               // Hero Card
               Container(
                 padding: const EdgeInsets.all(24),
@@ -165,86 +173,93 @@ class _MetricDetailScreenState extends ConsumerState<MetricDetailScreen> {
                     width: 1,
                   ),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Latest Result',
-                          style: theme.textTheme.labelLarge?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.baseline,
-                          textBaseline: TextBaseline.alphabetic,
-                          children: [
-                            Text(
-                              displayValue,
-                              style: theme.textTheme.displaySmall?.copyWith(
-                                fontWeight: FontWeight.w900,
-                                color: isAbnormal
-                                    ? Colors.red
-                                    : theme.colorScheme.onSurface,
-                              ),
-                            ),
-                            if (widget.trend.unit != null)
-                              Padding(
-                                padding: const EdgeInsets.only(left: 8.0),
-                                child: Text(
-                                  widget.trend.unit!,
-                                  style: theme.textTheme.titleMedium?.copyWith(
-                                    color: theme.colorScheme.onSurfaceVariant,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    if (latest != null)
+                child: IntrinsicHeight(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
                       Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 8,
-                            ),
-                            decoration: BoxDecoration(
-                              color: isAbnormal
-                                  ? Colors.red.withValues(alpha: 0.1)
-                                  : theme.colorScheme.primary.withValues(
-                                      alpha: 0.1,
-                                    ),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Text(
-                              isAbnormal ? 'Out of Range' : 'Normal',
-                              style: theme.textTheme.labelMedium?.copyWith(
-                                color: isAbnormal
-                                    ? Colors.red
-                                    : theme.colorScheme.primary,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
                           Text(
-                            DateFormat.yMMMd().format(latest.date),
-                            style: theme.textTheme.bodyMedium?.copyWith(
+                            'Latest Result',
+                            style: theme.textTheme.labelLarge?.copyWith(
                               color: theme.colorScheme.onSurfaceVariant,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
+                          const SizedBox(height: 12),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.baseline,
+                            textBaseline: TextBaseline.alphabetic,
+                            children: [
+                              Text(
+                                displayValue,
+                                style: theme.textTheme.displaySmall?.copyWith(
+                                  fontWeight: FontWeight.w800,
+                                  color: isAbnormal
+                                      ? Colors.red
+                                      : theme.colorScheme.onSurface,
+                                ),
+                              ),
+                              if (widget.trend.unit != null)
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 8.0),
+                                  child: Text(
+                                    widget.trend.unit!,
+                                    style: theme.textTheme.labelMedium
+                                        ?.copyWith(
+                                          color: theme
+                                              .colorScheme
+                                              .onSurfaceVariant
+                                              .withValues(alpha: 0.6),
+                                          fontWeight: FontWeight.w200,
+                                        ),
+                                  ),
+                                ),
+                            ],
+                          ),
                         ],
                       ),
-                  ],
+                      if (latest != null)
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isAbnormal
+                                    ? Colors.red.withValues(alpha: 0.1)
+                                    : theme.colorScheme.primary.withValues(
+                                        alpha: 0.1,
+                                      ),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                isAbnormal ? 'Out of Range' : 'Normal',
+                                style: theme.textTheme.labelMedium?.copyWith(
+                                  color: isAbnormal
+                                      ? Colors.red
+                                      : theme.colorScheme.primary,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            Text(
+                              DateFormat.yMMMd().format(latest.date),
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant
+                                    .withValues(alpha: .7),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: 48),

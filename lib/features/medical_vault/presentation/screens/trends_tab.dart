@@ -7,7 +7,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'metric_detail_screen.dart';
 
 class TrendsTab extends ConsumerStatefulWidget {
-  const TrendsTab({super.key});
+  final Widget? bottomWidget;
+  const TrendsTab({super.key, this.bottomWidget});
 
   @override
   ConsumerState<TrendsTab> createState() => _TrendsTabState();
@@ -329,8 +330,10 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
                                         style: TextStyle(
                                           color: theme
                                               .colorScheme
-                                              .onSurfaceVariant,
+                                              .onSurfaceVariant
+                                              .withValues(alpha: 0.6),
                                           fontSize: 12,
+                                          fontWeight: FontWeight.w400,
                                         ),
                                       ),
                                     ],
@@ -449,8 +452,10 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
                               'Tap the star icon on any chart to pin your most important health metrics here.',
                               textAlign: TextAlign.center,
                               style: TextStyle(
-                                color: theme.colorScheme.onSurfaceVariant,
+                                color: theme.colorScheme.onSurfaceVariant
+                                    .withValues(alpha: 0.6),
                                 fontSize: 12,
+                                fontWeight: FontWeight.w400,
                               ),
                             ),
                           ],
@@ -904,7 +909,12 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
             Text(
               'Upload a lab report with numeric results and verify the AI extraction to start tracking your health trends automatically.',
               textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant.withValues(
+                  alpha: 0.6,
+                ),
+                fontWeight: FontWeight.w400,
+              ),
             ),
           ],
         ),
@@ -973,7 +983,7 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
 }
 
 // Sub-screen for opening a Category
-class _CategoryDetailScreen extends StatelessWidget {
+class _CategoryDetailScreen extends StatefulWidget {
   final String category;
   final List<dynamic> bundleList;
   final Color color;
@@ -989,33 +999,88 @@ class _CategoryDetailScreen extends StatelessWidget {
   });
 
   @override
+  State<_CategoryDetailScreen> createState() => _CategoryDetailScreenState();
+}
+
+class _CategoryDetailScreenState extends State<_CategoryDetailScreen> {
+  String _searchQuery = '';
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+
+    final filteredList = widget.bundleList.where((bundle) {
+      if (_searchQuery.isEmpty) return true;
+      final primary = bundle['primary'] as BiomarkerTrendModel;
+      final name = primary.name.toLowerCase();
+      return name.contains(_searchQuery.toLowerCase());
+    }).toList();
+
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
-          category,
+          widget.category,
           style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
         ),
         backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        itemCount: bundleList.length,
-        itemBuilder: (context, index) {
-          final bundle = bundleList[index];
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
-            child: _buildDetailCard(
-              bundle['primary'],
-              bundle['secondary'],
-              theme,
-              context,
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surface,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: theme.colorScheme.primary.withValues(alpha: 0.15),
+                  width: 1,
+                ),
+              ),
+              child: TextField(
+                onChanged: (val) => setState(() => _searchQuery = val),
+                style: const TextStyle(fontSize: 14),
+                decoration: InputDecoration(
+                  icon: Icon(
+                    Icons.search,
+                    color: theme.colorScheme.primary,
+                    size: 20,
+                  ),
+                  hintText: 'Search in ${widget.category}...',
+                  border: InputBorder.none,
+                  hintStyle: TextStyle(
+                    color: theme.colorScheme.outline,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
             ),
-          );
-        },
+          ),
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              itemCount: filteredList.length,
+              itemBuilder: (context, index) {
+                final bundle = filteredList[index];
+                return Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 6,
+                  ),
+                  child: _buildDetailCard(
+                    bundle['primary'],
+                    bundle['secondary'],
+                    theme,
+                    context,
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1059,7 +1124,7 @@ class _CategoryDetailScreen extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
-            onOpenDetail(trend, secondaryTrend);
+            widget.onOpenDetail(trend, secondaryTrend);
           },
           borderRadius: BorderRadius.circular(16),
           child: Padding(
@@ -1072,12 +1137,12 @@ class _CategoryDetailScreen extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: isAbnormal
                         ? Colors.red.withValues(alpha: 0.15)
-                        : color.withValues(alpha: 0.15),
+                        : widget.color.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
-                    isAbnormal ? Icons.warning_rounded : icon,
-                    color: isAbnormal ? Colors.red : color,
+                    isAbnormal ? Icons.warning_rounded : widget.icon,
+                    color: isAbnormal ? Colors.red : widget.color,
                     size: 16,
                   ),
                 ),
