@@ -85,7 +85,7 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
     }
   }
 
-  // Restoring the colorful icons!
+  // Colorful icons
   Color _getCategoryColor(String category, ThemeData theme) {
     switch (category) {
       case 'Lipids & Heart Health':
@@ -119,7 +119,6 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
             return _buildEmptyState(context);
           }
 
-          // Pre-process for Dual BP
           final processedTrends = <String, BiomarkerTrendModel>{};
           BiomarkerTrendModel? sysTrend;
           BiomarkerTrendModel? diaTrend;
@@ -133,7 +132,6 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
               processedTrends[t.name] = t;
           }
 
-          // Grouping
           final pinned = <dynamic>[];
           final categories = <String, List<dynamic>>{};
 
@@ -182,23 +180,19 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: theme.colorScheme.surface,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(24),
                         border: Border.all(
                           color: theme.colorScheme.primary.withValues(
-                            alpha: 0.3,
+                            alpha: 0.15,
                           ),
                           width: 1,
                         ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.02),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
                       ),
                       child: TextField(
                         onChanged: (val) => setState(() => _searchQuery = val),
@@ -231,14 +225,15 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
                     ),
                     const SizedBox(height: 16),
                     SizedBox(
-                      height: 120, // Clean height
+                      height: 120,
                       child: ListView.separated(
                         padding: const EdgeInsets.symmetric(horizontal: 24),
                         scrollDirection: Axis.horizontal,
                         itemCount: sortedCategoryKeys
                             .where((k) => k != 'Other Biomarkers')
                             .length,
-                        separatorBuilder: (_, __) => const SizedBox(width: 16),
+                        separatorBuilder: (_, __) =>
+                            const SizedBox(width: 12), // Tighter gap
                         itemBuilder: (context, index) {
                           final key = sortedCategoryKeys
                               .where((k) => k != 'Other Biomarkers')
@@ -279,30 +274,23 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
                           child: Container(
                             width: double.infinity,
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 24,
+                              horizontal: 16,
+                              vertical: 16,
                             ),
                             decoration: BoxDecoration(
                               color: theme.colorScheme.surface,
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(24),
                               border: Border.all(
                                 color: theme.colorScheme.primary.withValues(
-                                  alpha: 0.3,
+                                  alpha: 0.15,
                                 ),
                                 width: 1,
                               ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.02),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
                             ),
                             child: Row(
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.all(14),
+                                  padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
                                     color: _getCategoryColor(
                                       'Other Biomarkers',
@@ -316,7 +304,7 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
                                       'Other Biomarkers',
                                       theme,
                                     ),
-                                    size: 28,
+                                    size: 24,
                                   ),
                                 ),
                                 const SizedBox(width: 16),
@@ -329,18 +317,18 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
                                       Text(
                                         'Other Biomarkers',
                                         style: const TextStyle(
-                                          fontWeight: FontWeight.w800,
-                                          fontSize: 18,
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 16,
                                         ),
                                       ),
-                                      const SizedBox(height: 4),
+                                      const SizedBox(height: 2),
                                       Text(
                                         '${categories['Other Biomarkers']!.length} additional metrics',
                                         style: TextStyle(
                                           color: theme
                                               .colorScheme
                                               .onSurfaceVariant,
-                                          fontSize: 14,
+                                          fontSize: 13,
                                         ),
                                       ),
                                     ],
@@ -349,7 +337,7 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
                                 Icon(
                                   Icons.arrow_forward_ios_rounded,
                                   color: theme.colorScheme.outline,
-                                  size: 18,
+                                  size: 16,
                                 ),
                               ],
                             ),
@@ -387,7 +375,7 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
                       return Padding(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 24,
-                          vertical: 8,
+                          vertical: 6,
                         ),
                         child: _buildMetricCard(
                           bundle['primary'],
@@ -397,12 +385,12 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
                       );
                     }),
                   ] else if (pinned.isNotEmpty) ...[
-                    // Pinned List in modern cards
+                    // Pinned List
                     ...pinned.map((bundle) {
                       return Padding(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 24,
-                          vertical: 8,
+                          vertical: 6,
                         ),
                         child: _buildMetricCard(
                           bundle['primary'],
@@ -412,31 +400,24 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
                       );
                     }),
                   ] else ...[
-                    // Pinned Favorites Empty State - Premium Rectangular Card
+                    // Pinned Favorites Empty State
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24),
                       child: Container(
                         width: double.infinity,
                         padding: const EdgeInsets.symmetric(
-                          vertical: 40,
+                          vertical: 32,
                           horizontal: 24,
                         ),
                         decoration: BoxDecoration(
                           color: theme.colorScheme.surface,
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(24),
                           border: Border.all(
                             color: theme.colorScheme.primary.withValues(
-                              alpha: 0.3,
+                              alpha: 0.15,
                             ),
                             width: 1,
                           ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.02),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
                         ),
                         child: Column(
                           children: [
@@ -451,10 +432,10 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
                               child: Icon(
                                 Icons.push_pin_rounded,
                                 color: theme.colorScheme.primary,
-                                size: 36,
+                                size: 28,
                               ),
                             ),
-                            const SizedBox(height: 20),
+                            const SizedBox(height: 16),
                             Text(
                               'No Pinned Metrics',
                               style: theme.textTheme.titleMedium?.copyWith(
@@ -467,7 +448,7 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 color: theme.colorScheme.onSurfaceVariant,
-                                fontSize: 14,
+                                fontSize: 13,
                               ),
                             ),
                           ],
@@ -499,28 +480,21 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
                       return Padding(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 24,
-                          vertical: 8,
+                          vertical: 6,
                         ),
                         child: Container(
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(24),
                             border: Border.all(
                               color: theme.colorScheme.primary.withValues(
-                                alpha: 0.3,
+                                alpha: 0.15,
                               ),
                               width: 1,
                             ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.02),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
                           ),
                           child: Material(
                             color: theme.colorScheme.surface,
-                            borderRadius: BorderRadius.circular(19),
+                            borderRadius: BorderRadius.circular(23),
                             clipBehavior: Clip.antiAlias,
                             child: Theme(
                               data: theme.copyWith(
@@ -528,22 +502,22 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
                               ),
                               child: ExpansionTile(
                                 tilePadding: const EdgeInsets.symmetric(
-                                  horizontal: 20,
-                                  vertical: 12,
+                                  horizontal: 16,
+                                  vertical: 8,
                                 ),
                                 leading: Container(
-                                  padding: const EdgeInsets.all(12),
+                                  padding: const EdgeInsets.all(10),
                                   decoration: BoxDecoration(
                                     color: color.withValues(alpha: 0.15),
                                     shape: BoxShape.circle,
                                   ),
-                                  child: Icon(icon, color: color, size: 24),
+                                  child: Icon(icon, color: color, size: 22),
                                 ),
                                 title: Text(
                                   shortName,
                                   style: const TextStyle(
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 15,
                                   ),
                                 ),
                                 subtitle: Text(
@@ -554,7 +528,7 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
                                   ),
                                 ),
                                 childrenPadding: const EdgeInsets.only(
-                                  bottom: 16,
+                                  bottom: 12,
                                 ),
                                 children: bundleList.map((bundle) {
                                   return _buildMetricRow(
@@ -592,7 +566,6 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
     final color = _getCategoryColor(category, theme);
     final icon = _getCategoryIconData(category);
 
-    // Convert 'Complete Blood Count (CBC)' to 'CBC' for the small card
     final shortName = category.contains('(')
         ? category.split('(')[1].replaceAll(')', '')
         : category;
@@ -612,21 +585,14 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
         );
       },
       child: Container(
-        width: 110, // Increased width slightly for better text fitting
+        width: 100, // Slightly tighter width for symmetry
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: theme.colorScheme.primary.withValues(alpha: 0.3),
+            color: theme.colorScheme.primary.withValues(alpha: 0.15),
             width: 1,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.02),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -647,8 +613,8 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
                 textAlign: TextAlign.center,
                 maxLines: 2,
                 style: const TextStyle(
-                  fontWeight: FontWeight.w600, // Less bold to fit better
-                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
                 ),
               ),
             ),
@@ -686,36 +652,27 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
     return Container(
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: isAbnormal
               ? Colors.red.withValues(alpha: 0.3)
-              : theme.colorScheme.primary.withValues(alpha: 0.3),
+              : theme.colorScheme.primary.withValues(alpha: 0.15),
           width: 1,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: isAbnormal
-                ? Colors.red.withValues(alpha: 0.05)
-                : Colors.black.withValues(alpha: 0.02),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: () => _openDetail(trend, secondaryTrend),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(24),
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 // Icon indicator
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     color: isAbnormal
                         ? Colors.red.withValues(alpha: 0.15)
@@ -727,7 +684,7 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
                         ? Icons.warning_rounded
                         : _getCategoryIconData(_getCategory(name)),
                     color: isAbnormal ? Colors.red : catColor,
-                    size: 24,
+                    size: 20,
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -740,19 +697,19 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
                     children: [
                       Text(
                         name,
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w800,
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 2),
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.baseline,
                         textBaseline: TextBaseline.alphabetic,
                         children: [
                           Text(
                             displayValue,
-                            style: theme.textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.w900,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w800,
                               color: isAbnormal
                                   ? Colors.red
                                   : theme.colorScheme.onSurface,
@@ -763,7 +720,7 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
                             Expanded(
                               child: Text(
                                 unitString,
-                                style: theme.textTheme.labelMedium?.copyWith(
+                                style: theme.textTheme.labelSmall?.copyWith(
                                   color: theme.colorScheme.onSurfaceVariant,
                                 ),
                                 maxLines: 1,
@@ -779,7 +736,7 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
                 Expanded(
                   flex: 2,
                   child: SizedBox(
-                    height: 45,
+                    height: 35,
                     child: _buildSparkline(
                       dataPoints,
                       theme,
@@ -823,11 +780,11 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
     return InkWell(
       onTap: () => _openDetail(trend, secondaryTrend),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         decoration: BoxDecoration(
           border: Border(
             top: BorderSide(
-              color: theme.colorScheme.outlineVariant.withValues(alpha: 0.2),
+              color: theme.colorScheme.outlineVariant.withValues(alpha: 0.15),
             ),
           ),
         ),
@@ -842,11 +799,11 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
                 children: [
                   Text(
                     name,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w800,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 2),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.baseline,
                     textBaseline: TextBaseline.alphabetic,
@@ -881,7 +838,7 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
             Expanded(
               flex: 2,
               child: SizedBox(
-                height: 40,
+                height: 35,
                 child: _buildSparkline(dataPoints, theme, isAbnormal, catColor),
               ),
             ),
@@ -889,7 +846,7 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
             Icon(
               Icons.chevron_right,
               color: theme.colorScheme.outline,
-              size: 18,
+              size: 16,
             ),
           ],
         ),
@@ -907,7 +864,7 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
             MetricDetailScreen(trend: trend, secondaryTrend: secondary),
       ),
     );
-    _loadPinned(); // Refresh in case they unpinned
+    _loadPinned();
   }
 
   Widget _buildEmptyState(BuildContext context) {
@@ -1001,7 +958,7 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
             spots: spots,
             isCurved: true,
             color: isAbnormal ? Colors.red : catColor.withValues(alpha: 0.5),
-            barWidth: 3,
+            barWidth: 2.5,
             isStrokeCapRound: true,
             dotData: const FlDotData(show: false),
           ),
@@ -1035,7 +992,7 @@ class _CategoryDetailScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           category,
-          style: const TextStyle(fontWeight: FontWeight.w900),
+          style: const TextStyle(fontWeight: FontWeight.w800),
         ),
         backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
@@ -1046,7 +1003,10 @@ class _CategoryDetailScreen extends StatelessWidget {
         itemBuilder: (context, index) {
           final bundle = bundleList[index];
           return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 24,
+              vertical: 6,
+            ), // Tighter vertical padding
             child: _buildDetailCard(
               bundle['primary'],
               bundle['secondary'],
@@ -1086,22 +1046,13 @@ class _CategoryDetailScreen extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: isAbnormal
               ? Colors.red.withValues(alpha: 0.3)
-              : theme.colorScheme.primary.withValues(alpha: 0.3),
+              : theme.colorScheme.primary.withValues(alpha: 0.15),
           width: 1,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: isAbnormal
-                ? Colors.red.withValues(alpha: 0.05)
-                : Colors.black.withValues(alpha: 0.02),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
       ),
       child: Material(
         color: Colors.transparent,
@@ -1109,14 +1060,18 @@ class _CategoryDetailScreen extends StatelessWidget {
           onTap: () {
             onOpenDetail(trend, secondaryTrend);
           },
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(24),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 16,
+            ), // Symmetrical, clean padding
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
+              crossAxisAlignment:
+                  CrossAxisAlignment.center, // PERFECT vertical centering
               children: [
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     color: isAbnormal
                         ? Colors.red.withValues(alpha: 0.15)
@@ -1126,7 +1081,7 @@ class _CategoryDetailScreen extends StatelessWidget {
                   child: Icon(
                     isAbnormal ? Icons.warning_rounded : icon,
                     color: isAbnormal ? Colors.red : color,
-                    size: 24,
+                    size: 20, // Slightly smaller icon for elegance
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -1138,11 +1093,11 @@ class _CategoryDetailScreen extends StatelessWidget {
                     children: [
                       Text(
                         name,
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w800,
-                        ),
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ), // Scaled font correctly
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 4),
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.baseline,
                         textBaseline: TextBaseline.alphabetic,
@@ -1150,7 +1105,7 @@ class _CategoryDetailScreen extends StatelessWidget {
                           Text(
                             displayValue,
                             style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w900,
+                              fontWeight: FontWeight.w800,
                               color: isAbnormal
                                   ? Colors.red
                                   : theme.colorScheme.onSurface,
@@ -1161,11 +1116,10 @@ class _CategoryDetailScreen extends StatelessWidget {
                             Expanded(
                               child: Text(
                                 unitString,
-                                style: theme.textTheme.labelMedium?.copyWith(
+                                style: theme.textTheme.labelSmall?.copyWith(
                                   color: theme.colorScheme.onSurfaceVariant,
                                 ),
-                                maxLines:
-                                    1, // Prevent unit from wrapping weirdly
+                                maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
@@ -1179,7 +1133,7 @@ class _CategoryDetailScreen extends StatelessWidget {
                 Icon(
                   Icons.arrow_forward_ios_rounded,
                   color: theme.colorScheme.outline,
-                  size: 18,
+                  size: 16,
                 ),
               ],
             ),
