@@ -86,20 +86,7 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
   }
 
   Color _getCategoryColor(String category, ThemeData theme) {
-    switch (category) {
-      case 'Lipids & Heart Health':
-        return Colors.pinkAccent;
-      case 'Metabolic':
-        return Colors.orange;
-      case 'Vitals & Measurements':
-        return Colors.blue;
-      case 'Liver & Kidneys':
-        return Colors.teal;
-      case 'CBC':
-        return Colors.redAccent;
-      default:
-        return theme.colorScheme.primary;
-    }
+    return theme.colorScheme.primary;
   }
 
   @override
@@ -184,14 +171,18 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       decoration: BoxDecoration(
                         color: theme.colorScheme.surface,
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: theme.colorScheme.primary.withValues(
+                            alpha: 0.3,
+                          ),
+                          width: 1,
+                        ),
                         boxShadow: [
                           BoxShadow(
-                            color: theme.colorScheme.primary.withValues(
-                              alpha: 0.08,
-                            ),
-                            blurRadius: 12,
-                            offset: const Offset(0, 6),
+                            color: Colors.black.withValues(alpha: 0.02),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
                           ),
                         ],
                       ),
@@ -280,14 +271,18 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
                             ),
                             decoration: BoxDecoration(
                               color: theme.colorScheme.surface,
-                              borderRadius: BorderRadius.circular(24),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: theme.colorScheme.primary.withValues(
+                                  alpha: 0.3,
+                                ),
+                                width: 1,
+                              ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: theme.colorScheme.primary.withValues(
-                                    alpha: 0.12,
-                                  ),
-                                  blurRadius: 12,
-                                  offset: const Offset(0, 6),
+                                  color: Colors.black.withValues(alpha: 0.02),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
                                 ),
                               ],
                             ),
@@ -410,14 +405,18 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
                         ),
                         decoration: BoxDecoration(
                           color: theme.colorScheme.surface,
-                          borderRadius: BorderRadius.circular(24),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: theme.colorScheme.primary.withValues(
+                              alpha: 0.3,
+                            ),
+                            width: 1,
+                          ),
                           boxShadow: [
                             BoxShadow(
-                              color: theme.colorScheme.primary.withValues(
-                                alpha: 0.1,
-                              ),
-                              blurRadius: 12,
-                              offset: const Offset(0, 6),
+                              color: Colors.black.withValues(alpha: 0.02),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
                             ),
                           ],
                         ),
@@ -517,7 +516,7 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
                                 leading: Container(
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
-                                    color: color.withValues(alpha: 0.10),
+                                    color: color.withValues(alpha: 0.15),
                                     shape: BoxShape.circle,
                                   ),
                                   child: Icon(icon, color: color, size: 24),
@@ -597,12 +596,16 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
         width: 104,
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: theme.colorScheme.primary.withValues(alpha: 0.3),
+            width: 1,
+          ),
           boxShadow: [
             BoxShadow(
-              color: color.withValues(alpha: 0.10),
-              blurRadius: 12,
-              offset: const Offset(0, 6),
+              color: Colors.black.withValues(alpha: 0.02),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
@@ -612,7 +615,7 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.10),
+                color: color.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, color: color, size: 28),
@@ -656,14 +659,20 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
     return Container(
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isAbnormal
+              ? Colors.red.withValues(alpha: 0.3)
+              : theme.colorScheme.primary.withValues(alpha: 0.3),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
             color: isAbnormal
-                ? theme.colorScheme.error.withValues(alpha: 0.1)
-                : theme.colorScheme.primary.withValues(alpha: 0.1),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
+                ? Colors.red.withValues(alpha: 0.05)
+                : Colors.black.withValues(alpha: 0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -681,8 +690,8 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: isAbnormal
-                        ? theme.colorScheme.error.withValues(alpha: 0.10)
-                        : theme.colorScheme.primary.withValues(alpha: 0.10),
+                        ? theme.colorScheme.error.withValues(alpha: 0.15)
+                        : theme.colorScheme.primary.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -1025,14 +1034,20 @@ class _CategoryDetailScreen extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isAbnormal
+              ? Colors.red.withValues(alpha: 0.3)
+              : theme.colorScheme.primary.withValues(alpha: 0.3),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
             color: isAbnormal
-                ? theme.colorScheme.error.withValues(alpha: 0.10)
-                : color.withValues(alpha: 0.10),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
+                ? Colors.red.withValues(alpha: 0.05)
+                : Colors.black.withValues(alpha: 0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -1042,7 +1057,7 @@ class _CategoryDetailScreen extends StatelessWidget {
           onTap: () {
             onOpenDetail(trend, secondaryTrend);
           },
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(20),
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Row(
@@ -1051,8 +1066,8 @@ class _CategoryDetailScreen extends StatelessWidget {
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: isAbnormal
-                        ? theme.colorScheme.error.withValues(alpha: 0.10)
-                        : color.withValues(alpha: 0.10),
+                        ? theme.colorScheme.error.withValues(alpha: 0.15)
+                        : color.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
