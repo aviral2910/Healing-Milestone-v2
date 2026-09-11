@@ -486,18 +486,24 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
                         ),
                         child: Container(
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(24),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: theme.colorScheme.primary.withValues(
+                                alpha: 0.3,
+                              ),
+                              width: 1,
+                            ),
                             boxShadow: [
                               BoxShadow(
-                                color: color.withValues(alpha: 0.08),
-                                blurRadius: 12,
-                                offset: const Offset(0, 6),
+                                color: Colors.black.withValues(alpha: 0.02),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
                               ),
                             ],
                           ),
                           child: Material(
                             color: theme.colorScheme.surface,
-                            borderRadius: BorderRadius.circular(24),
+                            borderRadius: BorderRadius.circular(19),
                             clipBehavior: Clip.antiAlias,
                             child: Theme(
                               data: theme.copyWith(
