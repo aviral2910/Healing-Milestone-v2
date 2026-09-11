@@ -391,13 +391,26 @@ class _MetricDetailScreenState extends ConsumerState<MetricDetailScreen> {
       if (i == 0) {
         final highSpots = <FlSpot>[];
         final lowSpots = <FlSpot>[];
-        for (var p in pts) {
-          if (p.rangeHigh != null && p.rangeLow != null) {
+        // 1. Find standard bounds for this metric across all time
+        double? defaultHigh;
+        double? defaultLow;
+        for (var p in pts.reversed) {
+          if (p.rangeHigh != null) defaultHigh ??= p.rangeHigh;
+          if (p.rangeLow != null) defaultLow ??= p.rangeLow;
+        }
+
+        // 2. Draw the river continuously across all data points
+        if (defaultHigh != null || defaultLow != null) {
+          for (var p in pts) {
             final x = p.date.millisecondsSinceEpoch.toDouble();
-            highSpots.add(FlSpot(x, p.rangeHigh!));
-            lowSpots.add(FlSpot(x, p.rangeLow!));
-            if (p.rangeHigh! > tMax) tMax = p.rangeHigh!;
-            if (p.rangeLow! < tMin) tMin = p.rangeLow!;
+            final high = p.rangeHigh ?? defaultHigh ?? ((p.rangeLow ?? defaultLow ?? 0.0) * 5.0).clamp(100.0, 9999.0);
+            final low = p.rangeLow ?? defaultLow ?? 0.0;
+            
+            highSpots.add(FlSpot(x, high));
+            lowSpots.add(FlSpot(x, low));
+            
+            if (p.rangeHigh != null && p.rangeHigh! > tMax) tMax = p.rangeHigh!;
+            if (p.rangeLow != null && p.rangeLow! < tMin) tMin = p.rangeLow!;
           }
         }
         
