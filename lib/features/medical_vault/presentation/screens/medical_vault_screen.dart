@@ -72,7 +72,47 @@ class _MedicalVaultScreenState extends ConsumerState<MedicalVaultScreen> {
       error: (err, stack) => const SizedBox.shrink(),
       data: (records) {
         if (records.isEmpty) {
-          return const SizedBox.shrink();
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surface,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: theme.colorScheme.primary.withValues(alpha: 0.15),
+                ),
+              ),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.description_rounded,
+                    color: theme.colorScheme.primary,
+                    size: 40,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'No Recent Reports',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Upload a report and extract data, or manually enter biomarkers to start tracking your health trends.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: theme.colorScheme.onSurfaceVariant.withValues(
+                        alpha: 0.7,
+                      ),
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
         }
 
         final sortedRecords = List<MedicalRecord>.from(records)

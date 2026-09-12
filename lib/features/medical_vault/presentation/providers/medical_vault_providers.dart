@@ -7,7 +7,6 @@ import '../../data/repositories/medical_vault_repository.dart';
 
 part 'medical_vault_providers.g.dart';
 
-
 @riverpod
 Future<List<String>> uniqueMedicalTags(Ref ref) async {
   return await ref.watch(medicalVaultRepositoryProvider).getUniqueTags();
@@ -24,7 +23,9 @@ class MedicalRecordsNotifier extends _$MedicalRecordsNotifier {
   FutureOr<List<MedicalRecord>> build() async {
     _hasMore = true;
     _isLoadingMore = false;
-    final items = await ref.watch(medicalVaultRepositoryProvider).getMedicalRecords(skip: 0, limit: 20);
+    final items = await ref
+        .watch(medicalVaultRepositoryProvider)
+        .getMedicalRecords(skip: 0, limit: 20);
     if (items.length < 20) {
       _hasMore = false;
     }
@@ -33,24 +34,23 @@ class MedicalRecordsNotifier extends _$MedicalRecordsNotifier {
 
   Future<void> loadMore() async {
     if (_isLoadingMore || !_hasMore) return;
-    
+
     final currentList = state.value;
     if (currentList == null) return;
 
     _isLoadingMore = true;
     // Tell listeners we are loading more without wiping out the existing data
-    ref.notifyListeners(); 
+    ref.notifyListeners();
 
     try {
-      final newItems = await ref.read(medicalVaultRepositoryProvider).getMedicalRecords(
-        skip: currentList.length, 
-        limit: 20,
-      );
-      
+      final newItems = await ref
+          .read(medicalVaultRepositoryProvider)
+          .getMedicalRecords(skip: currentList.length, limit: 20);
+
       if (newItems.length < 20) {
         _hasMore = false;
       }
-      
+
       state = AsyncData([...currentList, ...newItems]);
     } catch (e, st) {
       // Handle error gently
@@ -68,19 +68,23 @@ class MedicalRecordsNotifier extends _$MedicalRecordsNotifier {
     required String category,
     String? notes,
   }) async {
-    state = const AsyncLoading();
-    state = await AsyncValue.guard(() async {
-      final newRecord = await ref.read(medicalVaultRepositoryProvider).uploadReport(
-        files: files,
-        reportTypes: reportTypes,
-        encounterDate: encounterDate,
-        category: category,
-        notes: notes,
-      );
-      final currentList = state.value ?? [];
-      return [newRecord, ...currentList];
-    });
-    return state.value!.first;
+    final currentList = state.value ?? [];
+    try {
+      final newRecord = await ref
+          .read(medicalVaultRepositoryProvider)
+          .uploadReport(
+            files: files,
+            reportTypes: reportTypes,
+            encounterDate: encounterDate,
+            category: category,
+            notes: notes,
+          );
+      state = AsyncData([newRecord, ...currentList]);
+      return newRecord;
+    } catch (e, st) {
+      // Don't set state to error so we don't break the list
+      Error.throwWithStackTrace(e, st);
+    }
   }
 
   Future<void> updateReport({
@@ -92,10 +96,10 @@ class MedicalRecordsNotifier extends _$MedicalRecordsNotifier {
     required String category,
     String? notes,
   }) async {
-    state = const AsyncLoading();
-    state = await AsyncValue.guard(() async {
+    final currentList = state.value ?? [];
+    try {
       final repo = ref.read(medicalVaultRepositoryProvider);
-      
+
       List<MedicalRecordFile> uploadedFiles = [];
       if (newFiles.isNotEmpty) {
         uploadedFiles = await repo.uploadFiles(newFiles);
@@ -110,9 +114,12 @@ class MedicalRecordsNotifier extends _$MedicalRecordsNotifier {
         category: category,
         notes: notes,
       );
-      final currentList = state.value ?? [];
-      return currentList.map((r) => r.id == id ? updatedRecord : r).toList();
-    });
+      state = AsyncData(
+        currentList.map((r) => r.id == id ? updatedRecord : r).toList(),
+      );
+    } catch (e, st) {
+      Error.throwWithStackTrace(e, st);
+    }
   }
 
   Future<void> deleteReport(String id) async {
@@ -136,13 +143,15 @@ class MixViewsNotifier extends _$MixViewsNotifier {
     required List<String> selectedReportIds,
     required int durationHours,
   }) async {
-    final newView = await ref.read(medicalVaultRepositoryProvider).createMixView(
-      name: name,
-      journeyIds: journeyIds,
-      selectedReportIds: selectedReportIds,
-      durationHours: durationHours,
-    );
-    
+    final newView = await ref
+        .read(medicalVaultRepositoryProvider)
+        .createMixView(
+          name: name,
+          journeyIds: journeyIds,
+          selectedReportIds: selectedReportIds,
+          durationHours: durationHours,
+        );
+
     if (state.hasValue) {
       state = AsyncData([newView, ...state.value!]);
     }
@@ -156,14 +165,16 @@ class MixViewsNotifier extends _$MixViewsNotifier {
     required List<String> selectedReportIds,
     required int durationHours,
   }) async {
-    final updatedView = await ref.read(medicalVaultRepositoryProvider).updateMixView(
-      id: id,
-      name: name,
-      journeyIds: journeyIds,
-      selectedReportIds: selectedReportIds,
-      durationHours: durationHours,
-    );
-    
+    final updatedView = await ref
+        .read(medicalVaultRepositoryProvider)
+        .updateMixView(
+          id: id,
+          name: name,
+          journeyIds: journeyIds,
+          selectedReportIds: selectedReportIds,
+          durationHours: durationHours,
+        );
+
     if (state.hasValue) {
       state = AsyncData(
         state.value!.map<MixView>((v) => v.id == id ? updatedView : v).toList(),
@@ -191,7 +202,9 @@ class SnapshotTimelineNotifier extends _$SnapshotTimelineNotifier {
   FutureOr<List<SnapshotTimelineItem>> build(String viewId) async {
     _hasMore = true;
     _isLoadingMore = false;
-    final items = await ref.watch(medicalVaultRepositoryProvider).getMixViewTimeline(viewId, skip: 0, limit: 20);
+    final items = await ref
+        .watch(medicalVaultRepositoryProvider)
+        .getMixViewTimeline(viewId, skip: 0, limit: 20);
     if (items.length < 20) {
       _hasMore = false;
     }
@@ -213,16 +226,18 @@ class SnapshotTimelineNotifier extends _$SnapshotTimelineNotifier {
 
   Future<void> fetchNextPage() async {
     if (!_hasMore || _isLoadingMore || state.isLoading) return;
-    
+
     _isLoadingMore = true;
     try {
       final currentItems = state.value ?? [];
-      final newItems = await ref.read(medicalVaultRepositoryProvider).getMixViewTimeline(viewId, skip: currentItems.length, limit: 20);
-      
+      final newItems = await ref
+          .read(medicalVaultRepositoryProvider)
+          .getMixViewTimeline(viewId, skip: currentItems.length, limit: 20);
+
       if (newItems.length < 20) {
         _hasMore = false;
       }
-      
+
       state = AsyncData([...currentItems, ...newItems]);
     } catch (e, st) {
       // Could handle error state specifically for pagination, but let's just log or ignore

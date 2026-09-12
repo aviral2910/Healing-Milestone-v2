@@ -779,7 +779,13 @@ class ReportTimelineNode extends ConsumerWidget {
                                     ),
                                   ),
                                 ],
-                                if (report.biomarkers.isEmpty) ...[
+                                if (report.biomarkers.isEmpty &&
+                                    report.category != 'prescription' &&
+                                    !report.reportTypes.any(
+                                      (t) => t.toLowerCase().contains(
+                                        'prescription',
+                                      ),
+                                    )) ...[
                                   const SizedBox(height: 20),
                                   Padding(
                                     padding: const EdgeInsets.symmetric(
@@ -1004,39 +1010,48 @@ class ReportTimelineNode extends ConsumerWidget {
                               }
                             }
                           },
-                          itemBuilder: (context) => [
-                            const PopupMenuItem(
-                              value: 'extract',
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.auto_awesome,
-                                    color: Colors.purple,
-                                    size: 20,
+                          itemBuilder: (context) {
+                            final isPrescription =
+                                report.category == 'prescription' ||
+                                report.reportTypes.any(
+                                  (t) =>
+                                      t.toLowerCase().contains('prescription'),
+                                );
+                            return [
+                              if (!isPrescription)
+                                const PopupMenuItem(
+                                  value: 'extract',
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.auto_awesome,
+                                        color: Colors.purple,
+                                        size: 20,
+                                      ),
+                                      SizedBox(width: 8),
+                                      Text(
+                                        'Extract Data with AI',
+                                        style: TextStyle(
+                                          color: Colors.purple,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  SizedBox(width: 8),
-                                  Text(
-                                    'Extract Data with AI',
-                                    style: TextStyle(
-                                      color: Colors.purple,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
+                                ),
+                              const PopupMenuItem(
+                                value: 'edit',
+                                child: Text('Edit Tags & Date'),
                               ),
-                            ),
-                            const PopupMenuItem(
-                              value: 'edit',
-                              child: Text('Edit Tags & Date'),
-                            ),
-                            const PopupMenuItem(
-                              value: 'delete',
-                              child: Text(
-                                'Delete',
-                                style: TextStyle(color: Colors.red),
+                              const PopupMenuItem(
+                                value: 'delete',
+                                child: Text(
+                                  'Delete',
+                                  style: TextStyle(color: Colors.red),
+                                ),
                               ),
-                            ),
-                          ],
+                            ];
+                          },
                         ),
                       ),
                   ],
@@ -1067,8 +1082,6 @@ class _ReportTimelinePainter extends CustomPainter {
       ..color = color
       ..strokeWidth = 1.5
       ..style = PaintingStyle.stroke;
-      
-
 
     final lineGlowPaint = Paint()
       ..color = color.withValues(alpha: color.a * 0.4)
