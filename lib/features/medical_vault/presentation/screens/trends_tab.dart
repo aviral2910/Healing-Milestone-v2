@@ -1145,7 +1145,7 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
     Color catColor, {
     bool isExpanded = false,
   }) {
-    if (dataPoints.length < 2) return const SizedBox.shrink();
+    if (dataPoints.isEmpty) return const SizedBox.shrink();
 
     double minY = dataPoints.first.value;
     double maxY = dataPoints.first.value;
@@ -1154,8 +1154,16 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
       if (p.value > maxY) maxY = p.value;
     }
 
-    final rLow = dataPoints.last.rangeLow;
-    final rHigh = dataPoints.last.rangeHigh;
+    double? rLow;
+    double? rHigh;
+    for (var p in dataPoints.reversed) {
+      if (p.rangeLow != null && p.rangeHigh != null) {
+        rLow = p.rangeLow;
+        rHigh = p.rangeHigh;
+        break;
+      }
+    }
+
     if (isExpanded && rLow != null && rHigh != null) {
       if (rLow < minY) minY = rLow;
       if (rHigh > maxY) maxY = rHigh;
@@ -1172,6 +1180,16 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
     final spots = dataPoints
         .map((p) => FlSpot(p.date.millisecondsSinceEpoch.toDouble(), p.value))
         .toList();
+
+    final highSpots = <FlSpot>[];
+    final lowSpots = <FlSpot>[];
+    if (isExpanded && rLow != null && rHigh != null) {
+      for (var p in dataPoints) {
+        final x = p.date.millisecondsSinceEpoch.toDouble();
+        highSpots.add(FlSpot(x, p.rangeHigh ?? rHigh!));
+        lowSpots.add(FlSpot(x, p.rangeLow ?? rLow!));
+      }
+    }
 
     return LineChart(
       LineChartData(
@@ -1240,39 +1258,19 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
           ),
         ),
         borderData: FlBorderData(show: false),
-        rangeAnnotations: (isExpanded && rLow != null && rHigh != null)
-            ? RangeAnnotations(
-                horizontalRangeAnnotations: [
-                  HorizontalRangeAnnotation(
-                    y1: rLow,
-                    y2: rHigh,
-                    color: Colors.green.withValues(alpha: 0.1),
-                  ),
-                ],
-              )
-            : const RangeAnnotations(),
-        extraLinesData: (isExpanded && rLow != null && rHigh != null)
-            ? ExtraLinesData(
-                extraLinesOnTop: false,
-                horizontalLines: [
-                  HorizontalLine(
-                    y: rLow,
-                    color: Colors.green.withValues(alpha: 0.4),
-                    strokeWidth: 1,
-                    dashArray: [4, 4],
-                  ),
-                  HorizontalLine(
-                    y: rHigh,
-                    color: Colors.green.withValues(alpha: 0.4),
-                    strokeWidth: 1,
-                    dashArray: [4, 4],
-                  ),
-                ],
-              )
-            : const ExtraLinesData(),
         lineTouchData: const LineTouchData(
           enabled: false,
         ), // Keep false to allow card tap
+        betweenBarsData:
+            (isExpanded && highSpots.isNotEmpty && lowSpots.isNotEmpty)
+            ? [
+                BetweenBarsData(
+                  fromIndex: 1,
+                  toIndex: 2,
+                  color: Colors.green.withValues(alpha: 0.15),
+                ),
+              ]
+            : [],
         lineBarsData: [
           LineChartBarData(
             spots: spots,
@@ -1334,6 +1332,26 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
               ),
             ),
           ),
+          if (isExpanded && highSpots.isNotEmpty && lowSpots.isNotEmpty) ...[
+            LineChartBarData(
+              spots: highSpots,
+              isCurved: true,
+              color: Colors.green.withValues(alpha: 0.4),
+              barWidth: 1,
+              isStrokeCapRound: true,
+              dashArray: [4, 4],
+              dotData: const FlDotData(show: false),
+            ),
+            LineChartBarData(
+              spots: lowSpots,
+              isCurved: true,
+              color: Colors.green.withValues(alpha: 0.4),
+              barWidth: 1,
+              isStrokeCapRound: true,
+              dashArray: [4, 4],
+              dotData: const FlDotData(show: false),
+            ),
+          ],
         ],
       ),
     );
