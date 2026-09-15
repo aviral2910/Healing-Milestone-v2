@@ -540,6 +540,41 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
                                   biomarker: b,
                                   compact: false,
                                   isEditing: _editingId == b.id,
+                                  onDelete: () async {
+                                    final repo = ref.read(
+                                      medicalVaultRepositoryProvider,
+                                    );
+                                    try {
+                                      await repo.deleteBiomarker(b.id!);
+                                      setState(() {
+                                        _biomarkers.removeWhere(
+                                          (item) => item.id == b.id,
+                                        );
+                                        _editingId = null;
+                                      });
+                                      ref.invalidate(medicalRecordsProvider);
+                                      ref.invalidate(biomarkerTrendsProvider);
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            'Biomarker deleted successfully',
+                                          ),
+                                        ),
+                                      );
+                                    } catch (e) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            'Failed to delete biomarker',
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  },
                                   onEditTap: () {
                                     if (b.rawName == 'Blood Pressure') {
                                       final sysIdx = _biomarkers.indexWhere(

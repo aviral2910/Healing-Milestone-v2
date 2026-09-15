@@ -332,6 +332,14 @@ class MedicalVaultRepository {
     }
   }
 
+  Future<void> deleteBiomarker(String biomarkerId) async {
+    try {
+      await _apiClient.dio.delete('/api/reports/biomarkers/$biomarkerId');
+    } catch (e) {
+      throw Exception('Delete error: $e');
+    }
+  }
+
   Future<BiomarkerModel> updateBiomarker(
     String biomarkerId,
     Map<String, dynamic> updates,
@@ -374,7 +382,9 @@ class MedicalVaultRepository {
     }
   }
 
-  Future<List<BiomarkerTemplate>> searchBiomarkerDictionary(String query) async {
+  Future<List<BiomarkerTemplate>> searchBiomarkerDictionary(
+    String query,
+  ) async {
     try {
       final response = await _apiClient.dio.get(
         '/api/biomarker-dictionary/search',
@@ -394,16 +404,15 @@ class MedicalVaultRepository {
 @riverpod
 MedicalVaultRepository medicalVaultRepository(Ref ref) {
   return MedicalVaultRepository(ref.watch(apiClientProvider));
-
 }
 
 class BiomarkerTemplate {
   final String? id;
   final String name;
   final String? unit;
-  
+
   BiomarkerTemplate({this.id, required this.name, this.unit});
-  
+
   factory BiomarkerTemplate.fromJson(Map<String, dynamic> json) {
     return BiomarkerTemplate(
       id: json['id'] as String?,

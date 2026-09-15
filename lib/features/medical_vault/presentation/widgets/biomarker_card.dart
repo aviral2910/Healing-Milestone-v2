@@ -6,6 +6,7 @@ class BiomarkerCard extends StatefulWidget {
   final bool compact;
   final bool isEditing;
   final VoidCallback? onEditTap;
+  final VoidCallback? onDelete;
   final void Function(String)? onSave;
 
   const BiomarkerCard({
@@ -14,6 +15,7 @@ class BiomarkerCard extends StatefulWidget {
     this.compact = false,
     this.isEditing = false,
     this.onEditTap,
+    this.onDelete,
     this.onSave,
   });
 
@@ -136,40 +138,54 @@ class _BiomarkerCardState extends State<BiomarkerCard> {
               : MainAxisAlignment.end,
           children: [
             Expanded(
-              flex: isTextResult ? 1 : 0,
-              child: SizedBox(
-                width: isTextResult ? null : 100,
-                child: TextField(
-                  controller: _editController,
-                  focusNode: _editFocusNode,
-                  keyboardType: isTextResult
-                      ? TextInputType.multiline
-                      : const TextInputType.numberWithOptions(decimal: true),
-                  maxLines: isTextResult ? null : 1,
-                  textAlign: isTextResult ? TextAlign.left : TextAlign.right,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: isTextResult
-                        ? FontWeight.normal
-                        : FontWeight.bold,
-                  ),
-                  decoration: InputDecoration(
-                    isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(
-                      vertical: 8,
-                      horizontal: 8,
-                    ),
-                    filled: true,
-                    fillColor: theme.colorScheme.surfaceContainerHighest
-                        .withValues(alpha: 0.5),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                  onSubmitted: (_) => _submit(),
+              child: TextField(
+                controller: _editController,
+                focusNode: _editFocusNode,
+                keyboardType: isTextResult
+                    ? TextInputType.multiline
+                    : const TextInputType.numberWithOptions(decimal: true),
+                maxLines: isTextResult ? null : 1,
+                textAlign: isTextResult ? TextAlign.left : TextAlign.right,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: isTextResult
+                      ? FontWeight.normal
+                      : FontWeight.bold,
                 ),
+                decoration: InputDecoration(
+                  isDense: true,
+                  contentPadding: const EdgeInsets.symmetric(
+                    vertical: 8,
+                    horizontal: 8,
+                  ),
+                  filled: true,
+                  fillColor: theme.colorScheme.surfaceContainerHighest
+                      .withValues(alpha: 0.5),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+                onSubmitted: (_) => _submit(),
               ),
             ),
+            if (widget.onDelete != null) ...[
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: widget.onDelete,
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.delete_outline,
+                    color: Colors.red,
+                    size: 20,
+                  ),
+                ),
+              ),
+            ],
             const SizedBox(width: 8),
             GestureDetector(
               onTap: _submit,
@@ -331,13 +347,7 @@ class _BiomarkerCardState extends State<BiomarkerCard> {
                   const SizedBox(width: 12),
                   Expanded(flex: 3, child: buildName()),
                   const SizedBox(width: 8),
-                  Expanded(
-                    flex: 2,
-                    child: Align(
-                      alignment: Alignment.centerRight,
-                      child: buildValueOrEdit(),
-                    ),
-                  ),
+                  Expanded(flex: 2, child: buildValueOrEdit()),
                 ],
               ),
       ),
