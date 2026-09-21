@@ -549,10 +549,31 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
                                     BiomarkerTrendModel? secondary;
                                     
                                     if (b.rawName == 'Blood Pressure') {
-                                      trend = trendsList.where((t) => t.name == 'Systolic Blood Pressure').firstOrNull;
-                                      secondary = trendsList.where((t) => t.name == 'Diastolic Blood Pressure').firstOrNull;
+                                      trend = trendsList.where((t) => t.name == 'Systolic Blood Pressure' || t.name.toLowerCase().contains('systolic')).firstOrNull;
+                                      secondary = trendsList.where((t) => t.name == 'Diastolic Blood Pressure' || t.name.toLowerCase().contains('diastolic')).firstOrNull;
                                     } else {
-                                      trend = trendsList.where((t) => t.name == b.rawName).firstOrNull;
+                                      trend = trendsList.where((t) => 
+                                        t.name == b.rawName || 
+                                        (b.aiPredictedStandardName != null && t.name == b.aiPredictedStandardName) ||
+                                        (b.dictionaryId != null && t.name == b.dictionaryId)
+                                      ).firstOrNull;
+                                    }
+                                    
+                                    if (trend == null && b.valueNumeric != null) {
+                                      trend = BiomarkerTrendModel(
+                                        name: b.aiPredictedStandardName ?? b.rawName,
+                                        unit: b.rawUnit,
+                                        dataPoints: [
+                                          TrendDataPoint(
+                                            date: widget.report.encounterDate,
+                                            value: b.valueNumeric!,
+                                            recordId: widget.report.id,
+                                            isAbnormal: b.isAbnormal,
+                                            rangeLow: b.referenceRangeLow,
+                                            rangeHigh: b.referenceRangeHigh,
+                                          )
+                                        ]
+                                      );
                                     }
                                     
                                     if (trend != null) {
