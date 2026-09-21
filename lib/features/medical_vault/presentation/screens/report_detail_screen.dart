@@ -3,6 +3,9 @@ import 'package:shimmer/shimmer.dart';
 import '../widgets/biomarker_card.dart';
 import '../widgets/add_biomarker_bottom_sheet.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'metric_detail_screen.dart';
+import '../providers/trends_provider.dart';
+import '../../data/models/biomarker_model.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:healing_milestones/features/medical_vault/data/repositories/medical_vault_repository.dart';
 import 'package:healing_milestones/features/medical_vault/presentation/providers/trends_provider.dart';
@@ -540,6 +543,26 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
                                   biomarker: b,
                                   compact: false,
                                   isEditing: _editingId == b.id,
+                                  onTap: () {
+                                    final trendsList = ref.read(biomarkerTrendsProvider).asData?.value ?? [];
+                                    BiomarkerTrendModel? trend;
+                                    BiomarkerTrendModel? secondary;
+                                    
+                                    if (b.rawName == 'Blood Pressure') {
+                                      trend = trendsList.where((t) => t.name == 'Systolic Blood Pressure').firstOrNull;
+                                      secondary = trendsList.where((t) => t.name == 'Diastolic Blood Pressure').firstOrNull;
+                                    } else {
+                                      trend = trendsList.where((t) => t.name == b.rawName).firstOrNull;
+                                    }
+                                    
+                                    if (trend != null) {
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (_) => MetricDetailScreen(trend: trend!, secondaryTrend: secondary),
+                                        )
+                                      );
+                                    }
+                                  },
                                   onDelete: () async {
                                     final repo = ref.read(
                                       medicalVaultRepositoryProvider,

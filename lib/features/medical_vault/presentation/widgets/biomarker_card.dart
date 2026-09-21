@@ -6,6 +6,7 @@ class BiomarkerCard extends StatefulWidget {
   final bool compact;
   final bool isEditing;
   final VoidCallback? onEditTap;
+  final VoidCallback? onTap;
   final VoidCallback? onDelete;
   final void Function(String)? onSave;
 
@@ -15,6 +16,7 @@ class BiomarkerCard extends StatefulWidget {
     this.compact = false,
     this.isEditing = false,
     this.onEditTap,
+    this.onTap,
     this.onDelete,
     this.onSave,
   });
@@ -270,36 +272,58 @@ class _BiomarkerCardState extends State<BiomarkerCard> {
         );
       }
 
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        mainAxisAlignment: MainAxisAlignment.center,
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          Text(
-            displayValue,
-            textAlign: TextAlign.right,
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-              fontSize: valueFontSize,
-              color: isAbnormal ? Colors.red : theme.colorScheme.primary,
-            ),
-          ),
-          if (unit.isNotEmpty)
-            Text(
-              unit,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant.withValues(
-                  alpha: 0.6,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                displayValue,
+                textAlign: TextAlign.right,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  fontSize: valueFontSize,
+                  color: isAbnormal ? Colors.red : theme.colorScheme.primary,
                 ),
-                fontWeight: FontWeight.w400,
-                fontSize: unitFontSize,
+              ),
+              if (unit.isNotEmpty)
+                Text(
+                  unit,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant.withValues(
+                      alpha: 0.6,
+                    ),
+                    fontWeight: FontWeight.w400,
+                    fontSize: unitFontSize,
+                  ),
+                ),
+            ],
+          ),
+          if (widget.onTap != null && !widget.isEditing && widget.onEditTap != null) ...[
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: widget.onEditTap,
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.edit_outlined, size: 14, color: theme.colorScheme.onSurfaceVariant),
               ),
             ),
+          ]
         ],
       );
     }
 
     return InkWell(
-      onTap: widget.isEditing ? null : widget.onEditTap,
+      onTap: widget.isEditing ? null : (widget.onTap ?? widget.onEditTap),
+      onLongPress: widget.isEditing ? null : widget.onEditTap,
       borderRadius: BorderRadius.circular(widget.compact ? 16 : 20),
       child: Container(
         margin: widget.compact
