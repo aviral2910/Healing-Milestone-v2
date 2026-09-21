@@ -785,6 +785,11 @@ class ReportTimelineNode extends ConsumerWidget {
                                       (t) => t.toLowerCase().contains(
                                         'prescription',
                                       ),
+                                    ) &&
+                                    !report.tags.any(
+                                      (t) => t.toLowerCase().contains(
+                                        'prescription',
+                                      ),
                                     )) ...[
                                   const SizedBox(height: 20),
                                   Padding(
