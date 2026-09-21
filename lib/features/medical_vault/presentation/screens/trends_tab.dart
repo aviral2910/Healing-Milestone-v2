@@ -7,6 +7,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'metric_detail_screen.dart';
 import 'category_detail_screen.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+import '../widgets/add_biomarker_bottom_sheet.dart';
+import '../../data/repositories/medical_vault_repository.dart';
+import '../providers/medical_vault_providers.dart';
 import 'package:intl/intl.dart';
 
 class TrendsTab extends ConsumerStatefulWidget {
@@ -425,6 +428,9 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
                       child: FadeInAnimation(child: widget),
                     ),
                     children: [
+                      // Quick Log Section
+                      _buildQuickLogSection(context, theme),
+
                       // Search Bar
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -1085,6 +1091,113 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
       ),
     );
     _loadPinned();
+  }
+
+    Widget _buildQuickLogItem(BuildContext context, String name, IconData icon, String unit) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(right: 12.0),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            AddBiomarkerBottomSheet.show(
+              context,
+              (metrics) async {
+                try {
+                  final repo = ref.read(medicalVaultRepositoryProvider);
+                  final newRecord = await repo.uploadReport(
+                    files: [],
+                    reportTypes: ['Standalone Metric'],
+                    encounterDate: DateTime.now(),
+                    category: 'standalone_metric',
+                    notes: 'Quick logged metric',
+                  );
+                  await repo.saveBiomarkers(newRecord.id, metrics);
+                  ref.invalidate(medicalRecordsProvider);
+                  ref.invalidate(biomarkerTrendsProvider);
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Metric logged successfully!')),
+                    );
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Failed to log metric')),
+                    );
+                  }
+                }
+              },
+              initialName: name,
+              initialUnit: unit,
+            );
+          },
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            width: 110,
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surface,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: theme.colorScheme.primary.withValues(alpha: 0.15),
+              ),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, color: theme.colorScheme.primary, size: 28),
+                const SizedBox(height: 12),
+                Text(
+                  name,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    height: 1.2,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickLogSection(BuildContext context, ThemeData theme) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Text(
+            'Quick Log Vitals',
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 120,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            children: [
+              _buildQuickLogItem(context, 'Blood Pressure', Icons.favorite_border_rounded, 'mmHg'),
+              _buildQuickLogItem(context, 'Weight', Icons.monitor_weight_outlined, 'kg'),
+              _buildQuickLogItem(context, 'Glucose', Icons.water_drop_outlined, 'mg/dL'),
+              _buildQuickLogItem(context, 'Temperature', Icons.thermostat_outlined, '°F'),
+              _buildQuickLogItem(context, 'Heart Rate', Icons.monitor_heart_outlined, 'bpm'),
+            ],
+          ),
+        ),
+        const SizedBox(height: 24),
+      ],
+    );
   }
 
   Widget _buildEmptyState(BuildContext context) {

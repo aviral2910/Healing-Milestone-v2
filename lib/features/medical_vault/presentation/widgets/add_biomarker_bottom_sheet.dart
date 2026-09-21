@@ -6,13 +6,22 @@ import '../../data/repositories/medical_vault_repository.dart';
 
 class AddBiomarkerBottomSheet extends ConsumerStatefulWidget {
   final Function(List<BiomarkerModel>) onSave;
+  final String? initialName;
+  final String? initialUnit;
 
-  const AddBiomarkerBottomSheet({super.key, required this.onSave});
+  const AddBiomarkerBottomSheet({
+    super.key, 
+    required this.onSave,
+    this.initialName,
+    this.initialUnit,
+  });
 
   static Future<void> show(
     BuildContext context,
-    Function(List<BiomarkerModel>) onSave,
-  ) {
+    Function(List<BiomarkerModel>) onSave, {
+    String? initialName,
+    String? initialUnit,
+  }) {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -21,7 +30,11 @@ class AddBiomarkerBottomSheet extends ConsumerStatefulWidget {
         padding: EdgeInsets.only(
           bottom: MediaQuery.of(context).viewInsets.bottom,
         ),
-        child: AddBiomarkerBottomSheet(onSave: onSave),
+        child: AddBiomarkerBottomSheet(
+          onSave: onSave,
+          initialName: initialName,
+          initialUnit: initialUnit,
+        ),
       ),
     );
   }
@@ -37,13 +50,15 @@ class _AddBiomarkerBottomSheetState
   bool _isAbnormal = false;
   String? _selectedDictId;
 
-  final _nameController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
   final _valueController = TextEditingController();
   final _diastolicController = TextEditingController();
-  final _unitController = TextEditingController();
+  final TextEditingController _unitController = TextEditingController();
   final _rangeLowController = TextEditingController();
   final _rangeHighController = TextEditingController();
   final _nameFocusNode = FocusNode();
+
+
 
   final Map<String, String?> _localCommonBiomarkers = {
     // Vitals
@@ -220,6 +235,12 @@ class _AddBiomarkerBottomSheetState
   @override
   void initState() {
     super.initState();
+    if (widget.initialName != null) {
+      _nameController.text = widget.initialName!;
+    }
+    if (widget.initialUnit != null) {
+      _unitController.text = widget.initialUnit!;
+    }
     _nameController.addListener(_onNameChanged);
   }
 
