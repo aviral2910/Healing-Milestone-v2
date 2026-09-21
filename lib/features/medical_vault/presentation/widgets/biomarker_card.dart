@@ -277,31 +277,41 @@ class _BiomarkerCardState extends State<BiomarkerCard> {
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                displayValue,
-                textAlign: TextAlign.right,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  fontSize: valueFontSize,
-                  color: isAbnormal ? Colors.red : theme.colorScheme.primary,
-                ),
-              ),
-              if (unit.isNotEmpty)
-                Text(
-                  unit,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant.withValues(
-                      alpha: 0.6,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    displayValue,
+                    textAlign: TextAlign.right,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      fontSize: valueFontSize,
+                      color: isAbnormal ? Colors.red : theme.colorScheme.primary,
                     ),
-                    fontWeight: FontWeight.w400,
-                    fontSize: unitFontSize,
                   ),
                 ),
-            ],
+                if (unit.isNotEmpty)
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                      unit,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant.withValues(
+                          alpha: 0.6,
+                        ),
+                        fontWeight: FontWeight.w400,
+                        fontSize: unitFontSize,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ),
           if (widget.onTap != null && !widget.isEditing && widget.onEditTap != null) ...[
             const SizedBox(width: 8),
