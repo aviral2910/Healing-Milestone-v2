@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>507010116072-im8hhok93cc0ral7ebc44rqv0736tptn.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.507010116072-im8hhok93cc0ral7ebc44rqv0736tptn</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>507010116072-11c1gqmpsef3hm4rq30vab7cbpc0dgu7.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyBo0wgHuRNi2-QRqq7sqLRNL0Y9QgqxQ8s</string>
+	<key>GCM_SENDER_ID</key>
+	<string>507010116072</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.example.healingMilestones</string>
+	<key>PROJECT_ID</key>
+	<string>healingmilestones-6d4ef</string>
+	<key>STORAGE_BUCKET</key>
+	<string>healingmilestones-6d4ef.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:507010116072:ios:d4122f3f6df15e1a5cdc5d</string>
+</dict>
+</plist>

@@ -37,6 +37,57 @@
             {
               "client_id": "507010116072-ut55mclmnas5jki5jnb1851tjmvcr4tp.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "507010116072-ieuevg4ala7gd7tdid3d0o7im3nblrsa.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.healingmilestones.admin.healingMilestonesAdmin"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:507010116072:android:5dd52bd8e17fed705cdc5d",
+        "android_client_info": {
+          "package_name": "com.healingmilestones.admin.healing_milestones_admin"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "507010116072-11c1gqmpsef3hm4rq30vab7cbpc0dgu7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.healingmilestones.admin.healing_milestones_admin",
+            "certificate_hash": "246451d45f29a7b888f9716498eb243c7aac81c8"
+          }
+        },
+        {
+          "client_id": "507010116072-ut55mclmnas5jki5jnb1851tjmvcr4tp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDblAVFfarIEkqtJTkiZqaIZYfY1vKeH20"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "507010116072-ut55mclmnas5jki5jnb1851tjmvcr4tp.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "507010116072-ieuevg4ala7gd7tdid3d0o7im3nblrsa.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.healingmilestones.admin.healingMilestonesAdmin"
+              }
             }
           ]
         }

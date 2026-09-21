@@ -17,29 +17,17 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      throw UnsupportedError(
-        'DefaultFirebaseOptions have not been configured for web - '
-        'you can reconfigure this by running the FlutterFire CLI again.',
-      );
+      return web;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
         return android;
       case TargetPlatform.iOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for ios - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return ios;
       case TargetPlatform.macOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for macos - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return macos;
       case TargetPlatform.windows:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for windows - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return windows;
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -54,9 +42,50 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyDblAVFfarIEkqtJTkiZqaIZYfY1vKeH20',
-    appId: '1:507010116072:android:3de0d8fcb92512de5cdc5d',
+    appId: '1:507010116072:android:52bb18e441340dc05cdc5d',
     messagingSenderId: '507010116072',
     projectId: 'healingmilestones-6d4ef',
     storageBucket: 'healingmilestones-6d4ef.firebasestorage.app',
+  );
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyC6vWyFJlYp6v0LXdfp58ky9avazsjRM9Q',
+    appId: '1:507010116072:web:a21165283fcc477a5cdc5d',
+    messagingSenderId: '507010116072',
+    projectId: 'healingmilestones-6d4ef',
+    authDomain: 'healingmilestones-6d4ef.firebaseapp.com',
+    storageBucket: 'healingmilestones-6d4ef.firebasestorage.app',
+    measurementId: 'G-JTCGGV11NW',
+  );
+
+  static const FirebaseOptions macos = FirebaseOptions(
+    apiKey: 'AIzaSyBo0wgHuRNi2-QRqq7sqLRNL0Y9QgqxQ8s',
+    appId: '1:507010116072:ios:d4122f3f6df15e1a5cdc5d',
+    messagingSenderId: '507010116072',
+    projectId: 'healingmilestones-6d4ef',
+    storageBucket: 'healingmilestones-6d4ef.firebasestorage.app',
+    androidClientId: '507010116072-11c1gqmpsef3hm4rq30vab7cbpc0dgu7.apps.googleusercontent.com',
+    iosClientId: '507010116072-im8hhok93cc0ral7ebc44rqv0736tptn.apps.googleusercontent.com',
+    iosBundleId: 'com.example.healingMilestones',
+  );
+
+  static const FirebaseOptions ios = FirebaseOptions(
+    apiKey: 'AIzaSyBo0wgHuRNi2-QRqq7sqLRNL0Y9QgqxQ8s',
+    appId: '1:507010116072:ios:d4122f3f6df15e1a5cdc5d',
+    messagingSenderId: '507010116072',
+    projectId: 'healingmilestones-6d4ef',
+    storageBucket: 'healingmilestones-6d4ef.firebasestorage.app',
+    androidClientId: '507010116072-11c1gqmpsef3hm4rq30vab7cbpc0dgu7.apps.googleusercontent.com',
+    iosClientId: '507010116072-im8hhok93cc0ral7ebc44rqv0736tptn.apps.googleusercontent.com',
+    iosBundleId: 'com.example.healingMilestones',
+  );
+
+  static const FirebaseOptions windows = FirebaseOptions(
+    apiKey: 'AIzaSyC6vWyFJlYp6v0LXdfp58ky9avazsjRM9Q',
+    appId: '1:507010116072:web:4c46dfc1b806430b5cdc5d',
+    messagingSenderId: '507010116072',
+    projectId: 'healingmilestones-6d4ef',
+    authDomain: 'healingmilestones-6d4ef.firebaseapp.com',
+    storageBucket: 'healingmilestones-6d4ef.firebasestorage.app',
+    measurementId: 'G-04WHBQR254',
   );
 }
