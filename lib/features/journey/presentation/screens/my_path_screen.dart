@@ -211,12 +211,23 @@ class MyPathScreen extends ConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(
-                    'My Journeys',
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: -0.5,
-                    ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.map_rounded,
+                        color: theme.colorScheme.primary,
+                        size: 24,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'My Journeys',
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -527,18 +538,29 @@ class MyPathScreen extends ConsumerWidget {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
-                              Text(
-                                'Health Snapshots',
-                                style: theme.textTheme.titleLarge?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  letterSpacing: -0.5,
-                                ),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.health_and_safety_rounded,
+                                    color: theme.colorScheme.primary,
+                                    size: 24,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Health Snapshots',
+                                    style: theme.textTheme.titleLarge?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      letterSpacing: -0.5,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
                         ),
                         SizedBox(
-                          height: 170, // Match My Journeys height
+                          height: 110, // Match rectangle layout
                           child: ListView.builder(
                             scrollDirection: Axis.horizontal,
                             physics: const BouncingScrollPhysics(),
@@ -554,48 +576,52 @@ class MyPathScreen extends ConsumerWidget {
                                   ),
                                   child: GestureDetector(
                                     onTap: () {
-                                      context.push('/health-snapshot/create');
+                                      context.push("/health-snapshot/create");
                                     },
                                     child: Container(
-                                      width: 140, // Match visual weight
+                                      width: 240, // Wide rectangle
+                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                                       decoration: BoxDecoration(
                                         color: theme.colorScheme.surface.withValues(
                                           alpha: 0.5,
                                         ),
                                         borderRadius: BorderRadius.circular(28),
                                         border: Border.all(
-                                          color: theme.dividerColor.withValues(
-                                            alpha: 0.3,
-                                          ),
+                                          color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                                          width: 1.5,
                                           style: BorderStyle.solid,
                                         ),
                                       ),
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                      child: Row(
                                         children: [
                                           Container(
-                                            padding: const EdgeInsets.all(16),
+                                            padding: const EdgeInsets.all(12),
                                             decoration: BoxDecoration(
-                                              color: theme.colorScheme.primary
-                                                  .withValues(alpha: 0.08),
+                                              color: theme.colorScheme.primary.withValues(alpha: 0.08),
                                               shape: BoxShape.circle,
                                             ),
                                             child: Icon(
                                               Icons.add_rounded,
                                               color: theme.colorScheme.primary,
-                                              size: 28,
+                                              size: 24,
                                             ),
                                           ),
-                                          const SizedBox(height: 16),
-                                          Text(
-                                            'Create Snapshot',
-                                            style: theme.textTheme.labelMedium
-                                                ?.copyWith(
-                                                  fontWeight: FontWeight.w600,
-                                                  color: theme.colorScheme.primary,
-                                                  letterSpacing: 0.2,
+                                          const SizedBox(width: 16),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                Text(
+                                                  "Create Snapshot",
+                                                  style: theme.textTheme.labelMedium?.copyWith(
+                                                    fontWeight: FontWeight.w600,
+                                                    color: theme.colorScheme.primary,
+                                                    letterSpacing: 0.2,
+                                                  ),
                                                 ),
-                                            textAlign: TextAlign.center,
+                                              ],
+                                            ),
                                           ),
                                         ],
                                       ),
@@ -604,7 +630,7 @@ class MyPathScreen extends ConsumerWidget {
                                 );
                               }
                               final view = views[index - 1];
-                              // Health Snapshot Card (Match My Journeys existing card)
+                              // Health Snapshot Card matching Journey card style
                               return Padding(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 8.0,
@@ -612,11 +638,11 @@ class MyPathScreen extends ConsumerWidget {
                                 ),
                                 child: GestureDetector(
                                   onTap: () {
-                                    context.push('/health-snapshot/view/${view.id}');
+                                    context.push("/health-snapshot/view/${view.id}");
                                   },
                                   child: Container(
-                                    width: 150, // Match My Journeys width
-                                    padding: const EdgeInsets.all(16),
+                                    width: 260, // Wide rectangle
+                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                                     decoration: BoxDecoration(
                                       gradient: LinearGradient(
                                         colors: [
@@ -635,46 +661,54 @@ class MyPathScreen extends ConsumerWidget {
                                         ),
                                       ],
                                       border: Border.all(
-                                        color: theme.dividerColor.withValues(alpha: 0.1),
+                                        color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                                        width: 1.5,
                                       ),
                                     ),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                    child: Row(
                                       children: [
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          crossAxisAlignment: CrossAxisAlignment.center,
-                                          children: [
-                                            Container(
-                                              padding: const EdgeInsets.all(8),
-                                              decoration: BoxDecoration(
-                                                color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                                                shape: BoxShape.circle,
-                                              ),
-                                              child: Icon(
-                                                Icons.health_and_safety_rounded,
-                                                color: theme.colorScheme.primary,
-                                                size: 24,
-                                              ),
+                                        Container(
+                                          width: 48,
+                                          height: 48,
+                                          alignment: Alignment.center,
+                                          decoration: BoxDecoration(
+                                            color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: Text(
+                                            view.name.isNotEmpty ? view.name[0].toUpperCase() : "S",
+                                            style: theme.textTheme.titleMedium?.copyWith(
+                                              color: theme.colorScheme.primary,
+                                              fontWeight: FontWeight.bold,
                                             ),
-                                            Icon(
-                                              Icons.qr_code_rounded,
-                                              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
-                                              size: 20,
-                                            ),
-                                          ],
-                                        ),
-                                        const Spacer(),
-                                        Text(
-                                          view.name,
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: theme.textTheme.titleMedium?.copyWith(
-                                            fontWeight: FontWeight.bold,
-                                            height: 1.2,
                                           ),
                                         ),
-
+                                        const SizedBox(width: 16),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              Text(
+                                                view.name,
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: theme.textTheme.labelLarge?.copyWith(
+                                                  fontWeight: FontWeight.w700,
+                                                  letterSpacing: -0.3,
+                                                  height: 1.3,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 2),
+                                              Text(
+                                                DateFormat("MMM d, yyyy").format(view.createdAt),
+                                                style: theme.textTheme.bodySmall?.copyWith(
+                                                  color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
                                       ],
                                     ),
                                   ),
