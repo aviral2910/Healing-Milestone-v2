@@ -209,7 +209,7 @@ class MyPathScreen extends ConsumerWidget {
               padding: const EdgeInsets.fromLTRB(24.0, 24.0, 24.0, 16.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Row(
                     mainAxisSize: MainAxisSize.min,
@@ -229,6 +229,21 @@ class MyPathScreen extends ConsumerWidget {
                       ),
                     ],
                   ),
+                  if (journeysAsync.hasValue && journeysAsync.value!.isNotEmpty)
+                    GestureDetector(
+                      onTap: () => CreateJourneyOverlay.show(context),
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                          ),
+                        ),
+                        child: Icon(Icons.add_rounded, size: 20, color: theme.colorScheme.primary),
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -244,10 +259,10 @@ class MyPathScreen extends ConsumerWidget {
                     scrollDirection: Axis.horizontal,
                     physics: const BouncingScrollPhysics(),
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    itemCount: journeys.length + 1, // +1 for "Start New"
+                    itemCount: journeys.isEmpty ? 1 : journeys.length,
                     itemBuilder: (context, index) {
-                      if (index == 0) {
-                        // Start New Journey Card
+                      if (journeys.isEmpty) {
+                        // Start New Journey Card when empty
                         return Padding(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 8.0,
@@ -263,9 +278,8 @@ class MyPathScreen extends ConsumerWidget {
                                 ),
                                 borderRadius: BorderRadius.circular(28),
                                 border: Border.all(
-                                  color: theme.dividerColor.withValues(
-                                    alpha: 0.3,
-                                  ),
+                                  color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                                  width: 1.5,
                                   style: BorderStyle.solid,
                                 ),
                               ),
@@ -302,7 +316,7 @@ class MyPathScreen extends ConsumerWidget {
                         );
                       }
 
-                      final journey = journeys[index - 1];
+                      final journey = journeys[index];
                       return Padding(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 8.0,
@@ -346,9 +360,8 @@ class MyPathScreen extends ConsumerWidget {
                                 ),
                               ],
                               border: Border.all(
-                                color: theme.dividerColor.withValues(
-                                  alpha: 0.1,
-                                ),
+                                color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                                width: 1.5,
                               ),
                             ),
                             child: Column(
@@ -382,7 +395,7 @@ class MyPathScreen extends ConsumerWidget {
                                         width: 32,
                                         child: PopupMenuButton<String>(
                                           icon: Icon(
-                                            Icons.more_horiz_rounded,
+                                            Icons.more_vert_rounded,
                                             size: 20,
                                             color: theme
                                                 .colorScheme
@@ -536,7 +549,7 @@ class MyPathScreen extends ConsumerWidget {
                           padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.end,
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Row(
                                 mainAxisSize: MainAxisSize.min,
@@ -556,6 +569,21 @@ class MyPathScreen extends ConsumerWidget {
                                   ),
                                 ],
                               ),
+                              if (views.isNotEmpty)
+                                GestureDetector(
+                                  onTap: () => context.push("/health-snapshot/create"),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(6),
+                                    decoration: BoxDecoration(
+                                      color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                        color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                                      ),
+                                    ),
+                                    child: Icon(Icons.add_rounded, size: 20, color: theme.colorScheme.primary),
+                                  ),
+                                ),
                             ],
                           ),
                         ),
@@ -565,10 +593,10 @@ class MyPathScreen extends ConsumerWidget {
                             scrollDirection: Axis.horizontal,
                             physics: const BouncingScrollPhysics(),
                             padding: const EdgeInsets.symmetric(horizontal: 16),
-                            itemCount: views.length + 1,
+                            itemCount: views.isEmpty ? 1 : views.length,
                             itemBuilder: (context, index) {
-                              if (index == 0) {
-                                // Start New Health Snapshot Card
+                              if (views.isEmpty) {
+                                // Start New Health Snapshot Card when empty
                                 return Padding(
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 8.0,
@@ -629,7 +657,7 @@ class MyPathScreen extends ConsumerWidget {
                                   ),
                                 );
                               }
-                              final view = views[index - 1];
+                              final view = views[index];
                               // Health Snapshot Card matching Journey card style
                               return Padding(
                                 padding: const EdgeInsets.symmetric(

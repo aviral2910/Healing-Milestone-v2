@@ -428,9 +428,6 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
                       child: FadeInAnimation(child: widget),
                     ),
                     children: [
-                      // Quick Log Section
-                      _buildQuickLogSection(context, theme),
-
                       // Search Bar
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -474,6 +471,9 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
                       ),
 
                       const SizedBox(height: 36),
+                      
+                      // Quick Log Section
+                      _buildQuickLogSection(context, theme, processedTrends, sysTrend, diaTrend),
 
                       // Explore Categories
                       if (_searchQuery.isEmpty) ...[
@@ -1093,7 +1093,15 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
     _loadPinned();
   }
 
-    Widget _buildQuickLogItem(BuildContext context, String name, IconData icon, String unit) {
+  Widget _buildQuickLogItem(
+    BuildContext context, 
+    String name, 
+    IconData icon, 
+    String unit,
+    Map<String, BiomarkerTrendModel> processedTrends,
+    BiomarkerTrendModel? sysTrend,
+    BiomarkerTrendModel? diaTrend,
+  ) {
     final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.only(right: 12.0),
@@ -1101,36 +1109,23 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
-            AddBiomarkerBottomSheet.show(
-              context,
-              (metrics) async {
-                try {
-                  final repo = ref.read(medicalVaultRepositoryProvider);
-                  final newRecord = await repo.uploadReport(
-                    files: [],
-                    reportTypes: ['Standalone Metric'],
-                    encounterDate: DateTime.now(),
-                    category: 'standalone_metric',
-                    notes: 'Quick logged metric',
-                  );
-                  await repo.saveBiomarkers(newRecord.id, metrics);
-                  ref.invalidate(medicalRecordsProvider);
-                  ref.invalidate(biomarkerTrendsProvider);
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Metric logged successfully!')),
-                    );
-                  }
-                } catch (e) {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Failed to log metric')),
-                    );
-                  }
-                }
-              },
-              initialName: name,
-              initialUnit: unit,
+            BiomarkerTrendModel trend;
+            BiomarkerTrendModel? secTrend;
+            
+            if (name == 'Blood Pressure') {
+              trend = sysTrend ?? const BiomarkerTrendModel(name: 'Systolic Blood Pressure', dataPoints: []);
+              secTrend = diaTrend ?? const BiomarkerTrendModel(name: 'Diastolic Blood Pressure', dataPoints: []);
+            } else {
+              trend = processedTrends[name] ?? BiomarkerTrendModel(name: name, unit: unit, dataPoints: []);
+            }
+            
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => MetricDetailScreen(
+                  trend: trend,
+                  secondaryTrend: secTrend,
+                ),
+              ),
             );
           },
           borderRadius: BorderRadius.circular(16),
@@ -1167,7 +1162,13 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
     );
   }
 
-  Widget _buildQuickLogSection(BuildContext context, ThemeData theme) {
+  Widget _buildQuickLogSection(
+    BuildContext context, 
+    ThemeData theme,
+    Map<String, BiomarkerTrendModel> processedTrends,
+    BiomarkerTrendModel? sysTrend,
+    BiomarkerTrendModel? diaTrend,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1187,11 +1188,11 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 24),
             children: [
-              _buildQuickLogItem(context, 'Blood Pressure', Icons.favorite_border_rounded, 'mmHg'),
-              _buildQuickLogItem(context, 'Weight', Icons.monitor_weight_outlined, 'kg'),
-              _buildQuickLogItem(context, 'Glucose', Icons.water_drop_outlined, 'mg/dL'),
-              _buildQuickLogItem(context, 'Temperature', Icons.thermostat_outlined, '°F'),
-              _buildQuickLogItem(context, 'Heart Rate', Icons.monitor_heart_outlined, 'bpm'),
+              _buildQuickLogItem(context, 'Blood Pressure', Icons.favorite_border_rounded, 'mmHg', processedTrends, sysTrend, diaTrend),
+              _buildQuickLogItem(context, 'Weight', Icons.monitor_weight_outlined, 'kg', processedTrends, sysTrend, diaTrend),
+              _buildQuickLogItem(context, 'Glucose', Icons.water_drop_outlined, 'mg/dL', processedTrends, sysTrend, diaTrend),
+              _buildQuickLogItem(context, 'Temperature', Icons.thermostat_outlined, '°F', processedTrends, sysTrend, diaTrend),
+              _buildQuickLogItem(context, 'Heart Rate', Icons.monitor_heart_outlined, 'bpm', processedTrends, sysTrend, diaTrend),
             ],
           ),
         ),

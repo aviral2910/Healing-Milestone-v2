@@ -6,6 +6,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../data/models/biomarker_model.dart';
 import '../providers/trends_provider.dart';
 import '../widgets/compare_bottom_sheet.dart';
+import '../widgets/add_biomarker_bottom_sheet.dart';
+import '../widgets/edit_biomarker_bottom_sheet.dart';
+import '../../data/repositories/medical_vault_repository.dart';
+import '../../data/models/medical_vault_models.dart';
+import '../providers/medical_vault_providers.dart';
+import 'report_detail_screen.dart';
+
 
 class MetricDetailScreen extends ConsumerStatefulWidget {
   final BiomarkerTrendModel trend;
@@ -136,6 +143,44 @@ class _MetricDetailScreenState extends ConsumerState<MetricDetailScreen> {
         backgroundColor: theme.colorScheme.surface,
         elevation: 0,
         actions: [
+          IconButton(
+            icon: Icon(
+              Icons.add_circle_outline_rounded,
+              color: theme.colorScheme.primary,
+            ),
+            onPressed: () {
+              AddBiomarkerBottomSheet.show(
+                context,
+                (metrics) async {
+                  try {
+                    final repo = ref.read(medicalVaultRepositoryProvider);
+                    final newRecord = await repo.uploadReport(
+                      files: [],
+                      reportTypes: ['Standalone Metric'],
+                      encounterDate: DateTime.now(),
+                      category: 'standalone_metric',
+                      notes: 'Quick logged metric',
+                    );
+                    await repo.saveBiomarkers(newRecord.id, metrics);
+                    ref.invalidate(biomarkerTrendsProvider);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Saved reading successfully')),
+                      );
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Error saving reading: $e')),
+                      );
+                    }
+                  }
+                },
+                initialName: titleName,
+                initialUnit: widget.trend.unit,
+              );
+            },
+          ),
           IconButton(
             icon: Icon(
               _isPinned ? Icons.push_pin_rounded : Icons.push_pin_outlined,
@@ -341,6 +386,21 @@ class _MetricDetailScreenState extends ConsumerState<MetricDetailScreen> {
                         ),
                       ),
                     ),
+              
+              const SizedBox(height: 48),
+              Text(
+                'Previous Records',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w900,
+                  fontSize: 20,
+                ),
+              ),
+              const SizedBox(height: 16),
+              if (dataPoints.isEmpty)
+                const Text('No records found.')
+              else
+                ...dataPoints.reversed.map((dp) => _buildHistoryItem(context, theme, dp)),
+              const SizedBox(height: 48),
             ],
           ),
         ),
@@ -634,6 +694,192 @@ class _MetricDetailScreenState extends ConsumerState<MetricDetailScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildHistoryItem(BuildContext context, ThemeData theme, TrendDataPoint dp) {
+    TrendDataPoint? secDp;
+    if (widget.secondaryTrend != null) {
+      try {
+        secDp = widget.secondaryTrend!.dataPoints.firstWhere(
+          (s) => s.recordId == dp.recordId && s.date == dp.date,
+        );
+      } catch (_) {}
+    }
+    
+    final valueStr = secDp != null 
+        ? '${dp.value.toInt()}/${secDp.value.toInt()}'
+        : dp.value.toStringAsFixed(1);
+
+    final recordsAsync = ref.watch(medicalRecordsProvider);
+    return recordsAsync.when(
+      data: (records) {
+        final record = records.cast<MedicalRecord?>().firstWhere(
+              (r) => r?.id == dp.recordId,
+              orElse: () => null,
+            );
+        if (record == null) return const SizedBox.shrink();
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: theme.colorScheme.primary.withValues(alpha: 0.15),
+              width: 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.monitor_heart_outlined,
+                  color: theme.colorScheme.primary,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                      textBaseline: TextBaseline.alphabetic,
+                      children: [
+                        Text(
+                          valueStr,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        if (widget.trend.unit != null) ...[
+                          const SizedBox(width: 4),
+                          Text(
+                            widget.trend.unit!,
+                            style: theme.textTheme.labelMedium?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      DateFormat.yMMMd().add_jm().format(dp.date),
+                      style: TextStyle(
+                        color: theme.colorScheme.onSurfaceVariant,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              PopupMenuButton<String>(
+                icon: Icon(Icons.more_vert_rounded, color: theme.colorScheme.onSurfaceVariant),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                color: theme.colorScheme.surface,
+                onSelected: (value) async {
+                  if (value == 'edit') {
+                    final biomarkers = record.biomarkers;
+                    final nameLower = widget.trend.name.toLowerCase();
+                    if (widget.secondaryTrend != null) {
+                       final sysB = biomarkers.firstWhere((b) => b.rawName.toLowerCase().contains('systolic'));
+                       final diaB = biomarkers.firstWhere((b) => b.rawName.toLowerCase().contains('diastolic'));
+                       EditBiomarkerBottomSheet.show(context, sysB, diaB);
+                    } else {
+                       final b = biomarkers.firstWhere((b) => b.rawName.toLowerCase() == nameLower || b.rawName == widget.trend.name);
+                       EditBiomarkerBottomSheet.show(context, b, null);
+                    }
+                  } else if (value == 'delete') {
+                    final confirm = await showDialog<bool>(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        title: const Text('Delete Record'),
+                        content: const Text('Are you sure you want to delete this reading?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx, false),
+                            child: const Text('Cancel'),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx, true),
+                            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                          ),
+                        ],
+                      ),
+                    );
+                    
+                    if (confirm == true && context.mounted) {
+                      try {
+                        final repo = ref.read(medicalVaultRepositoryProvider);
+                        if (record.category == 'standalone_metric') {
+                          await repo.deleteReport(record.id);
+                        } else {
+                          final biomarkers = record.biomarkers;
+                          final nameLower = widget.trend.name.toLowerCase();
+                          if (widget.secondaryTrend != null) {
+                             final sysB = biomarkers.firstWhere((b) => b.rawName.toLowerCase().contains('systolic'));
+                             final diaB = biomarkers.firstWhere((b) => b.rawName.toLowerCase().contains('diastolic'));
+                             await repo.deleteBiomarker(sysB.id!);
+                             await repo.deleteBiomarker(diaB.id!);
+                          } else {
+                             final b = biomarkers.firstWhere((b) => b.rawName.toLowerCase() == nameLower || b.rawName == widget.trend.name);
+                             await repo.deleteBiomarker(b.id!);
+                          }
+                        }
+                        ref.invalidate(medicalRecordsProvider);
+                        ref.invalidate(biomarkerTrendsProvider);
+                        if (context.mounted) {
+                           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Deleted successfully')));
+                           if (Navigator.of(context).canPop()) {
+                             Navigator.of(context).pop();
+                           }
+                        }
+                      } catch (e) {
+                        if (context.mounted) {
+                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to delete: $e')));
+                        }
+                      }
+                    }
+                  }
+                },
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: 'edit',
+                    child: Row(
+                      children: [
+                        Icon(Icons.edit_outlined, size: 20),
+                        SizedBox(width: 12),
+                        Text('Edit', style: TextStyle(fontSize: 14)),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: 'delete',
+                    child: Row(
+                      children: [
+                        Icon(Icons.delete_outline, size: 20, color: Colors.red),
+                        SizedBox(width: 12),
+                        Text('Delete', style: TextStyle(color: Colors.red, fontSize: 14)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
     );
   }
 }
