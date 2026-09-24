@@ -118,8 +118,16 @@ class MixViewShareScreen extends ConsumerWidget {
                     );
                     
                     if (confirm == true) {
-                      ref.read(mixViewsProvider.notifier).revokeMixView(view.id);
-                      if (context.mounted) Navigator.pop(context); // Go back
+                      try {
+                        await ref.read(mixViewsProvider.notifier).revokeMixView(view.id);
+                        if (context.mounted) Navigator.pop(context); // Go back
+                      } catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Failed to revoke: $e')),
+                          );
+                        }
+                      }
                     }
                   },
                   icon: const Icon(Icons.delete_forever),
