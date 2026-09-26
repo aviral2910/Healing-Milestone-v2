@@ -16,6 +16,7 @@ import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/profile/presentation/screens/public_profile_screen.dart';
 import '../../features/profile/presentation/screens/edit_profile_screen.dart';
 import '../../features/profile/presentation/screens/user_list_screen.dart';
+import '../../features/connect/presentation/screens/connect_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../features/settings/presentation/screens/legal_webview_screen.dart';
 import '../../features/settings/presentation/screens/theme_selection_screen.dart';
@@ -432,6 +433,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.supportChat,
         builder: (context, state) => const InboxScreen(),
+      ),
+      GoRoute(
+        path: '/connect',
+        builder: (context, state) => const ConnectScreen(),
       ),
       GoRoute(
         path: '/admin-submissions/:id',
