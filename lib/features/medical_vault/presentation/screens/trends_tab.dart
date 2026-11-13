@@ -262,40 +262,110 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
     });
   }
 
+  static const List<String> _allCategories = [
+    'Lipids & Heart Health',
+    'Metabolic',
+    'Vitals & Measurements',
+    'Liver Function (LFT)',
+    'Kidney Function (KFT)',
+    'Blood Count (CBC)',
+    'Electrolytes & Minerals',
+    'Vitamins & Hormones',
+    'Other Biomarkers',
+  ];
+
   String _getCategory(String name) {
     name = name.toLowerCase();
     if (name.contains('cholesterol') ||
         name.contains('hdl') ||
         name.contains('ldl') ||
-        name.contains('triglyceride')) {
+        name.contains('vldl') ||
+        name.contains('triglyceride') ||
+        name.contains('homocysteine') ||
+        name.contains('creatine kinase')) {
       return 'Lipids & Heart Health';
     }
     if (name.contains('glucose') ||
+        name.contains('sugar') ||
         name.contains('hba1c') ||
+        name.contains('hemoglobin a1c') ||
+        name.contains('eag') ||
         name.contains('insulin')) {
       return 'Metabolic';
     }
     if (name.contains('pressure') ||
         name.contains('heart rate') ||
         name.contains('weight') ||
-        name.contains('bmi')) {
+        name.contains('bmi') ||
+        name.contains('temperature') ||
+        name.contains('spo2') ||
+        name.contains('oxygen saturation') ||
+        name.contains('respiratory')) {
       return 'Vitals & Measurements';
     }
     if (name.contains('alt') ||
+        name.contains('sgpt') ||
         name.contains('ast') ||
+        name.contains('sgot') ||
         name.contains('alp') ||
+        name.contains('alkaline phosphatase') ||
+        name.contains('ggt') ||
         name.contains('bilirubin') ||
-        name.contains('protein')) {
-      return 'Liver & Kidneys';
+        name.contains('albumin') ||
+        name.contains('globulin') ||
+        name.contains('total protein')) {
+      return 'Liver Function (LFT)';
+    }
+    if (name.contains('creatinine') ||
+        name.contains('bun') ||
+        name.contains('urea') ||
+        name.contains('egfr') ||
+        name.contains('uric acid')) {
+      return 'Kidney Function (KFT)';
     }
     if (name.contains('white blood') ||
+        name.contains('wbc') ||
         name.contains('red blood') ||
+        name.contains('rbc') ||
         name.contains('hemoglobin') ||
         name.contains('platelet') ||
         name.contains('hematocrit') ||
         name.contains('mcv') ||
-        name.contains('mchc')) {
-      return 'CBC';
+        name.contains('mch') ||
+        name.contains('mchc') ||
+        name.contains('rdw') ||
+        name.contains('neutrophil') ||
+        name.contains('lymphocyte') ||
+        name.contains('monocyte') ||
+        name.contains('eosinophil') ||
+        name.contains('basophil') ||
+        name.contains('esr')) {
+      return 'Blood Count (CBC)';
+    }
+    if (name.contains('sodium') ||
+        name.contains('potassium') ||
+        name.contains('chloride') ||
+        name.contains('calcium') ||
+        name.contains('magnesium') ||
+        name.contains('phosphorus') ||
+        name.contains('carbon dioxide') ||
+        name.contains('co2') ||
+        name.contains('iron') ||
+        name.contains('tibc') ||
+        name.contains('ferritin') ||
+        name.contains('transferrin')) {
+      return 'Electrolytes & Minerals';
+    }
+    if (name.contains('vitamin') ||
+        name.contains('folate') ||
+        name.contains('folic') ||
+        name.contains('thyroid') ||
+        name.contains('tsh') ||
+        name.contains('free t3') ||
+        name.contains('free t4') ||
+        name.contains('total t3') ||
+        name.contains('total t4')) {
+      return 'Vitamins & Hormones';
     }
     return 'Other Biomarkers';
   }
@@ -308,10 +378,16 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
         return Icons.bolt_rounded;
       case 'Vitals & Measurements':
         return Icons.monitor_heart_rounded;
-      case 'Liver & Kidneys':
+      case 'Liver Function (LFT)':
         return Icons.science_rounded;
-      case 'CBC':
+      case 'Kidney Function (KFT)':
+        return Icons.water_damage_rounded;
+      case 'Blood Count (CBC)':
         return Icons.water_drop_rounded;
+      case 'Electrolytes & Minerals':
+        return Icons.grain_rounded;
+      case 'Vitamins & Hormones':
+        return Icons.wb_sunny_rounded;
       default:
         return Icons.biotech_rounded;
     }
@@ -325,10 +401,16 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
         return Colors.orange;
       case 'Vitals & Measurements':
         return Colors.blue;
-      case 'Liver & Kidneys':
+      case 'Liver Function (LFT)':
         return Colors.teal;
-      case 'CBC':
+      case 'Kidney Function (KFT)':
+        return Colors.cyan;
+      case 'Blood Count (CBC)':
         return Colors.redAccent;
+      case 'Electrolytes & Minerals':
+        return Colors.indigoAccent;
+      case 'Vitamins & Hormones':
+        return Colors.amber;
       default:
         return theme.colorScheme.primary;
     }
@@ -379,18 +461,7 @@ class _TrendsTabState extends ConsumerState<TrendsTab> {
             categories.putIfAbsent(cat, () => []).add(bundle);
           }
 
-          final allCategories = [
-            'Lipids & Heart Health',
-            'Metabolic',
-            'Vitals & Measurements',
-            'Liver Function (LFT)',
-            'Kidney Function (KFT)',
-            'Blood Count (CBC)',
-            'Electrolytes & Minerals',
-            'Vitamins & Hormones',
-            'Other Biomarkers',
-          ];
-          for (final c in allCategories) {
+          for (final c in _allCategories) {
             categories.putIfAbsent(c, () => []);
           }
 

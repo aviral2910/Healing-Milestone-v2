@@ -8,6 +8,9 @@ import '../../data/providers/journey_providers.dart';
 import '../widgets/together_feed_card.dart';
 import '../widgets/walking_with_carousel.dart';
 import '../../../../core/widgets/shared_headers.dart';
+import '../../../../shared/widgets/guest_auth_wall.dart';
+import '../../../../shared/widgets/server_healing_loader.dart';
+import '../../../auth/data/auth_provider.dart';
 import 'package:healing_milestones/shared/widgets/app_loader.dart';
 
 class TogetherFeedScreen extends ConsumerStatefulWidget {
@@ -35,6 +38,9 @@ class _TogetherFeedScreenState extends ConsumerState<TogetherFeedScreen> with Si
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final authState = ref.watch(authProvider).value;
+    final hasAuthError = ref.watch(authProvider).hasError;
+    final isAuthenticated = authState?.status == AuthStatus.authenticated;
     
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -75,11 +81,19 @@ class _TogetherFeedScreenState extends ConsumerState<TogetherFeedScreen> with Si
                 journeyProvider: recommendedJourneysProvider,
                 carouselTitle: 'Recommended',
               ),
-              _TogetherFeedTab(
-                milestoneProvider: followingMilestonesProvider,
-                journeyProvider: followingJourneysProvider,
-                carouselTitle: 'Following',
-              ),
+              hasAuthError
+                  ? const ServerHealingLoader()
+                  : isAuthenticated
+                  ? _TogetherFeedTab(
+                      milestoneProvider: followingMilestonesProvider,
+                      journeyProvider: followingJourneysProvider,
+                      carouselTitle: 'Following',
+                    )
+                  : const GuestAuthWallWidget(
+                      title: 'Follow Healing Journeys',
+                      subtitle:
+                          'Create an account to follow patients and stay updated on their milestones.',
+                    ),
             ],
           ),
         ),

@@ -59,8 +59,7 @@ class RecommendedMilestonesNotifier extends AsyncNotifier<OffsetPaginatedState<J
 
   @override
   Future<OffsetPaginatedState<JourneyMilestoneModel>> build() async {
-    final auth = ref.watch(authProvider).value;
-    if (auth?.status != AuthStatus.authenticated) return OffsetPaginatedState(items: []);
+    ref.watch(authProvider.select((s) => s.value?.status));
     
     final items = await ref.watch(journeyRepositoryProvider).getRecommendedMilestones(limit: _limit);
     return OffsetPaginatedState(
@@ -180,8 +179,7 @@ final followingMilestonesProvider = AsyncNotifierProvider<FollowingMilestonesNot
 });
 
 final recommendedJourneysProvider = FutureProvider.autoDispose<List<JourneyModel>>((ref) async {
-  final auth = ref.watch(authProvider).value;
-  if (auth?.status != AuthStatus.authenticated) return [];
+  ref.watch(authProvider.select((s) => s.value?.status));
   final repository = ref.watch(journeyRepositoryProvider);
   return repository.getRecommendedJourneys();
 });

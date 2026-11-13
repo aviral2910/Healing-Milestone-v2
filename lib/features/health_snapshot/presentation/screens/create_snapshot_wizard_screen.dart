@@ -8,6 +8,8 @@ import '../../../medical_vault/presentation/widgets/report_timeline_node.dart';
 
 import '../../../journey/data/providers/journey_providers.dart';
 import '../../../medical_vault/presentation/providers/medical_vault_providers.dart';
+import '../../../../core/providers/feature_onboarding_provider.dart';
+import '../../../../shared/widgets/feature_onboarding_screen.dart';
 
 class CreateSnapshotWizardScreen extends ConsumerStatefulWidget {
   const CreateSnapshotWizardScreen({super.key});
@@ -36,6 +38,43 @@ class _CreateSnapshotWizardScreenState
   int _selectedDurationHours = 24;
 
   bool _isLoading = false;
+  bool _showGuide = false;
+
+  static const List<FeatureOnboardingSlide> _snapshotSlides = [
+    FeatureOnboardingSlide(
+      icon: Icons.qr_code_2_rounded,
+      badge: 'Health Snapshot',
+      title: 'Share What Matters, When It Matters',
+      description:
+          'Bundle selected healing journeys and lab reports into one clean, doctor-ready timeline.',
+      highlights: [
+        'Pick specific journeys and medical reports to include',
+        'Nothing outside your selection is ever exposed',
+      ],
+    ),
+    FeatureOnboardingSlide(
+      icon: Icons.timer_outlined,
+      badge: 'Time-Limited Access',
+      title: 'You Control How Long Links Stay Active',
+      description:
+          'Set an automatic expiry from 1 hour up to 30 days, or revoke access anytime.',
+      highlights: [
+        'Ideal for clinic visits, second opinions, and tele-consults',
+        'Auto-expires once your consultation window ends',
+      ],
+    ),
+    FeatureOnboardingSlide(
+      icon: Icons.medical_services_outlined,
+      badge: 'QR & Web Timeline',
+      title: 'Instant Access for Your Doctor',
+      description:
+          'Share a scannable QR code or secure web link—your doctor can view your timeline without installing an app.',
+      highlights: [
+        'Clean chronological view of milestones and lab reports',
+        'Supports biomarker comparisons across visits',
+      ],
+    ),
+  ];
 
   @override
   void dispose() {
@@ -487,6 +526,25 @@ class _CreateSnapshotWizardScreenState
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final hasSeenOnboarding = ref.watch(
+      featureOnboardingProvider.select((s) => s.hasSeenHealthSnapshot),
+    );
+
+    if (!hasSeenOnboarding || _showGuide) {
+      return FeatureOnboardingScreen(
+        appBarTitle: 'Health Snapshot',
+        slides: _snapshotSlides,
+        finalCtaLabel: 'Create Snapshot',
+        onComplete: () {
+          ref
+              .read(featureOnboardingProvider.notifier)
+              .markHealthSnapshotSeen();
+          if (_showGuide) {
+            setState(() => _showGuide = false);
+          }
+        },
+      );
+    }
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -509,6 +567,14 @@ class _CreateSnapshotWizardScreenState
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
+          IconButton(
+            tooltip: 'How Health Snapshot works',
+            icon: Icon(
+              Icons.help_outline_rounded,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+            onPressed: () => setState(() => _showGuide = true),
+          ),
           Center(
             child: Padding(
               padding: const EdgeInsets.only(right: 16.0),

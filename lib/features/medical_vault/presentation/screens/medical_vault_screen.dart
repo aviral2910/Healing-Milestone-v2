@@ -8,6 +8,8 @@ import 'package:go_router/go_router.dart';
 import '../widgets/upload_report_overlay.dart';
 import 'trends_tab.dart';
 import '../providers/medical_vault_providers.dart';
+import '../../../../core/providers/feature_onboarding_provider.dart';
+import '../../../../shared/widgets/feature_onboarding_screen.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 
 class MedicalVaultScreen extends ConsumerStatefulWidget {
@@ -18,9 +20,64 @@ class MedicalVaultScreen extends ConsumerStatefulWidget {
 }
 
 class _MedicalVaultScreenState extends ConsumerState<MedicalVaultScreen> {
+  bool _showGuide = false;
+
+  static const List<FeatureOnboardingSlide> _vaultSlides = [
+    FeatureOnboardingSlide(
+      icon: Icons.folder_special_rounded,
+      badge: 'Private Health Vault',
+      title: 'All Your Medical Records in One Place',
+      description:
+          'Keep lab reports, prescriptions, and clinical notes organized chronologically and always within reach.',
+      highlights: [
+        'Private to you—never shared publicly without your consent',
+        'Upload PDFs, lab report photos, or enter values manually',
+      ],
+    ),
+    FeatureOnboardingSlide(
+      icon: Icons.auto_awesome_rounded,
+      badge: 'AI Biomarker Extraction',
+      title: 'Instant Insights From Every Lab Report',
+      description:
+          'Our AI reads your uploaded reports and extracts key biomarkers like Hemoglobin, HbA1c, Vitamin D, and more.',
+      highlights: [
+        'Review and verify extracted numbers before saving',
+        'Supports multi-page lab PDFs and camera scans',
+      ],
+    ),
+    FeatureOnboardingSlide(
+      icon: Icons.insights_rounded,
+      badge: 'Trends & Alerts',
+      title: 'Track Changes & Spot Out-of-Range Values',
+      description:
+          'See how your health metrics evolve over time, pin the ones you monitor most, and share snapshots with your doctor.',
+      highlights: [
+        'Automatic alerts for biomarkers needing review',
+        'Pin your priority metrics to the top of your vault',
+      ],
+    ),
+  ];
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final hasSeenOnboarding = ref.watch(
+      featureOnboardingProvider.select((s) => s.hasSeenMedicalVault),
+    );
+
+    if (!hasSeenOnboarding || _showGuide) {
+      return FeatureOnboardingScreen(
+        appBarTitle: 'Medical Vault',
+        slides: _vaultSlides,
+        finalCtaLabel: 'Open Medical Vault',
+        onComplete: () {
+          ref.read(featureOnboardingProvider.notifier).markMedicalVaultSeen();
+          if (_showGuide) {
+            setState(() => _showGuide = false);
+          }
+        },
+      );
+    }
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -36,6 +93,14 @@ class _MedicalVaultScreenState extends ConsumerState<MedicalVaultScreen> {
         elevation: 0,
         iconTheme: IconThemeData(color: theme.colorScheme.onSurface),
         actions: [
+          IconButton(
+            tooltip: 'How Medical Vault works',
+            icon: Icon(
+              Icons.help_outline_rounded,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+            onPressed: () => setState(() => _showGuide = true),
+          ),
           IconButton(
             icon: Icon(Icons.share_rounded, color: theme.colorScheme.primary),
             onPressed: () {

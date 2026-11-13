@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/widgets/shared_headers.dart';
+import '../../../../shared/widgets/guest_auth_wall.dart';
+import '../../../../shared/widgets/server_healing_loader.dart';
+import '../../../auth/data/auth_provider.dart';
 import '../../../posts/presentation/screens/post_screen.dart';
 import '../../../posts/presentation/screens/recommended_swipe_screen.dart';
 import '../../../awareness/presentation/screens/health_awareness_screen.dart';
@@ -62,6 +65,9 @@ class _InspireScreenState extends ConsumerState<InspireScreen>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final authState = ref.watch(authProvider).value;
+    final hasAuthError = ref.watch(authProvider).hasError;
+    final isAuthenticated = authState?.status == AuthStatus.authenticated;
 
     return Scaffold(
       body: SafeArea(
@@ -119,11 +125,19 @@ class _InspireScreenState extends ConsumerState<InspireScreen>
               ),
               Container(
                 key: const Key('following_tab'),
-                child: PostScreen(
-                  isActiveTab:
-                      widget.isActiveTab && _topTabController.index == 1,
-                  onSearchTapped: widget.onSearchTapped,
-                ),
+                child: hasAuthError
+                    ? const ServerHealingLoader()
+                    : isAuthenticated
+                    ? PostScreen(
+                        isActiveTab:
+                            widget.isActiveTab && _topTabController.index == 1,
+                        onSearchTapped: widget.onSearchTapped,
+                      )
+                    : const GuestAuthWallWidget(
+                        title: 'Follow Inspiring Stories',
+                        subtitle:
+                            'Create an account to follow community members and see their stories here.',
+                      ),
               ),
               Container(
                 key: const Key('awareness_tab'),

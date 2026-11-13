@@ -1,7 +1,10 @@
+import 'dart:ui';
 import 'qr_scan_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:share_plus/share_plus.dart';
+import '../../../../shared/widgets/qr_share_preview.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -172,10 +175,7 @@ class _HealthSnapshotScreenState extends ConsumerState<HealthSnapshotScreen> {
                     showModalBottomSheet(
                       context: context,
                       isScrollControlled: true,
-                      backgroundColor: theme.colorScheme.surface,
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-                      ),
+                      backgroundColor: Colors.transparent,
                       builder: (context) => _SnapshotOptionsSheet(view: view),
                     );
                   },
@@ -354,149 +354,415 @@ class _SnapshotOptionsSheet extends ConsumerWidget {
     final theme = Theme.of(context);
     final shareUrl = 'https://healingmilestones.in/snapshot/${view.id}';
     final isExpired = view.expiresAt.isBefore(DateTime.now());
+    final expiryText = isExpired
+        ? 'Expired on ${DateFormat("MMM d, yyyy 'at' h:mm a").format(view.expiresAt)}'
+        : 'Expires on ${DateFormat("MMM d, yyyy 'at' h:mm a").format(view.expiresAt)}';
 
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-              width: 48,
-              height: 4,
-              margin: const EdgeInsets.only(bottom: 24),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(2),
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+        child: Container(
+          decoration: BoxDecoration(
+            color: theme.scaffoldBackgroundColor.withValues(alpha: 0.85),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+            border: Border(
+              top: BorderSide(
+                color: theme.colorScheme.primary.withValues(alpha: 0.35),
+                width: 0.5,
               ),
             ),
-            Text(
-              'Share Snapshot',
-              style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              isExpired 
-                ? 'Expired on ${DateFormat("MMM d, yyyy 'at' h:mm a").format(view.expiresAt)}'
-                : 'Expires on ${DateFormat("MMM d, yyyy 'at' h:mm a").format(view.expiresAt)}',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: isExpired ? Colors.red : theme.colorScheme.onSurfaceVariant,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 32),
-            // Sync to Desktop Button
-            FilledButton.icon(
-              style: FilledButton.styleFrom(
-                minimumSize: const Size(double.infinity, 56),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                backgroundColor: theme.colorScheme.primary,
-                foregroundColor: theme.colorScheme.onPrimary,
-              ),
-              onPressed: () {
-                Navigator.pop(context);
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => QRScanScreen(targetId: view.id, targetType: 'snapshot'),
+          ),
+          child: SafeArea(
+            top: false,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(height: 12),
+                  Container(
+                    width: 40,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.onSurfaceVariant.withValues(
+                        alpha: 0.4,
+                      ),
+                      borderRadius: BorderRadius.circular(2.5),
+                    ),
                   ),
-                );
-              },
-              icon: const Icon(Icons.monitor),
-              label: const Text('Share to Web', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            ),
-            const SizedBox(height: 16),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: theme.colorScheme.surface,
+                            border: Border.all(
+                              color: theme.dividerColor.withValues(alpha: 0.2),
+                            ),
+                          ),
+                          child: IconButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            icon: const Icon(Icons.close_rounded, size: 22),
+                            style: IconButton.styleFrom(
+                              padding: const EdgeInsets.all(10),
+                            ),
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                theme.colorScheme.primary.withValues(
+                                  alpha: 0.15,
+                                ),
+                                theme.colorScheme.secondary.withValues(
+                                  alpha: 0.05,
+                                ),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            border: Border.all(
+                              color: theme.colorScheme.primary.withValues(
+                                alpha: 0.2,
+                              ),
+                            ),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            'Share Snapshot',
+                            style: theme.textTheme.labelMedium?.copyWith(
+                              color: theme.colorScheme.primary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Column(
+                      children: [
+                        Text(
+                          view.name,
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: (isExpired
+                                    ? theme.colorScheme.error
+                                    : theme.colorScheme.primary)
+                                .withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(100),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                isExpired
+                                    ? Icons.timer_off_outlined
+                                    : Icons.timer_outlined,
+                                size: 14,
+                                color: isExpired
+                                    ? theme.colorScheme.error
+                                    : theme.colorScheme.primary,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                expiryText,
+                                style: theme.textTheme.labelMedium?.copyWith(
+                                  color: isExpired
+                                      ? theme.colorScheme.error
+                                      : theme.colorScheme.primary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  // Scannable QR Card
+                  Container(
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.12),
+                          blurRadius: 24,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        QrImageView(
+                          data: shareUrl,
+                          version: QrVersions.auto,
+                          size: 176.0,
+                          dataModuleStyle: QrDataModuleStyle(
+                            dataModuleShape: QrDataModuleShape.square,
+                            color: isExpired ? Colors.grey : Colors.black,
+                          ),
+                          eyeStyle: QrEyeStyle(
+                            eyeShape: QrEyeShape.square,
+                            color: isExpired ? Colors.grey : Colors.black,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          isExpired
+                              ? 'Snapshot link expired'
+                              : 'Scan to view timeline',
+                          style: TextStyle(
+                            color: isExpired
+                                ? Colors.red.shade400
+                                : Colors.black54,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  // Bottom Action Bar matching DirectShareSheet
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surface,
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(32),
+                      ),
+                      border: Border(
+                        top: BorderSide(
+                          color: theme.dividerColor.withValues(alpha: 0.1),
+                          width: 1,
+                        ),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.1),
+                          blurRadius: 20,
+                          offset: const Offset(0, -5),
+                        ),
+                      ],
+                    ),
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      physics: const BouncingScrollPhysics(),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          _buildActionOption(
+                            context: context,
+                            icon: Icons.link_rounded,
+                            label: 'Copy Link',
+                            enabled: !isExpired,
+                            onTap: () {
+                              Clipboard.setData(ClipboardData(text: shareUrl));
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Link copied to clipboard'),
+                                ),
+                              );
+                              Navigator.pop(context);
+                            },
+                          ),
+                          _buildActionOption(
+                            context: context,
+                            icon: Icons.ios_share,
+                            label: 'Share via',
+                            enabled: !isExpired,
+                            onTap: () {
+                              Navigator.pop(context);
+                              // ignore: deprecated_member_use
+                              Share.share(
+                                'View my Health Snapshot (${view.name}):\n\n$shareUrl',
+                                subject: 'Healing Milestones Health Snapshot',
+                              );
+                            },
+                          ),
+                          _buildActionOption(
+                            context: context,
+                            icon: Icons.monitor,
+                            label: 'Share to Web',
+                            enabled: !isExpired,
+                            onTap: () {
+                              Navigator.pop(context);
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) => QRScanScreen(
+                                    targetId: view.id,
+                                    targetType: 'snapshot',
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                          _buildActionOption(
+                            context: context,
+                            icon: Icons.qr_code_2_rounded,
+                            label: 'QR Code',
+                            enabled: !isExpired,
+                            onTap: () {
+                              Navigator.pop(context);
+                              showGeneralDialog(
+                                context: context,
+                                barrierDismissible: true,
+                                barrierLabel: 'Dismiss',
+                                barrierColor: Colors.black.withValues(
+                                  alpha: 0.9,
+                                ),
+                                transitionDuration: const Duration(
+                                  milliseconds: 300,
+                                ),
+                                pageBuilder:
+                                    (context, animation, secondaryAnimation) {
+                                      return QrSharePreview(
+                                        id: view.id,
+                                        shareUrl: shareUrl,
+                                        shareText:
+                                            'View my Health Snapshot: ${view.name}',
+                                        qrBottomText:
+                                            'Scan to view health snapshot',
+                                      );
+                                    },
+                              );
+                            },
+                          ),
+                          _buildActionOption(
+                            context: context,
+                            icon: Icons.delete_outline_rounded,
+                            label: 'Delete',
+                            isDestructive: true,
+                            onTap: () async {
+                              final confirm = await showDialog<bool>(
+                                context: context,
+                                builder: (c) => AlertDialog(
+                                  title: const Text('Delete Snapshot?'),
+                                  content: const Text(
+                                    'This will instantly break the link. Anyone with the link will no longer see your timeline.',
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(c, false),
+                                      child: const Text('Cancel'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(c, true),
+                                      child: const Text(
+                                        'Delete',
+                                        style: TextStyle(color: Colors.red),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
 
-            
-            // QR Code
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.onPrimary,
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 20,
-                    offset: const Offset(0, 10),
+                              if (confirm == true) {
+                                ref
+                                    .read(mixViewsProvider.notifier)
+                                    .revokeMixView(view.id);
+                                if (context.mounted) {
+                                  Navigator.pop(context);
+                                  if (context.canPop()) {
+                                    context.pop();
+                                  } else {
+                                    context.go('/journey');
+                                  }
+                                }
+                              }
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
               ),
-              child: QrImageView(
-                data: shareUrl,
-                version: QrVersions.auto,
-                size: 200.0,
-                dataModuleStyle: QrDataModuleStyle(
-                  dataModuleShape: QrDataModuleShape.square, 
-                  color: isExpired ? Colors.grey : theme.colorScheme.onSurface,
-                ),
-                eyeStyle: QrEyeStyle(
-                  eyeShape: QrEyeShape.square, 
-                  color: isExpired ? Colors.grey : theme.colorScheme.onSurface,
-                ),
-              ),
             ),
-            const SizedBox(height: 32),
+          ),
+        ),
+      ),
+    );
+  }
 
-            // Actions
-            ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: theme.colorScheme.primary,
-                foregroundColor: theme.colorScheme.onPrimary,
-                minimumSize: const Size(double.infinity, 56),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              ),
-              onPressed: isExpired ? null : () {
-                Clipboard.setData(ClipboardData(text: shareUrl));
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Link copied to clipboard')),
-                );
-                Navigator.pop(context);
-              },
-              icon: const Icon(Icons.copy_rounded),
-              label: const Text('Copy Link', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            ),
-            const SizedBox(height: 16),
-            
-            OutlinedButton.icon(
-              style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.red,
-                side: BorderSide(color: Colors.red.withValues(alpha: 0.5)),
-                minimumSize: const Size(double.infinity, 56),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              ),
-              onPressed: () async {
-                final confirm = await showDialog<bool>(
-                  context: context,
-                  builder: (c) => AlertDialog(
-                    title: const Text('Delete Snapshot?'),
-                    content: const Text('This will instantly break the link. Anyone with the link will no longer see your timeline.'),
-                    actions: [
-                      TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Cancel')),
-                      TextButton(
-                        onPressed: () => Navigator.pop(c, true),
-                        child: const Text('Delete', style: TextStyle(color: Colors.red)),
-                      ),
-                    ],
+  Widget _buildActionOption({
+    required BuildContext context,
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    bool enabled = true,
+    bool isDestructive = false,
+  }) {
+    final theme = Theme.of(context);
+    final surfaceLight =
+        theme.cardTheme.color ?? theme.colorScheme.surfaceContainerHighest;
+    final fgColor = isDestructive
+        ? theme.colorScheme.error
+        : theme.colorScheme.onSurface;
+
+    return Opacity(
+      opacity: enabled ? 1.0 : 0.4,
+      child: InkWell(
+        onTap: enabled ? onTap : null,
+        borderRadius: BorderRadius.circular(20),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: isDestructive
+                      ? theme.colorScheme.error.withValues(alpha: 0.1)
+                      : surfaceLight,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isDestructive
+                        ? theme.colorScheme.error.withValues(alpha: 0.3)
+                        : theme.dividerColor.withValues(alpha: 0.1),
                   ),
-                );
-                
-                if (confirm == true) {
-                  ref.read(mixViewsProvider.notifier).revokeMixView(view.id);
-                  if (context.mounted) {
-                    Navigator.pop(context); // Close sheet
-                    if (context.canPop()) {
-                      context.pop(); // Gracefully slide back to previous screen
-                    } else {
-                      context.go('/journey'); // Fallback if no history
-                    }
-                  }
-                }
-              },
-              icon: const Icon(Icons.delete_outline_rounded),
-              label: const Text('Delete Snapshot', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            ),
-          ],
+                ),
+                child: Icon(icon, size: 26, color: fgColor),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                label,
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontSize: 12,
+                  color: fgColor,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
