@@ -14,6 +14,9 @@ import 'core/theme/theme_palette.dart';
 import 'features/accessibility/data/accessibility_providers.dart';
 
 import 'features/accessibility/presentation/widgets/greyscale_floating_overlay.dart';
+import 'core/services/app_update_service.dart';
+import 'core/services/ai_access_service.dart';
+import 'shared/widgets/app_update_gate.dart';
 
 // UAT Mode providers
 class UatMode extends Notifier<bool> {
@@ -54,6 +57,10 @@ void main() async {
           fetchTimeout: const Duration(seconds: 10),
           minimumFetchInterval: const Duration(hours: 1),
         ));
+        await remoteConfig.setDefaults({
+          ...AppUpdateService.defaultRemoteConfigValues,
+          ...AiAccessService.defaultRemoteConfigValues,
+        });
         await remoteConfig.fetchAndActivate();
       } catch (e) {
         debugPrint('Failed to fetch remote config on startup: $e');
@@ -62,8 +69,12 @@ void main() async {
     
     // App Check
     FirebaseAppCheck.instance.activate(
-      androidProvider: AndroidProvider.debug,
-      appleProvider: AppleProvider.debug,
+      androidProvider: kDebugMode
+          ? AndroidProvider.debug
+          : AndroidProvider.playIntegrity,
+      appleProvider: kDebugMode
+          ? AppleProvider.debug
+          : AppleProvider.appAttestWithDeviceCheckFallback,
     ),
     
     // Shared Prefs
@@ -131,7 +142,9 @@ class HealingMilestonesApp extends ConsumerWidget {
             );
           }
 
-          return GreyscaleFloatingOverlay(child: appContent);
+          return AppUpdateGate(
+            child: GreyscaleFloatingOverlay(child: appContent),
+          );
         },
       ),
     );

@@ -12,6 +12,7 @@ import 'package:healing_milestones/features/medical_vault/presentation/providers
 import '../../data/models/medical_vault_models.dart';
 import '../../data/models/biomarker_model.dart';
 import '../providers/medical_vault_providers.dart';
+import '../../../../core/services/ai_access_service.dart';
 
 class ReportDetailScreen extends ConsumerStatefulWidget {
   final MedicalRecord report;
@@ -47,6 +48,26 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
   bool _guard = false;
   Future<void> _runExtraction() async {
     if (_guard) return;
+    final mode = AiAccessService.biomarkerMode;
+    if (mode == AiFeatureMode.disabled) {
+      if (mounted) {
+        setState(() {
+          _isExtracting = false;
+          _extractionError = AiAccessService.pausedMessage;
+        });
+      }
+      return;
+    }
+    if (mode == AiFeatureMode.paid) {
+      if (mounted) {
+        setState(() => _isExtracting = false);
+        await AiAccessService.showUpgradePrompt(
+          context,
+          featureName: 'AI Biomarker Extraction',
+        );
+      }
+      return;
+    }
     _guard = true;
     setState(() {
       _isExtracting = true;

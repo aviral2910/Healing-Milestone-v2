@@ -151,15 +151,6 @@ class _JourneyDetailScreenState extends ConsumerState<JourneyDetailScreen> {
             ),
             actions: [
               if (widget.isMine)
-                IconButton(
-                  icon: const Icon(Icons.medical_information_outlined),
-                  tooltip: 'Create Clinical View',
-                  onPressed: () {
-                    context.push('/medical-vault/create-mix/${widget.journeyId}');
-                  },
-                ),
-
-              if (widget.isMine)
                 _isUpdatingVisibility
                     ? const Padding(
                         padding: EdgeInsets.symmetric(horizontal: 16.0),

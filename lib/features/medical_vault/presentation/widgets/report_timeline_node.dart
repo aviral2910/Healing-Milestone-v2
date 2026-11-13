@@ -14,6 +14,7 @@ import '../../data/models/medical_vault_models.dart';
 import '../../data/models/biomarker_model.dart';
 import '../providers/medical_vault_providers.dart';
 import 'edit_report_overlay.dart';
+import '../../../../core/services/ai_access_service.dart';
 
 enum TimelinePosition { standalone, start, middle, end }
 
@@ -63,6 +64,20 @@ class ReportTimelineNode extends ConsumerWidget {
   }
 
   void _extractAI(BuildContext context, MedicalRecord report) {
+    final mode = AiAccessService.biomarkerMode;
+    if (mode == AiFeatureMode.disabled) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AiAccessService.pausedMessage)),
+      );
+      return;
+    }
+    if (mode == AiFeatureMode.paid) {
+      AiAccessService.showUpgradePrompt(
+        context,
+        featureName: 'AI Biomarker Extraction',
+      );
+      return;
+    }
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (ctx) => ReportDetailScreen(report: report, autoExtract: true),
@@ -795,7 +810,9 @@ class ReportTimelineNode extends ConsumerWidget {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.stretch,
                                       children: [
-                                        if (report.files.isNotEmpty) ...[
+                                        if (report.files.isNotEmpty &&
+                                            AiAccessService.biomarkerMode !=
+                                                AiFeatureMode.disabled) ...[
                                           InkWell(
                                             onTap: () =>
                                                 _extractAI(context, report),
@@ -1018,20 +1035,25 @@ class ReportTimelineNode extends ConsumerWidget {
                                       t.toLowerCase().contains('prescription'),
                                 );
                             return [
-                              if (!isPrescription)
-                                const PopupMenuItem(
+                              if (!isPrescription &&
+                                  AiAccessService.biomarkerMode !=
+                                      AiFeatureMode.disabled)
+                                PopupMenuItem(
                                   value: 'extract',
                                   child: Row(
                                     children: [
-                                      Icon(
+                                      const Icon(
                                         Icons.auto_awesome,
                                         color: Colors.purple,
                                         size: 20,
                                       ),
-                                      SizedBox(width: 8),
+                                      const SizedBox(width: 8),
                                       Text(
-                                        'Extract Data with AI',
-                                        style: TextStyle(
+                                        AiAccessService.biomarkerMode ==
+                                                AiFeatureMode.paid
+                                            ? 'Extract Data with AI • PRO'
+                                            : 'Extract Data with AI',
+                                        style: const TextStyle(
                                           color: Colors.purple,
                                           fontWeight: FontWeight.bold,
                                         ),

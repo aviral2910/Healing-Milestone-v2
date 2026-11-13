@@ -60,5 +60,14 @@ service cloud.firestore {
     match /qr_sessions/{sessionId} {
       allow read, write: if true;
     }
+    match /wedding_quest_players/{playerId} {
+      allow read, write: if true;
+    }
+    match /wedding_quest_settings/{settingId} {
+      allow read, write: if true;
+    }
+    match /wedding_quest_riddles/{riddleId} {
+      allow read, write: if true;
+    }
   }
 }

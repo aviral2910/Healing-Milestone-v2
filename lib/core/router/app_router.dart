@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../features/medical_vault/presentation/screens/medical_vault_screen.dart';
-import '../../features/medical_vault/presentation/screens/mix_view_builder_screen.dart';
 import '../../features/medical_vault/presentation/screens/mix_view_share_screen.dart';
 
 import 'package:go_router/go_router.dart';
@@ -51,7 +50,6 @@ import '../../features/milestone/presentation/widgets/mini_player_overlay.dart';
 import 'package:flutter/material.dart';
 
 import '../../features/medical_vault/presentation/screens/medical_vault_screen.dart';
-import '../../features/medical_vault/presentation/screens/mix_view_builder_screen.dart';
 import '../../features/medical_vault/presentation/screens/mix_view_share_screen.dart';
 
 
@@ -235,10 +233,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/medical-vault',
         builder: (context, state) => const MedicalVaultScreen(),
-      ),
-      GoRoute(
-        path: '/medical-vault/create-mix/:journeyId',
-        builder: (context, state) => MixViewBuilderScreen(journeyIds: [state.pathParameters['journeyId']!]),
       ),
       GoRoute(
         path: '/medical-vault/share/:viewId',

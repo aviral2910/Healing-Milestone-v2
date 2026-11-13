@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/router/app_routes.dart';
+import '../../../../core/services/ai_access_service.dart';
 import '../providers/post_creation_state.dart';
 
 class PostContentScreen extends StatefulHookConsumerWidget {
@@ -74,17 +75,29 @@ class _PostContentScreenState extends ConsumerState<PostContentScreen> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 48),
-            _buildChoiceCard(
-              theme: theme,
-              icon: Icons.auto_awesome,
-              title: 'Guided Story (AI)',
-              subtitle: 'Answer a few simple questions and let our AI draft an inspiring, deeply felt story for you.',
-              isHighlighted: true,
-              onTap: () {
-                context.push(AppRoutes.createPostGuided);
-              },
-            ),
-            const SizedBox(height: 20),
+            if (AiAccessService.storyMode != AiFeatureMode.disabled) ...[
+              _buildChoiceCard(
+                theme: theme,
+                icon: Icons.auto_awesome,
+                title: AiAccessService.storyMode == AiFeatureMode.paid
+                    ? 'Guided Story (AI • PRO)'
+                    : 'Guided Story (AI)',
+                subtitle:
+                    'Answer a few simple questions and let our AI draft an inspiring, deeply felt story for you.',
+                isHighlighted: true,
+                onTap: () {
+                  if (AiAccessService.storyMode == AiFeatureMode.paid) {
+                    AiAccessService.showUpgradePrompt(
+                      context,
+                      featureName: 'Guided Story (AI)',
+                    );
+                    return;
+                  }
+                  context.push(AppRoutes.createPostGuided);
+                },
+              ),
+              const SizedBox(height: 20),
+            ],
             _buildChoiceCard(
               theme: theme,
               icon: Icons.edit_note_rounded,

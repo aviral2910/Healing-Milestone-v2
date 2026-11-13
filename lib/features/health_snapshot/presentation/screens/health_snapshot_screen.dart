@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
+import '../../../../core/network/api_client.dart';
 import '../../../../shared/widgets/qr_share_preview.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -28,11 +29,40 @@ class HealthSnapshotScreen extends ConsumerStatefulWidget {
 
 class _HealthSnapshotScreenState extends ConsumerState<HealthSnapshotScreen> {
   final _scrollController = ScrollController();
+  bool _isSavedInConnect = false;
+  String? _connectRosterId;
 
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+    _checkConnectRosterStatus();
+  }
+
+  Future<void> _checkConnectRosterStatus() async {
+    try {
+      final dio = ref.read(apiClientProvider).dio;
+      final response = await dio.get(
+        '/api/connect/roster',
+        queryParameters: {'limit': 100},
+      );
+      final items = (response.data is Map && response.data['items'] != null)
+          ? response.data['items'] as List
+          : (response.data as List);
+      for (final item in items) {
+        if (item is Map && item['mix_view_id'] == widget.snapshotId) {
+          if (mounted) {
+            setState(() {
+              _isSavedInConnect = true;
+              _connectRosterId = item['id']?.toString();
+            });
+          }
+          break;
+        }
+      }
+    } catch (_) {
+      // Non-critical status check; keep default unsaved state on failure.
+    }
   }
 
   @override
@@ -122,6 +152,163 @@ class _HealthSnapshotScreenState extends ConsumerState<HealthSnapshotScreen> {
     );
   }
 
+  Future<void> _confirmAndDeleteSnapshot(BuildContext context, MixView view) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: const Text('Delete Snapshot?'),
+        content: const Text(
+          'This will instantly break the link. Anyone with the link will no longer see your timeline.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(c, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(c, true),
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      await ref.read(mixViewsProvider.notifier).revokeMixView(view.id);
+      if (context.mounted) {
+        if (context.canPop()) {
+          context.pop();
+        } else {
+          context.go('/journey');
+        }
+      }
+    }
+  }
+
+  Future<void> _saveToConnectRoster(BuildContext context) async {
+    final aliasController = TextEditingController();
+    final alias = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Save to HM Connect'),
+        content: TextField(
+          controller: aliasController,
+          decoration: const InputDecoration(
+            labelText: 'Patient / Family Alias (optional)',
+            hintText: 'e.g., Mom - Post-Op, Rahul S.',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, aliasController.text.trim()),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+    aliasController.dispose();
+    if (alias == null || !context.mounted) return;
+
+    try {
+      final dio = ref.read(apiClientProvider).dio;
+      final response = await dio.post(
+        '/api/connect/roster',
+        data: {
+          'mix_view_id': widget.snapshotId,
+          if (alias.isNotEmpty) 'patient_alias': alias,
+        },
+      );
+      if (mounted) {
+        setState(() {
+          _isSavedInConnect = true;
+          if (response.data is Map) {
+            _connectRosterId = response.data['id']?.toString();
+          }
+        });
+      }
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Saved to HM Connect roster')),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not save to roster: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _removeFromConnectRoster(BuildContext context) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Remove from HM Connect?'),
+        content: const Text(
+          'This will remove the saved snapshot from your HM Connect roster.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(ctx).colorScheme.error,
+              foregroundColor: Theme.of(ctx).colorScheme.onError,
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Remove'),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true || !context.mounted) return;
+
+    try {
+      final rosterId = _connectRosterId;
+      if (rosterId == null) {
+        await _checkConnectRosterStatus();
+      }
+      final idToDelete = _connectRosterId;
+      if (idToDelete == null) return;
+
+      final dio = ref.read(apiClientProvider).dio;
+      await dio.delete('/api/connect/roster/$idToDelete');
+      if (mounted) {
+        setState(() {
+          _isSavedInConnect = false;
+          _connectRosterId = null;
+        });
+      }
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Removed from HM Connect roster')),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not remove from roster: $e')),
+        );
+      }
+    }
+  }
+
+  void _openShareSheet(BuildContext context, MixView view) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _SnapshotOptionsSheet(view: view),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -166,19 +353,73 @@ class _HealthSnapshotScreenState extends ConsumerState<HealthSnapshotScreen> {
               },
             ),
             actions: [
-              Padding(
-                padding: const EdgeInsets.only(right: 8.0),
-                child: IconButton(
+              if (view == null || view.id.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: IconButton(
+                    tooltip: _isSavedInConnect
+                        ? 'Saved in HM Connect'
+                        : 'Save to HM Connect',
+                    icon: Icon(
+                      _isSavedInConnect
+                          ? Icons.bookmark_added_rounded
+                          : Icons.bookmark_add_outlined,
+                      color: theme.colorScheme.primary,
+                    ),
+                    onPressed: () => _isSavedInConnect
+                        ? _removeFromConnectRoster(context)
+                        : _saveToConnectRoster(context),
+                  ),
+                )
+              else
+                Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: PopupMenuButton<String>(
                   icon: const Icon(Icons.more_horiz_rounded),
-                  onPressed: () {
-                    if (view == null) return;
-                    showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      backgroundColor: Colors.transparent,
-                      builder: (context) => _SnapshotOptionsSheet(view: view),
-                    );
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  onSelected: (value) {
+                    if (view == null || view.id.isEmpty) return;
+                    if (value == 'share') {
+                      _openShareSheet(context, view);
+                    } else if (value == 'delete') {
+                      _confirmAndDeleteSnapshot(context, view);
+                    }
                   },
+                  itemBuilder: (context) => [
+                    PopupMenuItem<String>(
+                      value: 'share',
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.ios_share_rounded,
+                            size: 20,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                          const SizedBox(width: 12),
+                          const Text('Share'),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem<String>(
+                      value: 'delete',
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.delete_outline_rounded,
+                            size: 20,
+                            color: theme.colorScheme.error,
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            'Delete',
+                            style: TextStyle(color: theme.colorScheme.error),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -655,50 +896,6 @@ class _SnapshotOptionsSheet extends ConsumerWidget {
                               );
                             },
                           ),
-                          _buildActionOption(
-                            context: context,
-                            icon: Icons.delete_outline_rounded,
-                            label: 'Delete',
-                            isDestructive: true,
-                            onTap: () async {
-                              final confirm = await showDialog<bool>(
-                                context: context,
-                                builder: (c) => AlertDialog(
-                                  title: const Text('Delete Snapshot?'),
-                                  content: const Text(
-                                    'This will instantly break the link. Anyone with the link will no longer see your timeline.',
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () => Navigator.pop(c, false),
-                                      child: const Text('Cancel'),
-                                    ),
-                                    TextButton(
-                                      onPressed: () => Navigator.pop(c, true),
-                                      child: const Text(
-                                        'Delete',
-                                        style: TextStyle(color: Colors.red),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-
-                              if (confirm == true) {
-                                ref
-                                    .read(mixViewsProvider.notifier)
-                                    .revokeMixView(view.id);
-                                if (context.mounted) {
-                                  Navigator.pop(context);
-                                  if (context.canPop()) {
-                                    context.pop();
-                                  } else {
-                                    context.go('/journey');
-                                  }
-                                }
-                              }
-                            },
-                          ),
                         ],
                       ),
                     ),
@@ -718,14 +915,10 @@ class _SnapshotOptionsSheet extends ConsumerWidget {
     required String label,
     required VoidCallback onTap,
     bool enabled = true,
-    bool isDestructive = false,
   }) {
     final theme = Theme.of(context);
     final surfaceLight =
         theme.cardTheme.color ?? theme.colorScheme.surfaceContainerHighest;
-    final fgColor = isDestructive
-        ? theme.colorScheme.error
-        : theme.colorScheme.onSurface;
 
     return Opacity(
       opacity: enabled ? 1.0 : 0.4,
@@ -733,31 +926,31 @@ class _SnapshotOptionsSheet extends ConsumerWidget {
         onTap: enabled ? onTap : null,
         borderRadius: BorderRadius.circular(20),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8.0),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: isDestructive
-                      ? theme.colorScheme.error.withValues(alpha: 0.1)
-                      : surfaceLight,
+                  color: surfaceLight,
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: isDestructive
-                        ? theme.colorScheme.error.withValues(alpha: 0.3)
-                        : theme.dividerColor.withValues(alpha: 0.1),
+                    color: theme.dividerColor.withValues(alpha: 0.1),
                   ),
                 ),
-                child: Icon(icon, size: 26, color: fgColor),
+                child: Icon(
+                  icon,
+                  size: 26,
+                  color: theme.colorScheme.onSurface,
+                ),
               ),
               const SizedBox(height: 10),
               Text(
                 label,
                 style: theme.textTheme.titleSmall?.copyWith(
                   fontSize: 12,
-                  color: fgColor,
+                  color: theme.colorScheme.onSurface,
                   fontWeight: FontWeight.w600,
                 ),
               ),

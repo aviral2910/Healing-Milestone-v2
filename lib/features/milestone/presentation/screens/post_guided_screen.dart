@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:healing_milestones/features/posts/data/ai_story_service.dart';
+import '../../../../core/services/ai_access_service.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
@@ -63,6 +64,21 @@ class _PostGuidedScreenState extends ConsumerState<PostGuidedScreen> {
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         ),
+      );
+      return;
+    }
+
+    final storyMode = AiAccessService.storyMode;
+    if (storyMode == AiFeatureMode.disabled) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AiAccessService.pausedMessage)),
+      );
+      return;
+    }
+    if (storyMode == AiFeatureMode.paid) {
+      await AiAccessService.showUpgradePrompt(
+        context,
+        featureName: 'Guided Story (AI)',
       );
       return;
     }

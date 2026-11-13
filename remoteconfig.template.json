@@ -1,0 +1,81 @@
+{
+  "parameters": {
+    "ai_story_system_prompt": {
+      "defaultValue": {
+        "value": "You are an empathetic ghostwriter for a platform where people share stories about their healing journeys, traumas, and major life milestones. Your job is to take the user's rough notes and turn them into a cohesive, engaging, and emotionally authentic story.  CRITICAL INSTRUCTIONS: - STRICTLY stick to the information provided by the user.  - DO NOT invent any events, characters, conversations, settings, or backstory that the user did not explicitly mention. - Do NOT hallucinate details to make it longer. - DO write beautifully, organizing their exact points into a flowing narrative. - Use accessible, everyday language that is easy to read. Do not use overly complex or flowery vocabulary, but DO preserve and use the exact specific words and phrasing the user provided. - You can write multiple paragraphs to give the story emotional depth, but every single fact must come directly from their notes. - Keep it in the first person (\"I\"). Keep their authentic tone.  The story should flow naturally through: 1. The background and the hardest part. 2. The turning point or the work it took. 3. The milestone achieved and a message of hope.  You must return your response as a valid JSON object matching exactly this structure: {   \"title\": \"A captivating and deeply moving title for the story\",   \"content\": \"The full, rich, detailed, and expansive story body...\" }"
+      },
+      "valueType": "STRING"
+    },
+    "ai_story_mode": {
+      "defaultValue": {
+        "value": "free"
+      },
+      "valueType": "STRING",
+      "description": "Values: free | paid | disabled (also accepts paused/off/hide or pro)"
+    },
+    "ai_biomarker_mode": {
+      "defaultValue": {
+        "value": "free"
+      },
+      "valueType": "STRING",
+      "description": "Values: free | paid | disabled (also accepts paused/off/hide or pro)"
+    },
+    "ai_paused_message": {
+      "defaultValue": {
+        "value": "AI features are temporarily paused. Please try again later."
+      },
+      "valueType": "STRING",
+      "description": "Message shown when an AI feature is paused/disabled"
+    },
+    "min_required_version": {
+      "defaultValue": {
+        "value": "1.0.0"
+      },
+      "valueType": "STRING",
+      "description": "Minimum supported app version (triggers hard force update below this)"
+    },
+    "latest_version": {
+      "defaultValue": {
+        "value": "1.0.0"
+      },
+      "valueType": "STRING",
+      "description": "Latest app version (triggers soft dismissible update below this)"
+    },
+    "update_title": {
+      "defaultValue": {
+        "value": "Update Available"
+      },
+      "valueType": "STRING"
+    },
+    "update_message": {
+      "defaultValue": {
+        "value": "A new version of Healing Milestones is available with improvements and bug fixes."
+      },
+      "valueType": "STRING"
+    },
+    "force_update_title": {
+      "defaultValue": {
+        "value": "Update Required"
+      },
+      "valueType": "STRING"
+    },
+    "force_update_message": {
+      "defaultValue": {
+        "value": "This version of Healing Milestones is no longer supported. Please update to continue safely."
+      },
+      "valueType": "STRING"
+    },
+    "android_store_url": {
+      "defaultValue": {
+        "value": "https://play.google.com/store/apps/details?id=com.genesisapps.healingmilestones"
+      },
+      "valueType": "STRING"
+    },
+    "ios_store_url": {
+      "defaultValue": {
+        "value": "https://apps.apple.com/app/healing-milestones"
+      },
+      "valueType": "STRING"
+    }
+  }
+}
