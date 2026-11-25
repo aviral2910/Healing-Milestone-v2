@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import '../../data/awareness_providers.dart';
+import '../../data/awareness_strings.dart';
+import '../../data/emergency_guides_data.dart';
 import '../../domain/emergency_guide_model.dart';
 import 'cpr_metronome_screen.dart';
 
@@ -39,8 +41,19 @@ class _HandsFreeGuideScreenState extends ConsumerState<HandsFreeGuideScreen> {
     _initAndStart();
   }
 
+  Future<void> _setTtsLocale(AwarenessLanguage lang) async {
+    final targetLocale = lang.ttsLocale;
+    try {
+      final available = await _tts.isLanguageAvailable(targetLocale);
+      await _tts.setLanguage(available == true ? targetLocale : 'en-US');
+    } catch (_) {
+      await _tts.setLanguage('en-US');
+    }
+  }
+
   Future<void> _initAndStart() async {
-    await _tts.setLanguage('en-US');
+    final lang = ref.read(awarenessProvider).language;
+    await _setTtsLocale(lang);
     await _tts.setSpeechRate(0.47);
     _tts.setCompletionHandler(() {
       if (!mounted || !_isPlaying) return;
@@ -74,9 +87,24 @@ class _HandsFreeGuideScreenState extends ConsumerState<HandsFreeGuideScreen> {
     super.dispose();
   }
 
-  Future<void> _speakCurrent() async {
+  Future<void> _speakCurrent([AwarenessLanguage? overrideLang]) async {
     if (!mounted) return;
-    await _tts.speak(widget.guide.steps[_currentIndex].voicePrompt);
+    final lang = overrideLang ?? ref.read(awarenessProvider).language;
+    final localizedGuide = getEmergencyGuides(lang).firstWhere(
+      (g) => g.id == widget.guide.id,
+      orElse: () => widget.guide,
+    );
+    await _tts.speak(localizedGuide.steps[_currentIndex].voicePrompt);
+  }
+
+  Future<void> _switchLanguage(AwarenessLanguage lang) async {
+    _pauseTimer?.cancel();
+    await _tts.stop();
+    await ref.read(awarenessProvider.notifier).setLanguage(lang);
+    await _setTtsLocale(lang);
+    if (_isPlaying) {
+      await _speakCurrent(lang);
+    }
   }
 
   Future<void> _togglePlayPause() async {
@@ -111,10 +139,15 @@ class _HandsFreeGuideScreenState extends ConsumerState<HandsFreeGuideScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
-    final guide = widget.guide;
+    final awarenessState = ref.watch(awarenessProvider);
+    final s = AwarenessStrings(awarenessState.language);
+    final guide = getEmergencyGuides(awarenessState.language).firstWhere(
+      (g) => g.id == widget.guide.id,
+      orElse: () => widget.guide,
+    );
     final step = guide.steps[_currentIndex];
     final total = guide.steps.length;
-    final emergencyNumber = ref.watch(awarenessProvider).emergencyNumber;
+    final emergencyNumber = awarenessState.emergencyNumber;
 
     return Scaffold(
       appBar: AppBar(
@@ -153,36 +186,68 @@ class _HandsFreeGuideScreenState extends ConsumerState<HandsFreeGuideScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'STEP ${step.stepNumber} OF $total',
+                        s.stepOf(step.stepNumber, total),
                         style: theme.textTheme.labelSmall?.copyWith(
                           color: primary,
                           letterSpacing: 1.4,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
-                      Row(
-                        children: [
-                          Icon(
-                            _isPlaying
-                                ? Icons.graphic_eq_rounded
-                                : Icons.pause_circle_outline,
-                            size: 16,
-                            color: _isPlaying
-                                ? primary
-                                : theme.colorScheme.onSurface
-                                    .withValues(alpha: 0.5),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            _isPlaying ? 'Hands-Free Speaking' : 'Paused',
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: _isPlaying ? primary : null,
-                            ),
-                          ),
-                        ],
+                      const SizedBox(width: 8),
+                      Icon(
+                        _isPlaying
+                            ? Icons.graphic_eq_rounded
+                            : Icons.pause_circle_outline,
+                        size: 16,
+                        color: _isPlaying
+                            ? primary
+                            : theme.colorScheme.onSurface
+                                .withValues(alpha: 0.5),
+                      ),
+                      const Spacer(),
+                      Container(
+                        padding: const EdgeInsets.all(3),
+                        decoration: BoxDecoration(
+                          color: theme.cardColor,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: theme.dividerColor),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: AwarenessLanguage.values.map((lang) {
+                            final selected = lang == awarenessState.language;
+                            return GestureDetector(
+                              onTap: () => _switchLanguage(lang),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 180),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: selected
+                                      ? primary.withValues(alpha: 0.16)
+                                      : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Text(
+                                  lang.shortLabel,
+                                  style: theme.textTheme.labelSmall?.copyWith(
+                                    color: selected
+                                        ? primary
+                                        : theme.colorScheme.onSurface
+                                            .withValues(alpha: 0.6),
+                                    fontWeight: selected
+                                        ? FontWeight.w800
+                                        : FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
                       ),
                     ],
                   ),
@@ -336,9 +401,9 @@ class _HandsFreeGuideScreenState extends ConsumerState<HandsFreeGuideScreen> {
                         },
                         icon: Icon(Icons.favorite_outline,
                             color: primary, size: 18),
-                        label: const Text(
-                          'Switch to 110 BPM CPR Coach',
-                          style: TextStyle(fontWeight: FontWeight.w700),
+                        label: Text(
+                          s.switchToCpr,
+                          style: const TextStyle(fontWeight: FontWeight.w700),
                         ),
                       ),
                     ),
@@ -393,7 +458,7 @@ class _HandsFreeGuideScreenState extends ConsumerState<HandsFreeGuideScreen> {
                               size: 24,
                             ),
                             label: Text(
-                              _isPlaying ? 'Pause Voice' : 'Resume Voice',
+                              _isPlaying ? s.pauseVoice : s.resumeVoice,
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,

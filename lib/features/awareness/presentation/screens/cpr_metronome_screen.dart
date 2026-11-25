@@ -9,6 +9,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
 import '../../data/awareness_providers.dart';
+import '../../data/awareness_strings.dart';
 
 class CprMetronomeScreen extends ConsumerStatefulWidget {
   const CprMetronomeScreen({super.key});
@@ -56,7 +57,14 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
   }
 
   Future<void> _initAudioAndTts() async {
-    await _tts.setLanguage('en-US');
+    final lang = ref.read(awarenessProvider).language;
+    final targetLocale = lang.ttsLocale;
+    try {
+      final available = await _tts.isLanguageAvailable(targetLocale);
+      await _tts.setLanguage(available == true ? targetLocale : 'en-US');
+    } catch (_) {
+      await _tts.setLanguage('en-US');
+    }
     await _tts.setSpeechRate(0.52);
     await _tts.setPitch(1.0);
 
@@ -142,11 +150,16 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
       _isRunning = true;
       _isBreathPhase = false;
     });
+    final isHi = ref.read(awarenessProvider).language == AwarenessLanguage.hi;
     if (_voiceEnabled) {
       _tts.speak(
-        _handsOnlyMode
-            ? 'Hands-only C P R. Push hard and fast continuously.'
-            : '30 to 2 C P R. Give 30 compressions, then 2 rescue breaths.',
+        isHi
+            ? (_handsOnlyMode
+                ? 'केवल हाथ से सी पी आर। लगातार जोर से और तेज दबाएं।'
+                : '30 और 2 सी पी आर। 30 बार दबाएं, फिर 2 बचाव श्वास दें।')
+            : (_handsOnlyMode
+                ? 'Hands-only C P R. Push hard and fast continuously.'
+                : '30 to 2 C P R. Give 30 compressions, then 2 rescue breaths.'),
       );
     }
     _startCompressionLoop();
@@ -198,9 +211,12 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
     });
 
     if (_compressionCount == 30) {
+      final isHi = ref.read(awarenessProvider).language == AwarenessLanguage.hi;
       if (_handsOnlyMode) {
         if (_voiceEnabled) {
-          _tts.speak('30 compressions. Keep pushing.');
+          _tts.speak(
+            isHi ? '30 दबाव। दबाते रहें।' : '30 compressions. Keep pushing.',
+          );
         }
       } else {
         _enterBreathPhase();
@@ -215,8 +231,13 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
       _breathSecondsLeft = _breathPauseSeconds;
     });
 
+    final isHi = ref.read(awarenessProvider).language == AwarenessLanguage.hi;
     if (_voiceEnabled) {
-      _tts.speak('Stop compressions. Give 2 rescue breaths.');
+      _tts.speak(
+        isHi
+            ? 'दबाना रोकें। 2 बचाव श्वास दें।'
+            : 'Stop compressions. Give 2 rescue breaths.',
+      );
     }
 
     _breathTimer?.cancel();
@@ -235,7 +256,9 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
           _cycleCount++;
         });
         if (_voiceEnabled) {
-          _tts.speak('Resume compressions.');
+          _tts.speak(
+            isHi ? 'फिर से दबाना शुरू करें।' : 'Resume compressions.',
+          );
         }
         _startCompressionLoop();
       }
@@ -246,7 +269,9 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
-    final emergencyNumber = ref.watch(awarenessProvider).emergencyNumber;
+    final awarenessState = ref.watch(awarenessProvider);
+    final s = AwarenessStrings(awarenessState.language);
+    final emergencyNumber = awarenessState.emergencyNumber;
 
     final double progress = !_isRunning
         ? 0.0
@@ -256,7 +281,7 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('CPR Coach'),
+        title: Text(s.cprCoach),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 12),
@@ -295,16 +320,16 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
                   selectedForegroundColor: primary,
                   side: BorderSide(color: theme.dividerColor),
                 ),
-                segments: const [
+                segments: [
                   ButtonSegment(
                     value: true,
-                    label: Text('Hands-Only'),
-                    icon: Icon(Icons.front_hand_outlined, size: 18),
+                    label: Text(s.handsOnly),
+                    icon: const Icon(Icons.front_hand_outlined, size: 18),
                   ),
                   ButtonSegment(
                     value: false,
-                    label: Text('30:2 Breaths'),
-                    icon: Icon(Icons.air, size: 18),
+                    label: Text(s.breaths302),
+                    icon: const Icon(Icons.air, size: 18),
                   ),
                 ],
                 selected: {_handsOnlyMode},
@@ -317,9 +342,7 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
               ),
               const SizedBox(height: 8),
               Text(
-                _handsOnlyMode
-                    ? 'Continuous compressions • No pauses'
-                    : '30 compressions • Pauses 5s for 2 rescue breaths',
+                _handsOnlyMode ? s.continuousDesc : s.breaths302Desc,
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
                 ),
@@ -382,10 +405,10 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
                                     children: [
                                       Text(
                                         !_isRunning
-                                            ? 'TAP TO START'
+                                            ? s.tapToStart
                                             : _isBreathPhase
-                                                ? '2 BREATHS'
-                                                : 'PUSH',
+                                                ? s.twoBreaths
+                                                : s.push,
                                         style: theme.textTheme.labelSmall
                                             ?.copyWith(
                                           color: _isBreathPhase
@@ -419,7 +442,7 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
                                                 ? 'BPM • Continuous'
                                                 : 'BPM • 30:2 Cycle')
                                             : _isBreathPhase
-                                                ? 'Give 2 gentle breaths'
+                                                ? s.giveTwoBreaths
                                                 : 'of 30 • Cycle $_cycleCount',
                                         style: theme.textTheme.bodySmall,
                                       ),
@@ -457,7 +480,7 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
                 child: Row(
                   children: [
                     _ThemeToggleChip(
-                      label: 'Beat Sound',
+                      label: s.beatSound,
                       icon: _beatSoundEnabled
                           ? Icons.music_note_rounded
                           : Icons.music_off_rounded,
@@ -467,7 +490,7 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
                     ),
                     const SizedBox(width: 8),
                     _ThemeToggleChip(
-                      label: 'Voice',
+                      label: s.voice,
                       icon: _voiceEnabled ? Icons.volume_up : Icons.volume_off,
                       selected: _voiceEnabled,
                       onTap: () {
@@ -477,7 +500,7 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
                     ),
                     const SizedBox(width: 8),
                     _ThemeToggleChip(
-                      label: 'Haptics',
+                      label: s.haptics,
                       icon: Icons.vibration,
                       selected: _hapticsEnabled,
                       onTap: () =>
@@ -514,7 +537,7 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
                   onPressed: _toggleMetronome,
                   icon: Icon(_isRunning ? Icons.pause : Icons.play_arrow),
                   label: Text(
-                    _isRunning ? 'Pause CPR Coach' : 'Start 110 BPM Beat',
+                    _isRunning ? s.pauseCpr : s.startBeat,
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,

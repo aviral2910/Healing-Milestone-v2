@@ -1,4 +1,12 @@
 import '../domain/emergency_guide_model.dart';
+import 'awareness_providers.dart';
+import 'emergency_guides_data_hi.dart';
+
+List<EmergencyGuide> getEmergencyGuides(AwarenessLanguage language) {
+  return language == AwarenessLanguage.hi
+      ? emergencyGuidesDataHi
+      : emergencyGuidesData;
+}
 
 const List<EmergencyGuide> emergencyGuidesData = [
   EmergencyGuide(

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/awareness_providers.dart';
+import '../../data/awareness_strings.dart';
 import '../../domain/emergency_guide_model.dart';
 import 'cpr_metronome_screen.dart';
 import 'emergency_quiz_screen.dart';
+import 'emergency_science_screen.dart';
 import 'hands_free_guide_screen.dart';
 
 class EmergencyGuideDetailScreen extends ConsumerWidget {
@@ -16,11 +18,12 @@ class EmergencyGuideDetailScreen extends ConsumerWidget {
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
     final awarenessState = ref.watch(awarenessProvider);
+    final s = AwarenessStrings(awarenessState.language);
     final isCompleted = awarenessState.completedGuideIds.contains(guide.id);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(guide.category.label),
+        title: Text(s.categoryLabel(guide.category)),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 12),
@@ -78,7 +81,7 @@ class EmergencyGuideDetailScreen extends ConsumerWidget {
                           Text(guide.title, style: theme.textTheme.titleLarge),
                           const SizedBox(height: 2),
                           Text(
-                            '${guide.steps.length} steps • Hands-free voice ready',
+                            s.stepsSubtitle(guide.steps.length),
                             style: theme.textTheme.bodySmall,
                           ),
                         ],
@@ -131,9 +134,9 @@ class EmergencyGuideDetailScreen extends ConsumerWidget {
                       );
                     },
                     icon: const Icon(Icons.volume_up_rounded, size: 20),
-                    label: const Text(
-                      'Start Hands-Free Guide',
-                      style: TextStyle(fontWeight: FontWeight.w700),
+                    label: Text(
+                      s.startHandsFree,
+                      style: const TextStyle(fontWeight: FontWeight.w700),
                     ),
                   ),
                 ),
@@ -159,9 +162,9 @@ class EmergencyGuideDetailScreen extends ConsumerWidget {
                       },
                       icon: Icon(Icons.favorite_outline,
                           color: primary, size: 18),
-                      label: const Text(
-                        'Open 110 BPM CPR Coach',
-                        style: TextStyle(fontWeight: FontWeight.w700),
+                      label: Text(
+                        s.openCprCoach,
+                        style: const TextStyle(fontWeight: FontWeight.w700),
                       ),
                     ),
                   ),
@@ -176,9 +179,9 @@ class EmergencyGuideDetailScreen extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Steps', style: theme.textTheme.titleLarge),
+              Text(s.stepsHeading, style: theme.textTheme.titleLarge),
               Text(
-                'Tap step for hands-free',
+                s.tapStepHint,
                 style: theme.textTheme.bodySmall,
               ),
             ],
@@ -327,7 +330,7 @@ class EmergencyGuideDetailScreen extends ConsumerWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'Avoid These Mistakes',
+                      s.avoidMistakes,
                       style: theme.textTheme.titleMedium?.copyWith(
                         color: theme.colorScheme.error,
                         fontSize: 14,
@@ -365,8 +368,69 @@ class EmergencyGuideDetailScreen extends ConsumerWidget {
             ),
           ),
 
-          // Separate Test Yourself Entry
+          // Separate Science & Biology Entry
           const SizedBox(height: 16),
+          InkWell(
+            borderRadius: BorderRadius.circular(18),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => EmergencyScienceScreen(guide: guide),
+                ),
+              );
+            },
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: theme.cardColor,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: theme.dividerColor),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: primary.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      Icons.biotech_outlined,
+                      color: primary,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          s.whyItWorks,
+                          style: theme.textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          s.whyItWorksSubtitle,
+                          style: theme.textTheme.bodySmall,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 15,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Separate Test Yourself Entry
+          const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -395,12 +459,12 @@ class EmergencyGuideDetailScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        isCompleted ? 'Test Passed' : 'Test Yourself',
+                        isCompleted ? s.testPassed : s.testYourself,
                         style: theme.textTheme.titleMedium,
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        '${guide.quizzes.length} questions • 100% required',
+                        s.quizSummary(guide.quizzes.length),
                         style: theme.textTheme.bodySmall,
                       ),
                     ],
@@ -422,7 +486,7 @@ class EmergencyGuideDetailScreen extends ConsumerWidget {
                       ),
                     );
                   },
-                  child: Text(isCompleted ? 'Retake' : 'Start'),
+                  child: Text(isCompleted ? s.retake : s.start),
                 ),
               ],
             ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/awareness_providers.dart';
+import '../../data/awareness_strings.dart';
 import '../../domain/emergency_guide_model.dart';
 
 class EmergencyQuizScreen extends ConsumerStatefulWidget {
@@ -61,23 +62,29 @@ class _EmergencyQuizScreenState extends ConsumerState<EmergencyQuizScreen> {
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
     final total = widget.guide.quizzes.length;
+    final s = AwarenessStrings(ref.watch(awarenessProvider).language);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Test: ${widget.guide.title}'),
+        title: Text(s.testTitle(widget.guide.title)),
       ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
           child: _isFinished
-              ? _buildResultView(theme, primary, total)
-              : _buildQuestionView(theme, primary, total),
+              ? _buildResultView(theme, primary, total, s)
+              : _buildQuestionView(theme, primary, total, s),
         ),
       ),
     );
   }
 
-  Widget _buildQuestionView(ThemeData theme, Color primary, int total) {
+  Widget _buildQuestionView(
+    ThemeData theme,
+    Color primary,
+    int total,
+    AwarenessStrings s,
+  ) {
     final question = widget.guide.quizzes[_currentIndex];
     final hasAnswered = _selectedOption != null;
     final isLast = _currentIndex == total - 1;
@@ -89,7 +96,7 @@ class _EmergencyQuizScreenState extends ConsumerState<EmergencyQuizScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'QUESTION ${_currentIndex + 1} OF $total',
+              s.questionOf(_currentIndex + 1, total),
               style: theme.textTheme.labelSmall?.copyWith(
                 color: primary,
                 letterSpacing: 1.2,
@@ -97,7 +104,7 @@ class _EmergencyQuizScreenState extends ConsumerState<EmergencyQuizScreen> {
               ),
             ),
             Text(
-              'Score: $_correctCount/$total',
+              s.scoreLabel(_correctCount, total),
               style: theme.textTheme.bodySmall,
             ),
           ],
@@ -235,7 +242,7 @@ class _EmergencyQuizScreenState extends ConsumerState<EmergencyQuizScreen> {
             ),
             onPressed: hasAnswered ? _nextQuestion : null,
             child: Text(
-              isLast ? 'See Results' : 'Next Question',
+              isLast ? s.seeResults : s.nextQuestion,
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
@@ -247,7 +254,12 @@ class _EmergencyQuizScreenState extends ConsumerState<EmergencyQuizScreen> {
     );
   }
 
-  Widget _buildResultView(ThemeData theme, Color primary, int total) {
+  Widget _buildResultView(
+    ThemeData theme,
+    Color primary,
+    int total,
+    AwarenessStrings s,
+  ) {
     final passedAll = _correctCount == total;
 
     return Center(
@@ -271,20 +283,18 @@ class _EmergencyQuizScreenState extends ConsumerState<EmergencyQuizScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              passedAll ? 'Test Passed!' : 'Almost There',
+              passedAll ? s.passedHeading : s.almostThereHeading,
               style: theme.textTheme.headlineLarge?.copyWith(fontSize: 26),
             ),
             const SizedBox(height: 8),
             Text(
-              'You answered $_correctCount of $total questions correctly.',
+              s.resultScore(_correctCount, total),
               style: theme.textTheme.bodyLarge,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 6),
             Text(
-              passedAll
-                  ? 'Great job! This emergency guide is now marked as practiced.'
-                  : 'All $total questions must be answered correctly to pass this guide.',
+              passedAll ? s.passedDesc : s.failDesc(total),
               style: theme.textTheme.bodySmall,
               textAlign: TextAlign.center,
             ),
@@ -302,7 +312,7 @@ class _EmergencyQuizScreenState extends ConsumerState<EmergencyQuizScreen> {
                 ),
                 onPressed: passedAll ? () => Navigator.pop(context) : _retryQuiz,
                 child: Text(
-                  passedAll ? 'Done' : 'Retry Test',
+                  passedAll ? s.done : s.retryTest,
                   style: const TextStyle(fontWeight: FontWeight.w700),
                 ),
               ),
@@ -311,7 +321,7 @@ class _EmergencyQuizScreenState extends ConsumerState<EmergencyQuizScreen> {
               const SizedBox(height: 10),
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Review Steps Again'),
+                child: Text(s.reviewSteps),
               ),
             ],
           ],

@@ -4,21 +4,37 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:healing_milestones/features/awareness/data/awareness_providers.dart';
 import 'package:healing_milestones/features/awareness/data/emergency_guides_data.dart';
+import 'package:healing_milestones/features/awareness/data/emergency_guides_data_hi.dart';
+import 'package:healing_milestones/features/awareness/data/emergency_science_data.dart';
 import 'package:healing_milestones/features/awareness/presentation/screens/emergency_quiz_screen.dart';
 import 'package:healing_milestones/features/awareness/presentation/screens/health_awareness_screen.dart';
 
 void main() {
-  test('Every emergency guide has one quiz question per step', () {
-    expect(emergencyGuidesData.length, greaterThanOrEqualTo(8));
-    for (final guide in emergencyGuidesData) {
-      expect(guide.id, isNotEmpty);
-      expect(guide.title, isNotEmpty);
-      expect(guide.steps, isNotEmpty);
-      expect(guide.doNots, isNotEmpty);
-      expect(guide.quizzes.length, equals(guide.steps.length));
-      for (final q in guide.quizzes) {
-        expect(q.options.length, greaterThanOrEqualTo(2));
-        expect(q.correctIndex, inInclusiveRange(0, q.options.length - 1));
+  test('Every English and Hindi emergency guide has one quiz question per step',
+      () {
+    expect(emergencyGuidesData.length, equals(13));
+    expect(emergencyGuidesDataHi.length, equals(emergencyGuidesData.length));
+    for (int i = 0; i < emergencyGuidesData.length; i++) {
+      final en = emergencyGuidesData[i];
+      final hi = emergencyGuidesDataHi[i];
+      expect(hi.id, equals(en.id));
+      expect(hi.steps.length, equals(en.steps.length));
+      final sciEn = getEmergencyScience(en.id, AwarenessLanguage.en);
+      final sciHi = getEmergencyScience(en.id, AwarenessLanguage.hi);
+      expect(sciEn, isNotNull);
+      expect(sciHi, isNotNull);
+      expect(sciEn!.facts, isNotEmpty);
+      expect(sciHi!.facts, isNotEmpty);
+      for (final guide in [en, hi]) {
+        expect(guide.id, isNotEmpty);
+        expect(guide.title, isNotEmpty);
+        expect(guide.steps, isNotEmpty);
+        expect(guide.doNots, isNotEmpty);
+        expect(guide.quizzes.length, equals(guide.steps.length));
+        for (final q in guide.quizzes) {
+          expect(q.options.length, greaterThanOrEqualTo(2));
+          expect(q.correctIndex, inInclusiveRange(0, q.options.length - 1));
+        }
       }
     }
   });
@@ -52,6 +68,15 @@ void main() {
     expect(find.text('SOS 112'), findsNothing);
     expect(find.text('Snake Bite First Aid'), findsOneWidget);
     expect(find.text('Adult CPR & AED'), findsNothing);
+
+    // Clear search and switch to Hindi
+    await tester.tap(find.byIcon(Icons.close_rounded));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('हिं'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('प्राथमिक चिकित्सा और आपातकाल'), findsOneWidget);
+    expect(find.text('वयस्क CPR और AED'), findsOneWidget);
   });
 
   testWidgets('EmergencyQuizScreen requires 100% correct to pass',

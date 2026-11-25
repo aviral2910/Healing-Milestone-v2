@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../data/awareness_providers.dart';
+import '../../data/awareness_strings.dart';
 import '../../data/emergency_guides_data.dart';
 import '../../domain/emergency_guide_model.dart';
 import 'cpr_metronome_screen.dart';
@@ -26,15 +27,17 @@ class HealthAwarenessScreen extends HookConsumerWidget {
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
     final awarenessState = ref.watch(awarenessProvider);
+    final s = AwarenessStrings(awarenessState.language);
+    final guides = getEmergencyGuides(awarenessState.language);
     final searchController = useTextEditingController();
     final searchQuery = useState('');
 
-    final filteredGuides = emergencyGuidesData.where((guide) {
+    final filteredGuides = guides.where((guide) {
       final q = searchQuery.value.trim().toLowerCase();
       if (q.isEmpty) return true;
       return guide.title.toLowerCase().contains(q) ||
           guide.subtitle.toLowerCase().contains(q) ||
-          guide.category.label.toLowerCase().contains(q);
+          s.categoryLabel(guide.category).toLowerCase().contains(q);
     }).toList();
 
     return CustomScrollView(
@@ -51,7 +54,7 @@ class HealthAwarenessScreen extends HookConsumerWidget {
               onChanged: (v) => searchQuery.value = v,
               style: theme.textTheme.bodyMedium,
               decoration: InputDecoration(
-                hintText: 'Search emergencies (CPR, burns, asthma...)',
+                hintText: s.searchHint,
                 hintStyle: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.onSurface.withValues(alpha: 0.45),
                 ),
@@ -225,9 +228,9 @@ class HealthAwarenessScreen extends HookConsumerWidget {
                               color: primary,
                               size: 17,
                             ),
-                            label: const Text(
-                              'CPR Coach',
-                              style: TextStyle(
+                            label: Text(
+                              s.cprCoach,
+                              style: const TextStyle(
                                 fontWeight: FontWeight.w700,
                                 fontSize: 13.5,
                               ),
@@ -250,7 +253,7 @@ class HealthAwarenessScreen extends HookConsumerWidget {
                       const SizedBox(width: 6),
                       Expanded(
                         child: Text(
-                          'For educational & emergency reference only. Not a substitute for professional medical care.',
+                          s.disclaimer,
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: theme.colorScheme.onSurface
                                 .withValues(alpha: 0.55),
@@ -266,20 +269,24 @@ class HealthAwarenessScreen extends HookConsumerWidget {
           ),
         ),
 
-        // 3. First-Aid Guides Header directly connected to cards
+        // 3. First-Aid Guides Header + Language Toggle (EN | हिं)
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'First-Aid & Emergency',
-                  style: theme.textTheme.titleLarge,
+                Expanded(
+                  child: Text(
+                    s.firstAidTitle,
+                    style: theme.textTheme.titleLarge,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-                Text(
-                  '${filteredGuides.length} guides',
-                  style: theme.textTheme.bodySmall,
+                const SizedBox(width: 8),
+                _LanguagePill(
+                  current: awarenessState.language,
+                  onSelected: (lang) =>
+                      ref.read(awarenessProvider.notifier).setLanguage(lang),
                 ),
               ],
             ),
@@ -292,7 +299,7 @@ class HealthAwarenessScreen extends HookConsumerWidget {
               padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 20),
               child: Center(
                 child: Text(
-                  'No emergency guides found for "${searchQuery.value.trim()}".',
+                  s.noGuidesFound(searchQuery.value.trim()),
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
@@ -313,6 +320,7 @@ class HealthAwarenessScreen extends HookConsumerWidget {
                     padding: const EdgeInsets.only(bottom: 12),
                     child: _EmergencyGuideCard(
                       guide: guide,
+                      categoryLabel: s.categoryLabel(guide.category),
                       isPassed: isPassed,
                       onTap: () {
                         Navigator.of(context).push(
@@ -501,14 +509,69 @@ class HealthAwarenessScreen extends HookConsumerWidget {
   }
 }
 
+class _LanguagePill extends StatelessWidget {
+  final AwarenessLanguage current;
+  final ValueChanged<AwarenessLanguage> onSelected;
+
+  const _LanguagePill({
+    required this.current,
+    required this.onSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final primary = theme.colorScheme.primary;
+
+    return Container(
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        color: theme.cardColor,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: theme.dividerColor),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: AwarenessLanguage.values.map((lang) {
+          final selected = lang == current;
+          return GestureDetector(
+            onTap: () => onSelected(lang),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: selected
+                    ? primary.withValues(alpha: 0.16)
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Text(
+                lang.shortLabel,
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: selected
+                      ? primary
+                      : theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                  fontWeight: selected ? FontWeight.w800 : FontWeight.w500,
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
+
 class _EmergencyGuideCard extends StatelessWidget {
   final EmergencyGuide guide;
+  final String categoryLabel;
   final bool isPassed;
   final VoidCallback onTap;
   final VoidCallback onHandsFreeTap;
 
   const _EmergencyGuideCard({
     required this.guide,
+    required this.categoryLabel,
     required this.isPassed,
     required this.onTap,
     required this.onHandsFreeTap,
@@ -550,7 +613,7 @@ class _EmergencyGuideCard extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        guide.category.label.toUpperCase(),
+                        categoryLabel.toUpperCase(),
                         style: theme.textTheme.labelSmall?.copyWith(
                           color: primary,
                           letterSpacing: 1.1,
