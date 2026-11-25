@@ -1252,7 +1252,7 @@ PODS:
   - firebase_core (4.14.0):
     - Firebase/CoreOnly (~> 12.18.0)
     - FlutterMacOS
-  - firebase_remote_config (6.5.6):
+  - firebase_remote_config (6.6.0):
     - Firebase/CoreOnly (~> 12.18.0)
     - Firebase/RemoteConfig (~> 12.18.0)
     - firebase_core
@@ -1485,6 +1485,8 @@ PODS:
     - nanopb/encode (= 3.30910.0)
   - nanopb/decode (3.30910.0)
   - nanopb/encode (3.30910.0)
+  - package_info_plus (0.0.1):
+    - FlutterMacOS
   - PromisesObjC (2.4.1)
   - PromisesSwift (2.4.1):
     - PromisesObjC (= 2.4.1)
@@ -1525,6 +1527,7 @@ DEPENDENCIES:
   - google_sign_in_ios (from `Flutter/ephemeral/.symlinks/plugins/google_sign_in_ios/darwin`)
   - just_audio (from `Flutter/ephemeral/.symlinks/plugins/just_audio/darwin`)
   - mobile_scanner (from `Flutter/ephemeral/.symlinks/plugins/mobile_scanner/darwin`)
+  - package_info_plus (from `Flutter/ephemeral/.symlinks/plugins/package_info_plus/macos`)
   - record_macos (from `Flutter/ephemeral/.symlinks/plugins/record_macos/macos`)
   - share_plus (from `Flutter/ephemeral/.symlinks/plugins/share_plus/macos`)
   - shared_preferences_foundation (from `Flutter/ephemeral/.symlinks/plugins/shared_preferences_foundation/darwin`)
@@ -1603,6 +1606,8 @@ EXTERNAL SOURCES:
     :path: Flutter/ephemeral/.symlinks/plugins/just_audio/darwin
   mobile_scanner:
     :path: Flutter/ephemeral/.symlinks/plugins/mobile_scanner/darwin
+  package_info_plus:
+    :path: Flutter/ephemeral/.symlinks/plugins/package_info_plus/macos
   record_macos:
     :path: Flutter/ephemeral/.symlinks/plugins/record_macos/macos
   share_plus:
@@ -1633,7 +1638,7 @@ SPEC CHECKSUMS:
   firebase_app_check: 65cfdb8dfbe399fd9e031f28c3a1782d666ff777
   firebase_auth: c255f34abb47958ebf981a34ede07b9dec49f52e
   firebase_core: 78db4ffa2483f5e2de9eb8a69b544c9e98ff64e3
-  firebase_remote_config: c26a101c178bbb81a1cf87b9337ca05a7807c41f
+  firebase_remote_config: d7d5ba83c397bc6e8be0961d49b4777700902dc7
   firebase_storage: 06156182ce51334cf1b623c7ea903f4fd42d3e24
   FirebaseABTesting: 7060ad22592c1ae86cccf9cc0f886f470084cbd5
   FirebaseAppCheck: 06fc2eca9cc0499dc393f9d4320faeb373b24851
@@ -1665,6 +1670,7 @@ SPEC CHECKSUMS:
   leveldb-library: cc8b8f8e013647a295ad3f8cd2ddf49a6f19be19
   mobile_scanner: 77265f3dc8d580810e91849d4a0811a90467ed5e
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
+  package_info_plus: 12f1c5c2cfe8727ca46cbd0b26677728972d9a5b
   PromisesObjC: 752c3227f599e3467650e47ea36f433eeb10c273
   PromisesSwift: 217dea0fd5d2ad65222a109c48698add13cc1c5b
   record_macos: 25091280c4e09c8ab21428dde5fd342e065508fd

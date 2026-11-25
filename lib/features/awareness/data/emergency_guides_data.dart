@@ -700,4 +700,369 @@ const List<EmergencyGuide> emergencyGuidesData = [
       ),
     ],
   ),
+  EmergencyGuide(
+    id: 'infant_choking_cpr',
+    title: 'Infant Choking & CPR (Under 1 Yr)',
+    subtitle: 'Safe back blows, chest thrusts & 2-finger infant CPR',
+    category: EmergencyCategory.breathing,
+    isCritical: true,
+    estimatedReadMinutes: 3,
+    whenToCallEmergency:
+        'Call emergency services immediately if a baby cannot cry, cough, or breathe, turns blue, or becomes unresponsive.',
+    steps: [
+      EmergencyStep(
+        stepNumber: 1,
+        title: 'Give 5 Infant Back Blows',
+        instruction:
+            'Lay the baby face-down along your forearm, supporting the jaw/head (keep head lower than chest). Give 5 firm back blows between the shoulder blades with the heel of your hand.',
+        voicePrompt:
+            'Step 1. Hold the baby face down on your forearm supporting the jaw, and give 5 firm back blows between the shoulder blades.',
+      ),
+      EmergencyStep(
+        stepNumber: 2,
+        title: 'Give 5 Chest Thrusts',
+        instruction:
+            'Turn the baby face-up on your other forearm, still supporting the head. Place 2 fingers on the center of the chest just below the nipple line and press down 5 times (about 4 cm deep).',
+        voicePrompt:
+            'Step 2. Turn the baby face up supporting the head, and give 5 chest thrusts with 2 fingers just below the nipple line.',
+        criticalNote: 'NEVER use abdominal thrusts (Heimlich) on an infant.',
+      ),
+      EmergencyStep(
+        stepNumber: 3,
+        title: 'If Unresponsive, Start Infant CPR',
+        instruction:
+            'Place the baby on a firm flat surface. Give 30 gentle 2-finger compressions (4 cm deep, 100–120/min) followed by 2 gentle puffs of air covering both mouth and nose.',
+        voicePrompt:
+            'Step 3. If unresponsive, give 30 two-finger chest compressions on a firm surface, followed by 2 gentle puffs over mouth and nose.',
+      ),
+    ],
+    doNots: [
+      'Do not perform abdominal thrusts on an infant under 1 year old.',
+      'Do not do blind finger sweeps inside the baby\'s mouth.',
+      'Do not shake the baby.',
+    ],
+    quizzes: [
+      EmergencyQuizQuestion(
+        question: 'How should you position a choking infant for back blows?',
+        options: [
+          'Sitting upright on your lap',
+          'Face-down along your forearm with the head supported and lower than the chest',
+          'Flat on their back',
+        ],
+        correctIndex: 1,
+        explanation: 'Gravity helps dislodge the object while supporting the jaw keeps the airway open.',
+      ),
+      EmergencyQuizQuestion(
+        question: 'What replaces abdominal thrusts for a conscious choking infant?',
+        options: [
+          '5 chest thrusts using 2 fingers just below the nipple line',
+          '5 hard abdominal pushes',
+          'Hanging the baby upside down by the feet',
+        ],
+        correctIndex: 0,
+        explanation: 'Abdominal thrusts can injure an infant\'s liver; always use 2-finger chest thrusts.',
+      ),
+      EmergencyQuizQuestion(
+        question: 'How deep should chest compressions be during infant CPR?',
+        options: [
+          'About 4 cm (1.5 inches) using 2 fingers',
+          '10 cm using both hands',
+          '1 cm using one thumb lightly',
+        ],
+        correctIndex: 0,
+        explanation: 'Compress about one-third the depth of the chest (~4 cm) at 100–120 per minute.',
+      ),
+    ],
+  ),
+  EmergencyGuide(
+    id: 'asthma_attack',
+    title: 'Severe Asthma Attack',
+    subtitle: 'Airway positioning & rescue inhaler steps',
+    category: EmergencyCategory.breathing,
+    isCritical: true,
+    estimatedReadMinutes: 2,
+    whenToCallEmergency:
+        'Call emergency services if the rescue inhaler gives no relief after 10 minutes, the person cannot speak full sentences, or lips/fingernails turn bluish.',
+    steps: [
+      EmergencyStep(
+        stepNumber: 1,
+        title: 'Sit Upright & Stay Calm',
+        instruction:
+            'Help the person sit upright (leaning slightly forward helps breathing). Loosen tight collars and speak calmly — panic worsens airway tightness.',
+        voicePrompt:
+            'Step 1. Help the person sit upright and stay calm. Loosen tight clothing.',
+      ),
+      EmergencyStep(
+        stepNumber: 2,
+        title: 'Give Rescue Inhaler (Salbutamol / Albuterol)',
+        instruction:
+            'Shake the blue/rescue inhaler. Give 1 puff (ideally through a spacer), have them take 4 slow breaths, wait 1 minute, and repeat up to 4 puffs if needed.',
+        voicePrompt:
+            'Step 2. Shake the rescue inhaler and give 1 puff, then 4 slow breaths. Wait 1 minute between puffs up to 4 puffs.',
+      ),
+      EmergencyStep(
+        stepNumber: 3,
+        title: 'Monitor & Repeat or Call SOS',
+        instruction:
+            'If breathing does not improve after 4 minutes, repeat 4 more puffs and call emergency services immediately. Continue 4 puffs every 4 minutes while waiting for paramedics.',
+        voicePrompt:
+            'Step 3. If no improvement after 4 minutes, call emergency services and continue 4 puffs every 4 minutes until help arrives.',
+      ),
+    ],
+    doNots: [
+      'Do not force the person to lie flat — it makes breathing harder.',
+      'Do not use a preventer (steroid) inhaler instead of the quick-relief rescue inhaler.',
+    ],
+    quizzes: [
+      EmergencyQuizQuestion(
+        question: 'What is the best body position for someone having an asthma attack?',
+        options: [
+          'Lying flat on their back',
+          'Sitting upright (or leaning slightly forward)',
+          'Lying face-down',
+        ],
+        correctIndex: 1,
+        explanation: 'Sitting upright allows the lungs and diaphragm to expand maximally.',
+      ),
+      EmergencyQuizQuestion(
+        question: 'How should rescue inhaler puffs be given during an attack?',
+        options: [
+          '4 puffs all at once in one breath',
+          '1 puff at a time with 4 slow breaths, waiting about 1 minute between puffs',
+          'Only after eating food',
+        ],
+        correctIndex: 1,
+        explanation: 'Spacing puffs with slow breaths (especially via a spacer) delivers medicine deeper into the airways.',
+      ),
+      EmergencyQuizQuestion(
+        question: 'When should you call emergency services during an asthma attack?',
+        options: [
+          'Only after 1 hour',
+          'If there is no relief after 4–10 minutes, or they cannot speak full sentences',
+          'Never, asthma always resolves on its own',
+        ],
+        correctIndex: 1,
+        explanation: 'Lack of response to rescue puffs or difficulty speaking signals a life-threatening asthma flare.',
+      ),
+    ],
+  ),
+  EmergencyGuide(
+    id: 'diabetic_hypoglycemia',
+    title: 'Low Blood Sugar (Hypoglycemia)',
+    subtitle: 'The 15-gram fast sugar rule for diabetic emergencies',
+    category: EmergencyCategory.neurological,
+    isCritical: true,
+    estimatedReadMinutes: 2,
+    whenToCallEmergency:
+        'Call emergency services immediately if the person is unconscious, having a seizure, or too confused to swallow safely.',
+    steps: [
+      EmergencyStep(
+        stepNumber: 1,
+        title: 'Spot Low Blood Sugar Signs',
+        instruction:
+            'Look for shakiness, cold sweat, sudden irritability/confusion, slurred speech, dizziness, or blood glucose below 70 mg/dL (3.9 mmol/L).',
+        voicePrompt:
+            'Step 1. Check for shakiness, cold sweat, confusion, or dizziness.',
+      ),
+      EmergencyStep(
+        stepNumber: 2,
+        title: 'If Conscious: Give 15g Fast Sugar',
+        instruction:
+            'If awake and able to swallow, give 15g of fast-acting carbs: 3–4 glucose tablets, half a cup (120 ml) of fruit juice/regular soda, or 1 tablespoon of honey/sugar.',
+        voicePrompt:
+            'Step 2. If awake and able to swallow, give 15 grams of fast sugar like half a cup of fruit juice or 3 glucose tablets.',
+        criticalNote: 'Avoid chocolate or fatty foods — fat slows sugar absorption.',
+      ),
+      EmergencyStep(
+        stepNumber: 3,
+        title: 'Wait 15 Minutes & Recheck',
+        instruction:
+            'Wait 15 minutes and recheck blood sugar or symptoms. Repeat 15g sugar if still below 70 mg/dL. If they become unconscious, place in recovery position and call emergency.',
+        voicePrompt:
+            'Step 3. Wait 15 minutes and recheck. If they become unconscious, place them on their side and call emergency.',
+      ),
+    ],
+    doNots: [
+      'Do not put food, juice, or glucose gel into the mouth of an unconscious person — choking hazard.',
+      'Do not give insulin during suspected low blood sugar.',
+    ],
+    quizzes: [
+      EmergencyQuizQuestion(
+        question: 'Which symptom commonly signals low blood sugar (hypoglycemia)?',
+        options: [
+          'Shakiness, cold sweat, dizziness, and sudden confusion',
+          'High fever and joint rash',
+          'Slowly worsening knee pain over weeks',
+        ],
+        correctIndex: 0,
+        explanation: 'Low blood sugar triggers adrenaline (sweating, shaking) and brain fuel deprivation (confusion).',
+      ),
+      EmergencyQuizQuestion(
+        question: 'What is the best fast-acting sugar for a conscious person with low blood sugar?',
+        options: [
+          'A chocolate bar or cheese sandwich',
+          'Half a cup of fruit juice, regular soda, or 3–4 glucose tablets',
+          'Diet soda',
+        ],
+        correctIndex: 1,
+        explanation: 'Pure simple sugars raise blood glucose rapidly; fat in chocolate slows absorption, and diet soda has no sugar.',
+      ),
+      EmergencyQuizQuestion(
+        question: 'What should you do if the person with low blood sugar becomes unconscious?',
+        options: [
+          'Pour fruit juice into their mouth',
+          'Place them in the recovery position and call emergency services immediately',
+          'Give them an insulin shot',
+        ],
+        correctIndex: 1,
+        explanation: 'Never give fluids by mouth to an unconscious person; protect their airway and call for urgent medical help.',
+      ),
+    ],
+  ),
+  EmergencyGuide(
+    id: 'snake_bite',
+    title: 'Snake Bite First Aid',
+    subtitle: 'Immobilize the limb & avoid harmful myths',
+    category: EmergencyCategory.bleeding,
+    isCritical: true,
+    estimatedReadMinutes: 2,
+    whenToCallEmergency:
+        'Call emergency services or transport to the nearest hospital with antivenom IMMEDIATELY — even if the bite looks minor or painless.',
+    steps: [
+      EmergencyStep(
+        stepNumber: 1,
+        title: 'Move Away & Keep the Victim Calm',
+        instruction:
+            'Move out of the snake\'s striking range. Have the person lie still and stay calm — panic and movement speed up venom spread.',
+        voicePrompt:
+            'Step 1. Move to safety and keep the person completely calm and still.',
+      ),
+      EmergencyStep(
+        stepNumber: 2,
+        title: 'Remove Tight Items & Immobilize Limb',
+        instruction:
+            'Remove rings, watches, or tight shoes before swelling begins. Splint or immobilize the bitten limb and keep it at or slightly below heart level.',
+        voicePrompt:
+            'Step 2. Remove rings or watches before swelling starts, and keep the bitten limb still at or below heart level.',
+      ),
+      EmergencyStep(
+        stepNumber: 3,
+        title: 'Cover Lightly & Transport Urgently',
+        instruction:
+            'Cover the bite loosely with a clean dry dressing. Do not try to catch or kill the snake; note its general appearance from a safe distance if possible and get to a hospital.',
+        voicePrompt:
+            'Step 3. Cover the bite loosely with a clean cloth and get the person to a hospital with antivenom right away.',
+      ),
+    ],
+    doNots: [
+      'Do not cut the wound or try to suck out venom.',
+      'Do not tie a tight tourniquet — it can cause severe tissue death and amputation.',
+      'Do not apply ice, electric shocks, or herbal pastes.',
+    ],
+    quizzes: [
+      EmergencyQuizQuestion(
+        question: 'Why must a snakebite victim stay calm and avoid walking?',
+        options: [
+          'Movement and high heart rate pump venom through the body faster',
+          'Walking makes it harder for doctors to find the bite',
+          'It prevents sunburn',
+        ],
+        correctIndex: 0,
+        explanation: 'Muscle contraction and elevated heart rate accelerate lymphatic and bloodstream venom spread.',
+      ),
+      EmergencyQuizQuestion(
+        question: 'How should the bitten arm or leg be positioned?',
+        options: [
+          'Raised high above the head',
+          'Immobilized and kept at or slightly below heart level',
+          'Massaged vigorously',
+        ],
+        correctIndex: 1,
+        explanation: 'Immobilizing the limb at or below heart level slows systemic venom absorption.',
+      ),
+      EmergencyQuizQuestion(
+        question: 'Which common snakebite myth actually causes severe harm?',
+        options: [
+          'Removing rings before swelling',
+          'Cutting the wound, sucking venom, or tying a tight tourniquet',
+          'Going straight to a hospital',
+        ],
+        correctIndex: 1,
+        explanation: 'Cutting, sucking, and tight tourniquets do not remove venom and frequently cause infection or limb loss.',
+      ),
+    ],
+  ),
+  EmergencyGuide(
+    id: 'spinal_injury',
+    title: 'Head, Neck & Spinal Injury',
+    subtitle: 'Preventing paralysis after falls or road accidents',
+    category: EmergencyCategory.neurological,
+    isCritical: true,
+    estimatedReadMinutes: 2,
+    whenToCallEmergency:
+        'Call emergency services after any high-impact fall, road accident, diving injury, or if the person has neck/back pain, numbness, or confusion.',
+    steps: [
+      EmergencyStep(
+        stepNumber: 1,
+        title: 'Do Not Move the Person',
+        instruction:
+            'Unless there is immediate danger (fire, traffic, drowning), keep the person completely still in the exact position you found them.',
+        voicePrompt:
+            'Step 1. Do not move the person unless there is immediate danger like fire or traffic.',
+      ),
+      EmergencyStep(
+        stepNumber: 2,
+        title: 'Stabilize the Head & Neck',
+        instruction:
+            'Kneel behind their head, place your hands gently on both sides of their head/ears, and hold it steady in line with the spine until paramedics arrive.',
+        voicePrompt:
+            'Step 2. Hold the head gently steady on both sides in line with the spine until help arrives.',
+        criticalNote: 'Do not remove a motorcycle helmet unless trained or airway is blocked.',
+      ),
+      EmergencyStep(
+        stepNumber: 3,
+        title: 'Check Breathing Without Twisting',
+        instruction:
+            'Monitor breathing and consciousness. If they stop breathing normally, start CPR while minimizing neck movement.',
+        voicePrompt:
+            'Step 3. Watch their breathing. If they stop breathing normally, start chest compressions carefully.',
+      ),
+    ],
+    doNots: [
+      'Do not lift, sit up, or drag an accident victim unless in life-threatening danger.',
+      'Do not remove a helmet or bend the neck forward/sideways.',
+    ],
+    quizzes: [
+      EmergencyQuizQuestion(
+        question: 'When is it okay to move someone with a suspected spinal injury?',
+        options: [
+          'To make them more comfortable on a sofa',
+          'Only if they are in immediate life-threatening danger (such as fire or oncoming traffic)',
+          'Always move them into a car to drive to a clinic',
+        ],
+        correctIndex: 1,
+        explanation: 'Moving an unstable spine can cause permanent paralysis; only move for immediate life threats.',
+      ),
+      EmergencyQuizQuestion(
+        question: 'How should you stabilize the head and neck while waiting for paramedics?',
+        options: [
+          'Prop a thick pillow under their neck',
+          'Hold both sides of the head gently in line with the spine',
+          'Turn their head to the side',
+        ],
+        correctIndex: 1,
+        explanation: 'Manual in-line stabilization prevents accidental twisting of the cervical spine.',
+      ),
+      EmergencyQuizQuestion(
+        question: 'What should you do if a suspected spinal injury victim stops breathing normally?',
+        options: [
+          'Wait for paramedics before touching them',
+          'Start CPR immediately while minimizing neck movement',
+          'Sit them upright',
+        ],
+        correctIndex: 1,
+        explanation: 'Life comes before limb/spine — if they are not breathing normally, CPR is essential.',
+      ),
+    ],
+  ),
 ];

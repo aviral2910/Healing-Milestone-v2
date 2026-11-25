@@ -70,6 +70,7 @@ class _InspireScreenState extends ConsumerState<InspireScreen>
     final isAuthenticated = authState?.status == AuthStatus.authenticated;
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: SafeArea(
         bottom: false,
         child: NestedScrollView(

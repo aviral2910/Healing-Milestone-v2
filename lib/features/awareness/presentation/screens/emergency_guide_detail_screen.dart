@@ -1,92 +1,20 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_tts/flutter_tts.dart';
 import '../../data/awareness_providers.dart';
 import '../../domain/emergency_guide_model.dart';
 import 'cpr_metronome_screen.dart';
 import 'emergency_quiz_screen.dart';
+import 'hands_free_guide_screen.dart';
 
-class EmergencyGuideDetailScreen extends ConsumerStatefulWidget {
+class EmergencyGuideDetailScreen extends ConsumerWidget {
   final EmergencyGuide guide;
 
   const EmergencyGuideDetailScreen({super.key, required this.guide});
 
   @override
-  ConsumerState<EmergencyGuideDetailScreen> createState() =>
-      _EmergencyGuideDetailScreenState();
-}
-
-class _EmergencyGuideDetailScreenState
-    extends ConsumerState<EmergencyGuideDetailScreen> {
-  final FlutterTts _tts = FlutterTts();
-  Timer? _pauseTimer;
-  int _activeStepIndex = 0;
-  bool _isAutoPlaying = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _initTts();
-  }
-
-  Future<void> _initTts() async {
-    await _tts.setLanguage('en-US');
-    await _tts.setSpeechRate(0.48);
-    _tts.setCompletionHandler(() {
-      if (!mounted || !_isAutoPlaying) return;
-      final nextIndex = _activeStepIndex + 1;
-      if (nextIndex < widget.guide.steps.length) {
-        _pauseTimer?.cancel();
-        _pauseTimer = Timer(const Duration(milliseconds: 1100), () {
-          if (!mounted || !_isAutoPlaying) return;
-          setState(() => _activeStepIndex = nextIndex);
-          _speakStep(nextIndex);
-        });
-      } else {
-        setState(() => _isAutoPlaying = false);
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _pauseTimer?.cancel();
-    _tts.stop();
-    super.dispose();
-  }
-
-  Future<void> _speakStep(int index) async {
-    if (index < 0 || index >= widget.guide.steps.length) return;
-    await _tts.speak(widget.guide.steps[index].voicePrompt);
-  }
-
-  Future<void> _toggleAutoPlay() async {
-    if (_isAutoPlaying) {
-      _pauseTimer?.cancel();
-      await _tts.stop();
-      setState(() => _isAutoPlaying = false);
-      return;
-    }
-    setState(() => _isAutoPlaying = true);
-    await _speakStep(_activeStepIndex);
-  }
-
-  Future<void> _jumpToStep(int index) async {
-    _pauseTimer?.cancel();
-    await _tts.stop();
-    setState(() {
-      _activeStepIndex = index;
-      _isAutoPlaying = true;
-    });
-    await _speakStep(index);
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
-    final guide = widget.guide;
     final awarenessState = ref.watch(awarenessProvider);
     final isCompleted = awarenessState.completedGuideIds.contains(guide.id);
 
@@ -96,16 +24,23 @@ class _EmergencyGuideDetailScreenState
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 12),
-            child: FilledButton.icon(
-              style: FilledButton.styleFrom(
-                backgroundColor: primary,
-                foregroundColor: theme.colorScheme.onPrimary,
+            child: OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(
+                backgroundColor: primary.withValues(alpha: 0.12),
+                foregroundColor: primary,
+                side: BorderSide(color: primary.withValues(alpha: 0.4)),
                 padding: const EdgeInsets.symmetric(horizontal: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
               ),
               onPressed: () =>
                   launchEmergencyDialer(context, awarenessState.emergencyNumber),
               icon: const Icon(Icons.call_outlined, size: 16),
-              label: Text('SOS ${awarenessState.emergencyNumber}'),
+              label: Text(
+                'SOS ${awarenessState.emergencyNumber}',
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
             ),
           ),
         ],
@@ -115,7 +50,7 @@ class _EmergencyGuideDetailScreenState
         children: [
           // Editorial Hero Header
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
               color: theme.cardColor,
               borderRadius: BorderRadius.circular(22),
@@ -151,13 +86,13 @@ class _EmergencyGuideDetailScreenState
                     ),
                   ],
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 12),
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: primary.withValues(alpha: 0.09),
+                    color: primary.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: primary.withValues(alpha: 0.25)),
+                    border: Border.all(color: primary.withValues(alpha: 0.22)),
                   ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -177,40 +112,31 @@ class _EmergencyGuideDetailScreenState
                   ),
                 ),
                 const SizedBox(height: 14),
-
-                // Primary Hands-Free Voice Button
                 SizedBox(
                   width: double.infinity,
                   height: 48,
                   child: FilledButton.icon(
                     style: FilledButton.styleFrom(
-                      backgroundColor: _isAutoPlaying ? theme.scaffoldBackgroundColor : primary,
-                      foregroundColor: _isAutoPlaying
-                          ? theme.colorScheme.onSurface
-                          : theme.colorScheme.onPrimary,
-                      side: _isAutoPlaying
-                          ? BorderSide(color: primary)
-                          : null,
+                      backgroundColor: primary,
+                      foregroundColor: theme.colorScheme.onPrimary,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
                       ),
                     ),
-                    onPressed: _toggleAutoPlay,
-                    icon: Icon(
-                      _isAutoPlaying
-                          ? Icons.stop_rounded
-                          : Icons.volume_up_rounded,
-                      size: 20,
-                    ),
-                    label: Text(
-                      _isAutoPlaying
-                          ? 'Stop Hands-Free Voice'
-                          : 'Listen Hands-Free (All Steps)',
-                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => HandsFreeGuideScreen(guide: guide),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.volume_up_rounded, size: 20),
+                    label: const Text(
+                      'Start Hands-Free Guide',
+                      style: TextStyle(fontWeight: FontWeight.w700),
                     ),
                   ),
                 ),
-
                 if (guide.hasMetronome) ...[
                   const SizedBox(height: 10),
                   SizedBox(
@@ -231,7 +157,8 @@ class _EmergencyGuideDetailScreenState
                           ),
                         );
                       },
-                      icon: Icon(Icons.favorite_outline, color: primary, size: 18),
+                      icon: Icon(Icons.favorite_outline,
+                          color: primary, size: 18),
                       label: const Text(
                         'Open 110 BPM CPR Coach',
                         style: TextStyle(fontWeight: FontWeight.w700),
@@ -243,15 +170,15 @@ class _EmergencyGuideDetailScreenState
             ),
           ),
 
-          const SizedBox(height: 22),
+          const SizedBox(height: 24),
 
-          // Connected Vertical Timeline (no card boxes per step)
+          // Connected Vertical Timeline (all steps visible)
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Step-by-Step Guide', style: theme.textTheme.titleLarge),
+              Text('Steps', style: theme.textTheme.titleLarge),
               Text(
-                'Tap step to listen',
+                'Tap step for hands-free',
                 style: theme.textTheme.bodySmall,
               ),
             ],
@@ -260,42 +187,45 @@ class _EmergencyGuideDetailScreenState
 
           ...List.generate(guide.steps.length, (index) {
             final step = guide.steps[index];
-            final isActive = index == _activeStepIndex && _isAutoPlaying;
             final isLast = index == guide.steps.length - 1;
 
             return InkWell(
               borderRadius: BorderRadius.circular(12),
-              onTap: () => _jumpToStep(index),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => HandsFreeGuideScreen(
+                      guide: guide,
+                      initialStepIndex: index,
+                    ),
+                  ),
+                );
+              },
               child: IntrinsicHeight(
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Left timeline column: circle + connecting vertical line
+                    // Left timeline rail
                     SizedBox(
-                      width: 32,
+                      width: 30,
                       child: Column(
                         children: [
-                          AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            width: 28,
-                            height: 28,
+                          Container(
+                            width: 26,
+                            height: 26,
                             alignment: Alignment.center,
                             decoration: BoxDecoration(
-                              color: isActive
-                                  ? primary
-                                  : theme.cardColor,
+                              color: theme.cardColor,
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: isActive ? primary : theme.dividerColor,
+                                color: primary.withValues(alpha: 0.55),
                                 width: 1.5,
                               ),
                             ),
                             child: Text(
                               '${step.stepNumber}',
                               style: theme.textTheme.labelSmall?.copyWith(
-                                color: isActive
-                                    ? theme.colorScheme.onPrimary
-                                    : primary,
+                                color: primary,
                                 fontWeight: FontWeight.w800,
                               ),
                             ),
@@ -305,9 +235,7 @@ class _EmergencyGuideDetailScreenState
                               child: Container(
                                 width: 1.5,
                                 margin: const EdgeInsets.symmetric(vertical: 4),
-                                color: isActive
-                                    ? primary.withValues(alpha: 0.5)
-                                    : theme.dividerColor,
+                                color: theme.dividerColor,
                               ),
                             ),
                         ],
@@ -327,23 +255,14 @@ class _EmergencyGuideDetailScreenState
                                 Expanded(
                                   child: Text(
                                     step.title,
-                                    style:
-                                        theme.textTheme.titleMedium?.copyWith(
-                                      color: isActive
-                                          ? primary
-                                          : theme.colorScheme.onSurface,
-                                    ),
+                                    style: theme.textTheme.titleMedium,
                                   ),
                                 ),
                                 Icon(
-                                  isActive
-                                      ? Icons.graphic_eq_rounded
-                                      : Icons.volume_up_outlined,
-                                  size: 17,
-                                  color: isActive
-                                      ? primary
-                                      : theme.colorScheme.onSurface
-                                          .withValues(alpha: 0.35),
+                                  Icons.volume_up_outlined,
+                                  size: 16,
+                                  color: theme.colorScheme.onSurface
+                                      .withValues(alpha: 0.35),
                                 ),
                               ],
                             ),
@@ -353,6 +272,7 @@ class _EmergencyGuideDetailScreenState
                               style: theme.textTheme.bodyMedium?.copyWith(
                                 color: theme.colorScheme.onSurface
                                     .withValues(alpha: 0.85),
+                                height: 1.55,
                               ),
                             ),
                             if (step.criticalNote != null) ...[
@@ -360,19 +280,14 @@ class _EmergencyGuideDetailScreenState
                               Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Icon(
-                                    Icons.info_outline,
-                                    color: primary,
-                                    size: 15,
-                                  ),
+                                  Icon(Icons.info_outline,
+                                      color: primary, size: 15),
                                   const SizedBox(width: 6),
                                   Expanded(
                                     child: Text(
                                       step.criticalNote!,
-                                      style:
-                                          theme.textTheme.bodySmall?.copyWith(
-                                        color: primary,
-                                      ),
+                                      style: theme.textTheme.bodySmall
+                                          ?.copyWith(color: primary),
                                     ),
                                   ),
                                 ],
@@ -388,16 +303,16 @@ class _EmergencyGuideDetailScreenState
             );
           }),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 14),
 
-          // What NOT to Do — Distinct Caution Block
+          // Avoid These Mistakes (always visible)
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               color: theme.colorScheme.error.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: theme.colorScheme.error.withValues(alpha: 0.35),
+                color: theme.colorScheme.error.withValues(alpha: 0.3),
               ),
             ),
             child: Column(
@@ -408,34 +323,39 @@ class _EmergencyGuideDetailScreenState
                     Icon(
                       Icons.warning_amber_rounded,
                       color: theme.colorScheme.error,
-                      size: 20,
+                      size: 18,
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'AVOID THESE MISTAKES',
-                      style: theme.textTheme.labelSmall?.copyWith(
+                      'Avoid These Mistakes',
+                      style: theme.textTheme.titleMedium?.copyWith(
                         color: theme.colorScheme.error,
-                        letterSpacing: 1.2,
-                        fontWeight: FontWeight.w800,
+                        fontSize: 14,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 10),
                 ...guide.doNots.map(
                   (item) => Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsets.only(bottom: 6),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Icon(
                           Icons.close_rounded,
                           color: theme.colorScheme.error,
-                          size: 18,
+                          size: 16,
                         ),
-                        const SizedBox(width: 10),
+                        const SizedBox(width: 8),
                         Expanded(
-                          child: Text(item, style: theme.textTheme.bodyMedium),
+                          child: Text(
+                            item,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurface,
+                              height: 1.45,
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -446,30 +366,30 @@ class _EmergencyGuideDetailScreenState
           ),
 
           // Separate Test Yourself Entry
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
           Container(
-            padding: const EdgeInsets.all(18),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: primary.withValues(alpha: 0.06),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: primary.withValues(alpha: 0.25)),
+              color: theme.cardColor,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: theme.dividerColor),
             ),
             child: Row(
               children: [
                 Container(
-                  width: 44,
-                  height: 44,
+                  width: 42,
+                  height: 42,
                   decoration: BoxDecoration(
-                    color: primary.withValues(alpha: 0.14),
+                    color: primary.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
                     isCompleted ? Icons.verified : Icons.quiz_outlined,
                     color: primary,
-                    size: 22,
+                    size: 20,
                   ),
                 ),
-                const SizedBox(width: 14),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -480,7 +400,7 @@ class _EmergencyGuideDetailScreenState
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        '${guide.quizzes.length} questions • 100% required to pass',
+                        '${guide.quizzes.length} questions • 100% required',
                         style: theme.textTheme.bodySmall,
                       ),
                     ],

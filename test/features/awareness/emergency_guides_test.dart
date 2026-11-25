@@ -44,6 +44,14 @@ void main() {
     expect(find.text('CPR Coach'), findsOneWidget);
     expect(find.text('First-Aid & Emergency'), findsOneWidget);
     expect(find.text('Adult CPR & AED'), findsOneWidget);
+
+    // Search filters guides offline and hides quick emergency card
+    await tester.enterText(find.byType(TextField), 'snake');
+    await tester.pumpAndSettle();
+
+    expect(find.text('SOS 112'), findsNothing);
+    expect(find.text('Snake Bite First Aid'), findsOneWidget);
+    expect(find.text('Adult CPR & AED'), findsNothing);
   });
 
   testWidgets('EmergencyQuizScreen requires 100% correct to pass',

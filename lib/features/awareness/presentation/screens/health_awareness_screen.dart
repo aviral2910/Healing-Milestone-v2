@@ -1,15 +1,12 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:url_launcher/url_launcher.dart';
-import '../../../../core/data/dummy_data.dart';
-import '../../../../core/models/educational_content_model.dart';
 import '../../data/awareness_providers.dart';
 import '../../data/emergency_guides_data.dart';
 import '../../domain/emergency_guide_model.dart';
 import 'cpr_metronome_screen.dart';
 import 'emergency_guide_detail_screen.dart';
+import 'hands_free_guide_screen.dart';
 
 class HealthAwarenessScreen extends HookConsumerWidget {
   final ScrollController? scrollController;
@@ -29,220 +26,320 @@ class HealthAwarenessScreen extends HookConsumerWidget {
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
     final awarenessState = ref.watch(awarenessProvider);
-    final eduContent = ref.watch(dummyEduContentProvider);
+    final searchController = useTextEditingController();
+    final searchQuery = useState('');
+
+    final filteredGuides = emergencyGuidesData.where((guide) {
+      final q = searchQuery.value.trim().toLowerCase();
+      if (q.isEmpty) return true;
+      return guide.title.toLowerCase().contains(q) ||
+          guide.subtitle.toLowerCase().contains(q) ||
+          guide.category.label.toLowerCase().contains(q);
+    }).toList();
 
     return CustomScrollView(
       key: const PageStorageKey<String>('awareness_scroll_key'),
       controller: scrollController,
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       slivers: [
-        // Top Emergency Action Row
+        // 1. Sleek Pill Search Bar at the very top
         SliverToBoxAdapter(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: Row(
-              children: [
-                Expanded(
-                  flex: 5,
-                  child: Container(
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: primary,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: InkWell(
-                            borderRadius: const BorderRadius.horizontal(
-                              left: Radius.circular(16),
-                            ),
-                            onTap: () => launchEmergencyDialer(
-                              context,
-                              awarenessState.emergencyNumber,
-                            ),
-                            child: Center(
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.call_outlined,
-                                    size: 18,
-                                    color: theme.colorScheme.onPrimary,
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+            child: TextField(
+              controller: searchController,
+              onChanged: (v) => searchQuery.value = v,
+              style: theme.textTheme.bodyMedium,
+              decoration: InputDecoration(
+                hintText: 'Search emergencies (CPR, burns, asthma...)',
+                hintStyle: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.45),
+                ),
+                prefixIcon: Padding(
+                  padding: const EdgeInsets.only(left: 14, right: 8),
+                  child: Icon(
+                    Icons.search_rounded,
+                    size: 20,
+                    color: primary.withValues(alpha: 0.85),
+                  ),
+                ),
+                prefixIconConstraints: const BoxConstraints(
+                  minWidth: 40,
+                  minHeight: 40,
+                ),
+                suffixIcon: searchQuery.value.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.close_rounded, size: 18),
+                        onPressed: () {
+                          searchController.clear();
+                          searchQuery.value = '';
+                        },
+                      )
+                    : null,
+                filled: true,
+                fillColor: theme.cardColor,
+                isDense: true,
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(28),
+                  borderSide: BorderSide(color: theme.dividerColor),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(28),
+                  borderSide: BorderSide(color: theme.dividerColor),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(28),
+                  borderSide: BorderSide(color: primary),
+                ),
+              ),
+            ),
+          ),
+        ),
+
+        // 2. Unified Quick Emergency Card (hidden while searching)
+        if (searchQuery.value.trim().isEmpty)
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 6),
+            child: Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: theme.cardColor,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: theme.dividerColor),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        flex: 5,
+                        child: Container(
+                          height: 46,
+                          decoration: BoxDecoration(
+                            color: primary,
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: InkWell(
+                                  borderRadius: const BorderRadius.horizontal(
+                                    left: Radius.circular(14),
                                   ),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    'SOS ${awarenessState.emergencyNumber}',
-                                    style: TextStyle(
-                                      color: theme.colorScheme.onPrimary,
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 14,
+                                  onTap: () => launchEmergencyDialer(
+                                    context,
+                                    awarenessState.emergencyNumber,
+                                  ),
+                                  child: Center(
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.call_outlined,
+                                          size: 17,
+                                          color: theme.colorScheme.onPrimary,
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          'SOS ${awarenessState.emergencyNumber}',
+                                          style: TextStyle(
+                                            color: theme.colorScheme.onPrimary,
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 13.5,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                ],
+                                ),
+                              ),
+                              Container(
+                                width: 1,
+                                height: 22,
+                                color: theme.colorScheme.onPrimary
+                                    .withValues(alpha: 0.25),
+                              ),
+                              InkWell(
+                                borderRadius: const BorderRadius.horizontal(
+                                  right: Radius.circular(14),
+                                ),
+                                onTap: () => _showRegionPickerSheet(
+                                  context,
+                                  ref,
+                                  awarenessState,
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        awarenessState.emergencyRegionCode,
+                                        style: TextStyle(
+                                          color: theme.colorScheme.onPrimary,
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      Icon(
+                                        Icons.keyboard_arrow_down_rounded,
+                                        size: 17,
+                                        color: theme.colorScheme.onPrimary,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        flex: 4,
+                        child: SizedBox(
+                          height: 46,
+                          child: OutlinedButton.icon(
+                            style: OutlinedButton.styleFrom(
+                              backgroundColor: theme.scaffoldBackgroundColor,
+                              foregroundColor: theme.colorScheme.onSurface,
+                              side: BorderSide(color: theme.dividerColor),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
+                            onPressed: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => const CprMetronomeScreen(),
+                                ),
+                              );
+                            },
+                            icon: Icon(
+                              Icons.favorite_outline,
+                              color: primary,
+                              size: 17,
+                            ),
+                            label: const Text(
+                              'CPR Coach',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 13.5,
                               ),
                             ),
                           ),
                         ),
-                        Container(
-                          width: 1,
-                          height: 24,
-                          color: theme.colorScheme.onPrimary
-                              .withValues(alpha: 0.25),
-                        ),
-                        InkWell(
-                          borderRadius: const BorderRadius.horizontal(
-                            right: Radius.circular(16),
-                          ),
-                          onTap: () => _showRegionPickerSheet(
-                            context,
-                            ref,
-                            awarenessState,
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 10),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  awarenessState.emergencyRegionCode,
-                                  style: TextStyle(
-                                    color: theme.colorScheme.onPrimary,
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                Icon(
-                                  Icons.keyboard_arrow_down_rounded,
-                                  size: 18,
-                                  color: theme.colorScheme.onPrimary,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
+                  const SizedBox(height: 10),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.info_outline_rounded,
+                        size: 13,
+                        color:
+                            theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          'For educational & emergency reference only. Not a substitute for professional medical care.',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurface
+                                .withValues(alpha: 0.55),
+                            fontSize: 11,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+
+        // 3. First-Aid Guides Header directly connected to cards
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'First-Aid & Emergency',
+                  style: theme.textTheme.titleLarge,
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  flex: 4,
-                  child: SizedBox(
-                    height: 50,
-                    child: OutlinedButton.icon(
-                      style: OutlinedButton.styleFrom(
-                        backgroundColor: theme.cardColor,
-                        foregroundColor: theme.colorScheme.onSurface,
-                        side: BorderSide(color: theme.dividerColor),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                      ),
-                      onPressed: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const CprMetronomeScreen(),
-                          ),
-                        );
-                      },
-                      icon: Icon(
-                        Icons.favorite_outline,
-                        color: primary,
-                        size: 18,
-                      ),
-                      label: const Text(
-                        'CPR Coach',
-                        style: TextStyle(fontWeight: FontWeight.w700),
-                      ),
-                    ),
-                  ),
+                Text(
+                  '${filteredGuides.length} guides',
+                  style: theme.textTheme.bodySmall,
                 ),
               ],
             ),
           ),
         ),
 
-        // First-Aid Guides Section
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
-            child: Text(
-              'First-Aid & Emergency',
-              style: theme.textTheme.titleLarge,
-            ),
-          ),
-        ),
-
-        SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          sliver: SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final guide = emergencyGuidesData[index];
-                final isPassed =
-                    awarenessState.completedGuideIds.contains(guide.id);
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: _EmergencyGuideCard(
-                    guide: guide,
-                    isPassed: isPassed,
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) =>
-                              EmergencyGuideDetailScreen(guide: guide),
-                        ),
-                      );
-                    },
+        if (filteredGuides.isEmpty)
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 20),
+              child: Center(
+                child: Text(
+                  'No emergency guides found for "${searchQuery.value.trim()}".',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
-                );
-              },
-              childCount: emergencyGuidesData.length,
-            ),
-          ),
-        ),
-
-        // Educational Resources Section
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
-            child: Text(
-              'Educational Resources',
-              style: theme.textTheme.titleLarge,
-            ),
-          ),
-        ),
-
-        SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          sliver: SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final content = eduContent[index];
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: _EduContentCard(
-                    content: content,
-                    onTap: () => _showEduContentSheet(context, content),
-                  ),
-                );
-              },
-              childCount: eduContent.length,
-            ),
-          ),
-        ),
-
-        // Subtle Disclaimer
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 100),
-            child: Text(
-              'For educational & emergency reference only. Not a substitute for professional medical care.',
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                ),
               ),
             ),
+          )
+        else
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final guide = filteredGuides[index];
+                  final isPassed =
+                      awarenessState.completedGuideIds.contains(guide.id);
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: _EmergencyGuideCard(
+                      guide: guide,
+                      isPassed: isPassed,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                EmergencyGuideDetailScreen(guide: guide),
+                          ),
+                        );
+                      },
+                      onHandsFreeTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => HandsFreeGuideScreen(guide: guide),
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                },
+                childCount: filteredGuides.length,
+              ),
+            ),
+          ),
+
+        SliverToBoxAdapter(
+          child: SizedBox(
+            height: searchQuery.value.trim().isNotEmpty ? 24 : 100,
           ),
         ),
       ],
@@ -402,75 +499,19 @@ class HealthAwarenessScreen extends HookConsumerWidget {
       },
     );
   }
-
-  void _showEduContentSheet(
-    BuildContext context,
-    EducationalContentModel content,
-  ) {
-    final theme = Theme.of(context);
-    final primary = theme.colorScheme.primary;
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: theme.cardColor,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (sheetCtx) => Padding(
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              content.type.name.toUpperCase(),
-              style: theme.textTheme.labelSmall?.copyWith(
-                color: primary,
-                letterSpacing: 1.2,
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(content.title, style: theme.textTheme.titleLarge),
-            const SizedBox(height: 6),
-            Row(
-              children: [
-                Icon(Icons.verified, color: primary, size: 15),
-                const SizedBox(width: 6),
-                Text(content.doctorName, style: theme.textTheme.bodySmall),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Text(content.description, style: theme.textTheme.bodyMedium),
-            const SizedBox(height: 18),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton.icon(
-                onPressed: () async {
-                  Navigator.pop(sheetCtx);
-                  final uri = Uri.tryParse(content.url);
-                  if (uri != null && await canLaunchUrl(uri)) {
-                    await launchUrl(uri, mode: LaunchMode.externalApplication);
-                  }
-                },
-                icon: const Icon(Icons.open_in_new, size: 18),
-                label: const Text('Open Resource'),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 class _EmergencyGuideCard extends StatelessWidget {
   final EmergencyGuide guide;
   final bool isPassed;
   final VoidCallback onTap;
+  final VoidCallback onHandsFreeTap;
 
   const _EmergencyGuideCard({
     required this.guide,
     required this.isPassed,
     required this.onTap,
+    required this.onHandsFreeTap,
   });
 
   @override
@@ -506,13 +547,21 @@ class _EmergencyGuideCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    guide.category.label.toUpperCase(),
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: primary,
-                      letterSpacing: 1.1,
-                      fontSize: 10,
-                    ),
+                  Row(
+                    children: [
+                      Text(
+                        guide.category.label.toUpperCase(),
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: primary,
+                          letterSpacing: 1.1,
+                          fontSize: 10,
+                        ),
+                      ),
+                      if (isPassed) ...[
+                        const SizedBox(width: 6),
+                        Icon(Icons.verified, size: 13, color: primary),
+                      ],
+                    ],
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -531,115 +580,18 @@ class _EmergencyGuideCard extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(width: 10),
-            Icon(
-              isPassed ? Icons.verified : Icons.arrow_forward_ios_rounded,
-              size: isPassed ? 18 : 15,
-              color: isPassed
-                  ? primary
-                  : theme.colorScheme.onSurface.withValues(alpha: 0.35),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _EduContentCard extends StatelessWidget {
-  final EducationalContentModel content;
-  final VoidCallback onTap;
-
-  const _EduContentCard({
-    required this.content,
-    required this.onTap,
-  });
-
-  IconData _getIconForType() {
-    switch (content.type) {
-      case EducationalContentType.video:
-        return Icons.play_circle_fill;
-      case EducationalContentType.pdf:
-        return Icons.picture_as_pdf;
-      case EducationalContentType.webinar:
-        return Icons.live_tv;
-      case EducationalContentType.podcast:
-        return Icons.podcasts;
-      default:
-        return Icons.article;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final primary = theme.colorScheme.primary;
-
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(18),
-      child: Container(
-        decoration: BoxDecoration(
-          color: theme.cardColor,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: theme.dividerColor),
-        ),
-        child: Row(
-          children: [
-            if (content.thumbnailUrl != null)
-              ClipRRect(
-                borderRadius:
-                    const BorderRadius.horizontal(left: Radius.circular(18)),
-                child: CachedNetworkImage(
-                  imageUrl: content.thumbnailUrl!,
-                  width: 108,
-                  height: 108,
-                  fit: BoxFit.cover,
-                ),
+            const SizedBox(width: 8),
+            // Quick 1-tap Hands-Free Voice launch
+            IconButton(
+              tooltip: 'Start Hands-Free Voice Guide',
+              style: IconButton.styleFrom(
+                backgroundColor: primary.withValues(alpha: 0.10),
               ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(14),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(_getIconForType(), size: 15, color: primary),
-                        const SizedBox(width: 6),
-                        Text(
-                          content.type.name.toUpperCase(),
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: primary,
-                            letterSpacing: 1.1,
-                            fontSize: 10,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      content.title,
-                      style: theme.textTheme.titleMedium,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        Icon(Icons.verified, color: primary, size: 14),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            content.doctorName,
-                            style: theme.textTheme.bodySmall,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+              onPressed: onHandsFreeTap,
+              icon: Icon(
+                Icons.volume_up_rounded,
+                size: 19,
+                color: primary,
               ),
             ),
           ],
