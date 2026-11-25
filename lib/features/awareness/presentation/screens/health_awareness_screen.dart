@@ -39,130 +39,123 @@ class HealthAwarenessScreen extends HookConsumerWidget {
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: Column(
+            child: Row(
               children: [
-                Row(
-                  children: [
-                    // Split SOS Button: tap left to dial, tap right pill to change region
-                    Expanded(
-                      flex: 5,
-                      child: Container(
-                        height: 50,
-                        decoration: BoxDecoration(
-                          color: primary,
-                          borderRadius: BorderRadius.circular(16),
+                Expanded(
+                  flex: 5,
+                  child: Container(
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: primary,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: InkWell(
+                            borderRadius: const BorderRadius.horizontal(
+                              left: Radius.circular(16),
+                            ),
+                            onTap: () => launchEmergencyDialer(
+                              context,
+                              awarenessState.emergencyNumber,
+                            ),
+                            child: Center(
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.call_outlined,
+                                    size: 18,
+                                    color: theme.colorScheme.onPrimary,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    'SOS ${awarenessState.emergencyNumber}',
+                                    style: TextStyle(
+                                      color: theme.colorScheme.onPrimary,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                         ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: InkWell(
-                                borderRadius: const BorderRadius.horizontal(
-                                  left: Radius.circular(16),
-                                ),
-                                onTap: () => launchEmergencyDialer(
-                                  context,
-                                  awarenessState.emergencyNumber,
-                                ),
-                                child: Center(
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        Icons.call_outlined,
-                                        size: 18,
-                                        color: theme.colorScheme.onPrimary,
-                                      ),
-                                      const SizedBox(width: 6),
-                                      Text(
-                                        'SOS ${awarenessState.emergencyNumber}',
-                                        style: TextStyle(
-                                          color: theme.colorScheme.onPrimary,
-                                          fontWeight: FontWeight.w700,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                    ],
+                        Container(
+                          width: 1,
+                          height: 24,
+                          color: theme.colorScheme.onPrimary
+                              .withValues(alpha: 0.25),
+                        ),
+                        InkWell(
+                          borderRadius: const BorderRadius.horizontal(
+                            right: Radius.circular(16),
+                          ),
+                          onTap: () => _showRegionPickerSheet(
+                            context,
+                            ref,
+                            awarenessState,
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 10),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  awarenessState.emergencyRegionCode,
+                                  style: TextStyle(
+                                    color: theme.colorScheme.onPrimary,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
-                              ),
-                            ),
-                            Container(
-                              width: 1,
-                              height: 24,
-                              color: theme.colorScheme.onPrimary
-                                  .withValues(alpha: 0.25),
-                            ),
-                            InkWell(
-                              borderRadius: const BorderRadius.horizontal(
-                                right: Radius.circular(16),
-                              ),
-                              onTap: () => _showRegionPickerSheet(
-                                context,
-                                ref,
-                                awarenessState,
-                              ),
-                              child: Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 10),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      awarenessState.emergencyRegionCode,
-                                      style: TextStyle(
-                                        color: theme.colorScheme.onPrimary,
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                    Icon(
-                                      Icons.keyboard_arrow_down_rounded,
-                                      size: 18,
-                                      color: theme.colorScheme.onPrimary,
-                                    ),
-                                  ],
+                                Icon(
+                                  Icons.keyboard_arrow_down_rounded,
+                                  size: 18,
+                                  color: theme.colorScheme.onPrimary,
                                 ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    // CPR Coach Button
-                    Expanded(
-                      flex: 4,
-                      child: SizedBox(
-                        height: 50,
-                        child: OutlinedButton.icon(
-                          style: OutlinedButton.styleFrom(
-                            backgroundColor: theme.cardColor,
-                            foregroundColor: theme.colorScheme.onSurface,
-                            side: BorderSide(color: theme.dividerColor),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
+                              ],
                             ),
                           ),
-                          onPressed: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => const CprMetronomeScreen(),
-                              ),
-                            );
-                          },
-                          icon: Icon(
-                            Icons.favorite_outline,
-                            color: primary,
-                            size: 18,
-                          ),
-                          label: const Text(
-                            'CPR Coach',
-                            style: TextStyle(fontWeight: FontWeight.w700),
-                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  flex: 4,
+                  child: SizedBox(
+                    height: 50,
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        backgroundColor: theme.cardColor,
+                        foregroundColor: theme.colorScheme.onSurface,
+                        side: BorderSide(color: theme.dividerColor),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
                         ),
                       ),
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const CprMetronomeScreen(),
+                          ),
+                        );
+                      },
+                      icon: Icon(
+                        Icons.favorite_outline,
+                        color: primary,
+                        size: 18,
+                      ),
+                      label: const Text(
+                        'CPR Coach',
+                        style: TextStyle(fontWeight: FontWeight.w700),
+                      ),
                     ),
-                  ],
+                  ),
                 ),
               ],
             ),
@@ -186,13 +179,13 @@ class HealthAwarenessScreen extends HookConsumerWidget {
             delegate: SliverChildBuilderDelegate(
               (context, index) {
                 final guide = emergencyGuidesData[index];
-                final isDone =
+                final isPassed =
                     awarenessState.completedGuideIds.contains(guide.id);
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: _EmergencyGuideCard(
                     guide: guide,
-                    isCompleted: isDone,
+                    isPassed: isPassed,
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
@@ -209,7 +202,7 @@ class HealthAwarenessScreen extends HookConsumerWidget {
           ),
         ),
 
-        // Educational Resources Section (Original Cards, Theme-Matched)
+        // Educational Resources Section
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
@@ -471,12 +464,12 @@ class HealthAwarenessScreen extends HookConsumerWidget {
 
 class _EmergencyGuideCard extends StatelessWidget {
   final EmergencyGuide guide;
-  final bool isCompleted;
+  final bool isPassed;
   final VoidCallback onTap;
 
   const _EmergencyGuideCard({
     required this.guide,
-    required this.isCompleted,
+    required this.isPassed,
     required this.onTap,
   });
 
@@ -540,9 +533,9 @@ class _EmergencyGuideCard extends StatelessWidget {
             ),
             const SizedBox(width: 10),
             Icon(
-              isCompleted ? Icons.check_circle : Icons.arrow_forward_ios_rounded,
-              size: isCompleted ? 20 : 15,
-              color: isCompleted
+              isPassed ? Icons.verified : Icons.arrow_forward_ios_rounded,
+              size: isPassed ? 18 : 15,
+              color: isPassed
                   ? primary
                   : theme.colorScheme.onSurface.withValues(alpha: 0.35),
             ),

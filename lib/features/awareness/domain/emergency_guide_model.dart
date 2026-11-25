@@ -103,7 +103,7 @@ class EmergencyGuide {
   final String whenToCallEmergency;
   final List<EmergencyStep> steps;
   final List<String> doNots;
-  final EmergencyQuizQuestion quiz;
+  final List<EmergencyQuizQuestion> quizzes;
 
   const EmergencyGuide({
     required this.id,
@@ -116,6 +116,6 @@ class EmergencyGuide {
     required this.whenToCallEmergency,
     required this.steps,
     required this.doNots,
-    required this.quiz,
+    required this.quizzes,
   });
 }

@@ -5,6 +5,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 import '../../data/awareness_providers.dart';
 import '../../domain/emergency_guide_model.dart';
 import 'cpr_metronome_screen.dart';
+import 'emergency_quiz_screen.dart';
 
 class EmergencyGuideDetailScreen extends ConsumerStatefulWidget {
   final EmergencyGuide guide;
@@ -22,7 +23,6 @@ class _EmergencyGuideDetailScreenState
   Timer? _pauseTimer;
   int _activeStepIndex = 0;
   bool _isAutoPlaying = false;
-  int? _selectedQuizOption;
 
   @override
   void initState() {
@@ -245,7 +245,7 @@ class _EmergencyGuideDetailScreenState
 
           const SizedBox(height: 22),
 
-          // All Steps Visible at Once (tap any step to listen from there)
+          // Connected Vertical Timeline (no card boxes per step)
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -256,43 +256,39 @@ class _EmergencyGuideDetailScreenState
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
 
           ...List.generate(guide.steps.length, (index) {
             final step = guide.steps[index];
             final isActive = index == _activeStepIndex && _isAutoPlaying;
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(18),
-                onTap: () => _jumpToStep(index),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: isActive
-                        ? primary.withValues(alpha: 0.10)
-                        : theme.cardColor,
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(
-                      color: isActive ? primary : theme.dividerColor,
-                      width: isActive ? 1.5 : 1,
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
+            final isLast = index == guide.steps.length - 1;
+
+            return InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: () => _jumpToStep(index),
+              child: IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Left timeline column: circle + connecting vertical line
+                    SizedBox(
+                      width: 32,
+                      child: Column(
                         children: [
-                          Container(
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
                             width: 28,
                             height: 28,
                             alignment: Alignment.center,
                             decoration: BoxDecoration(
                               color: isActive
                                   ? primary
-                                  : primary.withValues(alpha: 0.12),
+                                  : theme.cardColor,
                               shape: BoxShape.circle,
+                              border: Border.all(
+                                color: isActive ? primary : theme.dividerColor,
+                                width: 1.5,
+                              ),
                             ),
                             child: Text(
                               '${step.stepNumber}',
@@ -304,58 +300,89 @@ class _EmergencyGuideDetailScreenState
                               ),
                             ),
                           ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              step.title,
-                              style: theme.textTheme.titleMedium,
+                          if (!isLast)
+                            Expanded(
+                              child: Container(
+                                width: 1.5,
+                                margin: const EdgeInsets.symmetric(vertical: 4),
+                                color: isActive
+                                    ? primary.withValues(alpha: 0.5)
+                                    : theme.dividerColor,
+                              ),
                             ),
-                          ),
-                          Icon(
-                            isActive
-                                ? Icons.graphic_eq_rounded
-                                : Icons.volume_up_outlined,
-                            size: 18,
-                            color: isActive
-                                ? primary
-                                : theme.colorScheme.onSurface
-                                    .withValues(alpha: 0.4),
-                          ),
                         ],
                       ),
-                      const SizedBox(height: 10),
-                      Text(
-                        step.instruction,
-                        style: theme.textTheme.bodyMedium,
-                      ),
-                      if (step.criticalNote != null) ...[
-                        const SizedBox(height: 10),
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: primary.withValues(alpha: 0.08),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Icon(Icons.info_outline,
-                                  color: primary, size: 16),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  step.criticalNote!,
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    color: theme.colorScheme.onSurface,
+                    ),
+                    const SizedBox(width: 14),
+
+                    // Right step content directly on page background
+                    Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.only(bottom: isLast ? 8 : 22),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    step.title,
+                                    style:
+                                        theme.textTheme.titleMedium?.copyWith(
+                                      color: isActive
+                                          ? primary
+                                          : theme.colorScheme.onSurface,
+                                    ),
                                   ),
                                 ),
+                                Icon(
+                                  isActive
+                                      ? Icons.graphic_eq_rounded
+                                      : Icons.volume_up_outlined,
+                                  size: 17,
+                                  color: isActive
+                                      ? primary
+                                      : theme.colorScheme.onSurface
+                                          .withValues(alpha: 0.35),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              step.instruction,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: theme.colorScheme.onSurface
+                                    .withValues(alpha: 0.85),
+                              ),
+                            ),
+                            if (step.criticalNote != null) ...[
+                              const SizedBox(height: 6),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Icon(
+                                    Icons.info_outline,
+                                    color: primary,
+                                    size: 15,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Expanded(
+                                    child: Text(
+                                      step.criticalNote!,
+                                      style:
+                                          theme.textTheme.bodySmall?.copyWith(
+                                        color: primary,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
-                          ),
+                          ],
                         ),
-                      ],
-                    ],
-                  ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             );
@@ -418,55 +445,8 @@ class _EmergencyGuideDetailScreenState
             ),
           ),
 
-          const SizedBox(height: 28),
-          Divider(color: theme.dividerColor),
-          const SizedBox(height: 20),
-
-          // Knowledge Check — Distinct Interactive Quiz Section
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Icon(Icons.quiz_outlined, color: primary, size: 18),
-                  const SizedBox(width: 8),
-                  Text(
-                    'TEST YOURSELF',
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: primary,
-                      letterSpacing: 1.3,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ],
-              ),
-              if (isCompleted)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: primary.withValues(alpha: 0.14),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.check_circle, color: primary, size: 14),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Reviewed',
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: primary,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 10),
+          // Separate Test Yourself Entry
+          const SizedBox(height: 24),
           Container(
             padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
@@ -474,99 +454,56 @@ class _EmergencyGuideDetailScreenState
               borderRadius: BorderRadius.circular(20),
               border: Border.all(color: primary.withValues(alpha: 0.25)),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
               children: [
-                Text(guide.quiz.question, style: theme.textTheme.titleMedium),
-                const SizedBox(height: 14),
-                ...List.generate(guide.quiz.options.length, (index) {
-                  final isSelected = _selectedQuizOption == index;
-                  final isCorrect = index == guide.quiz.correctIndex;
-                  final showResult = _selectedQuizOption != null;
-                  final letter = String.fromCharCode(65 + index); // A, B, C
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(14),
-                      onTap: () {
-                        setState(() => _selectedQuizOption = index);
-                        if (isCorrect) {
-                          ref
-                              .read(awarenessProvider.notifier)
-                              .markGuideCompleted(guide.id);
-                        }
-                      },
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 12,
-                        ),
-                        decoration: BoxDecoration(
-                          color: (showResult && isCorrect)
-                              ? primary.withValues(alpha: 0.16)
-                              : theme.cardColor,
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(
-                            color: (showResult && isCorrect)
-                                ? primary
-                                : isSelected
-                                    ? theme.colorScheme.error
-                                    : theme.dividerColor,
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 26,
-                              height: 26,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                color: (showResult && isCorrect)
-                                    ? primary
-                                    : primary.withValues(alpha: 0.12),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Text(
-                                letter,
-                                style: theme.textTheme.labelSmall?.copyWith(
-                                  color: (showResult && isCorrect)
-                                      ? theme.colorScheme.onPrimary
-                                      : primary,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                guide.quiz.options[index],
-                                style: theme.textTheme.bodyMedium,
-                              ),
-                            ),
-                            if (showResult && isCorrect)
-                              Icon(Icons.check_circle, color: primary, size: 18)
-                            else if (showResult && isSelected)
-                              Icon(
-                                Icons.cancel_outlined,
-                                color: theme.colorScheme.error,
-                                size: 18,
-                              ),
-                          ],
-                        ),
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: primary.withValues(alpha: 0.14),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    isCompleted ? Icons.verified : Icons.quiz_outlined,
+                    color: primary,
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        isCompleted ? 'Test Passed' : 'Test Yourself',
+                        style: theme.textTheme.titleMedium,
                       ),
-                    ),
-                  );
-                }),
-                if (_selectedQuizOption != null) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    guide.quiz.explanation,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.85),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${guide.quizzes.length} questions • 100% required to pass',
+                        style: theme.textTheme.bodySmall,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 10),
+                FilledButton(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: primary,
+                    foregroundColor: theme.colorScheme.onPrimary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                ],
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => EmergencyQuizScreen(guide: guide),
+                      ),
+                    );
+                  },
+                  child: Text(isCompleted ? 'Retake' : 'Start'),
+                ),
               ],
             ),
           ),

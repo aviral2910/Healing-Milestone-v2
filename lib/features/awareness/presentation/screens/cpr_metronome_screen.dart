@@ -21,6 +21,7 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
     with SingleTickerProviderStateMixin {
   static const int _bpm = 110;
   static const int _beatIntervalMs = 545; // 60000 / 110 ≈ 545ms
+  static const int _breathPauseSeconds = 5;
 
   final FlutterTts _tts = FlutterTts();
   final AudioPlayer _tickPlayerA = AudioPlayer();
@@ -28,10 +29,14 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
   bool _usePlayerA = true;
   bool _audioReady = false;
 
-  Timer? _timer;
+  Timer? _compressionTimer;
+  Timer? _breathTimer;
   late AnimationController _pulseController;
 
   bool _isRunning = false;
+  bool _isBreathPhase = false;
+  int _breathSecondsLeft = _breathPauseSeconds;
+
   bool _beatSoundEnabled = true;
   bool _voiceEnabled = true;
   bool _hapticsEnabled = true;
@@ -69,7 +74,7 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
         setState(() => _audioReady = true);
       }
     } catch (_) {
-      // Fallback gracefully if audio file setup fails on test/unsupported env
+      // Fallback gracefully if audio setup fails in test/unsupported env
     }
   }
 
@@ -81,26 +86,23 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
     const dataSize = numSamples * 2;
     final buffer = ByteData(44 + dataSize);
 
-    // RIFF header
     buffer.setUint32(0, 0x52494646, Endian.big); // "RIFF"
     buffer.setUint32(4, 36 + dataSize, Endian.little);
     buffer.setUint32(8, 0x57415645, Endian.big); // "WAVE"
-    // fmt chunk
     buffer.setUint32(12, 0x666D7420, Endian.big); // "fmt "
-    buffer.setUint32(16, 16, Endian.little); // PCM
-    buffer.setUint16(20, 1, Endian.little); // Linear PCM
-    buffer.setUint16(22, 1, Endian.little); // Mono
+    buffer.setUint32(16, 16, Endian.little);
+    buffer.setUint16(20, 1, Endian.little);
+    buffer.setUint16(22, 1, Endian.little);
     buffer.setUint32(24, sampleRate, Endian.little);
     buffer.setUint32(28, sampleRate * 2, Endian.little);
     buffer.setUint16(32, 2, Endian.little);
     buffer.setUint16(34, 16, Endian.little);
-    // data chunk
     buffer.setUint32(36, 0x64617461, Endian.big); // "data"
     buffer.setUint32(40, dataSize, Endian.little);
 
     for (int i = 0; i < numSamples; i++) {
       final t = i / sampleRate;
-      final envelope = math.exp(-t * 95.0); // Fast percussive decay
+      final envelope = math.exp(-t * 95.0);
       final wave = math.sin(2 * math.pi * 880.0 * t);
       final sample = (wave * envelope * 28000).round().clamp(-32768, 32767);
       buffer.setInt16(44 + i * 2, sample, Endian.little);
@@ -118,7 +120,8 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
 
   @override
   void dispose() {
-    _timer?.cancel();
+    _compressionTimer?.cancel();
+    _breathTimer?.cancel();
     _tts.stop();
     _tickPlayerA.dispose();
     _tickPlayerB.dispose();
@@ -135,21 +138,37 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
   }
 
   void _startMetronome() {
-    setState(() => _isRunning = true);
+    setState(() {
+      _isRunning = true;
+      _isBreathPhase = false;
+    });
     if (_voiceEnabled) {
-      _tts.speak('Push hard and fast in the center of the chest.');
+      _tts.speak(
+        _handsOnlyMode
+            ? 'Hands-only C P R. Push hard and fast continuously.'
+            : '30 to 2 C P R. Give 30 compressions, then 2 rescue breaths.',
+      );
     }
+    _startCompressionLoop();
+  }
+
+  void _startCompressionLoop() {
+    _compressionTimer?.cancel();
     _onBeat();
-    _timer = Timer.periodic(
+    _compressionTimer = Timer.periodic(
       const Duration(milliseconds: _beatIntervalMs),
       (_) => _onBeat(),
     );
   }
 
   void _stopMetronome() {
-    _timer?.cancel();
+    _compressionTimer?.cancel();
+    _breathTimer?.cancel();
     _tts.stop();
-    setState(() => _isRunning = false);
+    setState(() {
+      _isRunning = false;
+      _isBreathPhase = false;
+    });
   }
 
   void _resetCounter() {
@@ -157,32 +176,70 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
     setState(() {
       _compressionCount = 0;
       _cycleCount = 1;
+      _breathSecondsLeft = _breathPauseSeconds;
     });
   }
 
   void _onBeat() {
-    if (!mounted) return;
+    if (!mounted || _isBreathPhase) return;
     _pulseController.forward(from: 0.0);
     _playBeatSound();
     if (_hapticsEnabled) {
       HapticFeedback.heavyImpact();
     }
 
+    final nextCount = _compressionCount >= 30 ? 1 : _compressionCount + 1;
+    final nextCycle =
+        _compressionCount >= 30 ? _cycleCount + 1 : _cycleCount;
+
     setState(() {
-      _compressionCount++;
-      if (_compressionCount > 30) {
-        _compressionCount = 1;
-        _cycleCount++;
-      }
+      _compressionCount = nextCount;
+      _cycleCount = nextCycle;
     });
 
-    if (_voiceEnabled && _compressionCount == 30) {
+    if (_compressionCount == 30) {
       if (_handsOnlyMode) {
-        _tts.speak('30 compressions. Keep pushing.');
+        if (_voiceEnabled) {
+          _tts.speak('30 compressions. Keep pushing.');
+        }
       } else {
-        _tts.speak('30 compressions. Give 2 rescue breaths, then continue.');
+        _enterBreathPhase();
       }
     }
+  }
+
+  void _enterBreathPhase() {
+    _compressionTimer?.cancel();
+    setState(() {
+      _isBreathPhase = true;
+      _breathSecondsLeft = _breathPauseSeconds;
+    });
+
+    if (_voiceEnabled) {
+      _tts.speak('Stop compressions. Give 2 rescue breaths.');
+    }
+
+    _breathTimer?.cancel();
+    _breathTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted || !_isRunning) {
+        timer.cancel();
+        return;
+      }
+      if (_breathSecondsLeft > 1) {
+        setState(() => _breathSecondsLeft--);
+      } else {
+        timer.cancel();
+        setState(() {
+          _isBreathPhase = false;
+          _compressionCount = 0;
+          _cycleCount++;
+        });
+        if (_voiceEnabled) {
+          _tts.speak('Resume compressions.');
+        }
+        _startCompressionLoop();
+      }
+    });
   }
 
   @override
@@ -190,7 +247,12 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
     final emergencyNumber = ref.watch(awarenessProvider).emergencyNumber;
-    final progress = _compressionCount / 30.0;
+
+    final double progress = !_isRunning
+        ? 0.0
+        : _isBreathPhase
+            ? _breathSecondsLeft / _breathPauseSeconds
+            : _compressionCount / 30.0;
 
     return Scaffold(
       appBar: AppBar(
@@ -198,15 +260,22 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 12),
-            child: FilledButton.icon(
-              style: FilledButton.styleFrom(
-                backgroundColor: primary,
-                foregroundColor: theme.colorScheme.onPrimary,
+            child: OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(
+                backgroundColor: primary.withValues(alpha: 0.12),
+                foregroundColor: primary,
+                side: BorderSide(color: primary.withValues(alpha: 0.4)),
                 padding: const EdgeInsets.symmetric(horizontal: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
               ),
               onPressed: () => launchEmergencyDialer(context, emergencyNumber),
               icon: const Icon(Icons.call_outlined, size: 16),
-              label: Text('SOS $emergencyNumber'),
+              label: Text(
+                'SOS $emergencyNumber',
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
             ),
           ),
         ],
@@ -218,6 +287,14 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
             children: [
               // Mode Toggle
               SegmentedButton<bool>(
+                style: SegmentedButton.styleFrom(
+                  backgroundColor: theme.cardColor,
+                  foregroundColor:
+                      theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                  selectedBackgroundColor: primary.withValues(alpha: 0.16),
+                  selectedForegroundColor: primary,
+                  side: BorderSide(color: theme.dividerColor),
+                ),
                 segments: const [
                   ButtonSegment(
                     value: true,
@@ -233,10 +310,22 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
                 selected: {_handsOnlyMode},
                 onSelectionChanged: (val) {
                   setState(() => _handsOnlyMode = val.first);
+                  if (_isRunning) {
+                    _resetCounter();
+                  }
                 },
               ),
+              const SizedBox(height: 8),
+              Text(
+                _handsOnlyMode
+                    ? 'Continuous compressions • No pauses'
+                    : '30 compressions • Pauses 5s for 2 rescue breaths',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
+                ),
+              ),
 
-              // Visual Metronome Ring + Progress
+              // Visual Metronome Ring + Breath Phase
               Expanded(
                 child: Center(
                   child: GestureDetector(
@@ -244,10 +333,11 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
                     child: AnimatedBuilder(
                       animation: _pulseController,
                       builder: (context, child) {
-                        final scale =
-                            1.0 + (0.07 * (1.0 - _pulseController.value));
+                        final scale = (_isRunning && !_isBreathPhase)
+                            ? 1.0 + (0.07 * (1.0 - _pulseController.value))
+                            : 1.0;
                         return Transform.scale(
-                          scale: _isRunning ? scale : 1.0,
+                          scale: scale,
                           child: SizedBox(
                             width: 240,
                             height: 240,
@@ -258,11 +348,13 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
                                   width: 236,
                                   height: 236,
                                   child: CircularProgressIndicator(
-                                    value: _isRunning ? progress : 0.0,
+                                    value: progress,
                                     strokeWidth: 6,
                                     backgroundColor: theme.dividerColor,
                                     valueColor: AlwaysStoppedAnimation<Color>(
-                                      primary,
+                                      _isBreathPhase
+                                          ? theme.colorScheme.onSurface
+                                          : primary,
                                     ),
                                   ),
                                 ),
@@ -272,11 +364,16 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
                                     color: _isRunning
-                                        ? primary.withValues(alpha: 0.12)
+                                        ? (_isBreathPhase
+                                            ? theme.cardColor
+                                            : primary.withValues(alpha: 0.12))
                                         : theme.cardColor,
                                     border: Border.all(
                                       color: _isRunning
-                                          ? primary.withValues(alpha: 0.5)
+                                          ? (_isBreathPhase
+                                              ? theme.colorScheme.onSurface
+                                                  .withValues(alpha: 0.45)
+                                              : primary.withValues(alpha: 0.5))
                                           : theme.dividerColor,
                                     ),
                                   ),
@@ -284,34 +381,46 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Text(
-                                        _isRunning
-                                            ? 'PUSH'
-                                            : 'TAP TO START',
+                                        !_isRunning
+                                            ? 'TAP TO START'
+                                            : _isBreathPhase
+                                                ? '2 BREATHS'
+                                                : 'PUSH',
                                         style: theme.textTheme.labelSmall
                                             ?.copyWith(
-                                          color: primary,
+                                          color: _isBreathPhase
+                                              ? theme.colorScheme.onSurface
+                                              : primary,
                                           letterSpacing: 1.5,
                                           fontWeight: FontWeight.w700,
                                         ),
                                       ),
                                       const SizedBox(height: 4),
                                       Text(
-                                        _isRunning
-                                            ? '$_compressionCount'
-                                            : '$_bpm',
+                                        !_isRunning
+                                            ? '$_bpm'
+                                            : _isBreathPhase
+                                                ? '${_breathSecondsLeft}s'
+                                                : '$_compressionCount',
                                         style: theme.textTheme.headlineLarge
                                             ?.copyWith(
                                           fontSize: _isRunning ? 64 : 52,
-                                          color: _isRunning
-                                              ? primary
-                                              : theme.colorScheme.onSurface,
+                                          color: _isBreathPhase
+                                              ? theme.colorScheme.onSurface
+                                              : _isRunning
+                                                  ? primary
+                                                  : theme.colorScheme.onSurface,
                                         ),
                                       ),
                                       const SizedBox(height: 4),
                                       Text(
-                                        _isRunning
-                                            ? 'of 30 • Cycle $_cycleCount'
-                                            : 'BPM Metronome',
+                                        !_isRunning
+                                            ? (_handsOnlyMode
+                                                ? 'BPM • Continuous'
+                                                : 'BPM • 30:2 Cycle')
+                                            : _isBreathPhase
+                                                ? 'Give 2 gentle breaths'
+                                                : 'of 30 • Cycle $_cycleCount',
                                         style: theme.textTheme.bodySmall,
                                       ),
                                     ],
@@ -327,14 +436,17 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
                 ),
               ),
 
-              // Quick Technique Strip
+              // Quick Technique Strip (Adapts to Hands-Only vs 30:2)
               Row(
                 children: [
-                  _MetricChip(label: 'RATE', value: '100–120/m'),
+                  const _MetricChip(label: 'RATE', value: '100–120/m'),
                   const SizedBox(width: 8),
-                  _MetricChip(label: 'DEPTH', value: '5–6 cm'),
+                  const _MetricChip(label: 'DEPTH', value: '5–6 cm'),
                   const SizedBox(width: 8),
-                  _MetricChip(label: 'RECOIL', value: 'Full Rise'),
+                  _MetricChip(
+                    label: _handsOnlyMode ? 'BREATHS' : 'CYCLE',
+                    value: _handsOnlyMode ? 'None' : '30 : 2',
+                  ),
                 ],
               ),
               const SizedBox(height: 14),
@@ -344,36 +456,32 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: [
-                    FilterChip(
-                      label: const Text('Beat Sound'),
+                    _ThemeToggleChip(
+                      label: 'Beat Sound',
+                      icon: _beatSoundEnabled
+                          ? Icons.music_note_rounded
+                          : Icons.music_off_rounded,
                       selected: _beatSoundEnabled,
-                      avatar: Icon(
-                        _beatSoundEnabled
-                            ? Icons.music_note_rounded
-                            : Icons.music_off_rounded,
-                        size: 16,
-                      ),
-                      onSelected: (v) => setState(() => _beatSoundEnabled = v),
+                      onTap: () =>
+                          setState(() => _beatSoundEnabled = !_beatSoundEnabled),
                     ),
                     const SizedBox(width: 8),
-                    FilterChip(
-                      label: const Text('Voice'),
+                    _ThemeToggleChip(
+                      label: 'Voice',
+                      icon: _voiceEnabled ? Icons.volume_up : Icons.volume_off,
                       selected: _voiceEnabled,
-                      avatar: Icon(
-                        _voiceEnabled ? Icons.volume_up : Icons.volume_off,
-                        size: 16,
-                      ),
-                      onSelected: (v) {
-                        setState(() => _voiceEnabled = v);
-                        if (!v) _tts.stop();
+                      onTap: () {
+                        setState(() => _voiceEnabled = !_voiceEnabled);
+                        if (!_voiceEnabled) _tts.stop();
                       },
                     ),
                     const SizedBox(width: 8),
-                    FilterChip(
-                      label: const Text('Haptics'),
+                    _ThemeToggleChip(
+                      label: 'Haptics',
+                      icon: Icons.vibration,
                       selected: _hapticsEnabled,
-                      avatar: const Icon(Icons.vibration, size: 16),
-                      onSelected: (v) => setState(() => _hapticsEnabled = v),
+                      onTap: () =>
+                          setState(() => _hapticsEnabled = !_hapticsEnabled),
                     ),
                     const SizedBox(width: 4),
                     IconButton(
@@ -416,6 +524,64 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ThemeToggleChip extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _ThemeToggleChip({
+    required this.label,
+    required this.icon,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final primary = theme.colorScheme.primary;
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: selected ? primary.withValues(alpha: 0.14) : theme.cardColor,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color:
+                selected ? primary.withValues(alpha: 0.5) : theme.dividerColor,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 16,
+              color: selected
+                  ? primary
+                  : theme.colorScheme.onSurface.withValues(alpha: 0.55),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: selected
+                    ? primary
+                    : theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+              ),
+            ),
+          ],
         ),
       ),
     );

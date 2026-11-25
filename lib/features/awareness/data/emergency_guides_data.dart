@@ -68,18 +68,68 @@ const List<EmergencyGuide> emergencyGuidesData = [
       'Do not lean on the chest between compressions — allow full chest recoil.',
       'Do not place AED pads over medication patches or wet skin without wiping first.',
     ],
-    quiz: EmergencyQuizQuestion(
-      question:
-          'What is the recommended chest compression rate for adult CPR?',
-      options: [
-        '60–80 compressions per minute',
-        '100–120 compressions per minute',
-        '140–160 compressions per minute',
-      ],
-      correctIndex: 1,
-      explanation:
-          '100–120 compressions per minute (about 2 pushes per second) maintains blood flow to the brain and heart.',
-    ),
+    quizzes: [
+      EmergencyQuizQuestion(
+        question: 'What is the very first thing you should do before approaching an unresponsive person?',
+        options: [
+          'Start chest compressions immediately',
+          'Check that the scene is safe, then tap shoulders and shout',
+          'Give them water to wake them up',
+        ],
+        correctIndex: 1,
+        explanation: 'Always ensure the area is safe first so you do not become a second victim, then check responsiveness.',
+      ),
+      EmergencyQuizQuestion(
+        question: 'If the person is unresponsive and not breathing normally, what should you do next?',
+        options: [
+          'Wait 5 minutes to see if they wake up',
+          'Call emergency services on speakerphone and send someone for an AED',
+          'Leave them alone to search for a clinic',
+        ],
+        correctIndex: 1,
+        explanation: 'Calling emergency services on speakerphone lets you get help on the way without delaying CPR.',
+      ),
+      EmergencyQuizQuestion(
+        question: 'Where should you place your hands for adult chest compressions?',
+        options: [
+          'On the upper abdomen just above the navel',
+          'On the center of the chest (lower half of the breastbone)',
+          'Over the left side of the ribs',
+        ],
+        correctIndex: 1,
+        explanation: 'The heel of one hand goes on the center of the chest with the other hand interlocked on top.',
+      ),
+      EmergencyQuizQuestion(
+        question: 'What is the recommended chest compression rate and depth for adult CPR?',
+        options: [
+          '60–80/min at 2 cm depth',
+          '100–120/min at 5–6 cm depth with full chest recoil',
+          '140–160/min without letting the chest rise',
+        ],
+        correctIndex: 1,
+        explanation: '100–120 compressions per minute at 5–6 cm depth with full recoil maximizes blood flow.',
+      ),
+      EmergencyQuizQuestion(
+        question: 'What should you do when the AED is analyzing or delivering a shock?',
+        options: [
+          'Keep your hands on the chest',
+          'Stand completely clear and resume compressions right after',
+          'Turn off the AED before it shocks',
+        ],
+        correctIndex: 1,
+        explanation: 'No one should touch the person during AED analysis or shock delivery; resume compressions immediately after.',
+      ),
+      EmergencyQuizQuestion(
+        question: 'When should you stop CPR compressions?',
+        options: [
+          'After 1 minute if they haven\'t woken up',
+          'Only when the person shows clear signs of life or paramedics take over',
+          'As soon as your arms feel slightly tired',
+        ],
+        correctIndex: 1,
+        explanation: 'Continue CPR uninterrupted (swapping rescuers every 2 minutes if available) until help takes over or normal breathing returns.',
+      ),
+    ],
   ),
   EmergencyGuide(
     id: 'choking_adult',
@@ -131,18 +181,48 @@ const List<EmergencyGuide> emergencyGuidesData = [
       'Do not slap the back of someone who is coughing forcefully and clearing it themselves.',
       'Do not use abdominal thrusts on infants under 1 year old (use infant back blows & chest thrusts).',
     ],
-    quiz: EmergencyQuizQuestion(
-      question:
-          'Where should you place your fist for abdominal thrusts in a conscious adult?',
-      options: [
-        'On the upper sternum (collarbone area)',
-        'Just above the navel (belly button), below the ribcage',
-        'Directly over the lower ribs',
-      ],
-      correctIndex: 1,
-      explanation:
-          'Placing the fist just above the navel and pulling inward and upward creates upward diaphragm pressure to expel the blockage.',
-    ),
+    quizzes: [
+      EmergencyQuizQuestion(
+        question: 'If a choking person is coughing forcefully, what should you do?',
+        options: [
+          'Immediately perform abdominal thrusts',
+          'Encourage them to keep coughing without interfering',
+          'Reach into their throat with your fingers',
+        ],
+        correctIndex: 1,
+        explanation: 'A strong cough is the most effective way to clear a partial blockage.',
+      ),
+      EmergencyQuizQuestion(
+        question: 'Where should you deliver the 5 back blows for severe choking?',
+        options: [
+          'On the lower back',
+          'Between the shoulder blades with the heel of your hand',
+          'On the back of the neck',
+        ],
+        correctIndex: 1,
+        explanation: 'Lean the person forward and strike firmly between the shoulder blades.',
+      ),
+      EmergencyQuizQuestion(
+        question: 'Where should you place your fist for abdominal thrusts in a conscious adult?',
+        options: [
+          'On the upper sternum',
+          'Just above the navel (belly button), below the ribcage',
+          'Directly over the lower ribs',
+        ],
+        correctIndex: 1,
+        explanation: 'Placing the fist just above the navel and pulling inward and upward creates upward pressure to expel the object.',
+      ),
+      EmergencyQuizQuestion(
+        question: 'What should you do if a choking person becomes unconscious and collapses?',
+        options: [
+          'Keep trying standing back blows',
+          'Lower them to the floor, call emergency, and start CPR',
+          'Give them sips of water',
+        ],
+        correctIndex: 1,
+        explanation: 'Once unconscious, lower them safely to the floor and begin CPR immediately.',
+      ),
+    ],
   ),
   EmergencyGuide(
     id: 'stroke_fast',
@@ -192,17 +272,48 @@ const List<EmergencyGuide> emergencyGuidesData = [
       'Do not give food, water, or medication (including aspirin) — stroke can affect swallowing or be caused by bleeding.',
       'Do not wait to "see if it passes" — clot treatments have strict time windows.',
     ],
-    quiz: EmergencyQuizQuestion(
-      question: 'Why is noting the exact time stroke symptoms started critical?',
-      options: [
-        'It helps determine eligibility for time-sensitive clot-busting treatment',
-        'It is only needed for insurance paperwork',
-        'It tells paramedics which hospital is closest',
-      ],
-      correctIndex: 0,
-      explanation:
-          'Thrombolytic (clot-busting) medications can only be safely given within a specific window from symptom onset.',
-    ),
+    quizzes: [
+      EmergencyQuizQuestion(
+        question: 'In FAST, what does "F" stand for and how do you check it?',
+        options: [
+          'Fever — feel their forehead',
+          'Face drooping — ask the person to smile',
+          'Fainting — check their pulse',
+        ],
+        correctIndex: 1,
+        explanation: 'Asking the person to smile quickly reveals facial asymmetry or drooping on one side.',
+      ),
+      EmergencyQuizQuestion(
+        question: 'How do you check for "A" (Arm weakness) in FAST?',
+        options: [
+          'Ask them to squeeze your hand as hard as possible only',
+          'Ask them to raise both arms and watch if one drifts downward',
+          'Ask them to do push-ups',
+        ],
+        correctIndex: 1,
+        explanation: 'If one arm drifts downward or cannot be lifted, it is a key stroke warning sign.',
+      ),
+      EmergencyQuizQuestion(
+        question: 'What does "S" check in FAST?',
+        options: [
+          'Skin color',
+          'Speech difficulty — slurred or strange speech when repeating a simple sentence',
+          'Sweating',
+        ],
+        correctIndex: 1,
+        explanation: 'Slurred, garbled, or missing words when repeating a simple phrase indicates speech impairment.',
+      ),
+      EmergencyQuizQuestion(
+        question: 'Why is noting the exact time stroke symptoms started ("T") critical?',
+        options: [
+          'It determines eligibility for time-sensitive clot-busting treatment',
+          'It is only needed for billing',
+          'It tells paramedics which ambulance to send',
+        ],
+        correctIndex: 0,
+        explanation: 'Clot-busting medications can only be safely administered within a strict window from symptom onset.',
+      ),
+    ],
   ),
   EmergencyGuide(
     id: 'severe_bleeding',
@@ -254,18 +365,48 @@ const List<EmergencyGuide> emergencyGuidesData = [
       'Do not pull out embedded objects (glass, metal); pack around them instead.',
       'Do not loosen a tourniquet once applied — leave that to emergency doctors.',
     ],
-    quiz: EmergencyQuizQuestion(
-      question:
-          'What should you do if a bandage becomes soaked with blood while applying pressure?',
-      options: [
-        'Peel it off and replace it with a dry bandage',
-        'Leave it in place and add more gauze/cloth on top',
-        'Rinse the wound with cold water',
-      ],
-      correctIndex: 1,
-      explanation:
-          'Removing the soaked layer tears away forming blood clots. Always stack additional clean cloth on top and keep pressing.',
-    ),
+    quizzes: [
+      EmergencyQuizQuestion(
+        question: 'Why should you expose the wound before applying pressure?',
+        options: [
+          'So you can see the exact source of bleeding and apply direct pressure accurately',
+          'So the wound dries faster in the air',
+          'To wash it with soap first',
+        ],
+        correctIndex: 0,
+        explanation: 'Exposing the wound ensures your pressure is directly over the bleeding vessel, not absorbed by bulky clothing.',
+      ),
+      EmergencyQuizQuestion(
+        question: 'What should you do if a bandage becomes soaked with blood?',
+        options: [
+          'Peel it off and replace it with a dry bandage',
+          'Leave it in place and add more clean cloth/gauze on top',
+          'Rinse the wound with cold water',
+        ],
+        correctIndex: 1,
+        explanation: 'Removing the soaked layer tears away forming blood clots. Always layer fresh cloth on top.',
+      ),
+      EmergencyQuizQuestion(
+        question: 'Why should a severely bleeding person lie flat and stay warm?',
+        options: [
+          'To help prevent shock',
+          'To make it easier for them to sleep',
+          'To increase blood pressure in the wound',
+        ],
+        correctIndex: 0,
+        explanation: 'Lying flat and conserving body heat helps prevent life-threatening hemorrhagic shock.',
+      ),
+      EmergencyQuizQuestion(
+        question: 'Where should a tourniquet be placed if direct pressure fails on a limb?',
+        options: [
+          'Directly over the wound or joint',
+          '5–7 cm (2–3 inches) above the wound, never on a joint',
+          'Below the wound',
+        ],
+        correctIndex: 1,
+        explanation: 'A tourniquet goes 2–3 inches above the bleeding site (closer to the heart) and never directly over a joint.',
+      ),
+    ],
   ),
   EmergencyGuide(
     id: 'anaphylaxis',
@@ -307,17 +448,38 @@ const List<EmergencyGuide> emergencyGuidesData = [
       'Do not rely on antihistamines alone for breathing trouble or throat swelling.',
       'Do not make the person stand up or walk around suddenly if they feel dizzy.',
     ],
-    quiz: EmergencyQuizQuestion(
-      question: 'Where should an epinephrine auto-injector be administered?',
-      options: [
-        'Into a vein in the arm',
-        'Into the outer mid-thigh muscle',
-        'Into the stomach',
-      ],
-      correctIndex: 1,
-      explanation:
-          'The outer mid-thigh muscle absorbs epinephrine rapidly and safely, even through light clothing.',
-    ),
+    quizzes: [
+      EmergencyQuizQuestion(
+        question: 'Which signs indicate a life-threatening allergic reaction (anaphylaxis)?',
+        options: [
+          'Mild sneezing only',
+          'Trouble breathing, swollen lips/tongue, dizziness, or widespread hives',
+          'A small mosquito bite itch',
+        ],
+        correctIndex: 1,
+        explanation: 'Airway swelling, breathing difficulty, or sudden dizziness signal anaphylaxis requiring immediate epinephrine.',
+      ),
+      EmergencyQuizQuestion(
+        question: 'Where should an epinephrine auto-injector be administered?',
+        options: [
+          'Into a vein in the arm',
+          'Into the outer mid-thigh muscle',
+          'Into the stomach',
+        ],
+        correctIndex: 1,
+        explanation: 'The outer mid-thigh muscle absorbs epinephrine rapidly and safely, even through clothing.',
+      ),
+      EmergencyQuizQuestion(
+        question: 'After giving epinephrine and symptoms start improving, what should you still do?',
+        options: [
+          'Skip calling emergency services',
+          'Call emergency services anyway and keep them lying flat (or sitting if breathing is hard)',
+          'Have them stand up and walk around',
+        ],
+        correctIndex: 1,
+        explanation: 'Biphasic reactions can cause symptoms to return; medical monitoring is always required.',
+      ),
+    ],
   ),
   EmergencyGuide(
     id: 'burns_scalds',
@@ -359,17 +521,38 @@ const List<EmergencyGuide> emergencyGuidesData = [
       'Do not pop blisters.',
       'Do not peel off clothing that is melted or stuck to the skin.',
     ],
-    quiz: EmergencyQuizQuestion(
-      question: 'How long should you cool a burn under cool running water?',
-      options: [
-        '1–2 minutes',
-        'At least 20 minutes',
-        'Pack it in ice for 5 minutes',
-      ],
-      correctIndex: 1,
-      explanation:
-          '20 minutes of cool running water draws heat out of deeper skin layers and reduces scarring.',
-    ),
+    quizzes: [
+      EmergencyQuizQuestion(
+        question: 'How long should you cool a burn under cool running water?',
+        options: [
+          '1–2 minutes',
+          'At least 20 minutes',
+          'Pack it in ice for 5 minutes',
+        ],
+        correctIndex: 1,
+        explanation: '20 minutes of cool running water draws heat out of deeper skin layers and reduces scarring.',
+      ),
+      EmergencyQuizQuestion(
+        question: 'What should you do if clothing is melted or stuck to the burn?',
+        options: [
+          'Peel it off quickly',
+          'Leave the stuck fabric alone and cool over it',
+          'Scrub it off with soap',
+        ],
+        correctIndex: 1,
+        explanation: 'Pulling stuck fabric tears away damaged skin and worsens injury.',
+      ),
+      EmergencyQuizQuestion(
+        question: 'What is the safest way to cover a burn after cooling it?',
+        options: [
+          'Apply butter or toothpaste',
+          'Cover loosely with clean cling film or a sterile non-fluffy dressing',
+          'Wrap tightly with cotton wool',
+        ],
+        correctIndex: 1,
+        explanation: 'Clean cling film or a sterile non-fluffy dressing protects the burn without sticking.',
+      ),
+    ],
   ),
   EmergencyGuide(
     id: 'seizures_fainting',
@@ -410,17 +593,38 @@ const List<EmergencyGuide> emergencyGuidesData = [
       'Do not put anything (fingers, spoons, cloth) in their mouth — they cannot swallow their tongue.',
       'Do not hold them down or restrain their movements.',
     ],
-    quiz: EmergencyQuizQuestion(
-      question: 'When should you call emergency services for a seizure?',
-      options: [
-        'If it lasts longer than 5 minutes or it is their first seizure',
-        'Only if they wake up tired',
-        'Never, seizures always stop on their own',
-      ],
-      correctIndex: 0,
-      explanation:
-          'A seizure lasting over 5 minutes (status epilepticus) or a first-time seizure requires urgent medical evaluation.',
-    ),
+    quizzes: [
+      EmergencyQuizQuestion(
+        question: 'What should you do during an active seizure?',
+        options: [
+          'Put a spoon in their mouth to protect their tongue',
+          'Clear hard objects away, cushion their head, and time the seizure',
+          'Hold their arms and legs down firmly',
+        ],
+        correctIndex: 1,
+        explanation: 'Never put anything in the mouth or restrain movements; protect the head and time the episode.',
+      ),
+      EmergencyQuizQuestion(
+        question: 'What should you do once the jerking stops and the person is breathing?',
+        options: [
+          'Leave them flat on their back',
+          'Gently roll them onto their side into the recovery position',
+          'Give them a glass of water immediately',
+        ],
+        correctIndex: 1,
+        explanation: 'The recovery position keeps the airway open and lets saliva or fluids drain safely.',
+      ),
+      EmergencyQuizQuestion(
+        question: 'When should you offer food or water after a seizure?',
+        options: [
+          'Right as the jerking stops',
+          'Only after they are completely awake and alert',
+          'While they are still confused',
+        ],
+        correctIndex: 1,
+        explanation: 'Offering food or water before full alertness risks choking.',
+      ),
+    ],
   ),
   EmergencyGuide(
     id: 'heart_attack_signs',
@@ -463,17 +667,37 @@ const List<EmergencyGuide> emergencyGuidesData = [
       'Do not let the person drive themselves to the hospital.',
       'Do not ignore mild or atypical symptoms (especially in women, older adults, and diabetics).',
     ],
-    quiz: EmergencyQuizQuestion(
-      question:
-          'What is the safest position for a conscious person having suspected heart attack symptoms?',
-      options: [
-        'Walking around slowly to ease chest tightness',
-        'Sitting calmly at rest in a comfortable position while waiting for an ambulance',
-        'Driving themselves to the nearest clinic',
-      ],
-      correctIndex: 1,
-      explanation:
-          'Resting reduces the heart\'s oxygen demand while waiting for paramedics who can treat cardiac arrest en route.',
-    ),
+    quizzes: [
+      EmergencyQuizQuestion(
+        question: 'Which of these can be a heart attack symptom besides chest pain?',
+        options: [
+          'Pain in the jaw, neck, back, or arm, cold sweat, nausea, or shortness of breath',
+          'Only sharp pain in the toes',
+          'Only a mild headache',
+        ],
+        correctIndex: 0,
+        explanation: 'Heart attacks often present with radiating pain, shortness of breath, cold sweat, or nausea.',
+      ),
+      EmergencyQuizQuestion(
+        question: 'What is the safest position for a conscious person with suspected heart attack symptoms?',
+        options: [
+          'Walking around slowly',
+          'Sitting calmly at rest in a comfortable position while waiting for an ambulance',
+          'Driving themselves to the nearest clinic',
+        ],
+        correctIndex: 1,
+        explanation: 'Resting reduces the heart\'s oxygen demand while waiting for paramedics.',
+      ),
+      EmergencyQuizQuestion(
+        question: 'If a heart attack patient collapses and stops breathing normally, what must you do?',
+        options: [
+          'Wait for them to wake up',
+          'Switch immediately to Adult CPR',
+          'Give them another aspirin',
+        ],
+        correctIndex: 1,
+        explanation: 'If they become unresponsive and stop breathing normally, cardiac arrest has occurred — start CPR immediately.',
+      ),
+    ],
   ),
 ];
