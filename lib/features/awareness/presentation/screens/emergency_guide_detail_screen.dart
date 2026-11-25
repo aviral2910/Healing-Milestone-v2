@@ -21,6 +21,8 @@ class EmergencyGuideDetailScreen extends ConsumerWidget {
     final awarenessState = ref.watch(awarenessProvider);
     final s = AwarenessStrings(awarenessState.language);
     final isCompleted = awarenessState.completedGuideIds.contains(guide.id);
+    final totalQuizCount = guide.quizzes.length +
+        getScienceQuizzes(guide.id, awarenessState.language).length;
 
     return Scaffold(
       appBar: AppBar(
@@ -50,81 +52,56 @@ class EmergencyGuideDetailScreen extends ConsumerWidget {
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 48),
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 40),
         children: [
-          // Editorial Hero Header
+          // 1. Title & Full "When to Call Emergency" (never collapsed)
+          Text(
+            guide.title,
+            style: theme.textTheme.headlineLarge?.copyWith(fontSize: 26),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            s.stepsSubtitle(guide.steps.length),
+            style: theme.textTheme.bodySmall,
+          ),
+          const SizedBox(height: 14),
           Container(
-            padding: const EdgeInsets.all(18),
+            padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: theme.cardColor,
-              borderRadius: BorderRadius.circular(22),
-              border: Border.all(color: theme.dividerColor),
+              color: primary.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: primary.withValues(alpha: 0.25)),
             ),
-            child: Column(
+            child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: primary.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(guide.category.icon, color: primary, size: 22),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(guide.title, style: theme.textTheme.titleLarge),
-                          const SizedBox(height: 2),
-                          Text(
-                            s.stepsSubtitle(guide.steps.length),
-                            style: theme.textTheme.bodySmall,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: primary.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: primary.withValues(alpha: 0.22)),
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(Icons.emergency_outlined, color: primary, size: 18),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          guide.whenToCallEmergency,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurface,
-                            height: 1.45,
-                          ),
-                        ),
-                      ),
-                    ],
+                Icon(Icons.emergency_outlined, color: primary, size: 20),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    guide.whenToCallEmergency,
+                    style: theme.textTheme.bodyMedium?.copyWith(height: 1.5),
                   ),
                 ),
-                const SizedBox(height: 14),
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: FilledButton.icon(
+              ],
+            ),
+          ),
+          const SizedBox(height: 18),
+
+          // 2. Main Guided Steps CTA (+ CPR Coach if applicable)
+          Row(
+            children: [
+              Expanded(
+                flex: 3,
+                child: SizedBox(
+                  height: 54,
+                  child: FilledButton(
                     style: FilledButton.styleFrom(
                       backgroundColor: primary,
                       foregroundColor: theme.colorScheme.onPrimary,
+                      padding: const EdgeInsets.symmetric(horizontal: 18),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(16),
                       ),
                     ),
                     onPressed: () {
@@ -134,24 +111,59 @@ class EmergencyGuideDetailScreen extends ConsumerWidget {
                         ),
                       );
                     },
-                    icon: const Icon(Icons.volume_up_rounded, size: 20),
-                    label: Text(
-                      s.startHandsFree,
-                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.play_arrow_rounded, size: 22),
+                        const SizedBox(width: 6),
+                        Text(
+                          s.startHandsFree,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 15,
+                          ),
+                        ),
+                        if (!guide.hasMetronome) ...[
+                          const Spacer(),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.onPrimary
+                                  .withValues(alpha: 0.16),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              '${guide.steps.length}',
+                              style: TextStyle(
+                                color: theme.colorScheme.onPrimary,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
                 ),
-                if (guide.hasMetronome) ...[
-                  const SizedBox(height: 10),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 46,
+              ),
+              if (guide.hasMetronome) ...[
+                const SizedBox(width: 10),
+                Expanded(
+                  flex: 2,
+                  child: SizedBox(
+                    height: 54,
                     child: OutlinedButton.icon(
                       style: OutlinedButton.styleFrom(
+                        backgroundColor: theme.cardColor,
                         foregroundColor: theme.colorScheme.onSurface,
                         side: BorderSide(color: theme.dividerColor),
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(16),
                         ),
                       ),
                       onPressed: () {
@@ -164,159 +176,28 @@ class EmergencyGuideDetailScreen extends ConsumerWidget {
                       icon: Icon(Icons.favorite_outline,
                           color: primary, size: 18),
                       label: Text(
-                        s.openCprCoach,
+                        s.cprCoach,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: const TextStyle(fontWeight: FontWeight.w700),
                       ),
                     ),
                   ),
-                ],
+                ),
               ],
-            ),
+            ],
           ),
 
           const SizedBox(height: 24),
 
-          // Connected Vertical Timeline (all steps visible)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(s.stepsHeading, style: theme.textTheme.titleLarge),
-              Text(
-                s.tapStepHint,
-                style: theme.textTheme.bodySmall,
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-
-          ...List.generate(guide.steps.length, (index) {
-            final step = guide.steps[index];
-            final isLast = index == guide.steps.length - 1;
-
-            return InkWell(
-              borderRadius: BorderRadius.circular(12),
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => HandsFreeGuideScreen(
-                      guide: guide,
-                      initialStepIndex: index,
-                    ),
-                  ),
-                );
-              },
-              child: IntrinsicHeight(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Left timeline rail
-                    SizedBox(
-                      width: 30,
-                      child: Column(
-                        children: [
-                          Container(
-                            width: 26,
-                            height: 26,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: theme.cardColor,
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: primary.withValues(alpha: 0.55),
-                                width: 1.5,
-                              ),
-                            ),
-                            child: Text(
-                              '${step.stepNumber}',
-                              style: theme.textTheme.labelSmall?.copyWith(
-                                color: primary,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                          ),
-                          if (!isLast)
-                            Expanded(
-                              child: Container(
-                                width: 1.5,
-                                margin: const EdgeInsets.symmetric(vertical: 4),
-                                color: theme.dividerColor,
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-
-                    // Right step content directly on page background
-                    Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.only(bottom: isLast ? 8 : 22),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    step.title,
-                                    style: theme.textTheme.titleMedium,
-                                  ),
-                                ),
-                                Icon(
-                                  Icons.volume_up_outlined,
-                                  size: 16,
-                                  color: theme.colorScheme.onSurface
-                                      .withValues(alpha: 0.35),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              step.instruction,
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: theme.colorScheme.onSurface
-                                    .withValues(alpha: 0.85),
-                                height: 1.55,
-                              ),
-                            ),
-                            if (step.criticalNote != null) ...[
-                              const SizedBox(height: 6),
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Icon(Icons.info_outline,
-                                      color: primary, size: 15),
-                                  const SizedBox(width: 6),
-                                  Expanded(
-                                    child: Text(
-                                      step.criticalNote!,
-                                      style: theme.textTheme.bodySmall
-                                          ?.copyWith(color: primary),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }),
-
-          const SizedBox(height: 14),
-
-          // Avoid These Mistakes (always visible)
+          // 3. Avoid These Mistakes (clean, scannable)
           Container(
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: theme.colorScheme.error.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(16),
+              color: theme.colorScheme.error.withValues(alpha: 0.07),
+              borderRadius: BorderRadius.circular(18),
               border: Border.all(
-                color: theme.colorScheme.error.withValues(alpha: 0.3),
+                color: theme.colorScheme.error.withValues(alpha: 0.25),
               ),
             ),
             child: Column(
@@ -342,7 +223,7 @@ class EmergencyGuideDetailScreen extends ConsumerWidget {
                 const SizedBox(height: 10),
                 ...guide.doNots.map(
                   (item) => Padding(
-                    padding: const EdgeInsets.only(bottom: 6),
+                    padding: const EdgeInsets.only(bottom: 7),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -356,7 +237,8 @@ class EmergencyGuideDetailScreen extends ConsumerWidget {
                           child: Text(
                             item,
                             style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurface,
+                              color: theme.colorScheme.onSurface
+                                  .withValues(alpha: 0.85),
                               height: 1.45,
                             ),
                           ),
@@ -369,169 +251,113 @@ class EmergencyGuideDetailScreen extends ConsumerWidget {
             ),
           ),
 
-          // Separate Science & Biology Entry
-          const SizedBox(height: 16),
-          InkWell(
-            borderRadius: BorderRadius.circular(18),
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => EmergencyScienceScreen(guide: guide),
-                ),
-              );
-            },
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: theme.cardColor,
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: theme.dividerColor),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 42,
-                    height: 42,
-                    decoration: BoxDecoration(
-                      color: primary.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(
-                      Icons.biotech_outlined,
-                      color: primary,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          s.whyItWorks,
-                          style: theme.textTheme.titleMedium,
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          s.whyItWorksSubtitle,
-                          style: theme.textTheme.bodySmall,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 15,
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          const SizedBox(height: 20),
 
-          // Separate Test Yourself Entry (enhanced card when passed + always Retake)
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: isCompleted
-                  ? primary.withValues(alpha: 0.10)
-                  : theme.cardColor,
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(
-                color: isCompleted
-                    ? primary.withValues(alpha: 0.45)
-                    : theme.dividerColor,
-                width: isCompleted ? 1.5 : 1,
+          // 4. Compact 2-Column Footer: Why It Works + Test Yourself
+          Row(
+            children: [
+              Expanded(
+                child: _FooterActionTile(
+                  icon: Icons.biotech_outlined,
+                  title: s.whyItWorks,
+                  subtitle: s.learnWhy,
+                  highlighted: false,
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => EmergencyScienceScreen(guide: guide),
+                      ),
+                    );
+                  },
+                ),
               ),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: isCompleted
-                        ? primary
-                        : primary.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    isCompleted ? Icons.verified_rounded : Icons.quiz_outlined,
-                    color: isCompleted ? theme.colorScheme.onPrimary : primary,
-                    size: 22,
-                  ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _FooterActionTile(
+                  icon: isCompleted
+                      ? Icons.verified_rounded
+                      : Icons.quiz_outlined,
+                  title: isCompleted ? s.testPassed : s.testYourself,
+                  subtitle: isCompleted
+                      ? s.retake
+                      : '$totalQuizCount ${awarenessState.language == AwarenessLanguage.hi ? 'प्रश्न' : 'questions'}',
+                  highlighted: isCompleted,
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => EmergencyQuizScreen(guide: guide),
+                      ),
+                    );
+                  },
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        isCompleted ? s.testPassed : s.testYourself,
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          color: isCompleted ? primary : null,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        isCompleted
-                            ? s.passedBadge
-                            : s.quizSummary(
-                                guide.quizzes.length +
-                                    getScienceQuizzes(
-                                      guide.id,
-                                      awarenessState.language,
-                                    ).length,
-                              ),
-                        style: theme.textTheme.bodySmall,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 10),
-                if (isCompleted)
-                  OutlinedButton.icon(
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: primary,
-                      side: BorderSide(color: primary.withValues(alpha: 0.5)),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => EmergencyQuizScreen(guide: guide),
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.refresh_rounded, size: 16),
-                    label: Text(s.retake),
-                  )
-                else
-                  FilledButton(
-                    style: FilledButton.styleFrom(
-                      backgroundColor: primary,
-                      foregroundColor: theme.colorScheme.onPrimary,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => EmergencyQuizScreen(guide: guide),
-                        ),
-                      );
-                    },
-                    child: Text(s.start),
-                  ),
-              ],
-            ),
+              ),
+            ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _FooterActionTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final bool highlighted;
+  final VoidCallback onTap;
+
+  const _FooterActionTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.highlighted,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final primary = theme.colorScheme.primary;
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(18),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: highlighted
+              ? primary.withValues(alpha: 0.10)
+              : theme.cardColor,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: highlighted
+                ? primary.withValues(alpha: 0.45)
+                : theme.dividerColor,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, color: primary, size: 22),
+            const SizedBox(height: 10),
+            Text(
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontSize: 14,
+                color: highlighted ? primary : null,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              subtitle,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.bodySmall,
+            ),
+          ],
+        ),
       ),
     );
   }

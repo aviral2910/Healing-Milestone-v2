@@ -32,11 +32,13 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
 
   Timer? _compressionTimer;
   Timer? _breathTimer;
+  Timer? _elapsedTimer;
   late AnimationController _pulseController;
 
   bool _isRunning = false;
   bool _isBreathPhase = false;
   int _breathSecondsLeft = _breathPauseSeconds;
+  int _elapsedSeconds = 0;
 
   bool _beatSoundEnabled = true;
   bool _voiceEnabled = true;
@@ -130,6 +132,7 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
   void dispose() {
     _compressionTimer?.cancel();
     _breathTimer?.cancel();
+    _elapsedTimer?.cancel();
     _tts.stop();
     _tickPlayerA.dispose();
     _tickPlayerB.dispose();
@@ -162,7 +165,26 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
                 : '30 to 2 C P R. Give 30 compressions, then 2 rescue breaths.'),
       );
     }
+    _startElapsedTimer();
     _startCompressionLoop();
+  }
+
+  void _startElapsedTimer() {
+    _elapsedTimer?.cancel();
+    _elapsedTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted || !_isRunning) return;
+      setState(() => _elapsedSeconds++);
+      // AHA 2-minute rescuer swap reminder
+      if (_elapsedSeconds > 0 && _elapsedSeconds % 120 == 0 && _voiceEnabled) {
+        final isHi =
+            ref.read(awarenessProvider).language == AwarenessLanguage.hi;
+        _tts.speak(
+          isHi
+              ? 'दो मिनट हो गए। यदि कोई साथ है तो मदद करने वाले बदलें।'
+              : 'Two minutes elapsed. Switch rescuers if someone is with you.',
+        );
+      }
+    });
   }
 
   void _startCompressionLoop() {
@@ -177,6 +199,7 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
   void _stopMetronome() {
     _compressionTimer?.cancel();
     _breathTimer?.cancel();
+    _elapsedTimer?.cancel();
     _tts.stop();
     setState(() {
       _isRunning = false;
@@ -189,6 +212,7 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
     setState(() {
       _compressionCount = 0;
       _cycleCount = 1;
+      _elapsedSeconds = 0;
       _breathSecondsLeft = _breathPauseSeconds;
     });
   }
@@ -265,12 +289,19 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
     });
   }
 
+  String _formatElapsed(int totalSeconds) {
+    final mins = (totalSeconds ~/ 60).toString().padLeft(2, '0');
+    final secs = (totalSeconds % 60).toString().padLeft(2, '0');
+    return '$mins:$secs';
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
     final awarenessState = ref.watch(awarenessProvider);
     final s = AwarenessStrings(awarenessState.language);
+    final isHi = awarenessState.language == AwarenessLanguage.hi;
     final emergencyNumber = awarenessState.emergencyNumber;
 
     final double progress = !_isRunning
@@ -278,6 +309,9 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
         : _isBreathPhase
             ? _breathSecondsLeft / _breathPauseSeconds
             : _compressionCount / 30.0;
+
+    final int breathNumber = _breathSecondsLeft >= 3 ? 1 : 2;
+    final bool hasProgress = _compressionCount > 0 || _elapsedSeconds > 0;
 
     return Scaffold(
       appBar: AppBar(
@@ -295,7 +329,7 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
                   borderRadius: BorderRadius.circular(20),
                 ),
               ),
-              onPressed: () => launchEmergencyDialer(context, emergencyNumber),
+              onPressed: () => showEmergencySosSheet(context, ref),
               icon: const Icon(Icons.call_outlined, size: 16),
               label: Text(
                 'SOS $emergencyNumber',
@@ -307,7 +341,7 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
       ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+          padding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
           child: Column(
             children: [
               // Mode Toggle
@@ -340,12 +374,62 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
                   }
                 },
               ),
-              const SizedBox(height: 8),
-              Text(
-                _handsOnlyMode ? s.continuousDesc : s.breaths302Desc,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
-                ),
+              const SizedBox(height: 10),
+
+              // Mode description + Live Elapsed Timer Pill
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Flexible(
+                    child: Text(
+                      _handsOnlyMode ? s.continuousDesc : s.breaths302Desc,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color:
+                            theme.colorScheme.onSurface.withValues(alpha: 0.65),
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: theme.cardColor,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: _isRunning
+                            ? primary.withValues(alpha: 0.45)
+                            : theme.dividerColor,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.timer_outlined,
+                          size: 13,
+                          color: _isRunning
+                              ? primary
+                              : theme.colorScheme.onSurface
+                                  .withValues(alpha: 0.55),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          _formatElapsed(_elapsedSeconds),
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: _isRunning
+                                ? primary
+                                : theme.colorScheme.onSurface,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
 
               // Visual Metronome Ring + Breath Phase
@@ -362,17 +446,17 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
                         return Transform.scale(
                           scale: scale,
                           child: SizedBox(
-                            width: 240,
-                            height: 240,
+                            width: 244,
+                            height: 244,
                             child: Stack(
                               alignment: Alignment.center,
                               children: [
                                 SizedBox(
-                                  width: 236,
-                                  height: 236,
+                                  width: 240,
+                                  height: 240,
                                   child: CircularProgressIndicator(
                                     value: progress,
-                                    strokeWidth: 6,
+                                    strokeWidth: 6.5,
                                     backgroundColor: theme.dividerColor,
                                     valueColor: AlwaysStoppedAnimation<Color>(
                                       _isBreathPhase
@@ -382,8 +466,8 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
                                   ),
                                 ),
                                 Container(
-                                  width: 214,
-                                  height: 214,
+                                  width: 216,
+                                  height: 216,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
                                     color: _isRunning
@@ -399,6 +483,15 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
                                               : primary.withValues(alpha: 0.5))
                                           : theme.dividerColor,
                                     ),
+                                    boxShadow: _isRunning && !_isBreathPhase
+                                        ? [
+                                            BoxShadow(
+                                              color: primary.withValues(
+                                                  alpha: 0.2),
+                                              blurRadius: 24,
+                                            ),
+                                          ]
+                                        : null,
                                   ),
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
@@ -407,7 +500,9 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
                                         !_isRunning
                                             ? s.tapToStart
                                             : _isBreathPhase
-                                                ? s.twoBreaths
+                                                ? (isHi
+                                                    ? 'श्वास $breathNumber / 2'
+                                                    : 'BREATH $breathNumber OF 2')
                                                 : s.push,
                                         style: theme.textTheme.labelSmall
                                             ?.copyWith(
@@ -415,7 +510,7 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
                                               ? theme.colorScheme.onSurface
                                               : primary,
                                           letterSpacing: 1.5,
-                                          fontWeight: FontWeight.w700,
+                                          fontWeight: FontWeight.w800,
                                         ),
                                       ),
                                       const SizedBox(height: 4),
@@ -443,7 +538,9 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
                                                 : 'BPM • 30:2 Cycle')
                                             : _isBreathPhase
                                                 ? s.giveTwoBreaths
-                                                : 'of 30 • Cycle $_cycleCount',
+                                                : (isHi
+                                                    ? '30 में से • चक्र $_cycleCount'
+                                                    : 'of 30 • Cycle $_cycleCount'),
                                         style: theme.textTheme.bodySmall,
                                       ),
                                     ],
@@ -459,7 +556,7 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
                 ),
               ),
 
-              // Quick Technique Strip (Adapts to Hands-Only vs 30:2)
+              // Quick Technique Strip
               Row(
                 children: [
                   const _MetricChip(label: 'RATE', value: '100–120/m'),
@@ -472,78 +569,95 @@ class _CprMetronomeScreenState extends ConsumerState<CprMetronomeScreen>
                   ),
                 ],
               ),
-              const SizedBox(height: 14),
-
-              // Audio / Voice / Haptics Controls
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    _ThemeToggleChip(
-                      label: s.beatSound,
-                      icon: _beatSoundEnabled
-                          ? Icons.music_note_rounded
-                          : Icons.music_off_rounded,
-                      selected: _beatSoundEnabled,
-                      onTap: () =>
-                          setState(() => _beatSoundEnabled = !_beatSoundEnabled),
-                    ),
-                    const SizedBox(width: 8),
-                    _ThemeToggleChip(
-                      label: s.voice,
-                      icon: _voiceEnabled ? Icons.volume_up : Icons.volume_off,
-                      selected: _voiceEnabled,
-                      onTap: () {
-                        setState(() => _voiceEnabled = !_voiceEnabled);
-                        if (!_voiceEnabled) _tts.stop();
-                      },
-                    ),
-                    const SizedBox(width: 8),
-                    _ThemeToggleChip(
-                      label: s.haptics,
-                      icon: Icons.vibration,
-                      selected: _hapticsEnabled,
-                      onTap: () =>
-                          setState(() => _hapticsEnabled = !_hapticsEnabled),
-                    ),
-                    const SizedBox(width: 4),
-                    IconButton(
-                      tooltip: 'Reset counter',
-                      onPressed: _resetCounter,
-                      icon: const Icon(Icons.refresh_rounded, size: 20),
-                    ),
-                  ],
-                ),
-              ),
               const SizedBox(height: 12),
 
-              // Primary Start / Pause Button
-              SizedBox(
-                width: double.infinity,
-                height: 54,
-                child: FilledButton.icon(
-                  style: FilledButton.styleFrom(
-                    backgroundColor: _isRunning ? theme.cardColor : primary,
-                    foregroundColor: _isRunning
-                        ? theme.colorScheme.onSurface
-                        : theme.colorScheme.onPrimary,
-                    side: _isRunning
-                        ? BorderSide(color: theme.dividerColor)
-                        : null,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+              // Centered Audio / Voice / Haptics Controls
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _ThemeToggleChip(
+                    label: s.beatSound,
+                    icon: _beatSoundEnabled
+                        ? Icons.music_note_rounded
+                        : Icons.music_off_rounded,
+                    selected: _beatSoundEnabled,
+                    onTap: () =>
+                        setState(() => _beatSoundEnabled = !_beatSoundEnabled),
+                  ),
+                  const SizedBox(width: 8),
+                  _ThemeToggleChip(
+                    label: s.voice,
+                    icon: _voiceEnabled ? Icons.volume_up : Icons.volume_off,
+                    selected: _voiceEnabled,
+                    onTap: () {
+                      setState(() => _voiceEnabled = !_voiceEnabled);
+                      if (!_voiceEnabled) _tts.stop();
+                    },
+                  ),
+                  const SizedBox(width: 8),
+                  _ThemeToggleChip(
+                    label: s.haptics,
+                    icon: Icons.vibration,
+                    selected: _hapticsEnabled,
+                    onTap: () =>
+                        setState(() => _hapticsEnabled = !_hapticsEnabled),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+
+              // Primary Start / Pause + Reset when active
+              Row(
+                children: [
+                  if (hasProgress) ...[
+                    SizedBox(
+                      height: 54,
+                      width: 56,
+                      child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          padding: EdgeInsets.zero,
+                          backgroundColor: theme.cardColor,
+                          side: BorderSide(color: theme.dividerColor),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        onPressed: _resetCounter,
+                        child: const Icon(Icons.refresh_rounded, size: 22),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                  ],
+                  Expanded(
+                    child: SizedBox(
+                      height: 54,
+                      child: FilledButton.icon(
+                        style: FilledButton.styleFrom(
+                          backgroundColor:
+                              _isRunning ? theme.cardColor : primary,
+                          foregroundColor: _isRunning
+                              ? theme.colorScheme.onSurface
+                              : theme.colorScheme.onPrimary,
+                          side: _isRunning
+                              ? BorderSide(color: theme.dividerColor)
+                              : null,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        onPressed: _toggleMetronome,
+                        icon: Icon(_isRunning ? Icons.pause : Icons.play_arrow),
+                        label: Text(
+                          _isRunning ? s.pauseCpr : s.startBeat,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                  onPressed: _toggleMetronome,
-                  icon: Icon(_isRunning ? Icons.pause : Icons.play_arrow),
-                  label: Text(
-                    _isRunning ? s.pauseCpr : s.startBeat,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
+                ],
               ),
             ],
           ),

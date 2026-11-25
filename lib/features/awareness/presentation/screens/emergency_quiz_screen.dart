@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/awareness_providers.dart';
+import '../../data/awareness_readiness.dart';
 import '../../data/awareness_strings.dart';
 import '../../data/emergency_science_quizzes.dart';
 import '../../domain/emergency_guide_model.dart';
@@ -277,6 +278,15 @@ class _EmergencyQuizScreenState extends ConsumerState<EmergencyQuizScreen> {
     AwarenessStrings s,
   ) {
     final passedAll = _correctCount == total;
+    final state = ref.watch(awarenessProvider);
+    final unlockedBadge = passedAll
+        ? readinessBadges.cast<ReadinessBadge?>().firstWhere(
+              (b) =>
+                  b!.guideIds.contains(widget.guide.id) &&
+                  b.isUnlocked(state.completedGuideIds),
+              orElse: () => null,
+            )
+        : null;
 
     return Center(
       child: Container(
@@ -314,6 +324,51 @@ class _EmergencyQuizScreenState extends ConsumerState<EmergencyQuizScreen> {
               style: theme.textTheme.bodySmall,
               textAlign: TextAlign.center,
             ),
+            if (unlockedBadge != null) ...[
+              const SizedBox(height: 14),
+              TweenAnimationBuilder<double>(
+                tween: Tween(begin: 0.6, end: 1.0),
+                duration: const Duration(milliseconds: 650),
+                curve: Curves.elasticOut,
+                builder: (context, scale, child) => Transform.scale(
+                  scale: scale,
+                  child: child,
+                ),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: primary.withValues(alpha: 0.14),
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: primary.withValues(alpha: 0.45)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: primary.withValues(alpha: 0.22),
+                        blurRadius: 14,
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(unlockedBadge.icon, size: 18, color: primary),
+                      const SizedBox(width: 8),
+                      Text(
+                        state.language == AwarenessLanguage.hi
+                            ? 'बैज अनलॉक: ${unlockedBadge.title(state.language)}'
+                            : 'Badge Unlocked: ${unlockedBadge.title(state.language)}',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: primary,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
             const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,

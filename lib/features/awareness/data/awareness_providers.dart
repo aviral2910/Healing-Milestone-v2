@@ -33,9 +33,12 @@ class EmergencyRegionOption {
 }
 
 const List<EmergencyRegionOption> emergencyRegions = [
-  EmergencyRegionOption(region: 'India / EU (Unified)', code: 'IN / EU', number: '112'),
-  EmergencyRegionOption(region: 'India (Ambulance)', code: 'IN', number: '108'),
-  EmergencyRegionOption(region: 'United States & Canada', code: 'US / CA', number: '911'),
+  EmergencyRegionOption(
+      region: 'India / EU (Unified)', code: 'IN / EU', number: '112'),
+  EmergencyRegionOption(
+      region: 'India (Ambulance)', code: 'IN', number: '108'),
+  EmergencyRegionOption(
+      region: 'United States & Canada', code: 'US / CA', number: '911'),
   EmergencyRegionOption(region: 'United Kingdom', code: 'UK', number: '999'),
   EmergencyRegionOption(region: 'Australia', code: 'AU', number: '000'),
 ];
@@ -85,10 +88,28 @@ class AwarenessNotifier extends Notifier<AwarenessState> {
     return const AwarenessState();
   }
 
+  (String, String) _detectLocaleDefault() {
+    final country =
+        WidgetsBinding.instance.platformDispatcher.locale.countryCode?.toUpperCase();
+    switch (country) {
+      case 'US':
+      case 'CA':
+        return ('911', 'US / CA');
+      case 'GB':
+      case 'UK':
+        return ('999', 'UK');
+      case 'AU':
+        return ('000', 'AU');
+      default:
+        return ('112', 'IN / EU');
+    }
+  }
+
   Future<void> _loadFromPrefs() async {
     final prefs = await SharedPreferences.getInstance();
-    final savedNumber = prefs.getString(_keyEmergencyNumber) ?? '112';
-    final savedRegion = prefs.getString(_keyEmergencyRegion) ?? 'IN / EU';
+    final (defaultNum, defaultRegion) = _detectLocaleDefault();
+    final savedNumber = prefs.getString(_keyEmergencyNumber) ?? defaultNum;
+    final savedRegion = prefs.getString(_keyEmergencyRegion) ?? defaultRegion;
     final savedGuides = prefs.getStringList(_keyCompletedGuides) ?? [];
     final savedLang = prefs.getString(_keyLanguage) ?? 'en';
     final savedDepth = prefs.getString(_keyScienceDepth) ?? 'simple';
@@ -152,4 +173,179 @@ Future<void> launchEmergencyDialer(BuildContext context, String number) async {
       ),
     );
   }
+}
+
+void showEmergencySosSheet(BuildContext context, WidgetRef ref) {
+  final theme = Theme.of(context);
+  final primary = theme.colorScheme.primary;
+  final customController = TextEditingController();
+
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: theme.cardColor,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    ),
+    builder: (sheetCtx) {
+      return Consumer(
+        builder: (ctx, sheetRef, _) {
+          final state = sheetRef.watch(awarenessProvider);
+          final isHi = state.language == AwarenessLanguage.hi;
+
+          return Padding(
+            padding: EdgeInsets.fromLTRB(
+              20,
+              14,
+              20,
+              MediaQuery.of(sheetCtx).viewInsets.bottom + 24,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 36,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: theme.dividerColor,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // Primary Call CTA (prevents accidental 1-tap dialing)
+                SizedBox(
+                  width: double.infinity,
+                  height: 54,
+                  child: FilledButton.icon(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: primary,
+                      foregroundColor: theme.colorScheme.onPrimary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.pop(sheetCtx);
+                      launchEmergencyDialer(context, state.emergencyNumber);
+                    },
+                    icon: const Icon(Icons.call_rounded, size: 20),
+                    label: Text(
+                      isHi
+                          ? 'अभी ${state.emergencyNumber} पर कॉल करें'
+                          : 'Call ${state.emergencyNumber} Now',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 18),
+                Text(
+                  isHi
+                      ? 'क्षेत्र या नंबर बदलें'
+                      : 'Switch Emergency Number',
+                  style: theme.textTheme.titleMedium,
+                ),
+                const SizedBox(height: 10),
+                ...emergencyRegions.map((opt) {
+                  final selected = state.emergencyNumber == opt.number &&
+                      state.emergencyRegionCode == opt.code;
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(14),
+                      onTap: () {
+                        sheetRef
+                            .read(awarenessProvider.notifier)
+                            .setEmergencyRegion(opt.number, opt.code);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 11,
+                        ),
+                        decoration: BoxDecoration(
+                          color: selected
+                              ? primary.withValues(alpha: 0.12)
+                              : theme.scaffoldBackgroundColor,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: selected ? primary : theme.dividerColor,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Text(
+                              opt.number,
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                color: primary,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                opt.region,
+                                style: theme.textTheme.bodyMedium,
+                              ),
+                            ),
+                            if (selected)
+                              Icon(Icons.check_circle,
+                                  color: primary, size: 18),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: customController,
+                        keyboardType: TextInputType.phone,
+                        decoration: InputDecoration(
+                          hintText: isHi
+                              ? 'या कस्टम नंबर दर्ज करें...'
+                              : 'Or enter custom number...',
+                          isDense: true,
+                          filled: true,
+                          fillColor: theme.scaffoldBackgroundColor,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: theme.dividerColor),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: theme.dividerColor),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    FilledButton(
+                      onPressed: () {
+                        final num = customController.text.trim();
+                        if (num.isNotEmpty) {
+                          sheetRef
+                              .read(awarenessProvider.notifier)
+                              .setEmergencyRegion(num, 'CUSTOM');
+                          customController.clear();
+                        }
+                      },
+                      child: Text(isHi ? 'सहेजें' : 'Save'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          );
+        },
+      );
+    },
+  );
 }

@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:healing_milestones/features/awareness/data/awareness_providers.dart';
+import 'package:healing_milestones/features/awareness/data/awareness_readiness.dart';
 import 'package:healing_milestones/features/awareness/data/emergency_guides_data.dart';
 import 'package:healing_milestones/features/awareness/data/emergency_guides_data_hi.dart';
 import 'package:healing_milestones/features/awareness/data/emergency_science_data.dart';
@@ -57,6 +58,10 @@ void main() {
         }
       }
     }
+
+    final badgeGuideIds = readinessBadges.expand((b) => b.guideIds).toSet();
+    final allGuideIds = emergencyGuidesData.map((g) => g.id).toSet();
+    expect(badgeGuideIds, equals(allGuideIds));
   });
 
   testWidgets(
@@ -75,17 +80,17 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('SOS 112'), findsOneWidget);
-    expect(find.text('IN / EU'), findsOneWidget);
     expect(find.text('CPR Coach'), findsOneWidget);
+    expect(find.text('EMERGENCY READINESS'), findsOneWidget);
     expect(find.text('First-Aid & Emergency'), findsOneWidget);
     expect(find.text('Adult CPR & AED'), findsOneWidget);
 
-    // Search filters guides offline and hides quick emergency card
+    // Search filters guides offline and hides readiness & CPR cards
     await tester.enterText(find.byType(TextField), 'snake');
     await tester.pumpAndSettle();
 
-    expect(find.text('SOS 112'), findsNothing);
+    expect(find.text('CPR Coach'), findsNothing);
+    expect(find.text('EMERGENCY READINESS'), findsNothing);
     expect(find.text('Snake Bite First Aid'), findsOneWidget);
     expect(find.text('Adult CPR & AED'), findsNothing);
 

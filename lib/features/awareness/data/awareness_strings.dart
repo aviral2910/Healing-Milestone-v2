@@ -14,8 +14,8 @@ class AwarenessStrings {
 
   String get cprCoach => isHi ? 'CPR कोच' : 'CPR Coach';
   String get disclaimer => isHi
-      ? 'AHA, WHO और Red Cross दिशानिर्देशों पर आधारित। केवल शैक्षिक और आपातकालीन संदर्भ के लिए — पेशेवर चिकित्सा देखभाल का विकल्प नहीं।'
-      : 'Based on AHA, WHO & Red Cross guidelines. For educational & emergency reference only; not a substitute for professional medical care.';
+      ? 'AHA, WHO व Red Cross आधारित • केवल शैक्षिक संदर्भ'
+      : 'AHA, WHO & Red Cross guidelines • Educational reference only';
 
   String get firstAidTitle =>
       isHi ? 'प्राथमिक चिकित्सा और आपातकाल' : 'First-Aid & Emergency';
@@ -40,10 +40,12 @@ class AwarenessStrings {
       ? '$count चरण • हैंड्स-फ़्री वॉइस तैयार'
       : '$count steps • Hands-free voice ready';
   String get startHandsFree =>
-      isHi ? 'हैंड्स-फ़्री गाइड शुरू करें' : 'Start Hands-Free Guide';
+      isHi ? 'गाइड शुरू करें' : 'Guided Steps';
   String get openCprCoach =>
       isHi ? '110 BPM CPR कोच खोलें' : 'Open 110 BPM CPR Coach';
   String get stepsHeading => isHi ? 'चरण' : 'Steps';
+  String get titlesLabel => isHi ? 'शीर्षक' : 'Titles';
+  String get detailsLabel => isHi ? 'विवरण' : 'Details';
   String get tapStepHint =>
       isHi ? 'हैंड्स-फ़्री के लिए टैप करें' : 'Tap step for hands-free';
   String get avoidMistakes =>
