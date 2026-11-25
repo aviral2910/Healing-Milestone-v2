@@ -12,7 +12,10 @@ import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 
 final suggestedUsersProvider = FutureProvider.autoDispose<List<UserModel>>((ref) async {
   final repo = ref.read(userRepositoryProvider);
-  return await repo.getSuggestedUsers();
+  final currentUid = ref.read(currentUserProvider)?.userId;
+  final users = await repo.getSuggestedUsers();
+  if (currentUid == null) return users;
+  return users.where((u) => u.userId != currentUid).toList();
 });
 
 class SuggestedFollowsScreen extends ConsumerStatefulWidget {
@@ -50,8 +53,10 @@ class _SuggestedFollowsScreenState extends ConsumerState<SuggestedFollowsScreen>
 
     try {
       final authNotifier = ref.read(authProvider.notifier);
-      for (final userId in _selectedUserIds) {
-        await authNotifier.toggleFollow(userId);
+      if (_selectedUserIds.isNotEmpty) {
+        await Future.wait(
+          _selectedUserIds.map((userId) => authNotifier.toggleFollow(userId)),
+        );
       }
       
       if (mounted) {

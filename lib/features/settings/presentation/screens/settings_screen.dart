@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -43,13 +45,23 @@ class SettingsScreen extends ConsumerWidget {
             context.push(AppRoutes.accessibilitySettings);
           },
         ),
+        if (!kReleaseMode)
+          _buildOptionCard(
+            context,
+            icon: Icons.developer_mode_outlined,
+            title: 'UAT Mode',
+            subtitle: 'Enable testing features and dummy data',
+            onTap: () {
+              context.push(AppRoutes.uat);
+            },
+          ),
         _buildOptionCard(
           context,
           icon: Icons.bug_report_outlined,
-          title: 'UAT Mode',
-          subtitle: 'Enable testing features and dummy data',
+          title: 'Report a Bug',
+          subtitle: 'Help us fix issues or glitches you noticed',
           onTap: () {
-            context.push(AppRoutes.uat);
+            _showReportBugSheet(context, ref);
           },
         ),
         _buildOptionCard(
@@ -472,5 +484,186 @@ String errorMessage = e.toString();
         );
       }
     );
+  }
+
+  void _showReportBugSheet(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final authUser = FirebaseAuth.instance.currentUser;
+    if (authUser == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please sign in first to submit a bug report.')),
+      );
+      return;
+    }
+
+    const categories = [
+      'Stories / Audio',
+      'Milestones',
+      'Biomarkers',
+      'UI / Display',
+      'Crash / Freeze',
+      'Other',
+    ];
+
+    final titleController = TextEditingController();
+    final descriptionController = TextEditingController();
+    String selectedCategory = categories.first;
+    bool isSubmitting = false;
+    String errorMessage = '';
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: theme.colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (sheetContext, setState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 20,
+                bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 24,
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.bug_report_outlined, color: theme.colorScheme.primary),
+                        const SizedBox(width: 10),
+                        Text(
+                          'Report a Bug',
+                          style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                        const Spacer(),
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: isSubmitting ? null : () => Navigator.pop(sheetContext),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Let us know what went wrong so we can fix it.',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: categories.map((category) {
+                        final isSelected = selectedCategory == category;
+                        return ChoiceChip(
+                          label: Text(category),
+                          selected: isSelected,
+                          onSelected: isSubmitting
+                              ? null
+                              : (_) => setState(() => selectedCategory = category),
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: titleController,
+                      enabled: !isSubmitting,
+                      textCapitalization: TextCapitalization.sentences,
+                      decoration: const InputDecoration(
+                        labelText: 'Short summary (optional)',
+                        hintText: 'e.g. Audio paused when switching tabs',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: descriptionController,
+                      enabled: !isSubmitting,
+                      maxLines: 4,
+                      textCapitalization: TextCapitalization.sentences,
+                      decoration: const InputDecoration(
+                        labelText: 'What happened?',
+                        hintText: 'Describe the issue and steps to reproduce...',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    if (errorMessage.isNotEmpty) ...[
+                      const SizedBox(height: 10),
+                      Text(
+                        errorMessage,
+                        style: TextStyle(color: theme.colorScheme.error, fontSize: 13),
+                      ),
+                    ],
+                    const SizedBox(height: 18),
+                    FilledButton(
+                      onPressed: isSubmitting
+                          ? null
+                          : () async {
+                              final description = descriptionController.text.trim();
+                              if (description.isEmpty) {
+                                setState(() => errorMessage = 'Please describe the bug before submitting.');
+                                return;
+                              }
+                              setState(() {
+                                isSubmitting = true;
+                                errorMessage = '';
+                              });
+                              try {
+                                final currentUser = ref.read(currentUserProvider);
+                                await FirebaseFirestore.instance.collection('reports').add({
+                                  'type': 'bug',
+                                  'category': selectedCategory,
+                                  'title': titleController.text.trim(),
+                                  'description': description,
+                                  'senderId': authUser.uid,
+                                  'senderEmail': authUser.email,
+                                  'username': currentUser?.username,
+                                  'platform': theme.platform.name,
+                                  'status': 'open',
+                                  'createdAt': FieldValue.serverTimestamp(),
+                                });
+                                if (sheetContext.mounted) {
+                                  Navigator.pop(sheetContext);
+                                }
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Bug report submitted. Thank you!')),
+                                  );
+                                }
+                              } catch (e) {
+                                setState(() {
+                                  isSubmitting = false;
+                                  errorMessage = 'Could not submit bug report. Please try again.';
+                                });
+                              }
+                            },
+                      style: FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                      child: isSubmitting
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Text('Submit Bug Report', style: TextStyle(fontWeight: FontWeight.w600)),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    ).whenComplete(() {
+      titleController.dispose();
+      descriptionController.dispose();
+    });
   }
 }

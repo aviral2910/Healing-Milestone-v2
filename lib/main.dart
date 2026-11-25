@@ -18,15 +18,25 @@ import 'core/services/app_update_service.dart';
 import 'core/services/ai_access_service.dart';
 import 'shared/widgets/app_update_gate.dart';
 
-// UAT Mode providers
+// UAT Mode providers (always disabled in release/production builds)
 class UatMode extends Notifier<bool> {
   @override
   bool build() => false;
+
+  @override
+  set state(bool value) {
+    super.state = kReleaseMode ? false : value;
+  }
 }
 final uatModeProvider = NotifierProvider<UatMode, bool>(UatMode.new);
 class DevicePreviewNotifier extends Notifier<bool> {
   @override
   bool build() => false;
+
+  @override
+  set state(bool value) {
+    super.state = kReleaseMode ? false : value;
+  }
 }
 final devicePreviewProvider = NotifierProvider<DevicePreviewNotifier, bool>(DevicePreviewNotifier.new);
 
@@ -116,7 +126,7 @@ class HealingMilestonesApp extends ConsumerWidget {
 
 
     return DevicePreview(
-      enabled: isDevicePreview,
+      enabled: !kReleaseMode && isDevicePreview,
       builder: (context) => MaterialApp.router(
         scaffoldMessengerKey: rootScaffoldMessengerKey,
         title: 'Healing Milestones',

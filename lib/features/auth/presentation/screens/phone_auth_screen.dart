@@ -68,11 +68,18 @@ class _PhoneAuthScreenState extends ConsumerState<PhoneAuthScreen> {
     final theme = Theme.of(context);
     final initialCountry = _getInitialCountryCode();
 
-    // Listen for global auth errors
+    // Listen for global auth errors only when this screen is active
     ref.listen<AsyncValue<AuthState>>(authProvider, (previous, next) {
-      if (next is AsyncError) {
+      if (next is AsyncError && (ModalRoute.of(context)?.isCurrent ?? false)) {
+        final cleaned = next.error
+            .toString()
+            .replaceAll(RegExp(r'^Exception:\s*'), '')
+            .replaceAll(RegExp(r'\[[^\]]+\]\s*'), '')
+            .trim();
         setState(() {
-          _error = next.error.toString();
+          _error = cleaned.isEmpty
+              ? 'Could not send verification code. Please try again.'
+              : cleaned;
           _isLoading = false;
         });
       }

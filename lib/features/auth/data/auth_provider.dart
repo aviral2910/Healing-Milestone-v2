@@ -74,9 +74,13 @@ class AuthNotifier extends Notifier<AsyncValue<AuthState>> {
       if (cachedUserStr != null) {
         try {
           final cachedUserModel = UserModel.fromMap(jsonDecode(cachedUserStr));
+          final hasUsername = cachedUserModel.username != null &&
+              cachedUserModel.username!.trim().isNotEmpty;
           state = AsyncData(
             AuthState(
-              status: AuthStatus.authenticated,
+              status: hasUsername
+                  ? AuthStatus.authenticated
+                  : AuthStatus.needsOnboarding,
               authUser: user,
               userModel: cachedUserModel,
             ),
@@ -87,9 +91,16 @@ class AuthNotifier extends Notifier<AsyncValue<AuthState>> {
       }
 
       final userModel = await _userRepository.getUserData(user.uid);
-      if (userModel == null) {
+      final needsProfileOnboarding = userModel == null ||
+          userModel.username == null ||
+          userModel.username!.trim().isEmpty;
+      if (needsProfileOnboarding) {
         state = AsyncData(
-          AuthState(status: AuthStatus.needsOnboarding, authUser: user),
+          AuthState(
+            status: AuthStatus.needsOnboarding,
+            authUser: user,
+            userModel: userModel,
+          ),
         );
       } else {
         await prefs.setString('cached_user_model_${user.uid}', jsonEncode(userModel.toMap()));
@@ -165,6 +176,9 @@ class AuthNotifier extends Notifier<AsyncValue<AuthState>> {
     }
   }
 
+  String? _activeVerificationId;
+  String? _activeLinkingPhone;
+
   Future<void> verifyPhoneNumber(
     String phoneNumber, {
     required Function() onCodeSent,
@@ -173,30 +187,30 @@ class AuthNotifier extends Notifier<AsyncValue<AuthState>> {
       await _authRepository.verifyPhoneNumber(
         phoneNumber: phoneNumber,
         codeSent: (String verificationId, int? resendToken) {
-          final currentState = state.value;
-          if (currentState != null) {
-            state = AsyncData(
-              (state.value ?? const AuthState()).copyWith(
-                verificationId: verificationId,
-                linkingPhoneNumber: phoneNumber,
-              ),
-            );
-            onCodeSent();
-          }
+          _activeVerificationId = verificationId;
+          _activeLinkingPhone = phoneNumber;
+          final baseState = state.value ?? const AuthState();
+          state = AsyncData(
+            baseState.copyWith(
+              verificationId: verificationId,
+              linkingPhoneNumber: phoneNumber,
+            ),
+          );
+          onCodeSent();
         },
         verificationFailed: (Exception e) {
           state = AsyncError(e, StackTrace.current);
         },
         codeAutoRetrievalTimeout: (String verificationId) {
-          final currentState = state.value;
-          if (currentState != null) {
-            state = AsyncData(
-              (state.value ?? const AuthState()).copyWith(
-                verificationId: verificationId,
-                linkingPhoneNumber: phoneNumber,
-              ),
-            );
-          }
+          _activeVerificationId = verificationId;
+          _activeLinkingPhone = phoneNumber;
+          final baseState = state.value ?? const AuthState();
+          state = AsyncData(
+            baseState.copyWith(
+              verificationId: verificationId,
+              linkingPhoneNumber: phoneNumber,
+            ),
+          );
         },
       );
     } catch (e, st) {
@@ -205,7 +219,8 @@ class AuthNotifier extends Notifier<AsyncValue<AuthState>> {
   }
 
   Future<void> verifyOtp(String smsCode) async {
-    final verificationId = state.value?.verificationId;
+    final prev = state.value;
+    final verificationId = prev?.verificationId ?? _activeVerificationId;
     if (verificationId == null) {
       state = AsyncError(
         Exception("Verification ID not found. Please try sending OTP again."),
@@ -214,10 +229,32 @@ class AuthNotifier extends Notifier<AsyncValue<AuthState>> {
       return;
     }
 
-    state = const AsyncValue.loading();
+    // Clear any prior AsyncError while preserving verificationId for retries
+    state = AsyncData(
+      (prev ?? const AuthState()).copyWith(
+        verificationId: verificationId,
+        linkingPhoneNumber: prev?.linkingPhoneNumber ?? _activeLinkingPhone,
+      ),
+    );
+
     try {
       await _authRepository.signInWithPhoneCredential(verificationId, smsCode);
-      // The authStateChanges listener will handle the rest
+      final user = _authRepository.currentUser;
+      if (user != null) {
+        final userModel = await _userRepository.getUserData(user.uid);
+        final needsProfileOnboarding = userModel == null ||
+            userModel.username == null ||
+            userModel.username!.trim().isEmpty;
+        state = AsyncData(
+          AuthState(
+            status: needsProfileOnboarding
+                ? AuthStatus.needsOnboarding
+                : AuthStatus.authenticated,
+            authUser: user,
+            userModel: userModel,
+          ),
+        );
+      }
     } catch (e, st) {
       state = AsyncError(e, st);
     }
@@ -225,7 +262,8 @@ class AuthNotifier extends Notifier<AsyncValue<AuthState>> {
 
   Future<void> linkPhoneNumber(String smsCode) async {
     final currentState = state.value;
-    final verificationId = currentState?.verificationId;
+    final verificationId =
+        currentState?.verificationId ?? _activeVerificationId;
     if (verificationId == null) {
       state = AsyncError(
         Exception("Verification ID not found. Please try sending OTP again."),
@@ -242,7 +280,10 @@ class AuthNotifier extends Notifier<AsyncValue<AuthState>> {
       if (user != null && currentState != null) {
         var updatedUserModel = currentState.userModel;
 
-        final phoneToSave = user.phoneNumber ?? currentState.linkingPhoneNumber;
+        final phoneToSave =
+            user.phoneNumber ??
+            currentState.linkingPhoneNumber ??
+            _activeLinkingPhone;
 
         if (phoneToSave != null &&
             phoneToSave.isNotEmpty &&
@@ -335,8 +376,8 @@ class AuthNotifier extends Notifier<AsyncValue<AuthState>> {
       ref.invalidate(userStreamProvider(targetUserId));
       ref.invalidate(userByIdProvider(targetUserId));
 
-      // AWAIT the refresh of the current user so the spinner stays active until fresh data arrives
-      await ref.refresh(userStreamProvider(userModel.userId).future);
+      // Invalidate current user providers so active listeners refresh without blocking
+      ref.invalidate(userStreamProvider(userModel.userId));
       ref.invalidate(userByIdProvider(userModel.userId));
     } catch (e) {
       // Revert on error

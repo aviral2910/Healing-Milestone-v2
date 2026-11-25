@@ -45,30 +45,72 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
 
       if (isAlreadyLoggedIn) {
         await ref.read(authProvider.notifier).linkPhoneNumber(otp);
-        if (mounted) {
-          context.pop(); // Pop OTP screen
-          context.pop(); // Pop Phone Auth screen to return to Edit Profile
+        if (!mounted) return;
+        final nextAsync = ref.read(authProvider);
+        if (nextAsync.hasError) {
+          setState(() {
+            _error = _friendlyOtpError(nextAsync.error);
+            _isLoading = false;
+          });
+          return;
         }
+        context.pop(); // Pop OTP screen
+        context.pop(); // Pop Phone Auth screen to return to Edit Profile
       } else {
         await ref.read(authProvider.notifier).verifyOtp(otp);
-        if (mounted) {
-          // Check if they need onboarding, router might catch it first, but just in case:
-          final newState = ref.read(authProvider).value;
-          if (newState?.status == AuthStatus.needsOnboarding) {
-            context.go(AppRoutes.roleSelection);
-          } else {
-            context.go(AppRoutes.ascensionTransition);
-          }
+        if (!mounted) return;
+        final nextAsync = ref.read(authProvider);
+        final newState = nextAsync.value;
+        if (nextAsync.hasError || newState?.authUser == null) {
+          setState(() {
+            _error = nextAsync.hasError
+                ? _friendlyOtpError(nextAsync.error)
+                : 'Invalid verification code. Please try again.';
+            _isLoading = false;
+          });
+          return;
+        }
+        if (newState?.status == AuthStatus.needsOnboarding) {
+          context.go(AppRoutes.roleSelection);
+        } else {
+          context.go(AppRoutes.ascensionTransition);
         }
       }
     } catch (e) {
       if (mounted) {
         setState(() {
-          _error = e.toString();
+          _error = _friendlyOtpError(e);
           _isLoading = false;
         });
       }
     }
+  }
+
+  String _friendlyOtpError(Object? error) {
+    final raw = error?.toString() ?? '';
+    final lower = raw.toLowerCase();
+    if (lower.contains('invalid-verification-code')) {
+      return 'Invalid OTP code. Please check and try again.';
+    }
+    if (lower.contains('session-expired') || lower.contains('code-expired')) {
+      return 'OTP session expired. Please request a new code.';
+    }
+    if (lower.contains('too-many-requests')) {
+      return 'Too many attempts. Please wait a moment and try again.';
+    }
+    if (lower.contains('network-request-failed')) {
+      return 'Network error. Please check your internet connection.';
+    }
+    if (lower.contains('credential-already-in-use')) {
+      return 'This phone number is already linked to another account.';
+    }
+    final cleaned = raw
+        .replaceAll(RegExp(r'^Exception:\s*'), '')
+        .replaceAll(RegExp(r'\[[^\]]+\]\s*'), '')
+        .trim();
+    return cleaned.isEmpty
+        ? 'Verification failed. Please try again.'
+        : cleaned;
   }
 
   @override
@@ -78,7 +120,7 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
     ref.listen<AsyncValue<AuthState>>(authProvider, (previous, next) {
       if (next is AsyncError) {
         setState(() {
-          _error = next.error.toString();
+          _error = _friendlyOtpError(next.error);
           _isLoading = false;
         });
       }
@@ -163,10 +205,39 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
                     ),
                     if (_error.isNotEmpty) ...[
                       const SizedBox(height: 16),
-                      Text(
-                        _error,
-                        style: TextStyle(color: theme.colorScheme.error),
-                        textAlign: TextAlign.center,
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.error.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: theme.colorScheme.error.withValues(
+                              alpha: 0.3,
+                            ),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.error_outline_rounded,
+                              size: 18,
+                              color: theme.colorScheme.error,
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                _error,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: theme.colorScheme.error,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                     const SizedBox(height: 32),

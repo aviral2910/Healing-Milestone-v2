@@ -25,9 +25,19 @@ class LoginScreen extends ConsumerWidget {
             context.go(AppRoutes.ascensionTransition);
           }
         }
-      } else if (next is AsyncError) {
+      } else if (next is AsyncError &&
+          (ModalRoute.of(context)?.isCurrent ?? false)) {
+        final cleaned = next.error
+            .toString()
+            .replaceAll(RegExp(r'^Exception:\s*'), '')
+            .replaceAll(RegExp(r'\[[^\]]+\]\s*'), '')
+            .trim();
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: ${next.error}')),
+          SnackBar(
+            content: Text(
+              cleaned.isEmpty ? 'Sign-in failed. Please try again.' : cleaned,
+            ),
+          ),
         );
       }
     });
