@@ -116,7 +116,7 @@ class HealthAwarenessScreen extends HookConsumerWidget {
                         side: BorderSide(color: theme.dividerColor),
                         padding: const EdgeInsets.symmetric(horizontal: 14),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(28),
                         ),
                       ),
                       onPressed: () {
