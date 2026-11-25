@@ -21,10 +21,25 @@ void main() {
       expect(hi.steps.length, equals(en.steps.length));
       final sciEn = getEmergencyScience(en.id, AwarenessLanguage.en);
       final sciHi = getEmergencyScience(en.id, AwarenessLanguage.hi);
+      final clinEn = getEmergencyScience(
+        en.id,
+        AwarenessLanguage.en,
+        depth: ScienceDepth.clinical,
+      );
+      final clinHi = getEmergencyScience(
+        en.id,
+        AwarenessLanguage.hi,
+        depth: ScienceDepth.clinical,
+      );
       expect(sciEn, isNotNull);
       expect(sciHi, isNotNull);
+      expect(clinEn, isNotNull);
+      expect(clinHi, isNotNull);
       expect(sciEn!.facts, isNotEmpty);
       expect(sciHi!.facts, isNotEmpty);
+      expect(clinEn!.facts, isNotEmpty);
+      expect(clinHi!.facts, isNotEmpty);
+      expect(clinEn.reference, isNotEmpty);
       for (final guide in [en, hi]) {
         expect(guide.id, isNotEmpty);
         expect(guide.title, isNotEmpty);

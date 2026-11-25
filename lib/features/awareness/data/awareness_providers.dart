@@ -8,6 +8,11 @@ enum AwarenessLanguage {
   hi,
 }
 
+enum ScienceDepth {
+  simple,
+  clinical,
+}
+
 extension AwarenessLanguageX on AwarenessLanguage {
   String get code => this == AwarenessLanguage.hi ? 'hi' : 'en';
   String get label => this == AwarenessLanguage.hi ? 'हिन्दी' : 'English';
@@ -40,12 +45,14 @@ class AwarenessState {
   final String emergencyRegionCode;
   final Set<String> completedGuideIds;
   final AwarenessLanguage language;
+  final ScienceDepth scienceDepth;
 
   const AwarenessState({
     this.emergencyNumber = '112',
     this.emergencyRegionCode = 'IN / EU',
     this.completedGuideIds = const {},
     this.language = AwarenessLanguage.en,
+    this.scienceDepth = ScienceDepth.simple,
   });
 
   AwarenessState copyWith({
@@ -53,12 +60,14 @@ class AwarenessState {
     String? emergencyRegionCode,
     Set<String>? completedGuideIds,
     AwarenessLanguage? language,
+    ScienceDepth? scienceDepth,
   }) {
     return AwarenessState(
       emergencyNumber: emergencyNumber ?? this.emergencyNumber,
       emergencyRegionCode: emergencyRegionCode ?? this.emergencyRegionCode,
       completedGuideIds: completedGuideIds ?? this.completedGuideIds,
       language: language ?? this.language,
+      scienceDepth: scienceDepth ?? this.scienceDepth,
     );
   }
 }
@@ -68,6 +77,7 @@ class AwarenessNotifier extends Notifier<AwarenessState> {
   static const _keyEmergencyRegion = 'awareness_emergency_region';
   static const _keyCompletedGuides = 'awareness_completed_guides';
   static const _keyLanguage = 'awareness_language';
+  static const _keyScienceDepth = 'awareness_science_depth';
 
   @override
   AwarenessState build() {
@@ -81,11 +91,14 @@ class AwarenessNotifier extends Notifier<AwarenessState> {
     final savedRegion = prefs.getString(_keyEmergencyRegion) ?? 'IN / EU';
     final savedGuides = prefs.getStringList(_keyCompletedGuides) ?? [];
     final savedLang = prefs.getString(_keyLanguage) ?? 'en';
+    final savedDepth = prefs.getString(_keyScienceDepth) ?? 'simple';
     state = state.copyWith(
       emergencyNumber: savedNumber,
       emergencyRegionCode: savedRegion,
       completedGuideIds: savedGuides.toSet(),
       language: savedLang == 'hi' ? AwarenessLanguage.hi : AwarenessLanguage.en,
+      scienceDepth:
+          savedDepth == 'clinical' ? ScienceDepth.clinical : ScienceDepth.simple,
     );
   }
 
@@ -103,6 +116,15 @@ class AwarenessNotifier extends Notifier<AwarenessState> {
     state = state.copyWith(language: lang);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_keyLanguage, lang.code);
+  }
+
+  Future<void> setScienceDepth(ScienceDepth depth) async {
+    state = state.copyWith(scienceDepth: depth);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+      _keyScienceDepth,
+      depth == ScienceDepth.clinical ? 'clinical' : 'simple',
+    );
   }
 
   Future<void> markGuideCompleted(String guideId) async {

@@ -19,7 +19,16 @@ class EmergencyScienceScreen extends ConsumerWidget {
     final s = AwarenessStrings(awarenessState.language);
     final localizedGuide = getEmergencyGuides(awarenessState.language)
         .firstWhere((g) => g.id == guide.id, orElse: () => guide);
-    final science = getEmergencyScience(guide.id, awarenessState.language);
+    final science = getEmergencyScience(
+      guide.id,
+      awarenessState.language,
+      depth: awarenessState.scienceDepth,
+    );
+    final clinicalRef = getEmergencyScience(
+      guide.id,
+      awarenessState.language,
+      depth: ScienceDepth.clinical,
+    )?.reference;
 
     if (science == null) {
       return Scaffold(
@@ -82,6 +91,35 @@ class EmergencyScienceScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 40),
         children: [
+          // Simple | Clinical Depth Toggle
+          SegmentedButton<ScienceDepth>(
+            style: SegmentedButton.styleFrom(
+              backgroundColor: theme.cardColor,
+              foregroundColor:
+                  theme.colorScheme.onSurface.withValues(alpha: 0.7),
+              selectedBackgroundColor: primary.withValues(alpha: 0.16),
+              selectedForegroundColor: primary,
+              side: BorderSide(color: theme.dividerColor),
+            ),
+            segments: [
+              ButtonSegment(
+                value: ScienceDepth.simple,
+                label: Text(s.simpleMode),
+                icon: const Icon(Icons.auto_stories_outlined, size: 17),
+              ),
+              ButtonSegment(
+                value: ScienceDepth.clinical,
+                label: Text(s.clinicalMode),
+                icon: const Icon(Icons.biotech_outlined, size: 17),
+              ),
+            ],
+            selected: {awarenessState.scienceDepth},
+            onSelectionChanged: (val) => ref
+                .read(awarenessProvider.notifier)
+                .setScienceDepth(val.first),
+          ),
+          const SizedBox(height: 16),
+
           // What's Happening in the Body
           Container(
             padding: const EdgeInsets.all(18),
@@ -199,6 +237,49 @@ class EmergencyScienceScreen extends ConsumerWidget {
               ],
             ),
           ),
+
+          // Guidelines & References Footer
+          if (clinicalRef != null) ...[
+            const SizedBox(height: 20),
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: theme.cardColor,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: theme.dividerColor),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.menu_book_outlined,
+                    size: 16,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          s.guidelinesRef,
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: primary,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          clinicalRef,
+                          style: theme.textTheme.bodySmall,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );

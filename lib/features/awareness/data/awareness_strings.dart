@@ -14,8 +14,8 @@ class AwarenessStrings {
 
   String get cprCoach => isHi ? 'CPR कोच' : 'CPR Coach';
   String get disclaimer => isHi
-      ? 'केवल शैक्षिक और आपातकालीन संदर्भ के लिए। यह पेशेवर चिकित्सा देखभाल का विकल्प नहीं है।'
-      : 'For educational & emergency reference only. Not a substitute for professional medical care.';
+      ? 'AHA, WHO और Red Cross दिशानिर्देशों पर आधारित। केवल शैक्षिक और आपातकालीन संदर्भ के लिए — पेशेवर चिकित्सा देखभाल का विकल्प नहीं।'
+      : 'Based on AHA, WHO & Red Cross guidelines. For educational & emergency reference only; not a substitute for professional medical care.';
 
   String get firstAidTitle =>
       isHi ? 'प्राथमिक चिकित्सा और आपातकाल' : 'First-Aid & Emergency';
@@ -65,6 +65,10 @@ class AwarenessStrings {
   String get whyEachStepWorks =>
       isHi ? 'हर कदम क्यों काम करता है' : 'Why Each Action Works';
   String get mythBuster => isHi ? 'भ्रम बनाम विज्ञान' : 'Myth Buster';
+  String get simpleMode => isHi ? 'सरल भाषा' : 'Simple';
+  String get clinicalMode => isHi ? 'चिकित्सीय' : 'Clinical';
+  String get guidelinesRef =>
+      isHi ? 'दिशानिर्देश और संदर्भ' : 'Guidelines & References';
 
   // Hands-Free Screen
   String stepOf(int current, int total) =>
