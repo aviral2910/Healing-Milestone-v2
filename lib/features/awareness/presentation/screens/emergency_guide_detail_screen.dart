@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/awareness_providers.dart';
 import '../../data/awareness_strings.dart';
+import '../../data/emergency_science_quizzes.dart';
 import '../../domain/emergency_guide_model.dart';
 import 'cpr_metronome_screen.dart';
 import 'emergency_quiz_screen.dart';
@@ -429,28 +430,37 @@ class EmergencyGuideDetailScreen extends ConsumerWidget {
             ),
           ),
 
-          // Separate Test Yourself Entry
+          // Separate Test Yourself Entry (enhanced card when passed + always Retake)
           const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: theme.cardColor,
+              color: isCompleted
+                  ? primary.withValues(alpha: 0.10)
+                  : theme.cardColor,
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: theme.dividerColor),
+              border: Border.all(
+                color: isCompleted
+                    ? primary.withValues(alpha: 0.45)
+                    : theme.dividerColor,
+                width: isCompleted ? 1.5 : 1,
+              ),
             ),
             child: Row(
               children: [
                 Container(
-                  width: 42,
-                  height: 42,
+                  width: 44,
+                  height: 44,
                   decoration: BoxDecoration(
-                    color: primary.withValues(alpha: 0.12),
+                    color: isCompleted
+                        ? primary
+                        : primary.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
-                    isCompleted ? Icons.verified : Icons.quiz_outlined,
-                    color: primary,
-                    size: 20,
+                    isCompleted ? Icons.verified_rounded : Icons.quiz_outlined,
+                    color: isCompleted ? theme.colorScheme.onPrimary : primary,
+                    size: 22,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -460,34 +470,64 @@ class EmergencyGuideDetailScreen extends ConsumerWidget {
                     children: [
                       Text(
                         isCompleted ? s.testPassed : s.testYourself,
-                        style: theme.textTheme.titleMedium,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: isCompleted ? primary : null,
+                        ),
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        s.quizSummary(guide.quizzes.length),
+                        isCompleted
+                            ? s.passedBadge
+                            : s.quizSummary(
+                                guide.quizzes.length +
+                                    getScienceQuizzes(
+                                      guide.id,
+                                      awarenessState.language,
+                                    ).length,
+                              ),
                         style: theme.textTheme.bodySmall,
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(width: 10),
-                FilledButton(
-                  style: FilledButton.styleFrom(
-                    backgroundColor: primary,
-                    foregroundColor: theme.colorScheme.onPrimary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => EmergencyQuizScreen(guide: guide),
+                if (isCompleted)
+                  OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: primary,
+                      side: BorderSide(color: primary.withValues(alpha: 0.5)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                    );
-                  },
-                  child: Text(isCompleted ? s.retake : s.start),
-                ),
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => EmergencyQuizScreen(guide: guide),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.refresh_rounded, size: 16),
+                    label: Text(s.retake),
+                  )
+                else
+                  FilledButton(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: primary,
+                      foregroundColor: theme.colorScheme.onPrimary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => EmergencyQuizScreen(guide: guide),
+                        ),
+                      );
+                    },
+                    child: Text(s.start),
+                  ),
               ],
             ),
           ),

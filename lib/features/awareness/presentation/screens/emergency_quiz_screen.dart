@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/awareness_providers.dart';
 import '../../data/awareness_strings.dart';
+import '../../data/emergency_science_quizzes.dart';
 import '../../domain/emergency_guide_model.dart';
 
 class EmergencyQuizScreen extends ConsumerStatefulWidget {
@@ -20,9 +21,17 @@ class _EmergencyQuizScreenState extends ConsumerState<EmergencyQuizScreen> {
   int _correctCount = 0;
   bool _isFinished = false;
 
+  List<EmergencyQuizQuestion> get _allQuestions {
+    final lang = ref.read(awarenessProvider).language;
+    return [
+      ...widget.guide.quizzes,
+      ...getScienceQuizzes(widget.guide.id, lang),
+    ];
+  }
+
   void _selectOption(int index) {
     if (_selectedOption != null) return;
-    final question = widget.guide.quizzes[_currentIndex];
+    final question = _allQuestions[_currentIndex];
     setState(() {
       _selectedOption = index;
       if (index == question.correctIndex) {
@@ -32,13 +41,14 @@ class _EmergencyQuizScreenState extends ConsumerState<EmergencyQuizScreen> {
   }
 
   void _nextQuestion() {
-    if (_currentIndex < widget.guide.quizzes.length - 1) {
+    final questions = _allQuestions;
+    if (_currentIndex < questions.length - 1) {
       setState(() {
         _currentIndex++;
         _selectedOption = null;
       });
     } else {
-      final passedAll = _correctCount == widget.guide.quizzes.length;
+      final passedAll = _correctCount == questions.length;
       if (passedAll) {
         ref
             .read(awarenessProvider.notifier)
@@ -61,8 +71,13 @@ class _EmergencyQuizScreenState extends ConsumerState<EmergencyQuizScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
-    final total = widget.guide.quizzes.length;
-    final s = AwarenessStrings(ref.watch(awarenessProvider).language);
+    final lang = ref.watch(awarenessProvider).language;
+    final questions = [
+      ...widget.guide.quizzes,
+      ...getScienceQuizzes(widget.guide.id, lang),
+    ];
+    final total = questions.length;
+    final s = AwarenessStrings(lang);
 
     return Scaffold(
       appBar: AppBar(
@@ -73,7 +88,7 @@ class _EmergencyQuizScreenState extends ConsumerState<EmergencyQuizScreen> {
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
           child: _isFinished
               ? _buildResultView(theme, primary, total, s)
-              : _buildQuestionView(theme, primary, total, s),
+              : _buildQuestionView(theme, primary, questions, s),
         ),
       ),
     );
@@ -82,10 +97,11 @@ class _EmergencyQuizScreenState extends ConsumerState<EmergencyQuizScreen> {
   Widget _buildQuestionView(
     ThemeData theme,
     Color primary,
-    int total,
+    List<EmergencyQuizQuestion> questions,
     AwarenessStrings s,
   ) {
-    final question = widget.guide.quizzes[_currentIndex];
+    final total = questions.length;
+    final question = questions[_currentIndex];
     final hasAnswered = _selectedOption != null;
     final isLast = _currentIndex == total - 1;
 
@@ -317,13 +333,29 @@ class _EmergencyQuizScreenState extends ConsumerState<EmergencyQuizScreen> {
                 ),
               ),
             ),
-            if (!passedAll) ...[
-              const SizedBox(height: 10),
+            const SizedBox(height: 10),
+            if (passedAll)
+              SizedBox(
+                width: double.infinity,
+                height: 46,
+                child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: primary,
+                    side: BorderSide(color: primary.withValues(alpha: 0.45)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  onPressed: _retryQuiz,
+                  icon: const Icon(Icons.refresh_rounded, size: 18),
+                  label: Text(s.retakeTest),
+                ),
+              )
+            else
               TextButton(
                 onPressed: () => Navigator.pop(context),
                 child: Text(s.reviewSteps),
               ),
-            ],
           ],
         ),
       ),

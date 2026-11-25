@@ -6,6 +6,7 @@ import 'package:healing_milestones/features/awareness/data/awareness_providers.d
 import 'package:healing_milestones/features/awareness/data/emergency_guides_data.dart';
 import 'package:healing_milestones/features/awareness/data/emergency_guides_data_hi.dart';
 import 'package:healing_milestones/features/awareness/data/emergency_science_data.dart';
+import 'package:healing_milestones/features/awareness/data/emergency_science_quizzes.dart';
 import 'package:healing_milestones/features/awareness/presentation/screens/emergency_quiz_screen.dart';
 import 'package:healing_milestones/features/awareness/presentation/screens/health_awareness_screen.dart';
 
@@ -40,6 +41,10 @@ void main() {
       expect(clinEn!.facts, isNotEmpty);
       expect(clinHi!.facts, isNotEmpty);
       expect(clinEn.reference, isNotEmpty);
+      final sciQuizEn = getScienceQuizzes(en.id, AwarenessLanguage.en);
+      final sciQuizHi = getScienceQuizzes(en.id, AwarenessLanguage.hi);
+      expect(sciQuizEn, isNotEmpty);
+      expect(sciQuizHi.length, equals(sciQuizEn.length));
       for (final guide in [en, hi]) {
         expect(guide.id, isNotEmpty);
         expect(guide.title, isNotEmpty);
@@ -114,32 +119,42 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    // Answer Q1 wrong, Q2 & Q3 right -> should fail
-    for (int i = 0; i < guide.quizzes.length; i++) {
-      final q = guide.quizzes[i];
-      final pickIndex = i == 0 ? (q.correctIndex + 1) % q.options.length : q.correctIndex;
+    final allQuestions = [
+      ...guide.quizzes,
+      ...getScienceQuizzes(guide.id, AwarenessLanguage.en),
+    ];
+
+    // Answer Q1 wrong, rest right -> should fail
+    for (int i = 0; i < allQuestions.length; i++) {
+      final q = allQuestions[i];
+      final pickIndex =
+          i == 0 ? (q.correctIndex + 1) % q.options.length : q.correctIndex;
       await tester.tap(find.text(q.options[pickIndex]));
       await tester.pumpAndSettle();
-      await tester.tap(find.text(i == guide.quizzes.length - 1 ? 'See Results' : 'Next Question'));
+      await tester.tap(find.text(
+          i == allQuestions.length - 1 ? 'See Results' : 'Next Question'));
       await tester.pumpAndSettle();
     }
 
     expect(find.text('Almost There'), findsOneWidget);
-    expect(container.read(awarenessProvider).completedGuideIds, isNot(contains(guide.id)));
+    expect(container.read(awarenessProvider).completedGuideIds,
+        isNot(contains(guide.id)));
 
     // Retry and answer all correctly -> should pass
     await tester.tap(find.text('Retry Test'));
     await tester.pumpAndSettle();
 
-    for (int i = 0; i < guide.quizzes.length; i++) {
-      final q = guide.quizzes[i];
+    for (int i = 0; i < allQuestions.length; i++) {
+      final q = allQuestions[i];
       await tester.tap(find.text(q.options[q.correctIndex]));
       await tester.pumpAndSettle();
-      await tester.tap(find.text(i == guide.quizzes.length - 1 ? 'See Results' : 'Next Question'));
+      await tester.tap(find.text(
+          i == allQuestions.length - 1 ? 'See Results' : 'Next Question'));
       await tester.pumpAndSettle();
     }
 
     expect(find.text('Test Passed!'), findsOneWidget);
+    expect(find.text('Retake Test'), findsOneWidget);
     expect(container.read(awarenessProvider).completedGuideIds, contains(guide.id));
   });
 }

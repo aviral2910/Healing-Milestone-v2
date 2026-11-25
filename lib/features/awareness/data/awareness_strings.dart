@@ -55,6 +55,9 @@ class AwarenessStrings {
       : '$count questions • 100% required';
   String get start => isHi ? 'शुरू करें' : 'Start';
   String get retake => isHi ? 'फिर से दें' : 'Retake';
+  String get retakeTest => isHi ? 'परीक्षा फिर से दें' : 'Retake Test';
+  String get passedBadge =>
+      isHi ? '100% उत्तीर्ण • अभ्यास पूर्ण' : '100% Passed • Practiced';
   String get whyItWorks =>
       isHi ? 'यह कैसे काम करता है' : 'Why It Works';
   String get whyItWorksSubtitle =>
